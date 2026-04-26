@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-26T20:45:00+02:00
+  updated_at: 2026-04-26T20:55:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -108,6 +108,27 @@ current_state:
         deterministic: true
         external_ai_calls: false
         audit_event: ai_draft_generated
+    bl_006_status:
+      completed: true
+      scope: local_podman_compatible_development_topology
+      compose_file: infra/docker-compose/compose.yaml
+      validation: infra_containers_verified_host_run_apps_documented_and_verified
+      strategy: infra_containers_verified_plus_host_run_apps_documented
+      runtime:
+        container_orchestrator: podman_compose
+        podman_version: 5.8.2
+        podman_compose_version: 1.5.0
+        docker_compose_verified: false
+        infra_services:
+          - postgres:5434
+          - nats_client:4222
+          - nats_monitoring:8222
+          - minio_api:9000
+          - minio_console:9001
+        host_services:
+          - api:4110
+          - web:3200
+        worker_status: placeholder_container_only
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
       tickets, calls, screen context, endpoint diagnostics, and remote support
@@ -148,6 +169,9 @@ current_state:
       - BL-005 draft suggestion workflow is verified in Chromium with model metadata and audit event visible
       - baseline health script exists at scripts/health.js and returns scaffold identity
       - runtime identity proof was collected for API endpoints and UI panels
+      - BL-006 local topology verification script exists at scripts/check_local_topology.sh
+      - Infra containers (Postgres, NATS, MinIO) verified via podman-compose with healthchecks
+      - Host-run API and Web verified against running infra with HTTP and browser checks
 
   environment:
     status: observed
@@ -167,7 +191,12 @@ current_state:
       rust: unknown
     container_tooling:
       podman: 5.8.2
+      podman_compose: 1.5.0
       docker: absent
+      compose_file: infra/docker-compose/compose.yaml
+      tested_orchestrator: podman_compose
+      docker_compose_expected_compatible: true
+      docker_compose_verified: false
     browser_tooling:
       chrome: /usr/bin/google-chrome-stable
     ports:

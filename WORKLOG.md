@@ -439,3 +439,68 @@ Use this file for dated session notes, verification summaries, and references to
 - Usage metadata and safety metadata are placeholders, not production model governance.
 - In-memory store is not persistent; all runtime data is lost on restart.
 - No real authentication, database, queue, object storage, ticketing credentials, or ticket writeback exists.
+
+## 2026-04-26 - Local Podman-compatible development topology (BL-006)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** b9ee51ba67fd42fe56bb111a8cf6a7851bf3c5a4
+**Worktree:** clean after final commit
+
+### What changed
+
+- Replaced `infra/docker-compose/docker-compose.yml` placeholder with canonical `infra/docker-compose/compose.yaml`.
+- Added `compose.yaml` with Podman-compatible services:
+  - **postgres** (PostgreSQL 16 Alpine) on host port 5434 with healthcheck and named volume.
+  - **nats** (NATS 2 Alpine) with client port 4222 and HTTP monitoring port 8222 with healthcheck.
+  - **minio** (MinIO latest) with API port 9000, console port 9001, healthcheck, and named volume.
+  - **worker** placeholder using Alpine (echoes status and sleeps; no real worker runtime yet).
+- Added `.env.example` with documented local dev defaults for API_PORT, PORT, NEXT_PUBLIC_API_BASE_URL, DATABASE_URL, NATS_URL, and MinIO credentials.
+- Added `scripts/check_local_topology.sh` portable bash script that verifies:
+  - Infra ports are listening (Postgres 5434, NATS 4222/8222, MinIO 9000/9001)
+  - NATS /healthz returns HTTP 200
+  - MinIO /minio/health/live returns HTTP 200
+  - PostgreSQL accepts connections (psql or nc fallback)
+  - API /health and Web root respond HTTP 200 when host-run apps are started
+- Added `docs/LOCAL_DEVELOPMENT.md` runbook with prerequisites, exact start/stop commands, port map, health checks, known limitations, Docker vs Podman notes, and troubleshooting.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, and `NEXT_ACTIONS.md` to reflect BL-006 completion.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run lint` passed.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed.
+- `npm run health` returned valid JSON.
+- `cd apps/api && npm test` passed: 14/14 integration tests passed.
+- `npm test --workspace @supportplane/ai` passed: 3/3 tests.
+- `npm test --workspace @supportplane/web` passed: 1/1 test.
+- `npm run build --workspace @supportplane/web` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `podman compose -f infra/docker-compose/compose.yaml up -d` started all four containers successfully.
+- `podman compose -f infra/docker-compose/compose.yaml ps` showed postgres, nats, and minio as healthy; worker as running.
+- `bash scripts/check_local_topology.sh` passed all 10 checks (8 infra + 2 host-run apps) with API and Web running.
+- API health verified at `http://localhost:4110/health` with curl.
+- Web root verified at `http://localhost:3200/` with curl (HTTP 200) and Playwright browser automation.
+- Browser flow verified: create session, load TICKET-101, generate mock draft, view model metadata.
+- `podman compose -f infra/docker-compose/compose.yaml down` stopped and removed containers cleanly.
+
+### Evidence
+
+- UI screenshots: `output/playwright/session-006-local-topology/01-cockpit-loaded.png`
+- UI screenshots: `output/playwright/session-006-local-topology/02-created-session.png`
+- UI screenshots: `output/playwright/session-006-local-topology/03-session-created.png`
+- UI screenshots: `output/playwright/session-006-local-topology/04-ticket-context-loaded.png`
+- UI screenshots: `output/playwright/session-006-local-topology/05-mock-draft-generated.png`
+
+### Remaining Risk
+
+- The API still uses an in-memory store; PostgreSQL is available in the topology but not yet wired via Prisma Client.
+- NATS and MinIO containers are available but no application code consumes them yet.
+- Worker has no real runtime; the container is a placeholder.
+- Docker Compose compatibility is expected but was not directly verified in this slice.
+- `npm audit` reports 10 dependency vulnerabilities (8 moderate, 2 high); no safe non-breaking fix was available.

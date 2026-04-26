@@ -360,3 +360,65 @@
   Type: source-data | chatbot | gap | integration | docs-render-verification
   as_of: 2026-03-18T18:00:00+01:00
 ```
+
+## EV-2026-04-26-023: BL-006 local topology infra containers verified
+
+- File: infra/docker-compose/compose.yaml
+- Title: Local Podman-compatible compose topology
+- Source/System: terminal
+- Action: Started PostgreSQL, NATS, MinIO, and worker placeholder with podman-compose.
+- Shows:
+  - All four containers start and report healthy (except worker placeholder).
+  - PostgreSQL accepts connections on host port 5434.
+  - NATS monitoring responds on port 8222 with HTTP 200.
+  - MinIO health endpoint responds on port 9000 with HTTP 200.
+- Proves:
+  - Local development infrastructure is reproducible via compose.
+- Type: integration
+- as_of: 2026-04-26T20:52:00+02:00
+
+## EV-2026-04-26-024: BL-006 host-run apps verified against running infra
+
+- File: scripts/check_local_topology.sh
+- Title: Full topology check with host-run API and Web
+- Source/System: terminal
+- Action: Ran check_local_topology.sh with API on 4110 and Web on 3200 while infra containers were running.
+- Shows:
+  - 10/10 checks passed (8 infra + 2 host-run).
+  - API /health returns NestJS runtime info.
+  - Web root returns HTTP 200.
+- Proves:
+  - Host-run apps and containerized infra coexist on documented ports.
+- Type: integration
+- as_of: 2026-04-26T20:54:00+02:00
+
+## EV-2026-04-26-025: BL-006 cockpit browser verification with running topology
+
+- File: output/playwright/session-006-local-topology/01-cockpit-loaded.png
+- Title: Support Cockpit loaded with local topology running
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Opened Support Cockpit in Chromium while API and infra containers were running.
+- Shows:
+  - Cockpit renders with DEV / MOCK DATA badge and API localhost:4110 label.
+  - Session list, ticket context, AI context quality, draft note, and audit trail panels are visible.
+- Proves:
+  - UI remains functional when running against the new local topology.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:53:00+02:00
+
+## EV-2026-04-26-026: BL-006 mock draft flow verified with local topology
+
+- File: output/playwright/session-006-local-topology/05-mock-draft-generated.png
+- Title: Mock AI draft generated with local topology services running
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Created a session, loaded TICKET-101, and generated a mock AI draft.
+- Shows:
+  - Draft contains mock AI output with context hash.
+  - Model metadata shows provider: mock, model: mock-support-note-v1.
+  - Writeback remains disabled.
+- Proves:
+  - The full mock MVP 1 flow works with the local topology in place.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:55:00+02:00
