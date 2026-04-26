@@ -36,7 +36,7 @@ and must be protected from quiet regression.
 - Scope: First user-visible Support Cockpit with session list, ticket context, AI context quality, draft note, and audit trail panels.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
-- head: 51976dbb25d8e8a5bca2100686baa08359dccc39
+- head: 5c8a488da87772f2de33a3fc636ac83deef86e41
 - process_or_container:
   - node process (NestJS API) on port 4110
   - node process (Next.js dev) on port 3200
