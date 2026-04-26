@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-26T19:55:00+02:00
+  updated_at: 2026-04-26T20:28:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -40,21 +40,22 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: f934a883356242d0c98d91005edd9a42364f426c
+    head: 51976dbb25d8e8a5bca2100686baa08359dccc39
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
       - BL-003 mock-first API slice committed
+      - BL-004 support cockpit UI shell committed and closure verified
 
   operating_mode:
     status: observed
     mode: operating
     summary: >
-      Bootstrap is complete. BL-002 contracts/schema and BL-003 mock-first
-      API slice are finished. The repository now contains a running NestJS
-      API with support sessions, mock ticketing adapter, AI context packets,
-      and audit events. No UI or real database exists yet.
+      Bootstrap is complete. BL-002 contracts/schema, BL-003 mock-first API
+      slice, and BL-004 support cockpit UI shell are committed. The repository
+      contains a running NestJS API and Next.js web app with browser-verified
+      panels. No real database or external integrations exist yet.
 
   project:
     name: SupportPlane
@@ -76,6 +77,22 @@ current_state:
         port: 4110
         in_memory: true
         mock_connector: MockTicketingAdapter
+        mock_auth: dev_identity_headers
+    bl_004_status:
+      completed: true
+      scope: support_cockpit_ui_shell
+      web_app: apps/web
+      validation: ui_compiles_browser_verified_screenshots_captured_lint_passing_committed
+      lint_status: passes
+      runtime:
+        framework: Next.js
+        port: 3200
+        stack:
+          - Next.js
+          - React
+          - TypeScript
+          - Tailwind CSS
+        api_client: apps/web/lib/api.ts
         mock_auth: dev_identity_headers
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
@@ -99,18 +116,23 @@ current_state:
       - claiming full regulatory compliance in MVP
 
   runtime_identity:
-    status: api_runtime_verified
+    status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: f934a883356242d0c98d91005edd9a42364f426c
-    process_or_container: node process (NestJS)
-    port_or_base_url: http://localhost:4110
+    head: 51976dbb25d8e8a5bca2100686baa08359dccc39
+    process_or_container:
+      - node process (NestJS) on port 4110
+      - node process (Next.js) on port 3200
+    port_or_base_url:
+      - http://localhost:4110
+      - http://localhost:3200
     rebuilt_in_current_slice: true
     duplicate_runtimes_checked: true
     notes:
       - NestJS API is running and verified via integration tests and curl
+      - Next.js web app is running and verified via browser screenshots
       - baseline health script exists at scripts/health.js and returns scaffold identity
-      - runtime identity proof was collected for API endpoints
+      - runtime identity proof was collected for API endpoints and UI panels
 
   environment:
     status: observed
@@ -406,6 +428,13 @@ current_state:
       - EV-2026-04-26-006
       - EV-2026-04-26-007
       - EV-2026-04-26-008
+      - EV-2026-04-26-009
+      - EV-2026-04-26-010
+      - EV-2026-04-26-011
+      - EV-2026-04-26-012
+      - EV-2026-04-26-013
+      - EV-2026-04-26-014
+      - EV-2026-04-26-015
 
   documentation:
     status: observed
@@ -432,12 +461,12 @@ current_state:
 
 active_problems:
   - id: AP-001
-    status: open
+    status: closed
     severity: medium
     title: Git repository not initialized
-    impact: Cannot produce branch/head/clean-worktree proof until git is initialized.
+    impact: Git is initialized and worktree is clean.
   - id: AP-002
-    status: open
+    status: closed
     severity: low
     title: No product runtime exists yet
-    impact: User-facing behavior cannot be verified until app scaffolding begins.
+    impact: API and web runtimes are running and verified.

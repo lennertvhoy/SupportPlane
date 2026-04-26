@@ -14,6 +14,12 @@ import { getDevIdentity } from '../common/dev-identity.middleware.js';
 export class SupportSessionsController {
   constructor(private readonly service: SupportSessionsService) {}
 
+  @Get()
+  list(@Req() req: Request) {
+    const identity = getDevIdentity(req);
+    return this.service.listSessions(identity);
+  }
+
   @Post()
   create(
     @Req() req: Request,

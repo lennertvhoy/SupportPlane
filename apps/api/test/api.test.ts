@@ -162,7 +162,7 @@ describe('SupportPlane API (BL-003)', () => {
       .expect(200);
 
     assert.strictEqual(res.body.length, 2);
-    const provenances = res.body.map((p: any) => p.provenance).sort();
+    const provenances = res.body.map((p: { provenance: string }) => p.provenance).sort();
     assert.deepStrictEqual(provenances, ['manual', 'ticket']);
   });
 

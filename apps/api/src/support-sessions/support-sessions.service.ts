@@ -140,7 +140,7 @@ export class SupportSessionsService {
     sessionId: string,
     dto: { provenance: string; payload: Record<string, unknown> }
   ): AIContextPacketShape {
-    const session = this.getSession(identity, sessionId);
+    this.getSession(identity, sessionId);
     const provenance = AIContextProvenance.parse(dto.provenance);
     const packet: AIContextPacketShape = {
       id: randomUUID() as AIContextPacketId,
@@ -178,6 +178,10 @@ export class SupportSessionsService {
   ): AuditEventShape[] {
     this.getSession(identity, sessionId);
     return this.store.getAuditEvents(identity.tenantId, sessionId);
+  }
+
+  listSessions(identity: DevIdentity): SupportSessionShape[] {
+    return this.store.listSessions(identity.tenantId);
   }
 
   private appendAuditEvent(

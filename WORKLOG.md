@@ -261,3 +261,127 @@ Use this file for dated session notes, verification summaries, and references to
 - No real ticketing system integration; `MockTicketingAdapter` returns deterministic fixtures.
 - Integrity hash is a placeholder, not cryptographic.
 - No UI, queues, object storage, or external services were implemented.
+
+## 2026-04-26 - Support Cockpit UI shell (BL-004)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 031469963f8c7928f7625e0a13b6667152350c53
+**Worktree:** clean
+
+### What changed
+
+- Added `GET /support-sessions` list endpoint to `apps/api` with tenant-scoped in-memory filtering.
+- Added dev-only CORS to `apps/api/src/main.ts` allowing localhost ports 3000/3100/3200 with mock identity headers.
+- Scaffolded Next.js 15 in `apps/web` with React 19, TypeScript, Tailwind CSS 3, and dark theme.
+- Created typed API client at `apps/web/lib/api.ts` with:
+  - default base URL `http://localhost:4110` overridable via `NEXT_PUBLIC_API_BASE_URL`
+  - mock identity headers (`x-tenant-id`, `x-user-id`, `x-user-role`)
+  - typed request/response shapes for sessions, tickets, context packets, and audit events
+  - `ApiClientError` for visible error handling
+- Built Support Cockpit page at `apps/web/app/page.tsx` with:
+  - **Session list / launcher**: create, select, and view sessions
+  - **Ticket context panel**: external ticket ID input (default TICKET-101), load action, mock connector data display
+  - **AI Context Quality panel**: loaded/missing/warning states, packet provenance grouping, manual packet creation
+  - **Draft note panel**: editable textarea, reviewed checkbox, disabled writeback button with "Mock only" label
+  - **Audit trail panel**: event type, actor, timestamp, resource, and metadata
+- Added reusable components: `Panel`, `Badge`, `SessionListPanel`, `TicketContextPanel`, `AiContextPanel`, `DraftNotePanel`, `AuditTrailPanel`.
+- Updated `.gitignore` to include `.next/`.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md`, `WORKLOG.md`, `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `git status --short --branch` showed expected changes on `main`.
+- `cd apps/api && npm test` passed: 11/11 integration tests passed.
+- API verified running on `http://localhost:4110` with curl (health, session list, create, ticket context).
+- Next.js web app verified running on `http://localhost:3200` via Playwright browser automation:
+  - Empty state screenshot captured.
+  - Session creation and selection screenshot captured.
+  - Ticket context load screenshot captured.
+  - AI context packets screenshot captured (ticket + manual packet).
+  - Audit trail screenshot captured (session_created, ticket_linked, ai_context_loaded).
+  - Draft review panel screenshot captured (text entered, reviewed checked, writeback disabled).
+
+### Evidence
+
+- UI screenshots: `output/playwright/session-004-support-cockpit-ui/01-initial-empty-state.png`
+- UI screenshots: `output/playwright/session-004-support-cockpit-ui/02-created-selected-session.png`
+- UI screenshots: `output/playwright/session-004-support-cockpit-ui/03-ticket-context-loaded.png`
+- UI screenshots: `output/playwright/session-004-support-cockpit-ui/04-ai-context-packets.png`
+- UI screenshots: `output/playwright/session-004-support-cockpit-ui/05-audit-trail-visible.png`
+- UI screenshots: `output/playwright/session-004-support-cockpit-ui/06-draft-review-panel.png`
+- API source changes: `apps/api/src/main.ts`, `apps/api/src/support-sessions/*`
+- Web source: `apps/web/app/page.tsx`, `apps/web/components/*.tsx`, `apps/web/lib/api.ts`
+
+### Remaining Risk
+
+- No real database; all data is in-memory and lost on restart.
+- No real authentication; dev identity headers are explicitly mock-only.
+- No real ticketing system integration.
+- No AI provider or model gateway yet (planned for BL-005).
+- Draft note panel does not persist or write back.
+- UI is not responsive for mobile; designed for desktop cockpit first.
+- No end-to-end tests for the UI yet.
+
+## 2026-04-26 - BL-004 closure and hygiene pass
+
+**Type:** closure
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 51976dbb25d8e8a5bca2100686baa08359dccc39
+**Worktree:** clean
+
+### What changed
+
+- Fixed root lint configuration by adding `typescript-eslint` to root devDependencies.
+- Fixed ESLint ignore patterns to exclude `dist/`, `.next/`, `next-env.d.ts`, `*.config.js`, and `scripts/*.js`.
+- Removed unused imports from `AiContextPanel.tsx`, `AuditTrailPanel.tsx`, and `DraftNotePanel.tsx`.
+- Fixed unused variable `dirname` in `health.controller.ts`.
+- Fixed unused variable `session` in `support-sessions.service.ts` (side-effect-only call).
+- Replaced `any` with explicit type in `api.test.ts`.
+- Restarted Next.js dev server on port 3200 after it became unresponsive.
+- Captured 6 fresh browser screenshots in `output/playwright/session-004-support-cockpit-ui-final-closure/`.
+- Committed all BL-004 files with clean worktree.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 11/11 integration tests passed.
+- API verified running on `http://localhost:4110` with curl.
+- Next.js web app verified running on `http://localhost:3200` via Playwright browser automation with fresh screenshots.
+
+### Evidence
+
+- Fresh UI screenshots: `output/playwright/session-004-support-cockpit-ui-final-closure/01-initial-empty-state.png`
+- Fresh UI screenshots: `output/playwright/session-004-support-cockpit-ui-final-closure/02-created-selected-session.png`
+- Fresh UI screenshots: `output/playwright/session-004-support-cockpit-ui-final-closure/03-ticket-context-loaded.png`
+- Fresh UI screenshots: `output/playwright/session-004-support-cockpit-ui-final-closure/04-ai-context-packets.png`
+- Fresh UI screenshots: `output/playwright/session-004-support-cockpit-ui-final-closure/05-audit-trail-visible.png`
+- Fresh UI screenshots: `output/playwright/session-004-support-cockpit-ui-final-closure/06-draft-review-panel.png`
+
+### Remaining Risk
+
+- No real database; all data is in-memory and lost on restart.
+- No real authentication; dev identity headers are explicitly mock-only.
+- No real ticketing system integration.
+- No AI provider or model gateway yet (planned for BL-005).
+- Draft note panel does not persist or write back.
+- UI is not responsive for mobile; designed for desktop cockpit first.
+- No end-to-end tests for the UI yet.

@@ -50,4 +50,17 @@ export class InMemoryStore {
   getAuditEvents(tenantId: string, sessionId: string): AuditEventShape[] {
     return this.auditEvents.get(this.key(tenantId, sessionId)) ?? [];
   }
+
+  listSessions(tenantId: string): SupportSessionShape[] {
+    const result: SupportSessionShape[] = [];
+    for (const session of this.sessions.values()) {
+      if (session.tenantId === tenantId) {
+        result.push(session);
+      }
+    }
+    return result.sort(
+      (a, b) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    );
+  }
 }

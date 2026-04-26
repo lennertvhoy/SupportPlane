@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { readFileSync, existsSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { resolve } from 'path';
 
 function findGitDir(): string | null {
   let dir = __dirname;

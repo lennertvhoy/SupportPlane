@@ -115,6 +115,153 @@
 - Type: source-data
 - as_of: 2026-04-26T18:40:00+02:00
 
+## EV-2026-04-26-009: Support Cockpit UI shell browser verification
+
+- File: output/playwright/session-004-support-cockpit-ui/01-initial-empty-state.png
+- Title: Initial cockpit empty state
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/
+- Action: Opened Support Cockpit in Chromium via Playwright before any sessions exist.
+- Shows:
+  - Dark-themed SupportPlane header with DEV/MOCK badge and API endpoint label.
+  - Empty session list with "No sessions yet" state.
+  - Ticket Context, AI Context Quality, Draft Note, and Audit Trail panels with "Select a session" empty states.
+- Proves:
+  - The first UI shell renders correctly with all required panels and empty states.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:10:00+02:00
+
+## EV-2026-04-26-010: Support Cockpit session creation and ticket context
+
+- File: output/playwright/session-004-support-cockpit-ui/03-ticket-context-loaded.png
+- Title: Ticket context loaded in selected session
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/
+- Action: Created a session, selected it, and loaded TICKET-101 via the mock adapter.
+- Shows:
+  - Session list shows "Customer VPN issue" with open status badge.
+  - Selected session banner displays ticket and packet counts.
+  - Ticket Context panel displays mock connector data: subject, status, priority, customer name/email, adapter ID.
+  - AI Context Quality panel shows a ticket provenance packet with loaded fields.
+  - Audit Trail panel shows session_created, ticket_linked, and ai_context_loaded events.
+- Proves:
+  - The full mock-first operator workflow (session → ticket load → context packet → audit) is visible in the UI.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:12:00+02:00
+
+## EV-2026-04-26-011: Support Cockpit draft note and audit trail
+
+- File: output/playwright/session-004-support-cockpit-ui/06-draft-review-panel.png
+- Title: Draft note with review state and disabled writeback
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/
+- Action: Typed a draft note, checked the Reviewed checkbox, and observed the disabled writeback button.
+- Shows:
+  - Draft note textarea contains realistic support text.
+  - "Reviewed" checkbox is checked.
+  - "Writeback (disabled)" button is present and inactive.
+  - "Mock only — no writeback" badge is visible.
+  - Audit trail shows actor, timestamps, resource IDs, and metadata.
+- Proves:
+  - The draft/review panel communicates non-persistence and disabled writeback clearly.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:12:00+02:00
+
+## EV-2026-04-26-012: Support Cockpit UI shell final closure — initial state
+
+- File: output/playwright/session-004-support-cockpit-ui-final-closure/01-initial-empty-state.png
+- Title: Initial cockpit state at final closure
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/
+- Action: Opened Support Cockpit in Chromium via Playwright during final closure pass.
+- Shows:
+  - Dark-themed SupportPlane header with DEV/MOCK badge and API endpoint label.
+  - Session list with prior test sessions visible.
+  - Ticket Context, AI Context Quality, Draft Note, and Audit Trail panels.
+- Proves:
+  - The UI shell renders correctly at the start of the final verification flow.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:25:00+02:00
+
+## EV-2026-04-26-013: Support Cockpit session creation and selection at final closure
+
+- File: output/playwright/session-004-support-cockpit-ui-final-closure/02-created-selected-session.png
+- Title: Created and selected session
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/
+- Action: Created a new session titled "BL-004 Closure Test" and selected it.
+- Shows:
+  - Session list shows the newly created session with open status badge.
+  - Selected session banner displays ID, status, and priority.
+  - AI Context Quality panel shows warning for missing ticket context.
+- Proves:
+  - Session creation and selection work correctly in the final closure verification.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:26:00+02:00
+
+## EV-2026-04-26-014: Support Cockpit ticket context loaded at final closure
+
+- File: output/playwright/session-004-support-cockpit-ui-final-closure/03-ticket-context-loaded.png
+- Title: Ticket context loaded in selected session
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/
+- Action: Loaded TICKET-101 via the mock adapter for the closure test session.
+- Shows:
+  - Session banner updated to Tickets: 1.
+  - Ticket Context panel displays mock connector data: subject, status, priority, customer name/email, adapter ID.
+- Proves:
+  - Ticket context load and display work correctly in the final verification.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:26:00+02:00
+
+## EV-2026-04-26-015: Support Cockpit AI context packets at final closure
+
+- File: output/playwright/session-004-support-cockpit-ui-final-closure/04-ai-context-packets.png
+- Title: AI context packets visible after ticket load
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to AI Context Quality panel after loading ticket context.
+- Shows:
+  - Ticket provenance packet with loaded fields and "Loaded" state.
+  - Draft Note panel visible below with session name and empty textarea.
+- Proves:
+  - AI Context Quality panel displays ticket-derived packets correctly.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:27:00+02:00
+
+## EV-2026-04-26-016: Support Cockpit audit trail at final closure
+
+- File: output/playwright/session-004-support-cockpit-ui-final-closure/05-audit-trail-visible.png
+- Title: Audit trail with session_created, ticket_linked, ai_context_loaded
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to Audit Trail panel to view events.
+- Shows:
+  - session_created event with actor, timestamp, and metadata.
+  - ticket_linked event with externalTicketId metadata.
+  - ai_context_loaded event with provenance metadata.
+- Proves:
+  - Audit trail displays all expected events with actor, timestamp, resource, and metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:27:00+02:00
+
+## EV-2026-04-26-017: Support Cockpit draft review panel at final closure
+
+- File: output/playwright/session-004-support-cockpit-ui-final-closure/06-draft-review-panel.png
+- Title: Draft note with review state and disabled writeback
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/
+- Action: Typed a draft note, checked the Reviewed checkbox, and observed the disabled writeback button.
+- Shows:
+  - Draft note textarea contains realistic support text (153 chars).
+  - "Reviewed" checkbox is checked.
+  - "Writeback (disabled)" button is present and inactive.
+  - "Mock only — no writeback" badge is visible.
+- Proves:
+  - The draft/review panel communicates non-persistence and disabled writeback clearly.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:27:00+02:00
+
 ## Entry Format
 
 ```yaml
