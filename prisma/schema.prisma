@@ -1,0 +1,254 @@
+// SupportPlane MVP 1 Prisma Schema
+// This schema expresses tenant boundaries, core entities, and audit foundations.
+// Migrations are deferred until the migration system is explicitly initialized.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  status    String   @default("active")
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users               User[]
+  roles               Role[]
+  supportSessions     SupportSession[]
+  ticketingAdapters   TicketingAdapter[]
+  ticketReferences    TicketReference[]
+  aiContextPackets    AIContextPacket[]
+  screenObservations  ScreenObservation[]
+  policyDecisions     PolicyDecision[]
+  auditEvents         AuditEvent[]
+
+  @@index([slug])
+  @@index([status])
+  @@map("tenants")
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  permissions String[] @default([])
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users  User[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("roles")
+}
+
+model User {
+  id         String    @id @default(cuid())
+  tenantId   String
+  email      String
+  name       String
+  status     String    @default("active")
+  lastLoginAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  roles             Role[]
+  assignedSessions  SupportSession[]   @relation("AssignedUser")
+  auditEvents       AuditEvent[]       @relation("ActorUser")
+  policyDecisions   PolicyDecision[]
+  screenObservations ScreenObservation[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([status])
+  @@map("users")
+}
+
+model SupportSession {
+  id                   String   @id @default(cuid())
+  tenantId             String
+  status               String   @default("open")
+  priority             String   @default("normal")
+  title                String
+  description          String?
+  assignedUserId       String?
+  linkedTicketIds      String[] @default([])
+  aiContextPacketIds   String[] @default([])
+  screenObservationIds String[] @default([])
+  auditEventIds        String[] @default([])
+  startedAt            DateTime @default(now())
+  endedAt              DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignedUser      User?              @relation("AssignedUser", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  aiContextPackets  AIContextPacket[]
+  screenObservations ScreenObservation[]
+  policyDecisions   PolicyDecision[]
+  auditEvents       AuditEvent[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([assignedUserId])
+  @@index([startedAt])
+  @@map("support_sessions")
+}
+
+model TicketingAdapter {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  name               String
+  adapterType        String
+  capabilities       String[] @default([])
+  status             String   @default("active")
+  config             Json     @default("{}")
+  secretReferenceIds String[] @default([])
+  lastSyncAt         DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ticketReferences TicketReference[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("ticketing_adapters")
+}
+
+model TicketReference {
+  id               String   @id @default(cuid())
+  tenantId         String
+  adapterId        String
+  externalTicketId String
+  subject          String
+  status           String   @default("unknown")
+  priority         String   @default("normal")
+  customerEmail    String?
+  customerName     String?
+  rawData          Json?
+  lastSyncedAt     DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  tenant  Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  adapter TicketingAdapter @relation(fields: [adapterId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, adapterId, externalTicketId])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([externalTicketId])
+  @@map("ticket_references")
+}
+
+model AIContextPacket {
+  id                    String   @id @default(cuid())
+  tenantId              String
+  sessionId             String
+  provenance            String
+  sourceTicketIds       String[] @default([])
+  sourceAdapterId       String?
+  payload               Json
+  redactionLog          Json     @default("[]")
+  contextHash           String?
+  modelPolicySnapshotId String?
+  createdAt             DateTime @default(now())
+
+  tenant  Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  session SupportSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@index([provenance])
+  @@index([createdAt])
+  @@map("ai_context_packets")
+}
+
+model ScreenObservation {
+  id                      String   @id @default(cuid())
+  tenantId                String
+  sessionId               String
+  observationType         String
+  metadata                Json
+  operatorCompanionId     String?
+  operatorUserId          String?
+  privacyConsentGiven     Boolean  @default(false)
+  rawImageStored          Boolean  @default(false)
+  rawImageRetentionSeconds Int?
+  createdAt               DateTime @default(now())
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User?          @relation(fields: [operatorUserId], references: [id], onDelete: SetNull)
+  session SupportSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@index([observationType])
+  @@index([createdAt])
+  @@map("screen_observations")
+}
+
+model PolicyDecision {
+  id                     String   @id @default(cuid())
+  tenantId               String
+  sessionId              String?
+  outcome                String
+  action                 String
+  resourceType           String
+  resourceId             String
+  actorUserId            String?
+  reason                 String
+  evidence               Json     @default("{}")
+  toolManifestSnapshotId String?
+  riskLevel              String?
+  createdAt              DateTime @default(now())
+
+  tenant  Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  session SupportSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  user    User?           @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@index([outcome])
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
+  @@map("policy_decisions")
+}
+
+model AuditEvent {
+  id                String   @id @default(cuid())
+  tenantId          String
+  sessionId         String?
+  eventType         String
+  actorType         String
+  actorId           String
+  action            String
+  resourceType      String
+  resourceId        String
+  metadata          Json     @default("{}")
+  hashChainPrevious String?
+  integrityHash     String?
+  createdAt         DateTime @default(now())
+
+  tenant  Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  session SupportSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  user    User?           @relation("ActorUser", fields: [actorId], references: [id], onDelete: NoAction)
+
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@index([eventType])
+  @@index([actorType, actorId])
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
+  @@map("audit_events")
+}

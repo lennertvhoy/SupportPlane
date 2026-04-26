@@ -134,3 +134,60 @@ Use this file for dated session notes, verification summaries, and references to
 ### Evidence
 
 - Planning artifact: `BACKLOG.md`.
+
+## 2026-04-26 - MVP 1 domain contracts and database model (BL-002)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** f1eb7d11d476d03602b6beed8ced8e1336d95b41
+**Worktree:** clean
+
+### What changed
+
+- Added `zod@^3.23.0` to `packages/contracts` for runtime schema validation.
+- Created `packages/contracts/src/base.ts` with `EntityId`, `Timestamp`, `TenantId`, `TenantScopedBase`, and strict JSON scalar types.
+- Created `packages/contracts/src/tenant.ts` with `Tenant` schema and `TenantStatus` enum.
+- Created `packages/contracts/src/user.ts` with `User`, `Role`, and `Permission` enums.
+- Created `packages/contracts/src/support-session.ts` with `SupportSession` lifecycle statuses and priorities.
+- Created `packages/contracts/src/ticket.ts` with `TicketReference`, `TicketingAdapter`, and capability enums.
+- Created `packages/contracts/src/ai-context.ts` with `AIContextPacket` and `AIContextProvenance`.
+- Created `packages/contracts/src/screen-observation.ts` with `ScreenObservation` metadata model (raw image storage disabled by default).
+- Created `packages/contracts/src/policy.ts` with `PolicyDecision` outcomes, evidence, and risk levels.
+- Created `packages/contracts/src/audit.ts` with `AuditEvent` actor types, event types, and hash-chain placeholders.
+- Updated `packages/contracts/src/index.ts` to re-export all domains.
+- Updated `packages/audit/src/index.ts` to re-export audit types and added `computeIntegrityHash` placeholder.
+- Updated `packages/policy/src/index.ts` to re-export policy types and added `hasPermission` / `hasAllPermissions` helpers.
+- Updated `packages/connectors/src/index.ts` to re-export connector types and added `TicketingAdapterDriver` interface placeholder.
+- Fixed `packages/contracts/tsconfig.json` so `rootDir` is `./src` and build outputs land directly in `dist/`.
+- Added `prisma/schema.prisma` with models for `Tenant`, `User`, `Role`, `SupportSession`, `TicketingAdapter`, `TicketReference`, `AIContextPacket`, `ScreenObservation`, `PolicyDecision`, and `AuditEvent`.
+- Added `prisma.config.ts` for Prisma 7 configuration.
+- Added `scripts/validate-contracts.js` to directly validate Zod schemas against sample data.
+- Added `npm run validate` root script combining contract validation and Prisma schema validation.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md` to reflect BL-002 completion.
+
+### Verification
+
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run health` returned valid JSON.
+- `npm run validate` passed: all 10 Zod schemas accepted well-formed sample data, and Prisma schema validated without errors.
+- `npx prisma validate` passed with no warnings after fixing `SetNull` on required `AuditEvent.actorId`.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `git status --short --branch` showed all expected new and modified files.
+
+### Evidence
+
+- Contract artifacts: `packages/contracts/src/*.ts`
+- Prisma schema: `prisma/schema.prisma`
+- Validation script: `scripts/validate-contracts.js`
+
+### Remaining Risk
+
+- No database migration system initialized yet (deferred per BL-002 scope).
+- No NestJS runtime, API endpoints, or UI exist yet.
+- Prisma Client is not generated; `DATABASE_URL` is a placeholder.
+- Zod schemas are contract-only; no request/response envelopes or API-specific DTOs exist yet.
+- Integrity hash helper is a placeholder, not cryptographic.

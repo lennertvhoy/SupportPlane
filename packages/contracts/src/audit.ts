@@ -1,0 +1,56 @@
+import { z } from 'zod';
+import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
+
+export const AuditEventId = EntityId.brand<'AuditEventId'>();
+export type AuditEventId = z.infer<typeof AuditEventId>;
+
+export const AuditActorType = z.enum([
+  'user',
+  'system',
+  'connector',
+  'ai',
+  'policy_engine',
+]);
+
+export type AuditActorType = z.infer<typeof AuditActorType>;
+
+export const AuditEventType = z.enum([
+  'session_created',
+  'session_updated',
+  'ticket_linked',
+  'ticket_unlinked',
+  'ai_context_loaded',
+  'ai_context_redacted',
+  'policy_decision',
+  'screen_observed',
+  'note_drafted',
+  'note_written',
+  'adapter_sync',
+  'adapter_error',
+  'user_login',
+  'user_logout',
+  'user_action',
+  'approval_requested',
+  'approval_granted',
+  'approval_denied',
+]);
+
+export type AuditEventType = z.infer<typeof AuditEventType>;
+
+export const AuditEvent = z.object({
+  id: AuditEventId,
+  tenantId: TenantId,
+  sessionId: EntityId.optional(),
+  eventType: AuditEventType,
+  actorType: AuditActorType,
+  actorId: EntityId,
+  action: z.string().min(1).max(512),
+  resourceType: z.string().min(1).max(128),
+  resourceId: EntityId,
+  metadata: z.record(JsonValue).default({}),
+  hashChainPrevious: z.string().max(256).optional(),
+  integrityHash: z.string().max(256).optional(),
+  createdAt: Timestamp,
+});
+
+export type AuditEvent = z.infer<typeof AuditEvent>;

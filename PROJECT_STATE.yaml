@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-26T19:17:00+02:00
+  updated_at: 2026-04-26T19:45:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -40,24 +40,30 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: c7765233f85e85acd8a44b00705c8f595433d5bd
+    head: f1eb7d11d476d03602b6beed8ced8e1336d95b41
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
-      - initial commit is the root commit on main
+      - BL-002 contracts and schema committed
 
   operating_mode:
     status: observed
     mode: operating
     summary: >
-      Bootstrap has established enough truthful baseline to begin implementation
-      slices. The repository still contains workflow/template support scripts
-      and has not yet been converted into an application monorepo.
+      Bootstrap is complete and BL-002 contracts/schema slice is finished.
+      The repository now contains MVP 1 domain contracts, Zod schemas,
+      and an initial Prisma schema. No product runtime exists yet.
 
   project:
     name: SupportPlane
     type: governed_ai_support_cockpit
     lifecycle_stage: pre_implementation
+    bl_002_status:
+      completed: true
+      scope: mvp_1_contracts_and_database_model
+      contracts_package: packages/contracts
+      schema_location: prisma/schema.prisma
+      validation: contracts_compile_and_schema_validates
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
       tickets, calls, screen context, endpoint diagnostics, and remote support
@@ -83,10 +89,10 @@ current_state:
     status: scaffold_only
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: c7765233f85e85acd8a44b00705c8f595433d5bd
+    head: f1eb7d11d476d03602b6beed8ced8e1336d95b41
     process_or_container: none
     port_or_base_url: none
-    rebuilt_in_current_slice: true
+    rebuilt_in_current_slice: false
     duplicate_runtimes_checked: false
     notes:
       - no SupportPlane product runtime exists yet

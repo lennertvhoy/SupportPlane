@@ -1,0 +1,157 @@
+#!/usr/bin/env node
+/**
+ * Direct contract/schema validation script.
+ * Validates that Zod schemas accept well-formed sample data.
+ */
+
+const {
+  Tenant,
+  User,
+  Role,
+  SupportSession,
+  TicketReference,
+  TicketingAdapter,
+  AIContextPacket,
+  ScreenObservation,
+  PolicyDecision,
+  AuditEvent,
+} = require('../packages/contracts/dist/index.js');
+
+function assertValid(label, schema, data) {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    console.error(`❌ ${label} failed validation:`);
+    console.error(result.error.format());
+    process.exit(1);
+  }
+  console.log(`✅ ${label}`);
+}
+
+const now = new Date().toISOString();
+
+assertValid('Tenant', Tenant, {
+  id: 'tenant_001',
+  name: 'Acme Corp',
+  slug: 'acme-corp',
+  status: 'active',
+  settings: {},
+  createdAt: now,
+  updatedAt: now,
+});
+
+assertValid('User', User, {
+  id: 'user_001',
+  tenantId: 'tenant_001',
+  email: 'alice@example.com',
+  name: 'Alice',
+  status: 'active',
+  roleIds: ['role_001'],
+  createdAt: now,
+  updatedAt: now,
+});
+
+assertValid('Role', Role, {
+  id: 'role_001',
+  tenantId: 'tenant_001',
+  name: 'Support Agent',
+  permissions: ['session:read', 'ticket:read'],
+  createdAt: now,
+  updatedAt: now,
+});
+
+assertValid('SupportSession', SupportSession, {
+  id: 'session_001',
+  tenantId: 'tenant_001',
+  status: 'open',
+  priority: 'high',
+  title: 'Printer not working',
+  assignedUserId: 'user_001',
+  linkedTicketIds: ['ticket_001'],
+  aiContextPacketIds: [],
+  screenObservationIds: [],
+  auditEventIds: [],
+  startedAt: now,
+  createdAt: now,
+  updatedAt: now,
+});
+
+assertValid('TicketingAdapter', TicketingAdapter, {
+  id: 'adapter_001',
+  tenantId: 'tenant_001',
+  name: 'Zammad Main',
+  adapterType: 'zammad',
+  capabilities: ['read_tickets', 'write_notes'],
+  status: 'active',
+  config: { baseUrl: 'https://zammad.example.com' },
+  secretReferenceIds: [],
+  createdAt: now,
+  updatedAt: now,
+});
+
+assertValid('TicketReference', TicketReference, {
+  id: 'ticket_001',
+  tenantId: 'tenant_001',
+  adapterId: 'adapter_001',
+  externalTicketId: '42',
+  subject: 'Printer issue',
+  status: 'open',
+  priority: 'normal',
+  customerEmail: 'bob@example.com',
+  lastSyncedAt: now,
+  createdAt: now,
+  updatedAt: now,
+});
+
+assertValid('AIContextPacket', AIContextPacket, {
+  id: 'ctx_001',
+  tenantId: 'tenant_001',
+  sessionId: 'session_001',
+  provenance: 'ticket',
+  sourceTicketIds: ['ticket_001'],
+  payload: { summary: 'Printer not responding' },
+  redactionLog: [],
+  contextHash: 'abc123',
+  createdAt: now,
+});
+
+assertValid('ScreenObservation', ScreenObservation, {
+  id: 'obs_001',
+  tenantId: 'tenant_001',
+  sessionId: 'session_001',
+  observationType: 'window_title',
+  metadata: { title: 'Zammad Ticket #42' },
+  privacyConsentGiven: true,
+  rawImageStored: false,
+  createdAt: now,
+});
+
+assertValid('PolicyDecision', PolicyDecision, {
+  id: 'pol_001',
+  tenantId: 'tenant_001',
+  sessionId: 'session_001',
+  outcome: 'allow',
+  action: 'draft_internal_note',
+  resourceType: 'ticket',
+  resourceId: 'ticket_001',
+  actorUserId: 'user_001',
+  reason: 'User has write_notes permission and risk level is low.',
+  evidence: {},
+  riskLevel: 'low',
+  createdAt: now,
+});
+
+assertValid('AuditEvent', AuditEvent, {
+  id: 'aud_001',
+  tenantId: 'tenant_001',
+  sessionId: 'session_001',
+  eventType: 'session_created',
+  actorType: 'user',
+  actorId: 'user_001',
+  action: 'create',
+  resourceType: 'support_session',
+  resourceId: 'session_001',
+  metadata: {},
+  createdAt: now,
+});
+
+console.log('\n✅ All contract validations passed.');
