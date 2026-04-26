@@ -9,7 +9,8 @@ import { DraftNotePanel } from '@/components/DraftNotePanel';
 import { AuditTrailPanel } from '@/components/AuditTrailPanel';
 import { ConnectorPanel } from '@/components/ConnectorPanel';
 import { EvidenceBundlePanel } from '@/components/EvidenceBundlePanel';
-import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, ApiClientError } from '@/lib/api';
+import { CallSimulatorPanel } from '@/components/CallSimulatorPanel';
+import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, ApiClientError } from '@/lib/api';
 
 export default function CockpitPage() {
   const [sessions, setSessions] = useState<SupportSession[]>([]);
@@ -21,6 +22,7 @@ export default function CockpitPage() {
   const [writebackResult, setWritebackResult] = useState<InternalNoteWritebackResult | undefined>(undefined);
   const [connectorStatus, setConnectorStatus] = useState<ConnectorStatus | undefined>(undefined);
   const [evidenceBundle, setEvidenceBundle] = useState<EvidenceBundleExportResponse | undefined>(undefined);
+  const [, setRecentCalls] = useState<CallEvent[]>([]);
   const [evidenceBundleMarkdown, setEvidenceBundleMarkdown] = useState<string | undefined>(undefined);
   const [evidenceBundleLoading, setEvidenceBundleLoading] = useState(false);
   const [evidenceBundleError, setEvidenceBundleError] = useState<string | null>(null);
@@ -78,10 +80,20 @@ export default function CockpitPage() {
     }
   }, []);
 
+  const fetchRecentCalls = useCallback(async () => {
+    try {
+      const calls = await api.listRecentCalls();
+      setRecentCalls(calls);
+    } catch {
+      // Non-fatal: call list is decorative
+    }
+  }, []);
+
   useEffect(() => {
     fetchSessions();
     fetchConnectorStatus();
-  }, [fetchSessions, fetchConnectorStatus]);
+    fetchRecentCalls();
+  }, [fetchSessions, fetchConnectorStatus, fetchRecentCalls]);
 
   const handleSelectSession = useCallback(
     async (session: SupportSession) => {
@@ -299,6 +311,12 @@ export default function CockpitPage() {
 
           {/* Panels grid */}
           <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+            <CallSimulatorPanel
+              sessions={sessions}
+              selectedSession={selectedSession}
+              onSelectSession={handleSelectSession}
+              auditEvents={auditEvents}
+            />
             <ConnectorPanel />
             <EvidenceBundlePanel
               sessionId={selectedSession?.id}

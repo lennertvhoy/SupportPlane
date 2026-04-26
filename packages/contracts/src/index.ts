@@ -9,3 +9,6 @@ export * from './policy.js';
 export * from './audit.js';
 export * from './connector.js';
 export * from './evidence-bundle.js';
+export * from './call.js';
+export * from './phone-normalization.js';
+export * from './caller-fixtures.js';

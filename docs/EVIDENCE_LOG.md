@@ -623,3 +623,99 @@
   Type: source-data | chatbot | gap | integration | docs-render-verification
   as_of: 2026-03-18T18:00:00+01:00
 ```
+
+## EV-2026-04-26-039: BL-009 cockpit before call simulation
+
+- File: output/playwright/session-009-call-simulator/01-cockpit-before-call-simulation.png
+- Title: Support Cockpit before fake call simulation
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Opened Support Cockpit and observed the Call Simulator panel before simulating any call.
+- Shows:
+  - Call Simulator panel is visible with phone number input defaulting to "03 555 01 01".
+  - "Simulate incoming call" button is present.
+  - "No real telephony connected" disclaimer is visible.
+- Proves:
+  - The Call Simulator panel renders with honest mock labels from the start.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:55:00+02:00
+
+## EV-2026-04-26-040: BL-009 fake incoming call created
+
+- File: output/playwright/session-009-call-simulator/02-fake-call-created.png
+- Title: Fake incoming call created with normalized number
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Clicked "Simulate incoming call" with the default Belgian fixture number.
+- Shows:
+  - Result card displays "Normalized: +32 3 555 01 01".
+  - "Fake webhook" label is visible.
+  - "Mock phone source" label is visible.
+- Proves:
+  - The fake incoming call webhook endpoint returns a normalized number and honest mock labels.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:56:00+02:00
+
+## EV-2026-04-26-041: BL-009 caller match hints visible
+
+- File: output/playwright/session-009-call-simulator/03-caller-match-hints-visible.png
+- Title: Caller match shows Acme BVBA with recent tickets
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Observed the caller match result after simulating the fake call.
+- Shows:
+  - Match status: "matched" with confidence "fixture".
+  - Customer name: "Acme BVBA".
+  - Recent tickets: TICKET-101, TICKET-102.
+  - "Caller matching uses deterministic fixture data" disclaimer is visible.
+- Proves:
+  - Deterministic fixture-based caller matching is visible and labeled as mock data.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:56:00+02:00
+
+## EV-2026-04-26-042: BL-009 call linked to session
+
+- File: output/playwright/session-009-call-simulator/04-linked-to-session.png
+- Title: Call linked to selected support session
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Selected a support session and clicked "Link to selected session".
+- Shows:
+  - "Linked ✓" confirmation is visible.
+  - Call status updated to "answered".
+  - Session ID is displayed in the linked result.
+- Proves:
+  - The link call to session endpoint works and updates the call status.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:57:00+02:00
+
+## EV-2026-04-26-043: BL-009 audit trail with call events
+
+- File: output/playwright/session-009-call-simulator/05-audit-trail-call-events.png
+- Title: Audit trail showing call_event_received, caller_matched, call_linked_to_session
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to Audit Trail panel after simulating and linking the call.
+- Shows:
+  - call_event_received event with rawNumber and normalizedNumber metadata.
+  - caller_matched event with customerName, matchStatus, and confidence metadata.
+  - call_linked_to_session event with sessionId metadata.
+- Proves:
+  - All call operations append audit events with tenant, actor, and match metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:58:00+02:00
+
+## EV-2026-04-26-044: BL-009 evidence bundle JSON with call summary
+
+- File: output/playwright/session-009-call-simulator/06-evidence-bundle-call-summary.png
+- Title: Evidence bundle JSON showing callEvents section
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Generated an evidence bundle and switched to the JSON tab, scrolled to the callEvents section.
+- Shows:
+  - callEvents array contains a call event summary with callEventId, provider "fake_webhook", direction "inbound", status "answered", normalizedNumber "+32 3 555 01 01".
+  - Mock telephony disclaimer is visible.
+- Proves:
+  - Evidence bundles include call event summaries and mock telephony disclaimers.
+- Type: docs-render-verification
+- as_of: 2026-04-26T22:01:00+02:00

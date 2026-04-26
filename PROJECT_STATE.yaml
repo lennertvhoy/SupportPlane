@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-26T20:55:00+02:00
+  updated_at: 2026-04-26T22:04:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -170,6 +170,29 @@ current_state:
           - evidence_bundle_generated
           - evidence_bundle_exported
         store_type: in-memory
+    bl_009_status:
+      completed: true
+      scope: fake_incoming_call_webhook_and_caller_matching
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      validation: contract_tests_api_tests_web_client_tests_browser_verified
+      runtime:
+        call_contracts: packages/contracts/src/call.ts
+        phone_normalization: packages/contracts/src/phone-normalization.ts
+        caller_matching: fixture_based_mock
+        api_endpoints:
+          - POST /calls/fake-incoming
+          - GET /calls/recent
+          - GET /calls/:id
+          - POST /calls/:id/link-session
+        audit_events:
+          - call_event_received
+          - caller_matched
+          - call_linked_to_session
+        store_type: in-memory
+        mock_telephony: true
+        honest_labels: true
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
       tickets, calls, screen context, endpoint diagnostics, and remote support

@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-26 21:56 CEST
+**Updated At:** 2026-04-26 22:04 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-009] Add fake incoming call webhook and caller matching for MVP 2
+### P0 [BL-041] Automatic SupportSession creation from incoming call events
 Owner: coding agent
-Next: implement CallEvent model, fake webhook endpoint, and basic caller matching
-Exit: operator can see a simulated incoming call matched to a customer and recent tickets
+Next: extend fake incoming call endpoint to optionally auto-create a SupportSession when a caller matches
+Exit: incoming call with matched caller automatically creates a session and links the call to it
 
 ## Queue Rules
 

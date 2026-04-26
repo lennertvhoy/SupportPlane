@@ -658,3 +658,74 @@ Use this file for dated session notes, verification summaries, and references to
 - No real Zammad instance was available for direct integration verification in this slice.
 - In-memory store is not persistent; all runtime data is lost on restart.
 - No real authentication, database persistence, queue, object storage, or phone integration was implemented.
+
+## 2026-04-26 - Fake incoming call webhook and caller matching (BL-009)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean after final commit
+
+### What changed
+
+- Added `packages/contracts/src/call.ts` with Zod schemas for `CallEvent`, `CallEventType`, `CallDirection`, `CallStatus`, `CallerIdentity`, `CallerMatch`, `CallerMatchStatus`, and request/response types for incoming call webhooks and session linking.
+- Added `packages/contracts/src/phone-normalization.ts` with Belgian-style deterministic phone normalization (`+32 3 555 01 01` canonical form) and fixture-based caller matching (Acme BVBA → TICKET-101, TICKET-102).
+- Extended `AuditEventType` in `packages/contracts/src/audit.ts` with `call_event_received`, `caller_matched`, `call_linked_to_session`.
+- Added `callEventIds` to `SupportSession` schema in `packages/contracts/src/support-session.ts`.
+- Added `callEvents` to `EvidenceBundle` schema in `packages/contracts/src/evidence-bundle.ts` with summaries, match status, normalized number, and mock telephony disclaimer.
+- Implemented `apps/api/src/store/store.module.ts` as a shared NestJS module exporting `InMemoryStore` as a singleton, fixing dependency injection across `CallsModule` and `SupportSessionsModule`.
+- Implemented `apps/api/src/calls/calls.service.ts` with `createFakeIncomingCall` (normalize → match → store → audit) and `linkCallToSession` (update status → link session → audit).
+- Implemented `apps/api/src/calls/calls.controller.ts` with endpoints: `POST /calls/fake-incoming`, `GET /calls/recent`, `GET /calls/:id`, `POST /calls/:id/link-session`.
+- Implemented `apps/api/src/calls/calls.module.ts` importing `StoreModule`.
+- Updated `apps/api/src/app.module.ts` to import `StoreModule` before feature modules and add `CallsModule` with `DevIdentityMiddleware` routing.
+- Updated `apps/api/src/evidence-bundle/evidence-bundle.builder.ts` to include call event summaries in evidence bundles with mock telephony disclaimer.
+- Added `apps/web/components/CallSimulatorPanel.tsx` with honest "Fake incoming call" / "No real telephony connected" labels, phone number input, simulate button, match result display, and link-to-session button.
+- Updated `apps/web/app/page.tsx` to integrate `CallSimulatorPanel` into the Support Cockpit layout.
+- Added `fakeIncomingCall`, `listRecentCalls`, `getCall`, `linkCallToSession` to `apps/web/lib/api.ts`.
+- Added API integration tests for call endpoints (fake incoming, recent list, get by id, link to session, tenant isolation, audit events, evidence bundle inclusion).
+- Added contract tests for call schemas, phone normalization, and caller matching.
+- Added web client tests for call API response shapes.
+- Captured 6 browser screenshots in `output/playwright/session-009-call-simulator/`.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md`, `WORKLOG.md`, `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`.
+
+### Verification
+
+- `npm install` succeeded; npm reported 10 known vulnerabilities in installed dependencies (unchanged).
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 42/42 integration tests passed.
+- `npm test --workspace @supportplane/contracts` passed: 13/13 tests passed.
+- `npm test --workspace @supportplane/web` passed: 7/7 tests passed.
+- `npm test --workspace @supportplane/connectors` passed: 13/13 tests passed.
+- `npm test --workspace @supportplane/ai` passed: 3/3 tests passed.
+- `npm run build --workspace @supportplane/web` passed.
+- Runtime API verified at `http://localhost:4110/health` and call endpoints.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Browser flow verified: simulate fake incoming call with Belgian fixture number, view normalized number and caller match (Acme BVBA, tickets TICKET-101/TICKET-102), link call to selected session, verify audit trail shows call_event_received, caller_matched, and call_linked_to_session events, verify evidence bundle JSON includes callEvents section with mock telephony disclaimer.
+
+### Evidence
+
+- UI screenshots: `output/playwright/session-009-call-simulator/01-cockpit-before-call-simulation.png`
+- UI screenshots: `output/playwright/session-009-call-simulator/02-fake-call-created.png`
+- UI screenshots: `output/playwright/session-009-call-simulator/03-caller-match-hints-visible.png`
+- UI screenshots: `output/playwright/session-009-call-simulator/04-linked-to-session.png`
+- UI screenshots: `output/playwright/session-009-call-simulator/05-audit-trail-call-events.png`
+- UI screenshots: `output/playwright/session-009-call-simulator/06-evidence-bundle-call-summary.png`
+- Evidence refs: `EV-2026-04-26-039` through `EV-2026-04-26-044`.
+- Acceptance freeze: `AF-2026-04-26-005`.
+
+### Remaining Risk
+
+- No real telephony or PBX integration exists; caller matching uses deterministic fixture data only.
+- Phone normalization is Belgian-style only; no international number support yet.
+- In-memory store is not persistent; all runtime data is lost on restart.
+- No real authentication; dev identity headers are explicitly mock-only.
+- No automatic session creation from incoming calls yet (planned for BL-041).
+- No call console UI separate from the simulator panel yet (planned for BL-043).

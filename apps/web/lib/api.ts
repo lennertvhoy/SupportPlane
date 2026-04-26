@@ -157,6 +157,41 @@ export interface EvidenceBundleExportResponse {
   markdown?: string;
 }
 
+export interface CallEvent {
+  id: string;
+  tenantId: string;
+  sessionId?: string;
+  provider: string;
+  source: string;
+  externalCallId: string;
+  direction: string;
+  status: string;
+  caller: {
+    rawNumber: string;
+    normalizedNumber?: string;
+    displayName?: string;
+    countryCodeHint?: string;
+  };
+  callerMatch?: {
+    status: string;
+    confidence: number;
+    customerId?: string;
+    customerName?: string;
+    customerEmail?: string;
+    matchedTicketIds: string[];
+    matchedSessionIds: string[];
+    matchSource?: string;
+    reason?: string;
+  };
+  startedAt: string;
+  endedAt?: string;
+  answeredAt?: string;
+  metadata: Record<string, unknown>;
+  mockDevOnly: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface EvidenceBundleSessionSummary {
   id: string;
   tenantId: string;
@@ -247,6 +282,24 @@ export interface EvidenceBundle {
   auditTimeline: EvidenceBundleAuditSummary[];
   mockDevOnlyDisclaimers: string[];
   limitations: string[];
+  callEvents: Array<{
+    callEventId: string;
+    provider: string;
+    source: string;
+    externalCallId: string;
+    direction: string;
+    status: string;
+    rawNumber: string;
+    normalizedNumber?: string;
+    displayName?: string;
+    matchStatus: string;
+    matchConfidence: number;
+    customerName?: string;
+    matchedTicketIds: string[];
+    linkedSessionId?: string;
+    mockDevOnly: boolean;
+    startedAt: string;
+  }>;
   sourceProvenance: {
     storeType: string;
     persistenceClaimed: boolean;
@@ -449,6 +502,33 @@ export const api = {
     apiFetch<EvidenceBundleExportResponse>(
       `/support-sessions/${sessionId}/evidence-bundle.json`,
       { method: 'GET' },
+      identity
+    ),
+
+  // Calls
+  createFakeIncomingCall: (
+    body: { externalCallId: string; rawCallerNumber: string; callerDisplayName?: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<CallEvent>('/calls/fake-incoming', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }, identity),
+
+  listRecentCalls: (identity?: DevIdentity) =>
+    apiFetch<CallEvent[]>('/calls/recent', { method: 'GET' }, identity),
+
+  getCall: (id: string, identity?: DevIdentity) =>
+    apiFetch<CallEvent>(`/calls/${id}`, { method: 'GET' }, identity),
+
+  linkCallToSession: (
+    callId: string,
+    body: { sessionId: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<{ callEvent: CallEvent; linkedAt: string }>(
+      `/calls/${callId}/link-session`,
+      { method: 'POST', body: JSON.stringify(body) },
       identity
     ),
 

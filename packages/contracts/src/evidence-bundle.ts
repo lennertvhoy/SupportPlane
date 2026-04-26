@@ -93,6 +93,26 @@ export const EvidenceBundleAuditSummary = z.object({
 });
 export type EvidenceBundleAuditSummary = z.infer<typeof EvidenceBundleAuditSummary>;
 
+export const EvidenceBundleCallEventSummary = z.object({
+  callEventId: EntityId,
+  provider: z.string(),
+  source: z.string(),
+  externalCallId: z.string(),
+  direction: z.string(),
+  status: z.string(),
+  rawNumber: z.string(),
+  normalizedNumber: z.string().optional(),
+  displayName: z.string().optional(),
+  matchStatus: z.string(),
+  matchConfidence: z.number(),
+  customerName: z.string().optional(),
+  matchedTicketIds: z.array(z.string()),
+  linkedSessionId: z.string().optional(),
+  mockDevOnly: z.boolean(),
+  startedAt: Timestamp,
+});
+export type EvidenceBundleCallEventSummary = z.infer<typeof EvidenceBundleCallEventSummary>;
+
 export const EvidenceBundleSection = z.object({
   name: z.string(),
   label: z.string(),
@@ -113,6 +133,7 @@ export const EvidenceBundle = z.object({
   contextPackets: z.array(EvidenceBundleContextPacketSummary),
   aiUsage: z.array(EvidenceBundleAiUsageSummary),
   connectorOperations: z.array(EvidenceBundleConnectorOperationSummary),
+  callEvents: z.array(EvidenceBundleCallEventSummary),
   auditTimeline: z.array(EvidenceBundleAuditSummary),
   mockDevOnlyDisclaimers: z.array(z.string()),
   limitations: z.array(z.string()),

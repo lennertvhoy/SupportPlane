@@ -4,6 +4,7 @@ import type {
   AIContextPacket as AIContextPacketShape,
   AuditEvent as AuditEventShape,
   InternalNoteDraft as InternalNoteDraftShape,
+  CallEvent as CallEventShape,
 } from '@supportplane/contracts';
 
 export class InMemoryStore {
@@ -12,6 +13,7 @@ export class InMemoryStore {
   private contextPackets = new Map<string, AIContextPacketShape[]>();
   private auditEvents = new Map<string, AuditEventShape[]>();
   private drafts = new Map<string, InternalNoteDraftShape>();
+  private callEvents = new Map<string, CallEventShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -75,5 +77,25 @@ export class InMemoryStore {
     return Array.from(this.drafts.values()).filter(
       (d) => d.tenantId === tenantId && d.sessionId === sessionId
     );
+  }
+
+  saveCallEvent(event: CallEventShape): void {
+    this.callEvents.set(`${event.tenantId}:${event.id}`, event);
+  }
+
+  getCallEvent(tenantId: string, id: string): CallEventShape | undefined {
+    return this.callEvents.get(`${tenantId}:${id}`);
+  }
+
+  listCallEvents(tenantId: string): CallEventShape[] {
+    return Array.from(this.callEvents.values())
+      .filter((c) => c.tenantId === tenantId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  listCallEventsForSession(tenantId: string, sessionId: string): CallEventShape[] {
+    return Array.from(this.callEvents.values())
+      .filter((c) => c.tenantId === tenantId && c.sessionId === sessionId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 }

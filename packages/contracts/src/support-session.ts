@@ -34,6 +34,7 @@ export const SupportSession = z.object({
   linkedTicketIds: z.array(EntityId).default([]),
   aiContextPacketIds: z.array(EntityId).default([]),
   screenObservationIds: z.array(EntityId).default([]),
+  callEventIds: z.array(EntityId).default([]),
   auditEventIds: z.array(EntityId).default([]),
   startedAt: Timestamp,
   endedAt: Timestamp.optional(),

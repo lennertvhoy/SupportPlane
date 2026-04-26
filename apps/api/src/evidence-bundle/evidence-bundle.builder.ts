@@ -4,6 +4,7 @@ import type {
   TicketReference,
   AIContextPacket,
   AuditEvent,
+  CallEvent,
   EvidenceBundle,
   EvidenceBundleFormat,
   EvidenceBundleSessionSummary,
@@ -12,6 +13,7 @@ import type {
   EvidenceBundleConnectorOperationSummary,
   EvidenceBundleAiUsageSummary,
   EvidenceBundleAuditSummary,
+  EvidenceBundleCallEventSummary,
   TenantId,
   SupportSessionId,
   EvidenceBundleId,
@@ -27,6 +29,7 @@ export interface BuildEvidenceBundleInput {
   tickets: TicketReference[];
   contextPackets: AIContextPacket[];
   auditEvents: AuditEvent[];
+  callEvents?: CallEvent[];
   connectorMode?: string;
 }
 
@@ -128,6 +131,28 @@ function toAuditSummaries(auditEvents: AuditEvent[]): EvidenceBundleAuditSummary
   }));
 }
 
+function toCallEventSummaries(callEvents: CallEvent[] | undefined): EvidenceBundleCallEventSummary[] {
+  if (!callEvents) return [];
+  return callEvents.map((c) => ({
+    callEventId: c.id,
+    provider: c.provider,
+    source: c.source,
+    externalCallId: c.externalCallId,
+    direction: c.direction,
+    status: c.status,
+    rawNumber: c.caller.rawNumber,
+    normalizedNumber: c.caller.normalizedNumber,
+    displayName: c.caller.displayName,
+    matchStatus: c.callerMatch?.status ?? 'unknown',
+    matchConfidence: c.callerMatch?.confidence ?? 0,
+    customerName: c.callerMatch?.customerName,
+    matchedTicketIds: c.callerMatch?.matchedTicketIds ?? [],
+    linkedSessionId: c.sessionId,
+    mockDevOnly: c.mockDevOnly,
+    startedAt: c.startedAt,
+  }));
+}
+
 export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBundle {
   const now = new Date().toISOString();
 
@@ -144,12 +169,15 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     contextPackets: toContextPacketSummaries(input.contextPackets),
     aiUsage: toAiUsageSummaries(input.auditEvents),
     connectorOperations: toConnectorOperationSummaries(input.auditEvents),
+    callEvents: toCallEventSummaries(input.callEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
     mockDevOnlyDisclaimers: [
       'This evidence bundle was generated from an in-memory mock development store.',
       'No real database persistence, external ticketing system, or AI provider was used.',
       'Data is lost on API restart. This is not production audit-grade evidence.',
       'Connector mode is mock unless explicitly configured otherwise.',
+      'Call events are simulated via fake webhook. No real telephony is connected.',
+      'Caller matching uses deterministic mock fixtures, not a real customer database.',
     ],
     limitations: [
       'No cryptographic hash chain integrity guarantee.',
@@ -157,6 +185,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'No real authentication; actor identity is from mock dev headers.',
       'No GDPR or legal compliance claims are made for this export format.',
       'Secrets and tokens have been redacted using pattern matching, not guaranteed zero-knowledge.',
+      'Phone normalization is Belgian-style heuristic only, not telecom-grade validation.',
     ],
     sourceProvenance: {
       storeType: 'in-memory',
@@ -274,6 +303,30 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       if (op.externalArticleId) lines.push(`  - Article ID: ${op.externalArticleId}`);
       if (op.errorCode) lines.push(`  - Error: ${op.errorCode} — ${op.errorMessage ?? ''}`);
       lines.push(`  - At: ${op.occurredAt}`);
+      lines.push(``);
+    }
+  }
+  lines.push(``);
+
+  lines.push(`## Call Events`);
+  lines.push(``);
+  if (bundle.callEvents.length === 0) {
+    lines.push(`*No call events recorded.*`);
+  } else {
+    for (const c of bundle.callEvents) {
+      lines.push(`### ${c.externalCallId} (${c.callEventId})`);
+      lines.push(`- **Provider:** ${c.provider}`);
+      lines.push(`- **Direction:** ${c.direction}`);
+      lines.push(`- **Status:** ${c.status}`);
+      lines.push(`- **Raw Number:** ${c.rawNumber}`);
+      if (c.normalizedNumber) lines.push(`- **Normalized Number:** ${c.normalizedNumber}`);
+      if (c.displayName) lines.push(`- **Display Name:** ${c.displayName}`);
+      lines.push(`- **Match Status:** ${c.matchStatus} (confidence: ${c.matchConfidence})`);
+      if (c.customerName) lines.push(`- **Matched Customer:** ${c.customerName}`);
+      if (c.matchedTicketIds.length > 0) lines.push(`- **Matched Tickets:** ${c.matchedTicketIds.join(', ')}`);
+      if (c.linkedSessionId) lines.push(`- **Linked Session:** ${c.linkedSessionId}`);
+      lines.push(`- **Mock/Dev-Only:** ${c.mockDevOnly}`);
+      lines.push(`- **Started:** ${c.startedAt}`);
       lines.push(``);
     }
   }

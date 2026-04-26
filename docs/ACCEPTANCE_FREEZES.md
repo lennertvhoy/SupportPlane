@@ -187,3 +187,46 @@ and must be protected from quiet regression.
   - No real Zammad API calls are made in mock mode.
   - Real Zammad mode requires ZAMMAD_BASE_URL and ZAMMAD_API_TOKEN environment variables.
   - The adapter is a typed boundary only; production-ready verification requires a real Zammad instance with documented evidence.
+
+## AF-2026-04-26-005: Fake incoming call webhook and caller matching (BL-009)
+
+- ID: AF-2026-04-26-005
+- Milestone: Fake incoming call webhook and caller matching
+- Scope: SupportPlane can simulate a fake incoming call via POST /calls/fake-incoming, normalize phone numbers (Belgian-style), match callers against deterministic fixture data, display normalized number, match status, customer name, and recent tickets in the Call Simulator panel, link the call to a selected SupportSession, and include call events in the evidence bundle with mock telephony disclaimers.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded_in_final_handoff
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /
+  - POST /calls/fake-incoming
+  - GET /calls/recent
+  - GET /calls/:id
+  - POST /calls/:id/link-session
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-26-039
+  - EV-2026-04-26-040
+  - EV-2026-04-26-041
+  - EV-2026-04-26-042
+  - EV-2026-04-26-043
+  - EV-2026-04-26-044
+- regression_guard:
+  - Call Simulator panel must remain visible with honest "No real telephony connected" labels.
+  - Fake incoming call endpoint must normalize phone numbers and return match results.
+  - Caller matching must use deterministic fixture data and display match status, customer name, and recent tickets.
+  - Link call to session must update call status to "answered" and append call_linked_to_session audit event.
+  - Evidence bundle must include callEvents section with mock telephony disclaimer.
+  - All call operations must append audit events with tenant, actor, and metadata.
+  - Tenant isolation must be enforced for all call endpoints.
+- Notes:
+  - No real telephony, PBX, or phone provider integration exists.
+  - Phone normalization is Belgian-style only; international support is not implemented.
+  - Caller matching is fixture-based mock data, not a real CRM or directory lookup.
+  - In-memory store means call data is lost on API restart.

@@ -5,6 +5,7 @@ import supertest from 'supertest';
 import type { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module.js';
 
+
 describe('SupportPlane API', () => {
   let app: INestApplication;
   let server: ReturnType<INestApplication['getHttpServer']>;
@@ -606,5 +607,204 @@ describe('Evidence bundle endpoints', () => {
     assert.ok(!bodyStr.includes('secret'), 'secret must not be in bundle');
     assert.ok(!bodyStr.includes('token='), 'token= must not be in bundle');
     assert.ok(!bodyStr.includes('Bearer '), 'Bearer token must not be in bundle');
+  });
+});
+
+describe('Call simulator endpoints', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('POST /calls/fake-incoming requires tenant identity', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .send({ externalCallId: 'FAKE-1', rawCallerNumber: '03 555 01 01' })
+      .expect(400);
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('POST /calls/fake-incoming creates a fake incoming call with normalized number', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-1', rawCallerNumber: '03 555 01 01', callerDisplayName: 'Test' })
+      .expect(201);
+
+    assert.strictEqual(res.body.provider, 'fake_webhook');
+    assert.strictEqual(res.body.direction, 'inbound');
+    assert.strictEqual(res.body.status, 'ringing');
+    assert.strictEqual(res.body.caller.rawNumber, '03 555 01 01');
+    assert.strictEqual(res.body.caller.normalizedNumber, '+32 3 555 01 01');
+    assert.strictEqual(res.body.mockDevOnly, true);
+    assert.ok(res.body.callerMatch);
+  });
+
+  it('POST /calls/fake-incoming returns matched fixture customer', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-2', rawCallerNumber: '+32 3 555 01 01' })
+      .expect(201);
+
+    assert.strictEqual(res.body.callerMatch.status, 'matched');
+    assert.strictEqual(res.body.callerMatch.customerName, 'Acme BVBA');
+    assert.deepStrictEqual(res.body.callerMatch.matchedTicketIds, ['TICKET-101', 'TICKET-102']);
+  });
+
+  it('GET /calls/recent lists recent calls', async () => {
+    await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-3', rawCallerNumber: '02 555 0202' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get('/calls/recent')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(Array.isArray(res.body));
+    assert.ok(res.body.length >= 1);
+    assert.strictEqual(res.body[0].tenantId, 'tenant-a');
+  });
+
+  it('GET /calls/:id returns a specific call', async () => {
+    const created = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-4', rawCallerNumber: '0495 12 34 56' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/calls/${created.body.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.strictEqual(res.body.id, created.body.id);
+    assert.strictEqual(res.body.externalCallId, 'FAKE-4');
+  });
+
+  it('POST /calls/:id/link-session links call to session', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Call link test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-5', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    assert.strictEqual(res.body.callEvent.sessionId, session.body.id);
+    assert.strictEqual(res.body.callEvent.status, 'answered');
+    assert.ok(res.body.linkedAt);
+  });
+
+  it('call endpoints enforce tenant isolation', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-6', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .get(`/calls/${call.body.id}`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .expect(404);
+  });
+
+  it('call link appends call_linked_to_session audit event', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Audit call test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-7', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const linkedEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'call_linked_to_session'
+    );
+    assert.ok(linkedEvent, 'call_linked_to_session audit event should exist');
+    assert.strictEqual(linkedEvent.metadata.sessionId, session.body.id);
+    assert.strictEqual(linkedEvent.metadata.mockDevOnly, true);
+  });
+
+  it('evidence bundle includes linked call events', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Evidence call test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-8', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(Array.isArray(res.body.bundle.callEvents));
+    assert.strictEqual(res.body.bundle.callEvents.length, 1);
+    assert.strictEqual(res.body.bundle.callEvents[0].externalCallId, 'FAKE-8');
+    assert.strictEqual(res.body.bundle.callEvents[0].matchStatus, 'matched');
+    assert.strictEqual(res.body.bundle.callEvents[0].mockDevOnly, true);
   });
 });

@@ -26,6 +26,7 @@ const baseRequest: GenerateDraftRequest = {
     linkedTicketIds: ['ticket-1'],
     aiContextPacketIds: ['packet-1'],
     screenObservationIds: [],
+    callEventIds: [],
     auditEventIds: [],
     startedAt: '2026-04-26T18:00:00.000Z',
     createdAt: '2026-04-26T18:00:00.000Z',

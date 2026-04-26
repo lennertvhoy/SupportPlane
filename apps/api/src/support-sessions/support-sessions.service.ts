@@ -1,5 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { InMemoryStore } from './in-memory.store.js';
 import {
   SupportSessionStatus,
   SupportSessionPriority,
@@ -32,7 +33,6 @@ import {
   ModelSelection,
   type GenerateDraftResponse as GenerateDraftResponseShape,
 } from '@supportplane/ai';
-import { InMemoryStore } from './in-memory.store.js';
 import { type DevIdentity } from '../common/dev-identity.middleware.js';
 import { ConnectorsService } from '../connectors/connectors.service.js';
 import {
@@ -42,7 +42,6 @@ import {
 
 @Injectable()
 export class SupportSessionsService {
-  private readonly store = new InMemoryStore();
   private readonly modelGateway = createDefaultModelGateway();
   private readonly fallbackAdapter = createZammadAdapter(
     ConnectorMode.enum.mock,
@@ -51,7 +50,9 @@ export class SupportSessionsService {
 
   constructor(
     @Inject(ConnectorsService)
-    private readonly connectorsService: ConnectorsService
+    private readonly connectorsService: ConnectorsService,
+    @Inject(InMemoryStore)
+    private readonly store: InMemoryStore
   ) {}
 
   private getAdapter(): TicketingAdapterDriver {
@@ -79,6 +80,7 @@ export class SupportSessionsService {
       linkedTicketIds: [],
       aiContextPacketIds: [],
       screenObservationIds: [],
+      callEventIds: [],
       auditEventIds: [],
       startedAt: now,
       createdAt: now,
@@ -126,6 +128,7 @@ export class SupportSessionsService {
     const linkedSession: SupportSessionShape = {
       ...session,
       linkedTicketIds: Array.from(new Set([...session.linkedTicketIds, (ticket as { id: string }).id])),
+      callEventIds: session.callEventIds,
       updatedAt: new Date().toISOString(),
     };
     this.store.saveSession(linkedSession);
@@ -155,6 +158,7 @@ export class SupportSessionsService {
       aiContextPacketIds: Array.from(
         new Set([...linkedSession.aiContextPacketIds, packet.id])
       ),
+      callEventIds: linkedSession.callEventIds,
       updatedAt: new Date().toISOString(),
     };
     this.store.saveSession(updatedSession);
@@ -419,6 +423,7 @@ export class SupportSessionsService {
     const tickets = this.store.getTicketReferences(identity.tenantId, sessionId);
     const contextPackets = this.store.getContextPackets(identity.tenantId, sessionId);
     const auditEvents = this.store.getAuditEvents(identity.tenantId, sessionId);
+    const callEvents = this.store.listCallEventsForSession(identity.tenantId, sessionId);
 
     const bundle = buildEvidenceBundle({
       tenantId: identity.tenantId as TenantId,
@@ -429,6 +434,7 @@ export class SupportSessionsService {
       tickets,
       contextPackets,
       auditEvents,
+      callEvents,
       connectorMode: this.connectorsService.getMode(),
     });
 
