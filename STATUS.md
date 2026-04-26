@@ -1,6 +1,6 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-26 19:17 CEST
+**Updated At:** 2026-04-26 19:22 CEST
 **Execution Mode:** operating
 **Project State:** bootstrap_complete
 **Public URL:** not configured
@@ -12,19 +12,18 @@
 - The first delivery target is MVP 1: ticket-aware AI cockpit with Zammad, SupportSession, AI Context Packet, AI chat, ticket summaries, draft/internal notes, writeback, and audit log.
 - The architecture is TypeScript-first for web/API/contracts, with later Go endpoint agent and Tauri operator companion.
 - AI is explicitly non-authoritative; policy, RBAC/ABAC, approvals, tool manifests, execution gateway, and audit decide what may happen.
-- Evidence-backed external planning inputs are recorded in `docs/EVIDENCE_LOG.md`.
-- `BACKLOG.md` now contains a complete milestone-level roadmap from foundation through MVP 5, integrations, governance, and production hardening.
+- `BACKLOG.md` contains a complete milestone-level roadmap; monorepo scaffold is initialized with apps, packages, infra placeholders, and baseline health/version contract.
 
 ## Immediate Priorities
 
-1. Scaffold the monorepo and typed contracts for SupportSession, AIContextPacket, audit, and ticketing adapters.
+1. Define MVP 1 contracts and database model for SupportSession, AIContextPacket, AuditEvent, TicketingAdapter, and tenant scoping.
 2. Build the MVP 1 backend foundation: NestJS, PostgreSQL/Prisma, mock model provider, mock/Zammad connector boundary, and audit log.
 3. Build the first cockpit screen around sessions, ticket context, AI context quality, and note drafting.
 
 ## Active Blockers
 
-- No Git repository is initialized at `/home/ff/Documents/Projects/SupportPlane`; branch, HEAD, and clean worktree status are not proven.
-- No runtime, database, queue, object storage, or app scaffold exists yet.
+- No product runtime, database, queue, object storage, or app server exists yet.
+- Scaffold typechecks pass but apps do not yet expose endpoints or UI.
 
 ## Notes
 

@@ -38,12 +38,13 @@ current_state:
   repository:
     canonical_path: /home/ff/Documents/Projects/SupportPlane
     path_status: observed
-    git_repository: false
-    branch: null
-    head: null
-    worktree_status: not_proven
+    git_repository: true
+    branch: main
+    head: c7765233f85e85acd8a44b00705c8f595433d5bd
+    worktree_status: clean
     notes:
-      - git commands failed because this directory is not currently a Git repository
+      - git repository initialized during BL-001
+      - initial commit is the root commit on main
 
   operating_mode:
     status: observed
@@ -79,16 +80,17 @@ current_state:
       - claiming full regulatory compliance in MVP
 
   runtime_identity:
-    status: unknown
+    status: scaffold_only
     repo_path: /home/ff/Documents/Projects/SupportPlane
-    branch: null
-    head: null
+    branch: main
+    head: c7765233f85e85acd8a44b00705c8f595433d5bd
     process_or_container: none
     port_or_base_url: none
-    rebuilt_in_current_slice: false
+    rebuilt_in_current_slice: true
     duplicate_runtimes_checked: false
     notes:
-      - no SupportPlane runtime exists yet
+      - no SupportPlane product runtime exists yet
+      - baseline health script exists at scripts/health.js and returns scaffold identity
       - runtime identity proof is required before UI/API acceptance
 
   environment:
@@ -122,7 +124,9 @@ current_state:
     status: observed
     current_top_level_entries:
       - .github
+      - .git
       - .gitignore
+      - .prettierrc
       - AGENTS.md
       - BACKLOG.md
       - LICENSE
@@ -135,15 +139,23 @@ current_state:
       - WORKLOG.md
       - docs
       - fixtures
+      - infra
+      - node_modules
+      - package.json
+      - package-lock.json
       - prompts
       - scripts
       - security_best_practices_report.md
+      - tsconfig.json
     current_entrypoints:
       - scripts/init_template.py
       - scripts/check_state_docs.py
+      - scripts/health.js
     current_test_setup:
       - scripts/check_state_docs.py
       - python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py
+      - npm run typecheck --workspaces --if-present
+      - npm run health
     planned_monorepo:
       apps:
         - apps/web
@@ -166,8 +178,9 @@ current_state:
       - MVP local self-hosting through Docker Compose or Podman-compatible compose
       - production later may use Kubernetes, managed PostgreSQL, NATS cluster, object storage, and OpenTelemetry
     contradictions:
-      - repository still contains template fixtures and no application code
+      - repository still contains template fixtures; application code is placeholder only
       - AGENTS template language still includes some generic workflow framing
+      - apps/web, apps/api, apps/worker are scaffold placeholders without frameworks installed yet
 
   target_architecture:
     frontend:

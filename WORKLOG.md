@@ -4,6 +4,50 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-26 - Monorepo scaffold initialized (BL-001)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** c7765233f85e85acd8a44b00705c8f595433d5bd
+**Worktree:** clean
+
+### What changed
+
+- Initialized Git repository on branch `main` with root commit `c776523`.
+- Created monorepo directory structure:
+  - `apps/web`, `apps/api`, `apps/worker`
+  - `packages/contracts`, `packages/policy`, `packages/connectors`, `packages/ai`, `packages/audit`, `packages/ui`
+  - `infra/docker-compose`, `infra/kubernetes`, `infra/terraform-later`
+- Added root `package.json` with npm workspaces, build/typecheck/lint/format/test/health scripts.
+- Added root `tsconfig.json`, `.prettierrc`, `eslint.config.mjs`.
+- Added per-workspace `package.json`, `tsconfig.json`, and `src/index.ts` placeholders.
+- Added `scripts/health.js` baseline health/version contract exposing service name, version, branch, HEAD, and timestamp.
+- Added `infra/docker-compose/docker-compose.yml` placeholder with Podman-compatible structure.
+- Updated `.gitignore` to include `dist/`.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md` to reflect completed scaffold.
+
+### Verification
+
+- `npm install` succeeded with 0 vulnerabilities.
+- `npm run health` returned valid JSON with branch `main` and head `c776523...`.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `git status --short --branch` showed clean worktree on `main`.
+
+### Evidence
+
+- Scaffold artifacts: `package.json`, `tsconfig.json`, `apps/`, `packages/`, `infra/`, `scripts/health.js`.
+
+### Remaining Risk
+
+- Apps do not yet have framework-specific code (Next.js, NestJS).
+- No product runtime, database, queue, or object storage is running.
+- Package build scripts use `tsc` only; bundling and framework integration will come in later slices.
+
 ## 2026-04-26 - Operating loop kickoff prompt added
 
 **Type:** workflow_prompt

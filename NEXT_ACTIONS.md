@@ -1,15 +1,10 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-26 18:40 CEST
+**Updated At:** 2026-04-26 19:22 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
-
-### P0 [BL-001] Initialize the application monorepo scaffold
-Owner: coding agent
-Next: create the SupportPlane monorepo skeleton with apps, packages, infra, package manager config, formatting, and baseline health/version contract
-Exit: repo has app/package directories, install/test commands, generated baseline contracts, and normal hygiene checks pass
 
 ### P0 [BL-002] Define MVP 1 contracts and database model
 Owner: coding agent
