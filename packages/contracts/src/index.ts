@@ -7,3 +7,4 @@ export * from './ai-context.js';
 export * from './screen-observation.js';
 export * from './policy.js';
 export * from './audit.js';
+export * from './connector.js';

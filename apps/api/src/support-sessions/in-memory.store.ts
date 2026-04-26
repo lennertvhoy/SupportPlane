@@ -1,82 +1,73 @@
 import type {
   SupportSession as SupportSessionShape,
+  TicketReference as TicketReferenceShape,
   AIContextPacket as AIContextPacketShape,
   AuditEvent as AuditEventShape,
-  TicketReference as TicketReferenceShape,
+  InternalNoteDraft as InternalNoteDraftShape,
 } from '@supportplane/contracts';
 
-/**
- * Simple in-memory store with explicit tenant-scoped keys.
- * This is intentionally naive; it will be replaced by Prisma/PostgreSQL
- * in a later slice.
- */
 export class InMemoryStore {
   private sessions = new Map<string, SupportSessionShape>();
   private ticketReferences = new Map<string, TicketReferenceShape[]>();
   private contextPackets = new Map<string, AIContextPacketShape[]>();
   private auditEvents = new Map<string, AuditEventShape[]>();
-
-  private key(tenantId: string, id: string): string {
-    return `${tenantId}:${id}`;
-  }
+  private drafts = new Map<string, InternalNoteDraftShape>();
 
   saveSession(session: SupportSessionShape): void {
-    this.sessions.set(this.key(session.tenantId, session.id), session);
+    this.sessions.set(`${session.tenantId}:${session.id}`, session);
   }
 
   getSession(tenantId: string, id: string): SupportSessionShape | undefined {
-    return this.sessions.get(this.key(tenantId, id));
-  }
-
-  saveTicketReference(sessionId: string, ticket: TicketReferenceShape): void {
-    const k = this.key(ticket.tenantId, sessionId);
-    const list = this.ticketReferences.get(k) ?? [];
-    const withoutDuplicate = list.filter((item) => item.id !== ticket.id);
-    this.ticketReferences.set(k, [...withoutDuplicate, ticket]);
-  }
-
-  getTicketReferences(
-    tenantId: string,
-    sessionId: string
-  ): TicketReferenceShape[] {
-    return this.ticketReferences.get(this.key(tenantId, sessionId)) ?? [];
-  }
-
-  saveContextPacket(packet: AIContextPacketShape): void {
-    const k = this.key(packet.tenantId, packet.sessionId);
-    const list = this.contextPackets.get(k) ?? [];
-    list.push(packet);
-    this.contextPackets.set(k, list);
-  }
-
-  getContextPackets(
-    tenantId: string,
-    sessionId: string
-  ): AIContextPacketShape[] {
-    return this.contextPackets.get(this.key(tenantId, sessionId)) ?? [];
-  }
-
-  saveAuditEvent(event: AuditEventShape): void {
-    const k = this.key(event.tenantId, event.sessionId ?? 'global');
-    const list = this.auditEvents.get(k) ?? [];
-    list.push(event);
-    this.auditEvents.set(k, list);
-  }
-
-  getAuditEvents(tenantId: string, sessionId: string): AuditEventShape[] {
-    return this.auditEvents.get(this.key(tenantId, sessionId)) ?? [];
+    return this.sessions.get(`${tenantId}:${id}`);
   }
 
   listSessions(tenantId: string): SupportSessionShape[] {
-    const result: SupportSessionShape[] = [];
-    for (const session of this.sessions.values()) {
-      if (session.tenantId === tenantId) {
-        result.push(session);
-      }
-    }
-    return result.sort(
-      (a, b) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    return Array.from(this.sessions.values())
+      .filter((s) => s.tenantId === tenantId)
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  saveTicketReference(sessionId: string, ticket: TicketReferenceShape): void {
+    const key = `${ticket.tenantId}:${sessionId}`;
+    const existing = this.ticketReferences.get(key) ?? [];
+    const next = existing.filter((t) => t.id !== ticket.id);
+    next.push(ticket);
+    this.ticketReferences.set(key, next);
+  }
+
+  getTicketReferences(tenantId: string, sessionId: string): TicketReferenceShape[] {
+    return this.ticketReferences.get(`${tenantId}:${sessionId}`) ?? [];
+  }
+
+  saveContextPacket(packet: AIContextPacketShape): void {
+    const key = `${packet.tenantId}:${packet.sessionId}`;
+    const existing = this.contextPackets.get(key) ?? [];
+    existing.push(packet);
+    this.contextPackets.set(key, existing);
+  }
+
+  getContextPackets(tenantId: string, sessionId: string): AIContextPacketShape[] {
+    return this.contextPackets.get(`${tenantId}:${sessionId}`) ?? [];
+  }
+
+  saveAuditEvent(event: AuditEventShape): void {
+    const key = `${event.tenantId}:${event.sessionId}`;
+    const existing = this.auditEvents.get(key) ?? [];
+    existing.push(event);
+    this.auditEvents.set(key, existing);
+  }
+
+  getAuditEvents(tenantId: string, sessionId: string): AuditEventShape[] {
+    return (this.auditEvents.get(`${tenantId}:${sessionId}`) ?? []).sort(
+      (a, b) => a.createdAt.localeCompare(b.createdAt)
     );
+  }
+
+  saveInternalNoteDraft(draft: InternalNoteDraftShape): void {
+    this.drafts.set(`${draft.tenantId}:${draft.id}`, draft);
+  }
+
+  getInternalNoteDraft(tenantId: string, draftId: string): InternalNoteDraftShape | undefined {
+    return this.drafts.get(`${tenantId}:${draftId}`);
   }
 }

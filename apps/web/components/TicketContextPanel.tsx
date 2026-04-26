@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, AlertCircle, Ticket, User, Mail, Tag } from 'lucide-react';
+import { Loader2, AlertCircle, Ticket, User, Mail, Tag, Globe } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
 import type { TicketReference, SupportSession } from '@/lib/api';
@@ -12,12 +12,14 @@ export function TicketContextPanel({
   loading,
   error,
   onLoad,
+  connectorMode,
 }: {
   session?: SupportSession;
   ticket?: TicketReference;
   loading: boolean;
   error: string | null;
   onLoad: (externalTicketId: string) => void;
+  connectorMode?: 'mock' | 'zammad';
 }) {
   const [ticketId, setTicketId] = useState('TICKET-101');
 
@@ -57,11 +59,16 @@ export function TicketContextPanel({
 
         {ticket && (
           <div className="rounded border border-cockpit-600 bg-cockpit-900/50">
-            <div className="flex items-center gap-2 border-b border-cockpit-700 px-3 py-2">
-              <Ticket size={14} className="text-accent" />
-              <span className="text-xs font-medium text-cockpit-300">
-                Mock Connector Data
-              </span>
+            <div className="flex items-center justify-between border-b border-cockpit-700 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <Ticket size={14} className="text-accent" />
+                <span className="text-xs font-medium text-cockpit-300">
+                  {connectorMode === 'zammad' ? 'Zammad Connector Data' : 'Mock Connector Data'}
+                </span>
+              </div>
+              <Badge variant={connectorMode === 'zammad' ? 'success' : 'warning'}>
+                {connectorMode === 'zammad' ? 'Zammad' : 'Mock'}
+              </Badge>
             </div>
             <div className="space-y-2 p-3">
               <div className="flex items-start justify-between gap-2">
@@ -91,8 +98,14 @@ export function TicketContextPanel({
                 </div>
               </div>
 
-              <div className="rounded bg-cockpit-800/60 px-2 py-1.5 text-xs text-cockpit-500">
-                Adapter: {ticket.adapterId}
+              <div className="flex items-center justify-between rounded bg-cockpit-800/60 px-2 py-1.5 text-xs text-cockpit-500">
+                <span>Adapter: {ticket.adapterId}</span>
+                {connectorMode === 'zammad' && (
+                  <span className="inline-flex items-center gap-1 text-emerald-400">
+                    <Globe size={10} />
+                    Live
+                  </span>
+                )}
               </div>
             </div>
           </div>

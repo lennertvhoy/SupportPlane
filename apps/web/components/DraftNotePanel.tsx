@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { AlertCircle, Bot, Loader2, Send } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
-import type { DraftSuggestionResponse, SupportSession } from '@/lib/api';
+import type { DraftSuggestionResponse, SupportSession, InternalNoteWritebackResult } from '@/lib/api';
 
 export function DraftNotePanel({
   session,
@@ -12,16 +12,23 @@ export function DraftNotePanel({
   loading,
   error,
   onGenerate,
+  onWriteback,
+  writebackResult,
+  writebackLoading,
 }: {
   session?: SupportSession;
   suggestion?: DraftSuggestionResponse;
   loading: boolean;
   error: string | null;
   onGenerate: (operatorInstructions?: string) => Promise<DraftSuggestionResponse | undefined>;
+  onWriteback?: (externalTicketId: string, body: string) => Promise<InternalNoteWritebackResult | undefined>;
+  writebackResult?: InternalNoteWritebackResult;
+  writebackLoading?: boolean;
 }) {
   const [draft, setDraft] = useState('');
   const [reviewed, setReviewed] = useState(false);
   const [operatorInstructions, setOperatorInstructions] = useState('');
+  const [externalTicketId, setExternalTicketId] = useState('TICKET-101');
 
   async function handleGenerate() {
     const response = await onGenerate(operatorInstructions || undefined);
@@ -31,11 +38,18 @@ export function DraftNotePanel({
     }
   }
 
+  async function handleWriteback() {
+    if (!onWriteback || !draft.trim()) return;
+    await onWriteback(externalTicketId.trim(), draft.trim());
+  }
+
+  const canWriteback = reviewed && draft.trim().length > 0;
+
   return (
     <Panel
       title="Draft Note"
       headerRight={
-        <Badge variant="warning">Mock only — no writeback</Badge>
+        <Badge variant="warning">Review required</Badge>
       }
     >
       {!session ? (
@@ -128,20 +142,68 @@ export function DraftNotePanel({
             </div>
           )}
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs text-cockpit-500">
-              <AlertCircle size={12} />
-              {draft.length} chars
+          <div className="rounded border border-cockpit-700 bg-cockpit-900/50 p-3">
+            <label className="mb-1 block text-xs font-medium text-cockpit-300">
+              External ticket ID for writeback
+            </label>
+            <input
+              value={externalTicketId}
+              onChange={(e) => setExternalTicketId(e.target.value)}
+              placeholder="TICKET-101"
+              className="w-full rounded border border-cockpit-600 bg-cockpit-950 px-3 py-2 text-xs text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+            />
+            <div className="mt-2 flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs text-cockpit-500">
+                <AlertCircle size={12} />
+                {draft.length} chars
+              </div>
+              <button
+                onClick={handleWriteback}
+                disabled={!canWriteback || writebackLoading}
+                className={`inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium ${
+                  canWriteback
+                    ? 'bg-accent text-white hover:bg-accent-dark'
+                    : 'bg-cockpit-700 text-cockpit-300 opacity-50 cursor-not-allowed'
+                } disabled:opacity-50`}
+                title={canWriteback ? 'Writeback to ticketing system' : 'Review and enter draft before writeback'}
+              >
+                {writebackLoading ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                {writebackResult?.success ? 'Writeback again' : 'Writeback'}
+              </button>
             </div>
-            <button
-              disabled={!reviewed || !draft.trim()}
-              className="inline-flex items-center gap-1.5 rounded bg-cockpit-700 px-3 py-1.5 text-xs font-medium text-cockpit-300 opacity-50 cursor-not-allowed"
-              title="Writeback is not implemented yet"
-            >
-              <Send size={12} />
-              Writeback (disabled)
-            </button>
           </div>
+
+          {writebackResult && (
+            <div className={`rounded border p-3 text-xs ${
+              writebackResult.success
+                ? 'border-emerald-700/40 bg-emerald-950/30'
+                : 'border-danger/30 bg-danger/10'
+            }`}>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">
+                  {writebackResult.success ? 'Writeback succeeded' : 'Writeback failed'}
+                </span>
+                <Badge variant={writebackResult.success ? 'success' : 'danger'}>
+                  {writebackResult.success ? 'OK' : 'Error'}
+                </Badge>
+              </div>
+              {writebackResult.externalArticleId && (
+                <div className="mt-1 text-cockpit-400">
+                  Article ID: {writebackResult.externalArticleId}
+                </div>
+              )}
+              {writebackResult.error && (
+                <div className="mt-1 text-danger">
+                  {writebackResult.error.message} ({writebackResult.error.code})
+                </div>
+              )}
+              {!writebackResult.success && !writebackResult.error && (
+                <div className="mt-1 text-cockpit-500">
+                  Mock writeback simulated. No real ticket was updated.
+                </div>
+              )}
+            </div>
+          )}
 
           {!reviewed && draft.trim().length > 0 && (
             <div className="flex items-center gap-2 rounded border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">

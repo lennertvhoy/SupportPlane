@@ -129,6 +129,28 @@ current_state:
           - api:4110
           - web:3200
         worker_status: placeholder_container_only
+    bl_007_status:
+      completed: true
+      scope: zammad_connector_boundary_read_draft_writeback_audit
+      contracts_package: packages/contracts
+      connectors_package: packages/connectors
+      api_app: apps/api
+      web_app: apps/web
+      validation: connector_tests_api_tests_web_client_tests_browser_verified
+      runtime:
+        connector_mode: mock_default
+        zammad_adapter: ZammadConnectorAdapter
+        mock_adapter: MockZammadConnectorAdapter
+        adapter_factory: createZammadAdapter
+        http_client: FetchZammadHttpClient
+        audit_events:
+          - connector_status_checked
+          - connector_tested
+          - zammad_ticket_loaded
+          - internal_note_drafted
+          - internal_note_writeback_attempted
+          - internal_note_writeback_succeeded
+          - internal_note_writeback_failed
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
       tickets, calls, screen context, endpoint diagnostics, and remote support

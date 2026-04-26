@@ -136,6 +136,7 @@ podman compose -f infra/docker-compose/compose.yaml down -v
 - **No real authentication:** Dev-only mock identity headers (`x-tenant-id`, `x-user-id`, `x-user-role`) are used.
 - **No real AI provider:** The AI gateway uses deterministic mock output.
 - **No real ticketing integration:** `MockTicketingAdapter` returns fixture data.
+- **Zammad connector is mock-only by default:** Set `ZAMMAD_CONNECTOR_MODE=zammad`, `ZAMMAD_BASE_URL`, and `ZAMMAD_API_TOKEN` to enable real integration. See `docs/ZAMMAD_CONNECTOR.md`.
 - **No worker runtime:** The worker container is a placeholder that sleeps; no background job processing exists yet.
 - **No production deployment claims:** This topology is for local development only.
 

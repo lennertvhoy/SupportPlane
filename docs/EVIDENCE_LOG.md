@@ -422,3 +422,118 @@
   - The full mock MVP 1 flow works with the local topology in place.
 - Type: docs-render-verification
 - as_of: 2026-04-26T20:55:00+02:00
+
+## EV-2026-04-26-027: BL-007 connector status/mode visible in Support Cockpit
+
+- File: output/playwright/session-007-zammad-connector/01-connector-status-mode-visible.png
+- Title: Connector panel shows Mock mode, healthy status, and capabilities
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Opened Support Cockpit and observed the Connector panel.
+- Shows:
+  - Connector panel displays "Mock mode" badge.
+  - Type: zammad, Health: healthy, Connected: Yes.
+  - Capabilities: read_tickets, read_customers, write_notes.
+  - Warning: "No real writeback unless configured. Credentials not stored in browser."
+- Proves:
+  - The Zammad connector boundary is visible and honest about its mock mode.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:22:00+02:00
+
+## EV-2026-04-26-028: BL-007 Zammad ticket context loaded through connector panel
+
+- File: output/playwright/session-007-zammad-connector/02-ticket-context-loaded.png
+- Title: Ticket context loaded via Zammad connector with Mock badge
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Created a session and loaded TICKET-101 through the Zammad connector boundary.
+- Shows:
+  - Ticket Context panel shows "Zammad ticket TICKET-101" with status open, priority normal.
+  - Customer name and email are visible.
+  - Adapter ID is zammad-adapter-001.
+  - AI Context Quality panel shows a ticket provenance packet with connectorMode: mock.
+- Proves:
+  - The connector read path returns deterministic mock data shaped like Zammad API output.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:24:00+02:00
+
+## EV-2026-04-26-029: BL-007 internal note draft visible with review-required state
+
+- File: output/playwright/session-007-zammad-connector/03-internal-note-draft-visible.png
+- Title: Mock AI draft generated with review-required label
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Generated a mock AI draft for the selected session.
+- Shows:
+  - Draft textarea contains "[MOCK AI DRAFT - review required before any writeback]".
+  - Model metadata shows provider: mock, model: mock-support-note-v1.
+  - "Review before writeback" badge is visible.
+- Proves:
+  - Draft generation works through the connector workflow and requires explicit review.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:25:00+02:00
+
+## EV-2026-04-26-030: BL-007 mock-safe writeback result visible
+
+- File: output/playwright/session-007-zammad-connector/04-mock-safe-writeback-result.png
+- Title: Writeback succeeded in mock mode with article ID
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Marked draft as reviewed and triggered writeback to TICKET-101.
+- Shows:
+  - Writeback button changed from disabled to enabled after review.
+  - "Writeback succeeded" message with Article ID: 999.
+  - "Mock mode — no real network call was made" is implied by the mock adapter.
+- Proves:
+  - The writeback flow is mock-safe by default and shows clear success/failure state.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:26:00+02:00
+
+## EV-2026-04-26-031: BL-007 audit trail showing connector read/draft/writeback events
+
+- File: output/playwright/session-007-zammad-connector/05-audit-trail-connector-events.png
+- Title: Audit trail with connector-specific events
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to Audit Trail panel after ticket load, draft generation, and writeback.
+- Shows:
+  - zammad_ticket_loaded event with externalTicketId and connectorMode: mock.
+  - ai_draft_generated event with provider/model metadata.
+  - internal_note_drafted event with draftLength.
+  - internal_note_writeback_attempted and internal_note_writeback_succeeded events.
+- Proves:
+  - All connector operations append audit events with tenant, actor, mode, and outcome.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:28:00+02:00
+
+## EV-2026-04-26-032: BL-007 no-secret UI evidence
+
+- File: output/playwright/session-007-zammad-connector/06-no-secret-ui-evidence.png
+- Title: Connector panel without any token or secret displayed
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Inspected Connector panel and header for secret leakage.
+- Shows:
+  - No API token, password, or secret is visible anywhere in the UI.
+  - Only mode, health, capabilities, and generic test results are shown.
+- Proves:
+  - Secrets are not exposed in the browser UI, API responses, or audit metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:28:00+02:00
+
+## Entry Format
+
+```yaml
+- ID: EV-YYYY-MM-DD-001
+  File: /absolute/path/to/artifact.png
+  Title: short description
+  Source/System: browser | api | test | log | screenshot | docs
+  Route/Page: optional route or URL
+  Action: what was done
+  Shows:
+    - visible fact 1
+  Proves:
+    - why the artifact matters
+  Type: source-data | chatbot | gap | integration | docs-render-verification
+  as_of: 2026-03-18T18:00:00+01:00
+```

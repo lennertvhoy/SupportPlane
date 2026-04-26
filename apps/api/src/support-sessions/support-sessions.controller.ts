@@ -49,6 +49,36 @@ export class SupportSessionsController {
     return this.service.loadTicketContext(identity, id, body.externalTicketId);
   }
 
+  @Post(':id/zammad/ticket-context')
+  async loadZammadTicketContext(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { externalTicketId: string }
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.loadTicketContext(identity, id, body.externalTicketId);
+  }
+
+  @Post(':id/zammad/internal-note-draft')
+  createInternalNoteDraft(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { externalTicketId: string; body: string; subject?: string }
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.createInternalNoteDraft(identity, id, body);
+  }
+
+  @Post(':id/zammad/internal-note-writeback')
+  async writebackInternalNote(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { draftId: string; externalTicketId: string; body: string }
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.writebackInternalNote(identity, id, body);
+  }
+
   @Post(':id/context-packets')
   createContextPacket(
     @Req() req: Request,

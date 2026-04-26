@@ -110,6 +110,47 @@ export interface DraftSuggestionResponse {
   generatedAt: string;
 }
 
+export interface ConnectorStatus {
+  mode: 'mock' | 'zammad';
+  health: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
+  adapterType: string;
+  capabilities: string[];
+  connected: boolean;
+  lastError?: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface ConnectorTestResult {
+  mode: 'mock' | 'zammad';
+  success: boolean;
+  latencyMs?: number;
+  error?: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface InternalNoteDraft {
+  id: string;
+  tenantId: string;
+  sessionId: string;
+  externalTicketId: string;
+  subject?: string;
+  body: string;
+  reviewed: boolean;
+  reviewerId?: string;
+  createdAt: string;
+}
+
+export interface InternalNoteWritebackResult {
+  success: boolean;
+  externalArticleId?: string;
+  error?: {
+    code: string;
+    message: string;
+    safeToDisplay: boolean;
+  };
+  metadata: Record<string, unknown>;
+}
+
 export interface ApiError {
   statusCode: number;
   error: string;
@@ -237,6 +278,57 @@ export const api = {
   ) =>
     apiFetch<DraftSuggestionResponse>(
       `/support-sessions/${sessionId}/draft-suggestion`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  // Connector endpoints
+  getConnectorStatus: (identity?: DevIdentity) =>
+    apiFetch<ConnectorStatus>(
+      '/connectors/zammad/status',
+      { method: 'GET' },
+      identity
+    ),
+
+  testConnector: (identity?: DevIdentity) =>
+    apiFetch<ConnectorTestResult>(
+      '/connectors/zammad/test',
+      { method: 'POST' },
+      identity
+    ),
+
+  loadZammadTicketContext: (
+    sessionId: string,
+    externalTicketId: string,
+    identity?: DevIdentity
+  ) =>
+    apiFetch<{
+      ticketReference: TicketReference;
+      contextPacket: AIContextPacket;
+      session: SupportSession;
+    }>(`/support-sessions/${sessionId}/zammad/ticket-context`, {
+      method: 'POST',
+      body: JSON.stringify({ externalTicketId }),
+    }, identity),
+
+  createInternalNoteDraft: (
+    sessionId: string,
+    body: { externalTicketId: string; body: string; subject?: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<InternalNoteDraft>(
+      `/support-sessions/${sessionId}/zammad/internal-note-draft`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  writebackInternalNote: (
+    sessionId: string,
+    body: { draftId: string; externalTicketId: string; body: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<InternalNoteWritebackResult>(
+      `/support-sessions/${sessionId}/zammad/internal-note-writeback`,
       { method: 'POST', body: JSON.stringify(body) },
       identity
     ),

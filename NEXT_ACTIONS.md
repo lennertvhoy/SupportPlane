@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-26 20:55 CEST
+**Updated At:** 2026-04-26 21:30 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-007] Add Zammad connector configuration, read operations, internal note draft/writeback, and connector audit events
+### P0 [BL-008] Add evidence bundle skeleton and exportable JSON/Markdown MVP format
 Owner: coding agent
-Next: implement Zammad connector read path and writeback boundary with audit events
-Exit: connector can read tickets/customers from a configured Zammad instance and write internal notes with audit coverage
+Next: implement evidence bundle model, export endpoint, and basic viewer
+Exit: operator can export a support session evidence bundle to JSON and Markdown
 
 ## Queue Rules
 

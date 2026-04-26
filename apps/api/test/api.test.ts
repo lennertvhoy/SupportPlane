@@ -278,3 +278,182 @@ describe('SupportPlane API', () => {
     assert.equal(modelEvent.metadata.contextHash, draft.body.contextHash);
   });
 });
+
+describe('Zammad connector endpoints', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('GET /connectors/zammad/status requires tenant identity', async () => {
+    const res = await supertest(server)
+      .get('/connectors/zammad/status')
+      .expect(400);
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('GET /connectors/zammad/status returns mock mode by default', async () => {
+    const res = await supertest(server)
+      .get('/connectors/zammad/status')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.strictEqual(res.body.mode, 'mock');
+    assert.strictEqual(res.body.adapterType, 'zammad');
+    assert.strictEqual(res.body.connected, true);
+    assert.ok(Array.isArray(res.body.capabilities));
+    assert.ok(res.body.capabilities.includes('read_tickets'));
+  });
+
+  it('POST /connectors/zammad/test returns success in mock mode', async () => {
+    const res = await supertest(server)
+      .post('/connectors/zammad/test')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(201);
+
+    assert.strictEqual(res.body.mode, 'mock');
+    assert.strictEqual(res.body.success, true);
+    assert.ok(typeof res.body.latencyMs === 'number');
+  });
+
+  it('POST /support-sessions/:id/zammad/ticket-context loads ticket with connector audit', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Zammad connector test' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${created.body.id}/zammad/ticket-context`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalTicketId: 'ZAMMAD-99' })
+      .expect(201);
+
+    assert.strictEqual(res.body.ticketReference.externalTicketId, 'ZAMMAD-99');
+    assert.ok(res.body.ticketReference.id.startsWith('zammad-tr-'));
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const connectorEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'zammad_ticket_loaded'
+    );
+    assert.ok(connectorEvent, 'zammad_ticket_loaded audit event should exist');
+    assert.strictEqual(connectorEvent.metadata.externalTicketId, 'ZAMMAD-99');
+    assert.strictEqual(connectorEvent.metadata.connectorMode, 'mock');
+  });
+
+  it('POST /support-sessions/:id/zammad/internal-note-draft creates a draft and audits', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Draft test' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${created.body.id}/zammad/internal-note-draft`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalTicketId: 'Z-1', body: 'Test draft body', subject: 'Test subject' })
+      .expect(201);
+
+    assert.strictEqual(res.body.externalTicketId, 'Z-1');
+    assert.strictEqual(res.body.body, 'Test draft body');
+    assert.strictEqual(res.body.reviewed, false);
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const draftEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'internal_note_drafted'
+    );
+    assert.ok(draftEvent, 'internal_note_drafted audit event should exist');
+    assert.strictEqual(draftEvent.metadata.externalTicketId, 'Z-1');
+  });
+
+  it('POST /support-sessions/:id/zammad/internal-note-writeback is mock-safe by default', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Writeback test' })
+      .expect(201);
+
+    const draft = await supertest(server)
+      .post(`/support-sessions/${created.body.id}/zammad/internal-note-draft`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalTicketId: 'Z-2', body: 'Draft for writeback' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${created.body.id}/zammad/internal-note-writeback`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ draftId: draft.body.id, externalTicketId: 'Z-2', body: 'Draft for writeback' })
+      .expect(201);
+
+    assert.strictEqual(res.body.success, true);
+    assert.ok(res.body.externalArticleId);
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const attemptEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'internal_note_writeback_attempted'
+    );
+    assert.ok(attemptEvent, 'writeback attempted audit event should exist');
+
+    const successEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'internal_note_writeback_succeeded'
+    );
+    assert.ok(successEvent, 'writeback succeeded audit event should exist');
+  });
+
+  it('connector endpoints enforce tenant isolation', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Isolation test' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/support-sessions/${created.body.id}/zammad/ticket-context`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .send({ externalTicketId: 'Z-1' })
+      .expect(404);
+  });
+
+  it('secrets are not exposed in connector status or errors', async () => {
+    const res = await supertest(server)
+      .get('/connectors/zammad/status')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const bodyStr = JSON.stringify(res.body);
+    assert.ok(!bodyStr.includes('apiToken'), 'apiToken must not be exposed');
+    assert.ok(!bodyStr.includes('secret'), 'secret must not be exposed');
+    assert.ok(!bodyStr.includes('token='), 'token must not be exposed');
+  });
+});

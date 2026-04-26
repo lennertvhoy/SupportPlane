@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
   SupportSessionStatus,
@@ -6,6 +6,8 @@ import {
   AIContextProvenance,
   AuditEventType,
   AuditActorType,
+  ConnectorMode,
+  InternalNoteWritebackResult,
   type SupportSession as SupportSessionShape,
   type AIContextPacket as AIContextPacketShape,
   type AuditEvent as AuditEventShape,
@@ -14,9 +16,14 @@ import {
   type AIContextPacketId,
   type AuditEventId,
   type TicketingAdapterId,
+  type InternalNoteDraft as InternalNoteDraftShape,
+  type TicketReference as TicketReferenceShape,
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
-import { MockTicketingAdapter } from '@supportplane/connectors';
+import {
+  createZammadAdapter,
+  type TicketingAdapterDriver,
+} from '@supportplane/connectors';
 import {
   createDefaultModelGateway,
   GenerateDraftResponse,
@@ -25,14 +32,25 @@ import {
 } from '@supportplane/ai';
 import { InMemoryStore } from './in-memory.store.js';
 import { type DevIdentity } from '../common/dev-identity.middleware.js';
+import { ConnectorsService } from '../connectors/connectors.service.js';
 
 @Injectable()
 export class SupportSessionsService {
   private readonly store = new InMemoryStore();
-  private readonly mockAdapter = new MockTicketingAdapter(
+  private readonly modelGateway = createDefaultModelGateway();
+  private readonly fallbackAdapter = createZammadAdapter(
+    ConnectorMode.enum.mock,
     'mock-adapter-001' as TicketingAdapterId
   );
-  private readonly modelGateway = createDefaultModelGateway();
+
+  constructor(
+    @Inject(ConnectorsService)
+    private readonly connectorsService: ConnectorsService
+  ) {}
+
+  private getAdapter(): TicketingAdapterDriver {
+    return this.connectorsService.getZammadAdapter() ?? this.fallbackAdapter;
+  }
 
   createSession(
     identity: DevIdentity,
@@ -91,32 +109,36 @@ export class SupportSessionsService {
     session: SupportSessionShape;
   }> {
     const session = this.getSession(identity, sessionId);
-    const ticket = await this.mockAdapter.getTicket(
+    const adapter = this.getAdapter();
+    const mode = this.connectorsService.getMode();
+
+    const ticket = await adapter.getTicket(
       identity.tenantId as TenantId,
       externalTicketId
     );
 
     const linkedSession: SupportSessionShape = {
       ...session,
-      linkedTicketIds: Array.from(new Set([...session.linkedTicketIds, ticket.id])),
+      linkedTicketIds: Array.from(new Set([...session.linkedTicketIds, (ticket as { id: string }).id])),
       updatedAt: new Date().toISOString(),
     };
     this.store.saveSession(linkedSession);
-    this.store.saveTicketReference(linkedSession.id, ticket);
+    this.store.saveTicketReference(linkedSession.id, ticket as TicketReferenceShape);
 
     const packet: AIContextPacketShape = {
       id: randomUUID() as AIContextPacketId,
       tenantId: identity.tenantId as TenantId,
       sessionId,
       provenance: AIContextProvenance.enum.ticket,
-      sourceTicketIds: [ticket.id],
-      sourceAdapterId: this.mockAdapter.getAdapterMetadata().id,
+      sourceTicketIds: [(ticket as { id: string }).id],
+      sourceAdapterId: (adapter.getAdapterMetadata?.().id as string) ?? 'unknown',
       payload: {
-        ticketSubject: ticket.subject,
-        ticketStatus: ticket.status,
-        ticketPriority: ticket.priority,
-        customerEmail: ticket.customerEmail,
-        customerName: ticket.customerName,
+        ticketSubject: (ticket as { subject: string }).subject,
+        ticketStatus: (ticket as { status: string }).status,
+        ticketPriority: (ticket as { priority: string }).priority,
+        customerEmail: (ticket as { customerEmail?: string }).customerEmail,
+        customerName: (ticket as { customerName?: string }).customerName,
+        connectorMode: mode,
       },
       redactionLog: [],
       createdAt: new Date().toISOString(),
@@ -136,8 +158,8 @@ export class SupportSessionsService {
       sessionId,
       AuditEventType.enum.ticket_linked,
       'ticket_reference',
-      ticket.id,
-      { externalTicketId }
+      (ticket as { id: string }).id,
+      { externalTicketId, connectorMode: mode, connectorType: adapter.adapterType }
     );
     this.appendAuditEvent(
       identity,
@@ -145,7 +167,15 @@ export class SupportSessionsService {
       AuditEventType.enum.ai_context_loaded,
       'ai_context_packet',
       packet.id,
-      { provenance: packet.provenance }
+      { provenance: packet.provenance, connectorMode: mode }
+    );
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.zammad_ticket_loaded,
+      'ticket_reference',
+      (ticket as { id: string }).id,
+      { externalTicketId, connectorMode: mode, connectorType: adapter.adapterType }
     );
 
     return { ticketReference: ticket, contextPacket: packet, session: updatedSession };
@@ -201,6 +231,121 @@ export class SupportSessionsService {
     );
 
     return response;
+  }
+
+  createInternalNoteDraft(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: { externalTicketId: string; body: string; subject?: string }
+  ): InternalNoteDraftShape {
+    this.getSession(identity, sessionId);
+    const mode = this.connectorsService.getMode();
+
+    const draft: InternalNoteDraftShape = {
+      id: randomUUID() as never,
+      tenantId: identity.tenantId as TenantId,
+      sessionId,
+      externalTicketId: dto.externalTicketId,
+      subject: dto.subject,
+      body: dto.body,
+      reviewed: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.store.saveInternalNoteDraft(draft);
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.internal_note_drafted,
+      'internal_note_draft',
+      draft.id,
+      {
+        externalTicketId: dto.externalTicketId,
+        connectorMode: mode,
+        draftLength: dto.body.length,
+      }
+    );
+
+    return draft;
+  }
+
+  async writebackInternalNote(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: { draftId: string; externalTicketId: string; body: string }
+  ): Promise<unknown> {
+    this.getSession(identity, sessionId);
+    const adapter = this.getAdapter();
+    const mode = this.connectorsService.getMode();
+
+    const draft = this.store.getInternalNoteDraft(identity.tenantId, dto.draftId);
+    if (!draft) {
+      throw new NotFoundException(`Draft ${dto.draftId} not found`);
+    }
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.internal_note_writeback_attempted,
+      'internal_note_draft',
+      dto.draftId,
+      {
+        externalTicketId: dto.externalTicketId,
+        connectorMode: mode,
+        connectorType: adapter.adapterType,
+      }
+    );
+
+    const result = await adapter.writeInternalNote(dto.externalTicketId, dto.body);
+    const typedResult = result as { success: boolean; externalArticleId?: string; error?: { code: string; message: string } };
+
+    if (typedResult.success) {
+      this.appendAuditEvent(
+        identity,
+        sessionId,
+        AuditEventType.enum.internal_note_writeback_succeeded,
+        'internal_note_draft',
+        dto.draftId,
+        {
+          externalTicketId: dto.externalTicketId,
+          externalArticleId: typedResult.externalArticleId,
+          connectorMode: mode,
+          connectorType: adapter.adapterType,
+        }
+      );
+    } else {
+      this.appendAuditEvent(
+        identity,
+        sessionId,
+        AuditEventType.enum.internal_note_writeback_failed,
+        'internal_note_draft',
+        dto.draftId,
+        {
+          externalTicketId: dto.externalTicketId,
+          connectorMode: mode,
+          connectorType: adapter.adapterType,
+          errorCode: typedResult.error?.code,
+          errorMessage: typedResult.error?.message,
+        }
+      );
+    }
+
+    return InternalNoteWritebackResult.parse({
+      success: typedResult.success,
+      externalArticleId: typedResult.externalArticleId,
+      error: typedResult.error
+        ? {
+            code: typedResult.error.code as never,
+            message: typedResult.error.message,
+            safeToDisplay: true,
+          }
+        : undefined,
+      metadata: {
+        connectorMode: mode,
+        connectorType: adapter.adapterType,
+      },
+    });
   }
 
   createContextPacket(

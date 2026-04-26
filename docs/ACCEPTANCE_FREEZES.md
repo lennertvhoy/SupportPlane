@@ -105,3 +105,45 @@ and must be protected from quiet regression.
 - Do not treat screenshots alone as an acceptance freeze.
 - Tie the accepted state to repo truth, runtime truth, and evidence truth.
 - If a later report conflicts with the freeze, prove runtime identity before drawing conclusions from git history.
+
+## AF-2026-04-26-003: Zammad connector boundary (BL-007)
+
+- ID: AF-2026-04-26-003
+- Milestone: Zammad connector configuration, read, draft, and mock-safe writeback
+- Scope: SupportPlane exposes a Zammad connector boundary with mock mode by default, configurable zammad mode via env, connector status/test endpoints, ticket context load through the connector, internal note draft generation, mock-safe writeback with review gate, and connector audit events visible in the audit trail.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: 8cf2c22
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /
+  - GET /connectors/zammad/status
+  - POST /connectors/zammad/test
+  - POST /support-sessions/:id/zammad/ticket-context
+  - POST /support-sessions/:id/zammad/internal-note-draft
+  - POST /support-sessions/:id/zammad/internal-note-writeback
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-26-027
+  - EV-2026-04-26-028
+  - EV-2026-04-26-029
+  - EV-2026-04-26-030
+  - EV-2026-04-26-031
+  - EV-2026-04-26-032
+- regression_guard:
+  - Connector panel must remain visible with mode, health, capabilities, and honest mock labels.
+  - Ticket context load must work through the Zammad connector boundary and append zammad_ticket_loaded audit events.
+  - Draft note generation must remain mock-only with review-required state.
+  - Writeback must be mock-safe by default and show success/failure state.
+  - Audit trail must display connector read, draft, writeback attempted, and writeback succeeded/failed events.
+  - Secrets must not be exposed in UI, API responses, or audit metadata.
+- Notes:
+  - No real Zammad API calls are made in mock mode.
+  - Real Zammad mode requires ZAMMAD_BASE_URL and ZAMMAD_API_TOKEN environment variables.
+  - The adapter is a typed boundary only; production-ready verification requires a real Zammad instance with documented evidence.

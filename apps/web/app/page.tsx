@@ -7,7 +7,8 @@ import { TicketContextPanel } from '@/components/TicketContextPanel';
 import { AiContextPanel } from '@/components/AiContextPanel';
 import { DraftNotePanel } from '@/components/DraftNotePanel';
 import { AuditTrailPanel } from '@/components/AuditTrailPanel';
-import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type DraftSuggestionResponse, ApiClientError } from '@/lib/api';
+import { ConnectorPanel } from '@/components/ConnectorPanel';
+import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, ApiClientError } from '@/lib/api';
 
 export default function CockpitPage() {
   const [sessions, setSessions] = useState<SupportSession[]>([]);
@@ -16,12 +17,15 @@ export default function CockpitPage() {
   const [packets, setPackets] = useState<AIContextPacket[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [draftSuggestion, setDraftSuggestion] = useState<DraftSuggestionResponse | undefined>(undefined);
+  const [writebackResult, setWritebackResult] = useState<InternalNoteWritebackResult | undefined>(undefined);
+  const [connectorStatus, setConnectorStatus] = useState<ConnectorStatus | undefined>(undefined);
 
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [ticketLoading, setTicketLoading] = useState(false);
   const [packetsLoading, setPacketsLoading] = useState(false);
   const [auditLoading, setAuditLoading] = useState(false);
   const [draftLoading, setDraftLoading] = useState(false);
+  const [writebackLoading, setWritebackLoading] = useState(false);
 
   const [sessionsError, setSessionsError] = useState<string | null>(null);
   const [ticketError, setTicketError] = useState<string | null>(null);
@@ -60,9 +64,19 @@ export default function CockpitPage() {
     }
   }, []);
 
+  const fetchConnectorStatus = useCallback(async () => {
+    try {
+      const s = await api.getConnectorStatus();
+      setConnectorStatus(s);
+    } catch {
+      // Non-fatal: connector status is decorative
+    }
+  }, []);
+
   useEffect(() => {
     fetchSessions();
-  }, [fetchSessions]);
+    fetchConnectorStatus();
+  }, [fetchSessions, fetchConnectorStatus]);
 
   const handleSelectSession = useCallback(
     async (session: SupportSession) => {
@@ -71,6 +85,7 @@ export default function CockpitPage() {
       setPackets([]);
       setAuditEvents([]);
       setDraftSuggestion(undefined);
+      setWritebackResult(undefined);
       setDraftError(null);
       await fetchSessionDetails(session);
     },
@@ -96,21 +111,21 @@ export default function CockpitPage() {
       setTicketLoading(true);
       setTicketError(null);
       try {
-        const result = await api.loadTicketContext(selectedSession.id, externalTicketId);
+        const result = await api.loadZammadTicketContext(selectedSession.id, externalTicketId);
         setTicket(result.ticketReference);
         setSelectedSession(result.session);
         setSessions((prev) =>
           prev.map((s) => (s.id === result.session.id ? result.session : s))
         );
-        // Refresh packets and audit after ticket load
         await fetchSessionDetails(result.session);
+        await fetchConnectorStatus();
       } catch (err) {
         setTicketError(err instanceof ApiClientError ? err.message : 'Failed to load ticket context');
       } finally {
         setTicketLoading(false);
       }
     },
-    [selectedSession, fetchSessionDetails]
+    [selectedSession, fetchSessionDetails, fetchConnectorStatus]
   );
 
   const handleAddManual = useCallback(
@@ -152,6 +167,39 @@ export default function CockpitPage() {
     [selectedSession, fetchSessionDetails]
   );
 
+  const handleWriteback = useCallback(
+    async (externalTicketId: string, body: string) => {
+      if (!selectedSession) return undefined;
+      setWritebackLoading(true);
+      try {
+        const draft = await api.createInternalNoteDraft(selectedSession.id, {
+          externalTicketId,
+          body,
+          subject: 'Internal note from SupportPlane',
+        });
+        const result = await api.writebackInternalNote(selectedSession.id, {
+          draftId: draft.id,
+          externalTicketId,
+          body,
+        });
+        setWritebackResult(result);
+        await fetchSessionDetails(selectedSession);
+        return result;
+      } catch (err) {
+        const message = err instanceof ApiClientError ? err.message : 'Writeback failed';
+        setWritebackResult({
+          success: false,
+          error: { code: 'UNKNOWN', message, safeToDisplay: true },
+          metadata: {},
+        });
+        return undefined;
+      } finally {
+        setWritebackLoading(false);
+      }
+    },
+    [selectedSession, fetchSessionDetails]
+  );
+
   return (
     <div className="flex h-screen flex-col">
       {/* Header */}
@@ -174,6 +222,15 @@ export default function CockpitPage() {
             <Cpu size={10} />
             API: localhost:4110
           </span>
+          {connectorStatus && (
+            <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
+              connectorStatus.mode === 'mock'
+                ? 'border-amber-700/40 bg-amber-900/30 text-amber-300'
+                : 'border-emerald-700/40 bg-emerald-900/30 text-emerald-300'
+            }`}>
+              {connectorStatus.mode === 'mock' ? 'Mock' : 'Zammad'} mode
+            </span>
+          )}
         </div>
       </header>
 
@@ -215,12 +272,14 @@ export default function CockpitPage() {
 
           {/* Panels grid */}
           <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+            <ConnectorPanel />
             <TicketContextPanel
               session={selectedSession}
               ticket={ticket}
               loading={ticketLoading}
               error={ticketError}
               onLoad={handleLoadTicket}
+              connectorMode={connectorStatus?.mode}
             />
             <AiContextPanel
               session={selectedSession}
@@ -235,6 +294,9 @@ export default function CockpitPage() {
               loading={draftLoading}
               error={draftError}
               onGenerate={handleGenerateDraft}
+              onWriteback={handleWriteback}
+              writebackResult={writebackResult}
+              writebackLoading={writebackLoading}
             />
             <AuditTrailPanel
               session={selectedSession}

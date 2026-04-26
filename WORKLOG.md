@@ -504,3 +504,85 @@ Use this file for dated session notes, verification summaries, and references to
 - Worker has no real runtime; the container is a placeholder.
 - Docker Compose compatibility is expected but was not directly verified in this slice.
 - `npm audit` reports 10 dependency vulnerabilities (8 moderate, 2 high); no safe non-breaking fix was available.
+
+## 2026-04-26 - Zammad connector boundary (BL-007)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Worktree:** clean after final commit
+
+### What changed
+
+- Extended `packages/contracts` with connector-specific Zod schemas in `src/connector.ts`:
+  - `ConnectorMode`, `ConnectorHealthStatus`, `ConnectorStatus`, `ConnectorTestResult`
+  - `ConnectorErrorCode`, `ConnectorError`
+  - `ZammadConfig`, `ConnectorConfig`
+  - `InternalNoteDraft`, `InternalNoteWritebackRequest`, `InternalNoteWritebackResult`
+  - `ConnectorAuditMetadata`
+- Extended `AuditEventType` enum with connector events:
+  - `connector_status_checked`, `connector_tested`, `zammad_ticket_loaded`
+  - `internal_note_drafted`, `internal_note_writeback_attempted`, `internal_note_writeback_succeeded`, `internal_note_writeback_failed`
+- Implemented `packages/connectors/src/zammad-http-client.ts` with `FetchZammadHttpClient` and `MockZammadHttpClient`.
+- Implemented `packages/connectors/src/zammad-adapter.ts` with:
+  - `ZammadConnectorAdapter` — real adapter with config validation, safe error normalization, ticket read, customer lookup, internal note writeback
+  - `MockZammadConnectorAdapter` — deterministic mock adapter for tests/local dev
+  - `createZammadAdapter(mode, adapterId)` factory
+- Updated `TicketingAdapterDriver` interface to include `getAdapterMetadata()`.
+- Added `apps/api/src/connectors/` module with `ConnectorsController`, `ConnectorsService`, and `ConnectorsModule`.
+- Added API endpoints:
+  - `GET /connectors/zammad/status`
+  - `POST /connectors/zammad/test`
+  - `POST /support-sessions/:id/zammad/ticket-context`
+  - `POST /support-sessions/:id/zammad/internal-note-draft`
+  - `POST /support-sessions/:id/zammad/internal-note-writeback`
+- Updated `SupportSessionsService` to use the connector adapter dynamically (mock by default), with connector audit events for all operations.
+- Updated `InMemoryStore` to persist internal note drafts.
+- Updated `apps/web/lib/api.ts` with connector API client methods.
+- Added `ConnectorPanel.tsx` component showing mode, health, capabilities, test result, and honest mock labels.
+- Updated `TicketContextPanel.tsx` to show connector mode badge (Mock/Zammad).
+- Updated `DraftNotePanel.tsx` with external ticket ID input, enabled writeback button after review, writeback result display, and mock-safe labels.
+- Updated `apps/web/app/page.tsx` to integrate connector status, ticket load, draft generation, and writeback flow.
+- Added `docs/ZAMMAD_CONNECTOR.md` with documented API assumptions, mock mode behavior, real mode configuration, secret handling, and testing instructions.
+- Updated `.env.example` with `ZAMMAD_CONNECTOR_MODE`, `ZAMMAD_BASE_URL`, and `ZAMMAD_API_TOKEN`.
+- Captured 6 browser screenshots in `output/playwright/session-007-zammad-connector/`.
+- Updated `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`, `STATUS.md`, `PROJECT_STATE.yaml`, and `NEXT_ACTIONS.md`.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 22/22 integration tests passed.
+- `npm test --workspace @supportplane/connectors` passed: 13/13 tests passed.
+- `npm test --workspace @supportplane/web` passed: 3/3 tests passed.
+- `npm test --workspace @supportplane/ai` passed: 3/3 tests passed.
+- `npm run build --workspace @supportplane/web` passed.
+- Runtime API verified at `http://localhost:4110/health` and connector endpoints.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Browser flow verified: connector status visible, ticket load via Zammad connector, mock draft generation, review checkbox, writeback success, and connector audit events in trail.
+- No secrets exposed in UI, API responses, or audit metadata.
+
+### Evidence
+
+- UI screenshots: `output/playwright/session-007-zammad-connector/01-connector-status-mode-visible.png`
+- UI screenshots: `output/playwright/session-007-zammad-connector/02-ticket-context-loaded.png`
+- UI screenshots: `output/playwright/session-007-zammad-connector/03-internal-note-draft-visible.png`
+- UI screenshots: `output/playwright/session-007-zammad-connector/04-mock-safe-writeback-result.png`
+- UI screenshots: `output/playwright/session-007-zammad-connector/05-audit-trail-connector-events.png`
+- UI screenshots: `output/playwright/session-007-zammad-connector/06-no-secret-ui-evidence.png`
+- Evidence refs: `EV-2026-04-26-027` through `EV-2026-04-26-032`.
+- Acceptance freeze: `AF-2026-04-26-003`.
+
+### Remaining Risk
+
+- The real `ZammadConnectorAdapter` uses documented but unverified Zammad API assumptions (ticket read via GET /api/v1/tickets/{id}, article creation via POST /api/v1/ticket_articles).
+- No real Zammad instance was available for direct integration verification in this slice.
+- In-memory store is not persistent; all runtime data is lost on restart.
+- No real authentication, database persistence, queue, object storage, or phone integration was implemented.
