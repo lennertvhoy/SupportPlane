@@ -2,6 +2,7 @@ import type {
   SupportSession as SupportSessionShape,
   AIContextPacket as AIContextPacketShape,
   AuditEvent as AuditEventShape,
+  TicketReference as TicketReferenceShape,
 } from '@supportplane/contracts';
 
 /**
@@ -11,6 +12,7 @@ import type {
  */
 export class InMemoryStore {
   private sessions = new Map<string, SupportSessionShape>();
+  private ticketReferences = new Map<string, TicketReferenceShape[]>();
   private contextPackets = new Map<string, AIContextPacketShape[]>();
   private auditEvents = new Map<string, AuditEventShape[]>();
 
@@ -24,6 +26,20 @@ export class InMemoryStore {
 
   getSession(tenantId: string, id: string): SupportSessionShape | undefined {
     return this.sessions.get(this.key(tenantId, id));
+  }
+
+  saveTicketReference(sessionId: string, ticket: TicketReferenceShape): void {
+    const k = this.key(ticket.tenantId, sessionId);
+    const list = this.ticketReferences.get(k) ?? [];
+    const withoutDuplicate = list.filter((item) => item.id !== ticket.id);
+    this.ticketReferences.set(k, [...withoutDuplicate, ticket]);
+  }
+
+  getTicketReferences(
+    tenantId: string,
+    sessionId: string
+  ): TicketReferenceShape[] {
+    return this.ticketReferences.get(this.key(tenantId, sessionId)) ?? [];
   }
 
   saveContextPacket(packet: AIContextPacketShape): void {

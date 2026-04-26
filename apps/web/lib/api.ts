@@ -82,6 +82,34 @@ export interface TicketReference {
   updatedAt: string;
 }
 
+export interface DraftSuggestionResponse {
+  draft: string;
+  provider: 'mock';
+  model: string;
+  prompt: {
+    id: string;
+    version: string;
+    purpose: string;
+  };
+  contextHash: string;
+  usage: {
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+    costEstimateUsd?: number;
+    latencyMs?: number;
+    placeholder: true;
+  };
+  safety: {
+    mockOnly: true;
+    externalCallMade: false;
+    policyChecks: string[];
+    reviewRequired: true;
+    writebackAllowed: false;
+  };
+  generatedAt: string;
+}
+
 export interface ApiError {
   statusCode: number;
   error: string;
@@ -196,6 +224,20 @@ export const api = {
     apiFetch<AuditEvent[]>(
       `/support-sessions/${sessionId}/audit-events`,
       { method: 'GET' },
+      identity
+    ),
+
+  generateDraftSuggestion: (
+    sessionId: string,
+    body: {
+      operatorInstructions?: string;
+      modelSelection?: { provider?: 'mock'; model?: string };
+    } = {},
+    identity?: DevIdentity
+  ) =>
+    apiFetch<DraftSuggestionResponse>(
+      `/support-sessions/${sessionId}/draft-suggestion`,
+      { method: 'POST', body: JSON.stringify(body) },
       identity
     ),
 };

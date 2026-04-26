@@ -5,7 +5,7 @@ import supertest from 'supertest';
 import type { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module.js';
 
-describe('SupportPlane API (BL-003)', () => {
+describe('SupportPlane API', () => {
   let app: INestApplication;
   let server: ReturnType<INestApplication['getHttpServer']>;
 
@@ -40,6 +40,16 @@ describe('SupportPlane API (BL-003)', () => {
       .send({ title: 'Test' })
       .expect(400);
     assert.ok(res.body.error.includes('x-user-id'));
+  });
+
+  it('POST /support-sessions/:id/draft-suggestion rejects missing tenant context', async () => {
+    const res = await supertest(server)
+      .post('/support-sessions/session-1/draft-suggestion')
+      .set('x-user-id', 'user-1')
+      .send({})
+      .expect(400);
+
+    assert.ok(res.body.error.includes('x-tenant-id'));
   });
 
   it('POST /support-sessions creates a session', async () => {
@@ -207,5 +217,64 @@ describe('SupportPlane API (BL-003)', () => {
       .set('x-tenant-id', 'tenant-b')
       .set('x-user-id', 'user-2')
       .expect(404);
+  });
+
+  it('POST /support-sessions/:id/draft-suggestion rejects unknown session', async () => {
+    await supertest(server)
+      .post('/support-sessions/not-a-session/draft-suggestion')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({})
+      .expect(404);
+  });
+
+  it('POST /support-sessions/:id/draft-suggestion returns mock model metadata and appends audit event', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Draft suggestion test' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/support-sessions/${created.body.id}/ticket-context`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalTicketId: 'TICKET-101' })
+      .expect(201);
+
+    const draft = await supertest(server)
+      .post(`/support-sessions/${created.body.id}/draft-suggestion`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({
+        operatorInstructions: 'Mention VPN troubleshooting.',
+        modelSelection: { provider: 'mock', model: 'mock-support-note-v1' },
+      })
+      .expect(201);
+
+    assert.match(draft.body.draft, /MOCK AI DRAFT/);
+    assert.equal(draft.body.provider, 'mock');
+    assert.equal(draft.body.model, 'mock-support-note-v1');
+    assert.equal(draft.body.prompt.version, 'mock-v1');
+    assert.ok(draft.body.contextHash);
+    assert.equal(draft.body.safety.mockOnly, true);
+    assert.equal(draft.body.safety.externalCallMade, false);
+    assert.equal(draft.body.safety.writebackAllowed, false);
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const modelEvent = audit.body.find(
+      (event: { eventType: string }) => event.eventType === 'ai_draft_generated'
+    );
+    assert.ok(modelEvent);
+    assert.equal(modelEvent.metadata.provider, 'mock');
+    assert.equal(modelEvent.metadata.model, 'mock-support-note-v1');
+    assert.equal(modelEvent.metadata.promptVersion, 'mock-v1');
+    assert.equal(modelEvent.metadata.contextHash, draft.body.contextHash);
   });
 });

@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-26 20:28 CEST
+**Updated At:** 2026-04-26 20:45 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-005] Add mock AI provider and model gateway abstraction
+### P0 [BL-006] Add local Docker Compose or Podman-compatible topology
 Owner: coding agent
-Next: implement mock provider with prompt/version/context hash metadata and a model gateway abstraction in packages/ai
-Exit: API endpoint accepts model selection, returns mock completion with metadata, and audit event is emitted
+Next: define local services for web, API, worker, PostgreSQL, NATS, and MinIO with safe development defaults
+Exit: local topology can start the scaffolded services and expose documented ports without claiming production readiness
 
 ## Queue Rules
 

@@ -7,7 +7,7 @@ import { TicketContextPanel } from '@/components/TicketContextPanel';
 import { AiContextPanel } from '@/components/AiContextPanel';
 import { DraftNotePanel } from '@/components/DraftNotePanel';
 import { AuditTrailPanel } from '@/components/AuditTrailPanel';
-import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, ApiClientError } from '@/lib/api';
+import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type DraftSuggestionResponse, ApiClientError } from '@/lib/api';
 
 export default function CockpitPage() {
   const [sessions, setSessions] = useState<SupportSession[]>([]);
@@ -15,15 +15,18 @@ export default function CockpitPage() {
   const [ticket, setTicket] = useState<TicketReference | undefined>(undefined);
   const [packets, setPackets] = useState<AIContextPacket[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
+  const [draftSuggestion, setDraftSuggestion] = useState<DraftSuggestionResponse | undefined>(undefined);
 
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [ticketLoading, setTicketLoading] = useState(false);
   const [packetsLoading, setPacketsLoading] = useState(false);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [draftLoading, setDraftLoading] = useState(false);
 
   const [sessionsError, setSessionsError] = useState<string | null>(null);
   const [ticketError, setTicketError] = useState<string | null>(null);
   const [packetsError, setPacketsError] = useState<string | null>(null);
+  const [draftError, setDraftError] = useState<string | null>(null);
 
   const fetchSessions = useCallback(async () => {
     setSessionsLoading(true);
@@ -67,6 +70,8 @@ export default function CockpitPage() {
       setTicket(undefined);
       setPackets([]);
       setAuditEvents([]);
+      setDraftSuggestion(undefined);
+      setDraftError(null);
       await fetchSessionDetails(session);
     },
     [fetchSessionDetails]
@@ -119,6 +124,29 @@ export default function CockpitPage() {
         await fetchSessionDetails(selectedSession);
       } catch (err) {
         setPacketsError(err instanceof ApiClientError ? err.message : 'Failed to add context');
+      }
+    },
+    [selectedSession, fetchSessionDetails]
+  );
+
+  const handleGenerateDraft = useCallback(
+    async (operatorInstructions?: string) => {
+      if (!selectedSession) return undefined;
+      setDraftLoading(true);
+      setDraftError(null);
+      try {
+        const response = await api.generateDraftSuggestion(selectedSession.id, {
+          operatorInstructions,
+          modelSelection: { provider: 'mock', model: 'mock-support-note-v1' },
+        });
+        setDraftSuggestion(response);
+        await fetchSessionDetails(selectedSession);
+        return response;
+      } catch (err) {
+        setDraftError(err instanceof ApiClientError ? err.message : 'Failed to generate mock draft');
+        return undefined;
+      } finally {
+        setDraftLoading(false);
       }
     },
     [selectedSession, fetchSessionDetails]
@@ -201,7 +229,13 @@ export default function CockpitPage() {
               error={packetsError}
               onAddManual={handleAddManual}
             />
-            <DraftNotePanel session={selectedSession} />
+            <DraftNotePanel
+              session={selectedSession}
+              suggestion={draftSuggestion}
+              loading={draftLoading}
+              error={draftError}
+              onGenerate={handleGenerateDraft}
+            />
             <AuditTrailPanel
               session={selectedSession}
               events={auditEvents}

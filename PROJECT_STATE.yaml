@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-26T20:28:00+02:00
+  updated_at: 2026-04-26T20:45:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -40,22 +40,24 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 5c8a488da87772f2de33a3fc636ac83deef86e41
-    worktree_status: clean
+    head: recorded_in_final_handoff
+    worktree_status: clean_after_final_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
       - BL-003 mock-first API slice committed
       - BL-004 support cockpit UI shell committed and closure verified
+      - BL-005 mock AI gateway and draft suggestion workflow implemented and committed
 
   operating_mode:
     status: observed
     mode: operating
     summary: >
       Bootstrap is complete. BL-002 contracts/schema, BL-003 mock-first API
-      slice, and BL-004 support cockpit UI shell are committed. The repository
-      contains a running NestJS API and Next.js web app with browser-verified
-      panels. No real database or external integrations exist yet.
+      slice, BL-004 support cockpit UI shell, and BL-005 mock AI draft
+      suggestion workflow are implemented. The repository contains a running
+      NestJS API and Next.js web app with browser-verified panels. No real
+      database, external ticketing integration, or real AI provider exists yet.
 
   project:
     name: SupportPlane
@@ -94,6 +96,18 @@ current_state:
           - Tailwind CSS
         api_client: apps/web/lib/api.ts
         mock_auth: dev_identity_headers
+    bl_005_status:
+      completed: true
+      scope: mock_ai_provider_and_model_gateway
+      ai_package: packages/ai
+      api_endpoint: POST /support-sessions/:id/draft-suggestion
+      validation: ai_unit_tests_api_tests_web_client_test_browser_verified
+      runtime:
+        provider: MockAiProvider
+        model_gateway: ModelGateway
+        deterministic: true
+        external_ai_calls: false
+        audit_event: ai_draft_generated
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
       tickets, calls, screen context, endpoint diagnostics, and remote support
@@ -119,7 +133,7 @@ current_state:
     status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: 5c8a488da87772f2de33a3fc636ac83deef86e41
+    head: recorded_in_final_handoff
     process_or_container:
       - node process (NestJS) on port 4110
       - node process (Next.js) on port 3200
@@ -131,6 +145,7 @@ current_state:
     notes:
       - NestJS API is running and verified via integration tests and curl
       - Next.js web app is running and verified via browser screenshots
+      - BL-005 draft suggestion workflow is verified in Chromium with model metadata and audit event visible
       - baseline health script exists at scripts/health.js and returns scaffold identity
       - runtime identity proof was collected for API endpoints and UI panels
 
@@ -224,6 +239,7 @@ current_state:
       - AGENTS template language still includes some generic workflow framing
       - apps/web and apps/worker are scaffold placeholders without frameworks installed yet
       - apps/api has NestJS runtime but uses in-memory store, not PostgreSQL
+      - packages/ai contains only deterministic mock provider behavior, not real provider integrations
 
   target_architecture:
     frontend:

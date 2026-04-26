@@ -67,6 +67,39 @@ and must be protected from quiet regression.
   - This is a mock-first UI shell. No real ticketing system, database, or AI provider is connected.
   - Dev-only CORS is configured on the API and must be replaced before production.
 
+## AF-2026-04-26-002: Mock AI draft suggestion workflow (BL-005)
+
+- ID: AF-2026-04-26-002
+- Milestone: Mock AI draft suggestion workflow
+- Scope: Support Cockpit can request a deterministic mock AI support-note draft from current session, ticket, and AI context packet data, display provider/model/prompt/context hash metadata, append a model usage audit event, and keep writeback disabled.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded_in_final_handoff
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /
+  - POST /support-sessions/:id/draft-suggestion
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-26-018
+  - EV-2026-04-26-019
+  - EV-2026-04-26-020
+  - EV-2026-04-26-021
+  - EV-2026-04-26-022
+- regression_guard:
+  - Draft suggestions must remain clearly labeled mock/dev-only until a real provider slice is explicitly accepted.
+  - Provider, model, prompt version, and context hash metadata must remain visible with generated drafts.
+  - Draft generation must append an audit event with model usage metadata.
+  - Writeback must remain disabled until an explicit ticket writeback backlog slice is implemented and accepted.
+- Notes:
+  - No real AI provider, external AI API call, production model governance, real authentication, database persistence, or ticket writeback is implemented.
+
 ## Guidance
 
 - Do not treat screenshots alone as an acceptance freeze.

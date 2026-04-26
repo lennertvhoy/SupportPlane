@@ -385,3 +385,57 @@ Use this file for dated session notes, verification summaries, and references to
 - Draft note panel does not persist or write back.
 - UI is not responsive for mobile; designed for desktop cockpit first.
 - No end-to-end tests for the UI yet.
+
+## 2026-04-26 - Mock AI provider and model gateway (BL-005)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean after final BL-005 commit
+
+### What changed
+
+- Implemented `packages/ai` with `ModelGateway`, `AiProvider`, `MockAiProvider`, request/response schemas, model selection, prompt/version metadata, context hash metadata, usage placeholder metadata, and safety placeholder metadata.
+- Added deterministic mock draft generation for support-note suggestions. The output explicitly labels itself as mock AI and requires review before writeback.
+- Extended audit contracts with `ai_draft_generated`.
+- Added `POST /support-sessions/:id/draft-suggestion` to the NestJS API.
+- Stored ticket references in the in-memory store for draft context assembly.
+- Updated session packet counts when context packets are created.
+- Added model usage audit metadata: provider, model, prompt ID/version, context hash, and mockOnly.
+- Updated the Support Cockpit Draft Note panel with mock draft generation, loading/error handling, visible model metadata, context hash display, and disabled writeback.
+- Added direct tests for the AI gateway/provider, API endpoint behavior, model usage audit event, and web API client response shape.
+- Captured five fresh Chromium screenshots in `output/playwright/session-005-mock-ai-gateway/`.
+- Updated state and evidence docs for BL-005.
+
+### Verification
+
+- `npm install` succeeded; npm reported 10 known vulnerabilities in installed dependencies.
+- `npm run lint` passed.
+- `npm run typecheck --workspaces --if-present` passed.
+- `npm run validate` passed.
+- `npm run health` passed.
+- `npm test --workspace @supportplane/ai` passed: 3/3 tests.
+- `npm test --workspace @supportplane/web` passed: 1/1 test.
+- `cd apps/api && npm test` passed: 14/14 API tests.
+- Runtime API verified at `http://localhost:4110/health`.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Browser flow verified: create session, load TICKET-101, generate mock draft, view model metadata, view `ai_draft_generated` audit event, confirm writeback remains disabled.
+
+### Evidence
+
+- UI screenshots: `output/playwright/session-005-mock-ai-gateway/01-cockpit-before-generating-draft.png`
+- UI screenshots: `output/playwright/session-005-mock-ai-gateway/02-generated-mock-ai-draft-visible.png`
+- UI screenshots: `output/playwright/session-005-mock-ai-gateway/03-model-metadata-visible.png`
+- UI screenshots: `output/playwright/session-005-mock-ai-gateway/04-audit-trail-ai-model-usage-event.png`
+- UI screenshots: `output/playwright/session-005-mock-ai-gateway/05-writeback-disabled-review-required.png`
+- Evidence refs: `EV-2026-04-26-018` through `EV-2026-04-26-022`.
+- Acceptance freeze: `AF-2026-04-26-002`.
+
+### Remaining Risk
+
+- The AI provider is deterministic mock-only; no real provider integration exists.
+- Usage metadata and safety metadata are placeholders, not production model governance.
+- In-memory store is not persistent; all runtime data is lost on restart.
+- No real authentication, database, queue, object storage, ticketing credentials, or ticket writeback exists.

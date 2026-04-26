@@ -1,5 +1,6 @@
 # Playwright MCP temporary files
 .playwright-mcp/
+.playwright-cli/
 .codex
 
 # OS files

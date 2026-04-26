@@ -262,6 +262,88 @@
 - Type: docs-render-verification
 - as_of: 2026-04-26T20:27:00+02:00
 
+## EV-2026-04-26-018: BL-005 cockpit before mock draft generation
+
+- File: output/playwright/session-005-mock-ai-gateway/01-cockpit-before-generating-draft.png
+- Title: Cockpit with ticket context loaded before mock AI draft
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Created a support session, loaded TICKET-101 through the mock ticketing adapter, and captured the cockpit before draft generation.
+- Shows:
+  - SupportPlane header with DEV / MOCK DATA and API localhost:4110 labels.
+  - Selected session with one ticket and one AI context packet.
+  - Ticket context and AI Context Quality panels populated from mock data.
+  - Draft panel ready to generate a mock draft with writeback disabled.
+- Proves:
+  - The BL-005 draft flow starts from tenant-scoped session and context data in the browser.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:41:00+02:00
+
+## EV-2026-04-26-019: BL-005 generated mock AI draft visible
+
+- File: output/playwright/session-005-mock-ai-gateway/02-generated-mock-ai-draft-visible.png
+- Title: Generated mock AI draft visible in draft textarea
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Entered operator instructions and requested a mock AI draft from the Support Cockpit.
+- Shows:
+  - Draft textarea contains text beginning with "MOCK AI DRAFT".
+  - The draft references the selected session, TICKET-101, ticket context fields, and operator instruction.
+  - The UI states mock AI only and review required.
+- Proves:
+  - The web UI calls the draft suggestion API and displays the returned mock completion.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:42:00+02:00
+
+## EV-2026-04-26-020: BL-005 model metadata visible
+
+- File: output/playwright/session-005-mock-ai-gateway/03-model-metadata-visible.png
+- Title: Mock model metadata visible
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Captured the model metadata block after draft generation.
+- Shows:
+  - Provider: mock.
+  - Model: mock-support-note-v1.
+  - Prompt version: mock-v1.
+  - Context hash value.
+  - Mock/dev-only and review-before-writeback labels.
+- Proves:
+  - Provider, model, prompt version, and context hash metadata are visible to the operator.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:42:00+02:00
+
+## EV-2026-04-26-021: BL-005 audit trail shows model usage event
+
+- File: output/playwright/session-005-mock-ai-gateway/04-audit-trail-ai-model-usage-event.png
+- Title: Audit trail with AI draft generation event
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Captured the audit trail after draft generation.
+- Shows:
+  - session_created, ticket_linked, ai_context_loaded, and ai_draft_generated events.
+  - ai_draft_generated metadata includes provider, model, promptVersion, contextHash, and mockOnly.
+- Proves:
+  - Draft generation appends and displays an audit event for mock model usage.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:42:00+02:00
+
+## EV-2026-04-26-022: BL-005 writeback remains disabled and review required
+
+- File: output/playwright/session-005-mock-ai-gateway/05-writeback-disabled-review-required.png
+- Title: Draft panel with disabled writeback after mock generation
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Captured the full draft panel after mock draft generation.
+- Shows:
+  - Mock draft in the textarea.
+  - Writeback button remains disabled.
+  - "Mark as reviewed before writeback" message and "Review before writeback" label are visible.
+- Proves:
+  - BL-005 did not implement ticket writeback and keeps human review explicit.
+- Type: docs-render-verification
+- as_of: 2026-04-26T20:42:00+02:00
+
 ## Entry Format
 
 ```yaml

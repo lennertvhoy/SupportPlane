@@ -17,6 +17,12 @@ import {
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import { MockTicketingAdapter } from '@supportplane/connectors';
+import {
+  createDefaultModelGateway,
+  GenerateDraftResponse,
+  ModelSelection,
+  type GenerateDraftResponse as GenerateDraftResponseShape,
+} from '@supportplane/ai';
 import { InMemoryStore } from './in-memory.store.js';
 import { type DevIdentity } from '../common/dev-identity.middleware.js';
 
@@ -26,6 +32,7 @@ export class SupportSessionsService {
   private readonly mockAdapter = new MockTicketingAdapter(
     'mock-adapter-001' as TicketingAdapterId
   );
+  private readonly modelGateway = createDefaultModelGateway();
 
   createSession(
     identity: DevIdentity,
@@ -89,12 +96,13 @@ export class SupportSessionsService {
       externalTicketId
     );
 
-    const updatedSession: SupportSessionShape = {
+    const linkedSession: SupportSessionShape = {
       ...session,
-      linkedTicketIds: [...session.linkedTicketIds, ticket.id],
+      linkedTicketIds: Array.from(new Set([...session.linkedTicketIds, ticket.id])),
       updatedAt: new Date().toISOString(),
     };
-    this.store.saveSession(updatedSession);
+    this.store.saveSession(linkedSession);
+    this.store.saveTicketReference(linkedSession.id, ticket);
 
     const packet: AIContextPacketShape = {
       id: randomUUID() as AIContextPacketId,
@@ -114,6 +122,14 @@ export class SupportSessionsService {
       createdAt: new Date().toISOString(),
     };
     this.store.saveContextPacket(packet);
+    const updatedSession: SupportSessionShape = {
+      ...linkedSession,
+      aiContextPacketIds: Array.from(
+        new Set([...linkedSession.aiContextPacketIds, packet.id])
+      ),
+      updatedAt: new Date().toISOString(),
+    };
+    this.store.saveSession(updatedSession);
 
     this.appendAuditEvent(
       identity,
@@ -135,12 +151,64 @@ export class SupportSessionsService {
     return { ticketReference: ticket, contextPacket: packet, session: updatedSession };
   }
 
+  async generateDraftSuggestion(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: {
+      operatorInstructions?: string;
+      modelSelection?: { provider?: string; model?: string };
+    }
+  ): Promise<GenerateDraftResponseShape> {
+    const session = this.getSession(identity, sessionId);
+    const contextPackets = this.store.getContextPackets(
+      identity.tenantId,
+      sessionId
+    );
+    const ticketReferences = this.store.getTicketReferences(
+      identity.tenantId,
+      sessionId
+    );
+    const modelSelection = dto.modelSelection
+      ? ModelSelection.parse(dto.modelSelection)
+      : undefined;
+
+    const response = GenerateDraftResponse.parse(
+      await this.modelGateway.generateDraft({
+        tenantId: identity.tenantId,
+        actorId: identity.userId,
+        session,
+        ticketReferences,
+        contextPackets,
+        operatorInstructions: dto.operatorInstructions,
+        modelSelection,
+      })
+    );
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.ai_draft_generated,
+      'support_session',
+      session.id,
+      {
+        provider: response.provider,
+        model: response.model,
+        promptId: response.prompt.id,
+        promptVersion: response.prompt.version,
+        contextHash: response.contextHash,
+        mockOnly: response.safety.mockOnly,
+      }
+    );
+
+    return response;
+  }
+
   createContextPacket(
     identity: DevIdentity,
     sessionId: string,
     dto: { provenance: string; payload: Record<string, unknown> }
   ): AIContextPacketShape {
-    this.getSession(identity, sessionId);
+    const session = this.getSession(identity, sessionId);
     const provenance = AIContextProvenance.parse(dto.provenance);
     const packet: AIContextPacketShape = {
       id: randomUUID() as AIContextPacketId,
@@ -153,6 +221,13 @@ export class SupportSessionsService {
       createdAt: new Date().toISOString(),
     };
     this.store.saveContextPacket(packet);
+    this.store.saveSession({
+      ...session,
+      aiContextPacketIds: Array.from(
+        new Set([...session.aiContextPacketIds, packet.id])
+      ),
+      updatedAt: new Date().toISOString(),
+    });
     this.appendAuditEvent(
       identity,
       sessionId,

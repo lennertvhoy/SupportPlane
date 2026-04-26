@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Inject,
   Post,
   Param,
   Body,
@@ -12,7 +13,10 @@ import { getDevIdentity } from '../common/dev-identity.middleware.js';
 
 @Controller('support-sessions')
 export class SupportSessionsController {
-  constructor(private readonly service: SupportSessionsService) {}
+  constructor(
+    @Inject(SupportSessionsService)
+    private readonly service: SupportSessionsService
+  ) {}
 
   @Get()
   list(@Req() req: Request) {
@@ -59,6 +63,20 @@ export class SupportSessionsController {
   getContextPackets(@Req() req: Request, @Param('id') id: string) {
     const identity = getDevIdentity(req);
     return this.service.getContextPackets(identity, id);
+  }
+
+  @Post(':id/draft-suggestion')
+  generateDraftSuggestion(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body()
+    body: {
+      operatorInstructions?: string;
+      modelSelection?: { provider?: string; model?: string };
+    }
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.generateDraftSuggestion(identity, id, body);
   }
 
   @Get(':id/audit-events')
