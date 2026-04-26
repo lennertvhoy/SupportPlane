@@ -10,6 +10,7 @@ import {
   ConnectorMode,
   InternalNoteWritebackResult,
   EvidenceBundleFormat,
+  GreetingSuggestionTone,
   type SupportSession as SupportSessionShape,
   type AIContextPacket as AIContextPacketShape,
   type AuditEvent as AuditEventShape,
@@ -32,6 +33,8 @@ import {
   GenerateDraftResponse,
   ModelSelection,
   type GenerateDraftResponse as GenerateDraftResponseShape,
+  GreetingSuggestionResponse,
+  type GreetingSuggestionResponse as GreetingSuggestionResponseShape,
 } from '@supportplane/ai';
 import { type DevIdentity } from '../common/dev-identity.middleware.js';
 import { ConnectorsService } from '../connectors/connectors.service.js';
@@ -236,6 +239,71 @@ export class SupportSessionsService {
         promptId: response.prompt.id,
         promptVersion: response.prompt.version,
         contextHash: response.contextHash,
+        mockOnly: response.safety.mockOnly,
+      }
+    );
+
+    return response;
+  }
+
+  async generateGreetingSuggestion(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: {
+      callEventId?: string;
+      tone?: string;
+      modelSelection?: { provider?: string; model?: string };
+    }
+  ): Promise<GreetingSuggestionResponseShape> {
+    const session = this.getSession(identity, sessionId);
+    const tone = dto.tone
+      ? GreetingSuggestionTone.parse(dto.tone)
+      : GreetingSuggestionTone.enum.professional;
+    const modelSelection = dto.modelSelection
+      ? ModelSelection.parse(dto.modelSelection)
+      : undefined;
+
+    let callEvent = undefined;
+    if (dto.callEventId) {
+      callEvent = this.store.getCallEvent(identity.tenantId, dto.callEventId);
+    }
+
+    const ticketReferences = this.store.getTicketReferences(
+      identity.tenantId,
+      sessionId
+    );
+
+    const response = GreetingSuggestionResponse.parse(
+      await this.modelGateway.generateGreeting({
+        tenantId: identity.tenantId,
+        actorId: identity.userId,
+        supportSessionId: session.id,
+        callEventId: callEvent?.id,
+        tone,
+        callerName: callEvent?.caller?.displayName,
+        normalizedPhoneNumber: callEvent?.caller?.normalizedNumber,
+        matchedTicketIds: callEvent?.callerMatch?.matchedTicketIds ?? ticketReferences.map((t) => t.externalTicketId),
+        matchedCustomerName: callEvent?.callerMatch?.customerName,
+        sessionTitle: session.title,
+        modelSelection,
+      })
+    );
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.greeting_suggestion_generated,
+      'support_session',
+      session.id,
+      {
+        provider: response.provider,
+        model: response.model,
+        promptId: response.prompt.id,
+        promptVersion: response.prompt.version,
+        contextHash: response.contextHash,
+        tone: response.suggestion.tone,
+        callEventId: callEvent?.id,
+        greetingText: response.suggestion.greetingText,
         mockOnly: response.safety.mockOnly,
       }
     );

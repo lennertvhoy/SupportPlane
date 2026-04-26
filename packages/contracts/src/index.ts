@@ -12,3 +12,4 @@ export * from './evidence-bundle.js';
 export * from './call.js';
 export * from './phone-normalization.js';
 export * from './caller-fixtures.js';
+export * from './greeting-suggestion.js';

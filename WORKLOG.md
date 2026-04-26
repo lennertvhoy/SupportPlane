@@ -853,3 +853,68 @@ Use this file for dated session notes, verification summaries, and references to
 - No real authentication; dev identity headers are explicitly mock-only.
 - `linked_to_existing` is a reserved enum value, not yet implemented.
 - No call console UI separate from the simulator panel yet (planned for BL-043).
+
+## 2026-04-26 - Suggested greeting generation from call plus ticket context (BL-042)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean after final commit
+
+### What changed
+
+- Added `packages/contracts/src/greeting-suggestion.ts` with Zod schemas for `GreetingSuggestionTone`, `GreetingSuggestionRequest`, `GreetingSuggestionResponse`, `GreetingSuggestion`, and `GreetingSuggestionContextSummary`.
+- Extended `AuditEventType` in `packages/contracts/src/audit.ts` with `greeting_suggestion_generated`.
+- Extended `EvidenceBundle` in `packages/contracts/src/evidence-bundle.ts` with `greetingSuggestions` array and `EvidenceBundleGreetingSuggestionSummary`.
+- Extended `packages/ai` mock AI gateway with `generateGreeting` on `ModelGateway`, `MockAiProvider`, and `AiProvider` interface.
+- Added deterministic mock greeting generation with `professional`, `friendly`, and `concise` tones, safe fallback for incomplete context, and mock/dev-only safety metadata.
+- Added `POST /support-sessions/:id/greeting-suggestion` endpoint to `apps/api` with tenant scoping, optional `callEventId`, tone selection, and audit event appending.
+- Updated `apps/api/src/evidence-bundle/evidence-bundle.builder.ts` to include greeting suggestion summaries and Markdown rendering.
+- Added `GreetingSuggestionPanel.tsx` to `apps/web/components/` with tone selector, generate button, greeting display, copy button, model metadata, and honest mock labels.
+- Integrated `GreetingSuggestionPanel` into `apps/web/app/page.tsx`.
+- Added `generateGreetingSuggestion` to `apps/web/lib/api.ts`.
+- Added contract tests, AI gateway tests, API integration tests, and web client tests for greeting suggestion behavior.
+- Captured browser screenshots in `output/playwright/session-042-greeting-suggestion/`.
+- Added `docs/GREETING_SUGGESTIONS.md` documenting the feature, API, UI flow, and limitations.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md`, `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`, `docs/CALL_SIMULATOR.md`, and `docs/EVIDENCE_BUNDLES.md`.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 57/57 integration tests passed (added 6 greeting suggestion tests).
+- `npm test --workspace @supportplane/contracts` passed: 21/21 tests passed.
+- `npm test --workspace @supportplane/web` passed: 10/10 tests passed.
+- `npm test --workspace @supportplane/ai` passed: 9/9 tests passed.
+- `npm test --workspace @supportplane/connectors` passed: 13/13 tests passed.
+- `npm run build --workspace @supportplane/web` passed.
+- Runtime API verified at `http://localhost:4110/health` and greeting suggestion endpoint.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Browser flow verified: simulate fake incoming call with auto-create, select auto-created session, generate greeting suggestion with professional tone, view generated greeting text, view model/prompt/context hash metadata, verify audit trail shows `greeting_suggestion_generated`, verify evidence bundle JSON includes `greetingSuggestions` with mock disclaimers.
+
+### Evidence
+
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/01-cockpit-initial-state.png`
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/02-matched-call-auto-created-session.png`
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/04-generated-greeting-text-visible.png`
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/05-model-prompt-context-metadata-visible.png`
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/06-audit-trail-greeting-suggestion-generated.png`
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/12-evidence-bundle-json-greeting-complete.png`
+- Evidence refs: `EV-2026-04-26-128` through `EV-2026-04-26-133`.
+- Acceptance freeze: `AF-2026-04-26-007`.
+
+### Remaining Risk
+
+- No real telephony or PBX integration exists; caller matching uses deterministic fixture data only.
+- No real AI provider connected; all greeting generation is deterministic mock output.
+- In-memory store is not persistent; all runtime data is lost on restart.
+- No real authentication; dev identity headers are explicitly mock-only.
+- No call console UI separate from the simulator panel yet (planned for BL-043).

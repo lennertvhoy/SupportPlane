@@ -216,6 +216,25 @@ current_state:
           - preferredPriority is now validated and used; invalid values return 400
           - UI includes priority dropdown and optional session title input
           - linked_to_existing is reserved/future work, documented in CALL_SIMULATOR.md
+    bl_042_status:
+      completed: true
+      scope: suggested_greeting_generation_from_call_plus_ticket_context
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      validation: contract_tests_api_tests_web_client_tests_browser_verified
+      runtime:
+        greeting_contracts: packages/contracts/src/greeting-suggestion.ts
+        ai_package: packages/ai
+        api_endpoints:
+          - POST /support-sessions/:id/greeting-suggestion
+        audit_events:
+          - greeting_suggestion_generated
+        store_type: in-memory
+        mock_telephony: true
+        mock_ai: true
+        honest_labels: true
+        evidence_bundle_includes: greetingSuggestions
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
       tickets, calls, screen context, endpoint diagnostics, and remote support

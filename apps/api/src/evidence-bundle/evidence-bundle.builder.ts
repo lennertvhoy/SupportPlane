@@ -14,6 +14,7 @@ import type {
   EvidenceBundleAiUsageSummary,
   EvidenceBundleAuditSummary,
   EvidenceBundleCallEventSummary,
+  EvidenceBundleGreetingSuggestionSummary,
   TenantId,
   SupportSessionId,
   EvidenceBundleId,
@@ -116,6 +117,24 @@ function toAiUsageSummaries(auditEvents: AuditEvent[]): EvidenceBundleAiUsageSum
     }));
 }
 
+function toGreetingSuggestionSummaries(auditEvents: AuditEvent[]): EvidenceBundleGreetingSuggestionSummary[] {
+  return auditEvents
+    .filter((e) => e.eventType === 'greeting_suggestion_generated')
+    .map((e) => ({
+      greetingText: (e.metadata.greetingText as string) ?? '[not captured in audit]',
+      tone: (e.metadata.tone as string) ?? 'professional',
+      provider: (e.metadata.provider as string) ?? 'unknown',
+      model: (e.metadata.model as string) ?? 'unknown',
+      promptVersion: (e.metadata.promptVersion as string) ?? undefined,
+      contextHash: (e.metadata.contextHash as string) ?? undefined,
+      mockOnly: (e.metadata.mockOnly as boolean) ?? true,
+      reviewRequired: true,
+      autoSend: false,
+      voiceEnabled: false,
+      generatedAt: e.createdAt,
+    }));
+}
+
 function toAuditSummaries(auditEvents: AuditEvent[]): EvidenceBundleAuditSummary[] {
   return auditEvents.map((e) => ({
     id: e.id,
@@ -170,6 +189,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     aiUsage: toAiUsageSummaries(input.auditEvents),
     connectorOperations: toConnectorOperationSummaries(input.auditEvents),
     callEvents: toCallEventSummaries(input.callEvents),
+    greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
     mockDevOnlyDisclaimers: [
       'This evidence bundle was generated from an in-memory mock development store.',
@@ -329,6 +349,28 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       if (c.linkedSessionId) lines.push(`- **Linked Session:** ${c.linkedSessionId}`);
       lines.push(`- **Mock/Dev-Only:** ${c.mockDevOnly}`);
       lines.push(`- **Started:** ${c.startedAt}`);
+      lines.push(``);
+    }
+  }
+  lines.push(``);
+
+  lines.push(`## Greeting Suggestions`);
+  lines.push(``);
+  if (bundle.greetingSuggestions.length === 0) {
+    lines.push(`*No greeting suggestions recorded.*`);
+  } else {
+    for (const g of bundle.greetingSuggestions) {
+      lines.push(`- **Tone:** ${g.tone}`);
+      lines.push(`- **Greeting:** ${g.greetingText}`);
+      lines.push(`- **Provider:** ${g.provider}`);
+      lines.push(`- **Model:** ${g.model}`);
+      if (g.promptVersion) lines.push(`- **Prompt Version:** ${g.promptVersion}`);
+      if (g.contextHash) lines.push(`- **Context Hash:** ${g.contextHash}`);
+      lines.push(`- **Mock Only:** ${g.mockOnly}`);
+      lines.push(`- **Review Required:** ${g.reviewRequired}`);
+      lines.push(`- **Auto Send:** ${g.autoSend}`);
+      lines.push(`- **Voice Enabled:** ${g.voiceEnabled}`);
+      if (g.generatedAt) lines.push(`- **Generated At:** ${g.generatedAt}`);
       lines.push(``);
     }
   }

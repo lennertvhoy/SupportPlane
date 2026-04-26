@@ -140,6 +140,43 @@ and must be protected from quiet regression.
   - Redaction is pattern-based, not zero-knowledge.
   - In-memory store means bundles are lost on API restart.
 
+## AF-2026-04-26-007: Suggested greeting generation from call plus ticket context (BL-042)
+
+- ID: AF-2026-04-26-007
+- Milestone: Suggested greeting generation from call plus ticket context
+- Scope: SupportPlane can generate a deterministic mock AI greeting suggestion for a support session based on caller and ticket context, display it in the Support Cockpit with tone selection, model metadata, and review-required labels, append a greeting_suggestion_generated audit event, and include greeting suggestion summaries in the evidence bundle with mock/disabled flags.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded_in_final_handoff
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /
+  - POST /support-sessions/:id/greeting-suggestion
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-26-128
+  - EV-2026-04-26-129
+  - EV-2026-04-26-130
+  - EV-2026-04-26-131
+  - EV-2026-04-26-132
+  - EV-2026-04-26-133
+- regression_guard:
+  - Greeting Suggestion panel must remain visible with tone selector, generate button, honest mock labels, and "Not spoken or sent automatically" disclaimer.
+  - POST /support-sessions/:id/greeting-suggestion must support tone selection, optional callEventId, and tenant-scoped session lookup.
+  - Greeting generation must append a greeting_suggestion_generated audit event with provider, model, prompt version, context hash, tone, and mockOnly.
+  - Evidence bundle must include greetingSuggestions array with text, tone, provider, model, and mock/disabled flags.
+  - Tenant isolation must be enforced for the greeting suggestion endpoint.
+- Notes:
+  - No real telephony, PBX, or phone provider integration exists.
+  - No real AI provider is connected; all greeting generation is deterministic mock output.
+  - In-memory store means all data is lost on API restart.
+
 ## Guidance
 
 - Do not treat screenshots alone as an acceptance freeze.

@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-26 23:24 CEST
+**Updated At:** 2026-04-26 23:50 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-042] Suggested greeting generation from call plus ticket context
+### P0 [BL-043] Call Console UI
 Owner: coding agent
-Next: implement mock greeting suggestion endpoint using call context and matched ticket data
-Exit: operator can request a suggested greeting for an auto-created call session
+Next: implement dedicated Call Console UI with caller card, matched customer, recent tickets, and notes
+Exit: operator can view a dedicated call console for matched incoming calls
 
 ## Queue Rules
 

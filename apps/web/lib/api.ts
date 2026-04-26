@@ -110,6 +110,59 @@ export interface DraftSuggestionResponse {
   generatedAt: string;
 }
 
+export interface GreetingSuggestionResponse {
+  suggestion: {
+    id: string;
+    tenantId: string;
+    supportSessionId: string;
+    callEventId?: string;
+    greetingText: string;
+    tone: 'professional' | 'friendly' | 'concise';
+    contextSummary: {
+      callerName?: string;
+      normalizedPhoneNumber?: string;
+      matchedTicketIds: string[];
+      matchedCustomerName?: string;
+      sessionTitle?: string;
+    };
+    metadata: {
+      provider: string;
+      model: string;
+      promptId?: string;
+      promptVersion?: string;
+      contextHash?: string;
+      mockDevOnly: true;
+      reviewRequired: true;
+      generatedAt: string;
+    };
+  };
+  provider: 'mock';
+  model: string;
+  prompt: {
+    id: string;
+    version: string;
+    purpose: string;
+  };
+  contextHash: string;
+  usage: {
+    inputTokens?: number;
+    outputTokens?: number;
+    totalTokens?: number;
+    costEstimateUsd?: number;
+    latencyMs?: number;
+    placeholder: true;
+  };
+  safety: {
+    mockOnly: true;
+    externalCallMade: false;
+    policyChecks: string[];
+    reviewRequired: true;
+    autoSend: false;
+    voiceEnabled: false;
+  };
+  generatedAt: string;
+}
+
 export interface ConnectorStatus {
   mode: 'mock' | 'zammad';
   health: 'healthy' | 'degraded' | 'unhealthy' | 'unknown';
@@ -450,6 +503,21 @@ export const api = {
   ) =>
     apiFetch<DraftSuggestionResponse>(
       `/support-sessions/${sessionId}/draft-suggestion`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  generateGreetingSuggestion: (
+    sessionId: string,
+    body: {
+      callEventId?: string;
+      tone?: 'professional' | 'friendly' | 'concise';
+      modelSelection?: { provider?: 'mock'; model?: string };
+    } = {},
+    identity?: DevIdentity
+  ) =>
+    apiFetch<GreetingSuggestionResponse>(
+      `/support-sessions/${sessionId}/greeting-suggestion`,
       { method: 'POST', body: JSON.stringify(body) },
       identity
     ),

@@ -79,6 +79,21 @@ export const EvidenceBundleAiUsageSummary = z.object({
 });
 export type EvidenceBundleAiUsageSummary = z.infer<typeof EvidenceBundleAiUsageSummary>;
 
+export const EvidenceBundleGreetingSuggestionSummary = z.object({
+  greetingText: z.string(),
+  tone: z.string(),
+  provider: z.string(),
+  model: z.string(),
+  promptVersion: z.string().optional(),
+  contextHash: z.string().optional(),
+  mockOnly: z.boolean(),
+  reviewRequired: z.boolean(),
+  autoSend: z.boolean(),
+  voiceEnabled: z.boolean(),
+  generatedAt: Timestamp.optional(),
+});
+export type EvidenceBundleGreetingSuggestionSummary = z.infer<typeof EvidenceBundleGreetingSuggestionSummary>;
+
 export const EvidenceBundleAuditSummary = z.object({
   id: EntityId,
   eventType: z.string(),
@@ -134,6 +149,7 @@ export const EvidenceBundle = z.object({
   aiUsage: z.array(EvidenceBundleAiUsageSummary),
   connectorOperations: z.array(EvidenceBundleConnectorOperationSummary),
   callEvents: z.array(EvidenceBundleCallEventSummary),
+  greetingSuggestions: z.array(EvidenceBundleGreetingSuggestionSummary).default([]),
   auditTimeline: z.array(EvidenceBundleAuditSummary),
   mockDevOnlyDisclaimers: z.array(z.string()),
   limitations: z.array(z.string()),

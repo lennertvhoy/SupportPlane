@@ -5,6 +5,7 @@ import {
   ModelGateway,
   computeContextHash,
   type GenerateDraftRequest,
+  type GreetingSuggestionRequest,
 } from './index.js';
 import type {
   AIContextPacketId,
@@ -96,5 +97,106 @@ describe('@supportplane/ai mock gateway', () => {
       computeContextHash({ b: 2, a: 1 }),
       computeContextHash({ a: 1, b: 2 })
     );
+  });
+});
+
+describe('@supportplane/ai greeting generation', () => {
+  const baseGreetingRequest: GreetingSuggestionRequest = {
+    tenantId: 'tenant-a',
+    actorId: 'user-1',
+    supportSessionId: 'session-1',
+    tone: 'professional',
+    callerName: 'Alice',
+    normalizedPhoneNumber: '+32 3 555 01 01',
+    matchedTicketIds: ['TICKET-101'],
+    matchedCustomerName: 'Acme BVBA',
+    sessionTitle: 'VPN issue',
+    modelSelection: { provider: 'mock', model: 'mock-greeting-v1' },
+  };
+
+  it('mock provider returns deterministic greeting and context hash', async () => {
+    const provider = new MockAiProvider();
+    const first = await provider.generateGreeting(baseGreetingRequest);
+    const second = await provider.generateGreeting(baseGreetingRequest);
+
+    assert.equal(first.suggestion.greetingText, second.suggestion.greetingText);
+    assert.equal(first.contextHash, second.contextHash);
+    assert.ok(first.suggestion.greetingText.length > 0);
+    assert.equal(first.safety.externalCallMade, false);
+    assert.equal(first.safety.autoSend, false);
+    assert.equal(first.safety.voiceEnabled, false);
+  });
+
+  it('model gateway includes provider, prompt version, and context hash metadata for greetings', async () => {
+    const gateway = new ModelGateway([new MockAiProvider()]);
+    const response = await gateway.generateGreeting(baseGreetingRequest);
+
+    assert.equal(response.provider, 'mock');
+    assert.equal(response.model, 'mock-greeting-v1');
+    assert.equal(response.prompt.id, 'greeting-suggestion');
+    assert.equal(response.prompt.version, 'mock-v1');
+    assert.ok(response.contextHash);
+    assert.equal(response.usage.placeholder, true);
+    assert.equal(response.safety.mockOnly, true);
+    assert.equal(response.safety.reviewRequired, true);
+  });
+
+  it('friendly tone generates a friendly greeting', async () => {
+    const provider = new MockAiProvider();
+    const response = await provider.generateGreeting({
+      ...baseGreetingRequest,
+      tone: 'friendly',
+    });
+    assert.match(response.suggestion.greetingText, /Hi/);
+  });
+
+  it('concise tone generates a short greeting', async () => {
+    const provider = new MockAiProvider();
+    const response = await provider.generateGreeting({
+      ...baseGreetingRequest,
+      tone: 'concise',
+    });
+    assert.ok(response.suggestion.greetingText.length < 80);
+  });
+
+  it('safe fallback when caller context is incomplete', async () => {
+    const provider = new MockAiProvider();
+    const response = await provider.generateGreeting({
+      tenantId: 'tenant-a',
+      actorId: 'user-1',
+      supportSessionId: 'session-1',
+      tone: 'professional',
+      matchedTicketIds: [],
+    });
+    assert.match(response.suggestion.greetingText, /the caller/);
+    assert.equal(response.suggestion.contextSummary.matchedTicketIds.length, 0);
+  });
+
+  it('does not break existing draft suggestion behavior', async () => {
+    const gateway = new ModelGateway([new MockAiProvider()]);
+    const draftResponse = await gateway.generateDraft({
+      tenantId: 'tenant-a',
+      actorId: 'user-1',
+      session: {
+        id: 'session-1' as SupportSessionId,
+        tenantId: 'tenant-a' as TenantId,
+        status: 'open',
+        priority: 'normal',
+        title: 'Test',
+        linkedTicketIds: [],
+        aiContextPacketIds: [],
+        screenObservationIds: [],
+        callEventIds: [],
+        auditEventIds: [],
+        startedAt: '2026-04-26T18:00:00.000Z',
+        createdAt: '2026-04-26T18:00:00.000Z',
+        updatedAt: '2026-04-26T18:00:00.000Z',
+      },
+      ticketReferences: [],
+      contextPackets: [],
+      operatorInstructions: 'Test',
+      modelSelection: { provider: 'mock', model: 'mock-support-note-v1' },
+    });
+    assert.match(draftResponse.draft, /MOCK AI DRAFT/);
   });
 });

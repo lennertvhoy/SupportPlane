@@ -1,13 +1,21 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import {
   AIContextPacket,
   SupportSession,
   TicketReference,
+  GreetingSuggestionTone,
+  GreetingSuggestionRequest,
+  GreetingSuggestionResponse,
   type AIContextPacket as AIContextPacketShape,
   type SupportSession as SupportSessionShape,
   type TicketReference as TicketReferenceShape,
+  type GreetingSuggestionRequest as GreetingSuggestionRequestShape,
+  type GreetingSuggestionResponse as GreetingSuggestionResponseShape,
 } from '@supportplane/contracts';
+
+export { GreetingSuggestionTone, GreetingSuggestionRequest, GreetingSuggestionResponse };
+export type { GreetingSuggestionRequestShape, GreetingSuggestionResponseShape };
 
 export const AI_VERSION = '0.1.0';
 
@@ -78,6 +86,7 @@ export type GenerateDraftResponse = z.infer<typeof GenerateDraftResponse>;
 export interface AiProvider {
   readonly id: AiProviderId;
   generateDraft(request: GenerateDraftRequest): Promise<GenerateDraftResponse>;
+  generateGreeting(request: GreetingSuggestionRequest): Promise<GreetingSuggestionResponse>;
 }
 
 export class ModelGateway {
@@ -97,15 +106,36 @@ export class ModelGateway {
       modelSelection: selection,
     });
   }
+
+  async generateGreeting(
+    input: GreetingSuggestionRequest
+  ): Promise<GreetingSuggestionResponse> {
+    const request = GreetingSuggestionRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const provider = this.providers.find((p) => p.id === selection.provider);
+    if (!provider) {
+      throw new Error(`AI provider ${selection.provider} is not configured`);
+    }
+    return provider.generateGreeting({
+      ...request,
+      modelSelection: selection,
+    });
+  }
 }
 
 export class MockAiProvider implements AiProvider {
   readonly id = 'mock' as const;
 
-  private readonly prompt: PromptTemplate = {
+  private readonly draftPrompt: PromptTemplate = {
     id: 'support-note-draft',
     version: 'mock-v1',
     purpose: 'Draft a reviewable internal support note from session context.',
+  };
+
+  private readonly greetingPrompt: PromptTemplate = {
+    id: 'greeting-suggestion',
+    version: 'mock-v1',
+    purpose: 'Suggest a safe, reviewable greeting for a support agent based on caller and ticket context.',
   };
 
   async generateDraft(
@@ -118,7 +148,7 @@ export class MockAiProvider implements AiProvider {
       ticketReferences: request.ticketReferences,
       contextPackets: request.contextPackets,
       operatorInstructions: request.operatorInstructions ?? '',
-      prompt: this.prompt,
+      prompt: this.draftPrompt,
     });
 
     return GenerateDraftResponse.parse({
@@ -130,7 +160,7 @@ export class MockAiProvider implements AiProvider {
       ),
       provider: this.id,
       model: selection.model,
-      prompt: this.prompt,
+      prompt: this.draftPrompt,
       contextHash,
       usage: {
         inputTokens: undefined,
@@ -146,6 +176,76 @@ export class MockAiProvider implements AiProvider {
         policyChecks: ['mock_provider_only', 'review_required', 'writeback_disabled'],
         reviewRequired: true,
         writebackAllowed: false,
+      },
+      generatedAt: new Date().toISOString(),
+    });
+  }
+
+  async generateGreeting(
+    input: GreetingSuggestionRequest
+  ): Promise<GreetingSuggestionResponse> {
+    const request = GreetingSuggestionRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const contextHash = computeContextHash({
+      tenantId: request.tenantId,
+      supportSessionId: request.supportSessionId,
+      callEventId: request.callEventId,
+      tone: request.tone,
+      callerName: request.callerName,
+      normalizedPhoneNumber: request.normalizedPhoneNumber,
+      matchedTicketIds: request.matchedTicketIds,
+      matchedCustomerName: request.matchedCustomerName,
+      sessionTitle: request.sessionTitle,
+      prompt: this.greetingPrompt,
+    });
+
+    const greetingText = buildMockGreeting(request);
+
+    return GreetingSuggestionResponse.parse({
+      suggestion: {
+        id: randomUUID() as never,
+        tenantId: request.tenantId,
+        supportSessionId: request.supportSessionId,
+        callEventId: request.callEventId,
+        greetingText,
+        tone: request.tone,
+        contextSummary: {
+          callerName: request.callerName,
+          normalizedPhoneNumber: request.normalizedPhoneNumber,
+          matchedTicketIds: request.matchedTicketIds,
+          matchedCustomerName: request.matchedCustomerName,
+          sessionTitle: request.sessionTitle,
+        },
+        metadata: {
+          provider: this.id,
+          model: selection.model,
+          promptId: this.greetingPrompt.id,
+          promptVersion: this.greetingPrompt.version,
+          contextHash,
+          mockDevOnly: true,
+          reviewRequired: true,
+          generatedAt: new Date().toISOString(),
+        },
+      },
+      provider: this.id,
+      model: selection.model,
+      prompt: this.greetingPrompt,
+      contextHash,
+      usage: {
+        inputTokens: undefined,
+        outputTokens: undefined,
+        totalTokens: undefined,
+        costEstimateUsd: undefined,
+        latencyMs: 0,
+        placeholder: true,
+      },
+      safety: {
+        mockOnly: true,
+        externalCallMade: false,
+        policyChecks: ['mock_provider_only', 'review_required', 'auto_send_disabled', 'voice_disabled'],
+        reviewRequired: true,
+        autoSend: false,
+        voiceEnabled: false,
       },
       generatedAt: new Date().toISOString(),
     });
@@ -187,6 +287,27 @@ function buildMockDraft(
     instructionLine,
     'Suggested internal note: Reviewed the available mock SupportPlane context, captured the customer issue, and prepared next-step guidance for a human operator to verify before any ticket update.',
   ].join('\n');
+}
+
+function buildMockGreeting(request: GreetingSuggestionRequestShape): string {
+  const customer = request.matchedCustomerName ?? request.callerName ?? 'the caller';
+  const tone = request.tone;
+
+  if (tone === 'friendly') {
+    return `Hi ${customer}! This is SupportPlane. I see you're calling in — thanks for reaching out. I'm here to help with whatever you need today.`;
+  }
+
+  if (tone === 'concise') {
+    return `Good day, ${customer}. SupportPlane here. How can I assist?`;
+  }
+
+  // professional (default)
+  const ticketHint =
+    request.matchedTicketIds.length > 0
+      ? ` I can see we have ${request.matchedTicketIds.length} open ticket(s) on file.`
+      : '';
+
+  return `Good day, ${customer}. Thank you for calling SupportPlane.${ticketHint} My name is the assigned support agent, and I'll be assisting you today. How may I help?`;
 }
 
 function stableStringify(value: unknown): string {

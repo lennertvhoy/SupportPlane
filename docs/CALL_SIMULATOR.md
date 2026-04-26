@@ -123,11 +123,23 @@ The following audit events are emitted during the fake incoming call flow:
 
 Future implementation may allow an incoming call to link to an existing open session for the same matched caller instead of always creating a new one. Until that slice is implemented, `linked_to_existing` is a contract placeholder only.
 
+## Greeting suggestion from matched calls
+
+When a matched incoming call auto-creates or is linked to a support session, the operator can request a suggested greeting:
+
+1. Select the session in the Support Cockpit.
+2. Open the **Greeting Suggestion** panel.
+3. Choose a tone: `professional`, `friendly`, or `concise`.
+4. Click **Generate suggested greeting**.
+5. Review the generated text, model metadata, and context hash.
+6. Copy or manually edit the greeting before using it.
+
+The greeting is never spoken or sent automatically. It is a mock-AI suggestion only.
+
 ## Future path toward Call Console UI
 
-BL-041 completes the foundational auto-creation flow. The next slices toward a richer Call Console UI include:
+BL-041 and BL-042 complete the foundational auto-creation and greeting suggestion flows. The next slices toward a richer Call Console UI include:
 
-- **BL-042:** Suggested greeting generation from call plus ticket context
 - **BL-043:** Dedicated Call Console UI with caller card, matched customer, recent tickets, and real-time notes
 - **BL-044:** Post-call summary review and ticket note draft workflow
 - **BL-045:** End-to-end call simulator demo fixtures and smoke tests

@@ -10,7 +10,8 @@ import { AuditTrailPanel } from '@/components/AuditTrailPanel';
 import { ConnectorPanel } from '@/components/ConnectorPanel';
 import { EvidenceBundlePanel } from '@/components/EvidenceBundlePanel';
 import { CallSimulatorPanel } from '@/components/CallSimulatorPanel';
-import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, ApiClientError } from '@/lib/api';
+import { GreetingSuggestionPanel } from '@/components/GreetingSuggestionPanel';
+import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, type GreetingSuggestionResponse, ApiClientError } from '@/lib/api';
 
 export default function CockpitPage() {
   const [sessions, setSessions] = useState<SupportSession[]>([]);
@@ -19,6 +20,7 @@ export default function CockpitPage() {
   const [packets, setPackets] = useState<AIContextPacket[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [draftSuggestion, setDraftSuggestion] = useState<DraftSuggestionResponse | undefined>(undefined);
+  const [greetingSuggestion, setGreetingSuggestion] = useState<GreetingSuggestionResponse | undefined>(undefined);
   const [writebackResult, setWritebackResult] = useState<InternalNoteWritebackResult | undefined>(undefined);
   const [connectorStatus, setConnectorStatus] = useState<ConnectorStatus | undefined>(undefined);
   const [evidenceBundle, setEvidenceBundle] = useState<EvidenceBundleExportResponse | undefined>(undefined);
@@ -32,12 +34,14 @@ export default function CockpitPage() {
   const [packetsLoading, setPacketsLoading] = useState(false);
   const [auditLoading, setAuditLoading] = useState(false);
   const [draftLoading, setDraftLoading] = useState(false);
+  const [greetingLoading, setGreetingLoading] = useState(false);
   const [writebackLoading, setWritebackLoading] = useState(false);
 
   const [sessionsError, setSessionsError] = useState<string | null>(null);
   const [ticketError, setTicketError] = useState<string | null>(null);
   const [packetsError, setPacketsError] = useState<string | null>(null);
   const [draftError, setDraftError] = useState<string | null>(null);
+  const [greetingError, setGreetingError] = useState<string | null>(null);
 
   const fetchSessions = useCallback(async () => {
     setSessionsLoading(true);
@@ -102,8 +106,10 @@ export default function CockpitPage() {
       setPackets([]);
       setAuditEvents([]);
       setDraftSuggestion(undefined);
+      setGreetingSuggestion(undefined);
       setWritebackResult(undefined);
       setDraftError(null);
+      setGreetingError(null);
       setEvidenceBundle(undefined);
       setEvidenceBundleMarkdown(undefined);
       setEvidenceBundleError(null);
@@ -201,6 +207,30 @@ export default function CockpitPage() {
         return undefined;
       } finally {
         setDraftLoading(false);
+      }
+    },
+    [selectedSession, fetchSessionDetails]
+  );
+
+  const handleGenerateGreeting = useCallback(
+    async (tone: 'professional' | 'friendly' | 'concise', callEventId?: string) => {
+      if (!selectedSession) return undefined;
+      setGreetingLoading(true);
+      setGreetingError(null);
+      try {
+        const response = await api.generateGreetingSuggestion(selectedSession.id, {
+          tone,
+          callEventId,
+          modelSelection: { provider: 'mock', model: 'mock-greeting-v1' },
+        });
+        setGreetingSuggestion(response);
+        await fetchSessionDetails(selectedSession);
+        return response;
+      } catch (err) {
+        setGreetingError(err instanceof ApiClientError ? err.message : 'Failed to generate greeting suggestion');
+        return undefined;
+      } finally {
+        setGreetingLoading(false);
       }
     },
     [selectedSession, fetchSessionDetails]
@@ -350,6 +380,13 @@ export default function CockpitPage() {
               onWriteback={handleWriteback}
               writebackResult={writebackResult}
               writebackLoading={writebackLoading}
+            />
+            <GreetingSuggestionPanel
+              session={selectedSession}
+              suggestion={greetingSuggestion}
+              loading={greetingLoading}
+              error={greetingError}
+              onGenerate={handleGenerateGreeting}
             />
             <AuditTrailPanel
               session={selectedSession}

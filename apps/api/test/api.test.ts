@@ -976,3 +976,151 @@ describe('Call simulator endpoints', () => {
     assert.ok(res.body.message.includes('Invalid preferredPriority'));
   });
 });
+
+describe('Greeting suggestion endpoints', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('POST /support-sessions/:id/greeting-suggestion rejects missing tenant identity', async () => {
+    const res = await supertest(server)
+      .post('/support-sessions/session-1/greeting-suggestion')
+      .set('x-user-id', 'user-1')
+      .send({})
+      .expect(400);
+
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('POST /support-sessions/:id/greeting-suggestion rejects cross-tenant session access', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Greeting isolation test' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/support-sessions/${created.body.id}/greeting-suggestion`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .send({})
+      .expect(404);
+  });
+
+  it('POST /support-sessions/:id/greeting-suggestion works with a linked call and session', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Greeting test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-GREET-1', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/greeting-suggestion`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ callEventId: call.body.callEvent.id, tone: 'friendly' })
+      .expect(201);
+
+    assert.ok(res.body.suggestion.greetingText);
+    assert.strictEqual(res.body.suggestion.tone, 'friendly');
+    assert.strictEqual(res.body.provider, 'mock');
+    assert.ok(res.body.contextHash);
+    assert.strictEqual(res.body.safety.mockOnly, true);
+    assert.strictEqual(res.body.safety.autoSend, false);
+    assert.strictEqual(res.body.safety.voiceEnabled, false);
+  });
+
+  it('POST /support-sessions/:id/greeting-suggestion works with incomplete context using safe fallback', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Greeting fallback test' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/greeting-suggestion`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ tone: 'concise' })
+      .expect(201);
+
+    assert.ok(res.body.suggestion.greetingText);
+    assert.strictEqual(res.body.suggestion.tone, 'concise');
+    assert.match(res.body.suggestion.greetingText, /the caller|SupportPlane/);
+  });
+
+  it('greeting suggestion appends greeting_suggestion_generated audit event', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Greeting audit test' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/support-sessions/${session.body.id}/greeting-suggestion`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ tone: 'professional' })
+      .expect(201);
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const event = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'greeting_suggestion_generated'
+    );
+    assert.ok(event, 'greeting_suggestion_generated audit event should exist');
+    assert.strictEqual(event.metadata.provider, 'mock');
+    assert.strictEqual(event.metadata.tone, 'professional');
+    assert.ok(event.metadata.contextHash);
+    assert.strictEqual(event.metadata.mockOnly, true);
+  });
+
+  it('evidence bundle includes greeting suggestion summary', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Greeting evidence test' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/support-sessions/${session.body.id}/greeting-suggestion`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ tone: 'friendly' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(Array.isArray(res.body.bundle.greetingSuggestions));
+    assert.strictEqual(res.body.bundle.greetingSuggestions.length, 1);
+    assert.strictEqual(res.body.bundle.greetingSuggestions[0].tone, 'friendly');
+    assert.strictEqual(res.body.bundle.greetingSuggestions[0].mockOnly, true);
+    assert.strictEqual(res.body.bundle.greetingSuggestions[0].autoSend, false);
+    assert.strictEqual(res.body.bundle.greetingSuggestions[0].voiceEnabled, false);
+  });
+});

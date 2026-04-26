@@ -425,4 +425,68 @@ describe('web API client', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it('handles greeting suggestion response shape', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/support-sessions/session-1/greeting-suggestion');
+      assert.equal(init?.method, 'POST');
+      return new Response(
+        JSON.stringify({
+          suggestion: {
+            id: 'greet-1',
+            tenantId: 'dev-tenant',
+            supportSessionId: 'session-1',
+            greetingText: 'Good day, Alice. Thank you for calling SupportPlane.',
+            tone: 'professional',
+            contextSummary: {
+              callerName: 'Alice',
+              matchedTicketIds: ['TICKET-101'],
+            },
+            metadata: {
+              provider: 'mock',
+              model: 'mock-greeting-v1',
+              promptVersion: 'mock-v1',
+              contextHash: 'abc123',
+              mockDevOnly: true,
+              reviewRequired: true,
+              generatedAt: '2026-04-26T18:00:00.000Z',
+            },
+          },
+          provider: 'mock',
+          model: 'mock-greeting-v1',
+          prompt: {
+            id: 'greeting-suggestion',
+            version: 'mock-v1',
+            purpose: 'Suggest a safe greeting.',
+          },
+          contextHash: 'abc123',
+          usage: { placeholder: true },
+          safety: {
+            mockOnly: true,
+            externalCallMade: false,
+            policyChecks: ['mock_provider_only'],
+            reviewRequired: true,
+            autoSend: false,
+            voiceEnabled: false,
+          },
+          generatedAt: '2026-04-26T18:00:00.000Z',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.generateGreetingSuggestion('session-1', {
+        tone: 'professional',
+      });
+      assert.strictEqual(response.suggestion.greetingText, 'Good day, Alice. Thank you for calling SupportPlane.');
+      assert.strictEqual(response.suggestion.tone, 'professional');
+      assert.strictEqual(response.safety.autoSend, false);
+      assert.strictEqual(response.safety.voiceEnabled, false);
+      assert.ok(response.contextHash);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

@@ -909,3 +909,102 @@
   - Evidence bundles include honest mock telephony and auto-created session disclaimers.
 - Type: docs-render-verification
 - as_of: 2026-04-26T23:01:00+02:00
+
+## EV-2026-04-26-128: BL-042 cockpit initial state
+
+- File: output/playwright/session-042-greeting-suggestion/01-cockpit-initial-state.png
+- Title: Support Cockpit before greeting suggestion workflow
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Opened Support Cockpit and observed the initial state with Call Simulator and Greeting Suggestion panels.
+- Shows:
+  - Call Simulator panel with auto-create checkbox and "No real telephony connected" disclaimer.
+  - Greeting Suggestion panel with "Select a session to generate a greeting suggestion" empty state.
+- Proves:
+  - The UI layout includes the new Greeting Suggestion panel in the correct position.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:44:00+02:00
+
+## EV-2026-04-26-129: BL-042 matched fake incoming call with auto-created session
+
+- File: output/playwright/session-042-greeting-suggestion/02-matched-call-auto-created-session.png
+- Title: Matched fake incoming call auto-creates support session
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Simulated fake incoming call with auto-create enabled and default fixture number.
+- Shows:
+  - Call status is "answered".
+  - Auto-create badge shows "auto_created".
+  - Match status: matched, Customer: Acme BVBA, Recent tickets: TICKET-101, TICKET-102.
+  - Auto-created session card with "Open in cockpit" button.
+- Proves:
+  - The call simulation and auto-creation flow works as a prerequisite for greeting suggestion.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:44:00+02:00
+
+## EV-2026-04-26-130: BL-042 generated greeting text visible
+
+- File: output/playwright/session-042-greeting-suggestion/04-generated-greeting-text-visible.png
+- Title: Generated mock AI greeting visible in Greeting Suggestion panel
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Selected the auto-created session and clicked "Generate suggested greeting" with Professional tone.
+- Shows:
+  - Suggested greeting text: "Good day, the caller. Thank you for calling SupportPlane..."
+  - "Not spoken or sent automatically" disclaimer below the greeting.
+  - Copy button is available.
+- Proves:
+  - The mock AI greeting generation is visible and reviewable in the UI.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:45:00+02:00
+
+## EV-2026-04-26-131: BL-042 model/prompt/context metadata visible
+
+- File: output/playwright/session-042-greeting-suggestion/05-model-prompt-context-metadata-visible.png
+- Title: Mock model metadata for greeting suggestion visible
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to the model metadata block after greeting generation.
+- Shows:
+  - Provider: mock
+  - Model: mock-greeting-v1
+  - Prompt version: mock-v1
+  - Context hash value
+  - Tone: professional
+  - Auto-send: No
+  - Voice: No
+  - "Review before use" badge
+- Proves:
+  - Provider, model, prompt version, context hash, tone, and safety metadata are visible to the operator.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:45:00+02:00
+
+## EV-2026-04-26-132: BL-042 audit trail shows greeting_suggestion_generated
+
+- File: output/playwright/session-042-greeting-suggestion/06-audit-trail-greeting-suggestion-generated.png
+- Title: Audit trail showing greeting_suggestion_generated event
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to the Audit Trail panel after generating a greeting suggestion.
+- Shows:
+  - greeting_suggestion_generated event with actor dev-user, resource support_session:900851f5.
+  - Metadata includes provider, model, promptId, promptVersion, contextHash, tone, greetingText, mockOnly.
+- Proves:
+  - Greeting suggestion generation appends a detailed audit event with tenant, actor, and model metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:45:00+02:00
+
+## EV-2026-04-26-133: BL-042 evidence bundle JSON includes greeting suggestion
+
+- File: output/playwright/session-042-greeting-suggestion/12-evidence-bundle-json-greeting-complete.png
+- Title: Evidence bundle JSON showing greetingSuggestions section
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Generated an evidence bundle and switched to JSON tab, scrolled to greetingSuggestions.
+- Shows:
+  - greetingSuggestions array with greetingText, tone, provider, model, promptVersion, contextHash.
+  - mockOnly: true, reviewRequired: true, autoSend: false, voiceEnabled: false.
+- Proves:
+  - Evidence bundles include greeting suggestion summaries and honest mock/disabled flags.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:46:00+02:00

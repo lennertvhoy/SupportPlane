@@ -111,6 +111,21 @@ export class SupportSessionsController {
     return this.service.generateDraftSuggestion(identity, id, body);
   }
 
+  @Post(':id/greeting-suggestion')
+  generateGreetingSuggestion(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body()
+    body: {
+      callEventId?: string;
+      tone?: string;
+      modelSelection?: { provider?: string; model?: string };
+    }
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.generateGreetingSuggestion(identity, id, body);
+  }
+
   @Get(':id/audit-events')
   getAuditEvents(@Req() req: Request, @Param('id') id: string) {
     const identity = getDevIdentity(req);

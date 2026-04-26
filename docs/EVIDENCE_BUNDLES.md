@@ -35,6 +35,7 @@ Every bundle includes:
 | Linked tickets | Summaries of ticket references with customer info |
 | AI context packets | Provenance, payload summary, redaction log |
 | AI usage | Provider, model, prompt version, context hash, mock flags |
+| Greeting suggestions | Generated greeting text, tone, provider, model, prompt, context hash, mock/disabled flags |
 | Connector operations | Ticket loads, drafts, writeback attempts/results |
 | Audit timeline | Full event list with actor, resource, metadata, integrity hash |
 | Mock/dev-only disclaimers | Honest labels about in-memory/mock limitations |
@@ -93,6 +94,7 @@ Tests prove that `apiToken`, `ZAMMAD_API_TOKEN`, `secret`, `token=`, and `Bearer
 - **No GDPR or legal compliance claims:** This MVP format is for operational review only.
 - **Pattern-based redaction:** Secret redaction uses pattern matching, not guaranteed zero-knowledge.
 - **Auto-created sessions:** Sessions created from mock incoming calls are development-only artifacts.
+- **Greeting suggestions:** Generated greetings are mock-AI suggestions only, not spoken or sent automatically.
 
 ## Future persistence/object-storage path
 
