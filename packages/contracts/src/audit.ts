@@ -48,6 +48,7 @@ export const AuditEventType = z.enum([
   'call_linked_to_session',
   'support_session_auto_created',
   'call_auto_linked_to_session',
+  'call_status_changed',
   'greeting_suggestion_generated',
 ]);
 

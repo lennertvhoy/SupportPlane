@@ -245,6 +245,26 @@ export interface CallEvent {
   updatedAt: string;
 }
 
+export interface CallTimelineItem {
+  id: string;
+  callEventId: string;
+  sessionId?: string;
+  type: string;
+  timestamp: string;
+  actorId?: string;
+  actorType?: string;
+  title: string;
+  description?: string;
+  metadata: Record<string, unknown>;
+}
+
+export interface CallTimelineResponse {
+  callEventId: string;
+  timelineItems: CallTimelineItem[];
+  generatedAt: string;
+  mockDevOnly: boolean;
+}
+
 export type AutoCreateSessionResult =
   | 'not_requested'
   | 'auto_created'
@@ -621,6 +641,20 @@ export const api = {
       { method: 'POST', body: JSON.stringify(body) },
       identity
     ),
+
+  updateCallStatus: (
+    callId: string,
+    body: { status: string; reason?: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<{ callEvent: CallEvent; previousStatus: string; newStatus: string; changedAt: string }>(
+      `/calls/${callId}/status`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  getCallTimeline: (callId: string, identity?: DevIdentity) =>
+    apiFetch<CallTimelineResponse>(`/calls/${callId}/timeline`, { method: 'GET' }, identity),
 
   getEvidenceBundleMarkdown: async (sessionId: string, identity?: DevIdentity): Promise<string> => {
     const url = `${API_BASE}/support-sessions/${sessionId}/evidence-bundle.md`;

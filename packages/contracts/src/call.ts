@@ -8,8 +8,51 @@ export type CallEventId = z.infer<typeof CallEventId>;
 export const CallDirection = z.enum(['inbound', 'outbound']);
 export type CallDirection = z.infer<typeof CallDirection>;
 
-export const CallStatus = z.enum(['ringing', 'answered', 'missed', 'ended']);
+export const CallStatus = z.enum(['ringing', 'answered', 'on_hold', 'missed', 'ended']);
 export type CallStatus = z.infer<typeof CallStatus>;
+
+export const AllowedCallTransition = z.object({
+  from: CallStatus,
+  to: CallStatus,
+});
+export type AllowedCallTransition = z.infer<typeof AllowedCallTransition>;
+
+export const CallStatusTransitionRequest = z.object({
+  status: CallStatus,
+  reason: z.string().max(512).optional(),
+});
+export type CallStatusTransitionRequest = z.infer<typeof CallStatusTransitionRequest>;
+
+export const CallTimelineItemType = z.enum([
+  'call_received',
+  'caller_matched',
+  'caller_no_match',
+  'session_linked',
+  'session_auto_created',
+  'call_answered',
+  'call_held',
+  'call_resumed',
+  'call_ended',
+  'call_missed',
+  'greeting_suggested',
+  'evidence_bundle_generated',
+  'audit_event',
+]);
+export type CallTimelineItemType = z.infer<typeof CallTimelineItemType>;
+
+export const CallTimelineItem = z.object({
+  id: EntityId,
+  callEventId: CallEventId,
+  sessionId: EntityId.optional(),
+  type: CallTimelineItemType,
+  timestamp: Timestamp,
+  actorId: EntityId.optional(),
+  actorType: z.string().max(64).optional(),
+  title: z.string().max(256),
+  description: z.string().max(1024).optional(),
+  metadata: z.record(JsonValue).default({}),
+});
+export type CallTimelineItem = z.infer<typeof CallTimelineItem>;
 
 export const CallEventType = z.enum([
   'incoming_call',
@@ -81,6 +124,24 @@ export const CallEvent = z.object({
 });
 export type CallEvent = z.infer<typeof CallEvent>;
 
+export const CallStatusTransitionResponse = z.object({
+  callEvent: CallEvent,
+  previousStatus: CallStatus,
+  newStatus: CallStatus,
+  changedAt: Timestamp,
+  mockDevOnly: z.boolean(),
+});
+export type CallStatusTransitionResponse = z.infer<typeof CallStatusTransitionResponse>;
+
+export const CallConsoleSummary = z.object({
+  callEvent: CallEvent,
+  linkedSession: SupportSession.optional(),
+  timelineItems: z.array(CallTimelineItem).default([]),
+  greetingSuggestion: z.record(JsonValue).optional(),
+  mockDevOnly: z.boolean(),
+});
+export type CallConsoleSummary = z.infer<typeof CallConsoleSummary>;
+
 export const AutoCreateSessionResult = z.enum([
   'not_requested',
   'auto_created',
@@ -128,3 +189,11 @@ export const CallSessionLinkResponse = z.object({
   mockDevOnly: z.boolean(),
 });
 export type CallSessionLinkResponse = z.infer<typeof CallSessionLinkResponse>;
+
+export const CallTimelineResponse = z.object({
+  callEventId: CallEventId,
+  timelineItems: z.array(CallTimelineItem).default([]),
+  generatedAt: Timestamp,
+  mockDevOnly: z.boolean(),
+});
+export type CallTimelineResponse = z.infer<typeof CallTimelineResponse>;

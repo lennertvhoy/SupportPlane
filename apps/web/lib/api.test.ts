@@ -489,4 +489,85 @@ describe('web API client', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it('handles call status update response shape', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/calls/call-1/status');
+      assert.equal(init?.method, 'POST');
+      const body = JSON.parse((init?.body as string) ?? '{}');
+      assert.strictEqual(body.status, 'answered');
+      return new Response(
+        JSON.stringify({
+          callEvent: {
+            id: 'call-1',
+            tenantId: 'dev-tenant',
+            status: 'answered',
+            caller: { rawNumber: '03 555 01 01' },
+            mockDevOnly: true,
+            createdAt: '2026-04-26T18:00:00.000Z',
+            updatedAt: '2026-04-26T18:00:00.000Z',
+          },
+          previousStatus: 'ringing',
+          newStatus: 'answered',
+          changedAt: '2026-04-26T18:00:00.000Z',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.updateCallStatus('call-1', { status: 'answered' });
+      assert.strictEqual(response.previousStatus, 'ringing');
+      assert.strictEqual(response.newStatus, 'answered');
+      assert.strictEqual(response.callEvent.status, 'answered');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it('handles call timeline response shape', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/calls/call-1/timeline');
+      assert.equal(init?.method, 'GET');
+      return new Response(
+        JSON.stringify({
+          callEventId: 'call-1',
+          timelineItems: [
+            {
+              id: 'tl-1',
+              callEventId: 'call-1',
+              type: 'call_received',
+              timestamp: '2026-04-26T18:00:00.000Z',
+              title: 'Call received',
+              metadata: { mockDevOnly: true },
+            },
+            {
+              id: 'tl-2',
+              callEventId: 'call-1',
+              type: 'caller_matched',
+              timestamp: '2026-04-26T18:00:01.000Z',
+              title: 'Caller matched',
+              metadata: { mockDevOnly: true },
+            },
+          ],
+          generatedAt: '2026-04-26T18:00:02.000Z',
+          mockDevOnly: true,
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.getCallTimeline('call-1');
+      assert.strictEqual(response.callEventId, 'call-1');
+      assert.strictEqual(response.timelineItems.length, 2);
+      assert.strictEqual(response.timelineItems[0].type, 'call_received');
+      assert.strictEqual(response.timelineItems[1].type, 'caller_matched');
+      assert.strictEqual(response.mockDevOnly, true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

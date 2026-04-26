@@ -65,6 +65,13 @@ export class InMemoryStore {
     );
   }
 
+  getAllAuditEvents(tenantId: string): AuditEventShape[] {
+    return Array.from(this.auditEvents.values())
+      .flat()
+      .filter((e) => e.tenantId === tenantId)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  }
+
   saveInternalNoteDraft(draft: InternalNoteDraftShape): void {
     this.drafts.set(`${draft.tenantId}:${draft.id}`, draft);
   }

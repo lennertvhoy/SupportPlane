@@ -1124,3 +1124,336 @@ describe('Greeting suggestion endpoints', () => {
     assert.strictEqual(res.body.bundle.greetingSuggestions[0].voiceEnabled, false);
   });
 });
+
+describe('Call status transition endpoints', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('POST /calls/:id/status transitions ringing → answered', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-1', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'answered' })
+      .expect(200);
+
+    assert.strictEqual(res.body.previousStatus, 'ringing');
+    assert.strictEqual(res.body.newStatus, 'answered');
+    assert.strictEqual(res.body.callEvent.status, 'answered');
+    assert.ok(res.body.callEvent.answeredAt);
+  });
+
+  it('POST /calls/:id/status transitions answered → on_hold', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-2', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'answered' })
+      .expect(200);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'on_hold' })
+      .expect(200);
+
+    assert.strictEqual(res.body.previousStatus, 'answered');
+    assert.strictEqual(res.body.newStatus, 'on_hold');
+    assert.strictEqual(res.body.callEvent.status, 'on_hold');
+  });
+
+  it('POST /calls/:id/status transitions on_hold → answered (resume)', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-3', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'answered' })
+      .expect(200);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'on_hold' })
+      .expect(200);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'answered' })
+      .expect(200);
+
+    assert.strictEqual(res.body.previousStatus, 'on_hold');
+    assert.strictEqual(res.body.newStatus, 'answered');
+    assert.strictEqual(res.body.callEvent.status, 'answered');
+  });
+
+  it('POST /calls/:id/status transitions ringing → missed', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-4', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'missed' })
+      .expect(200);
+
+    assert.strictEqual(res.body.previousStatus, 'ringing');
+    assert.strictEqual(res.body.newStatus, 'missed');
+    assert.ok(res.body.callEvent.endedAt);
+  });
+
+  it('POST /calls/:id/status rejects invalid transitions', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-5', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'ended' })
+      .expect(400);
+
+    assert.ok(res.body.message.includes('Invalid status transition'));
+  });
+
+  it('POST /calls/:id/status rejects same status', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-6', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'ringing' })
+      .expect(400);
+
+    assert.ok(res.body.message.includes('already in status'));
+  });
+
+  it('POST /calls/:id/status rejects missing tenant identity', async () => {
+    const res = await supertest(server)
+      .post('/calls/call-1/status')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'answered' })
+      .expect(400);
+
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('POST /calls/:id/status rejects cross-tenant call access', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-7', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .send({ status: 'answered' })
+      .expect(404);
+  });
+
+  it('POST /calls/:id/status appends call_status_changed audit event', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Status audit test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-8', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'on_hold', reason: 'Checking ticket details' })
+      .expect(200);
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const event = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'call_status_changed'
+    );
+    assert.ok(event, 'call_status_changed audit event should exist');
+    assert.strictEqual(event.metadata.previousStatus, 'answered');
+    assert.strictEqual(event.metadata.newStatus, 'on_hold');
+    assert.strictEqual(event.metadata.reason, 'Checking ticket details');
+    assert.strictEqual(event.metadata.mockDevOnly, true);
+  });
+
+  it('GET /calls/:id/timeline returns deterministic timeline items', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-9', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/calls/${call.body.callEvent.id}/timeline`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.strictEqual(res.body.callEventId, call.body.callEvent.id);
+    assert.ok(Array.isArray(res.body.timelineItems));
+    assert.strictEqual(res.body.mockDevOnly, true);
+    const received = res.body.timelineItems.find((t: { type: string }) => t.type === 'call_received');
+    const matched = res.body.timelineItems.find((t: { type: string }) => t.type === 'caller_matched');
+    assert.ok(received, 'timeline should include call_received');
+    assert.ok(matched, 'timeline should include caller_matched');
+  });
+
+  it('GET /calls/:id/timeline includes status changes and greeting suggestions', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Timeline test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-10', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'on_hold' })
+      .expect(200);
+
+    await supertest(server)
+      .post(`/support-sessions/${session.body.id}/greeting-suggestion`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ callEventId: call.body.callEvent.id, tone: 'professional' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/calls/${call.body.callEvent.id}/timeline`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const held = res.body.timelineItems.find((t: { type: string }) => t.type === 'call_held');
+    const greeting = res.body.timelineItems.find((t: { type: string }) => t.type === 'greeting_suggested');
+    assert.ok(held, 'timeline should include call_held');
+    assert.ok(greeting, 'timeline should include greeting_suggested');
+  });
+
+  it('evidence bundle audit timeline includes call_status_changed events', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Evidence status test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-STATUS-11', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'ended' })
+      .expect(200);
+
+    const res = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const statusEvent = res.body.bundle.auditTimeline.find(
+      (e: { eventType: string }) => e.eventType === 'call_status_changed'
+    );
+    assert.ok(statusEvent, 'evidence bundle audit timeline should include call_status_changed');
+    assert.strictEqual(statusEvent.metadataSummary.newStatus, 'ended');
+  });
+});

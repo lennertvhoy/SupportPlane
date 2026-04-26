@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
-import { Activity, Cpu, AlertTriangle } from 'lucide-react';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { Activity, Cpu, AlertTriangle, Phone } from 'lucide-react';
 import { SessionListPanel } from '@/components/SessionListPanel';
 import { TicketContextPanel } from '@/components/TicketContextPanel';
 import { AiContextPanel } from '@/components/AiContextPanel';
@@ -117,6 +117,22 @@ export default function CockpitPage() {
     },
     [fetchSessionDetails]
   );
+
+  // Auto-select session from URL query param (e.g. coming from Call Console)
+  const hasAutoSelectedRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (hasAutoSelectedRef.current) return;
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('session');
+    if (sessionId && sessions.length > 0) {
+      const found = sessions.find((s) => s.id === sessionId);
+      if (found) {
+        hasAutoSelectedRef.current = true;
+        handleSelectSession(found);
+      }
+    }
+  }, [sessions, handleSelectSession]);
 
   const handleGenerateEvidenceBundle = useCallback(async () => {
     if (!selectedSession) return;
@@ -300,6 +316,13 @@ export default function CockpitPage() {
               {connectorStatus.mode === 'mock' ? 'Mock' : 'Zammad'} mode
             </span>
           )}
+          <button
+            onClick={() => window.location.href = '/call-console'}
+            className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
+          >
+            <Phone size={10} />
+            Call Console
+          </button>
         </div>
       </header>
 
