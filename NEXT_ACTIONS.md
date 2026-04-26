@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-26 19:45 CEST
+**Updated At:** 2026-04-26 19:55 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-003] Build mock-first ticket-aware API slice
+### P0 [BL-004] Build the first Support Cockpit UI shell
 Owner: coding agent
-Next: create NestJS API endpoints for sessions, ticket context loading through a mock connector, AI context packet creation, and audit event append
-Exit: API smoke test proves session creation, context packet generation, and audit logging without external credentials
+Next: scaffold Next.js apps/web with session timeline, ticket context panel, AI context quality panel, and draft note panel
+Exit: UI smoke test proves session list, ticket context view, and draft note interaction against the mock API
 
 ## Queue Rules
 

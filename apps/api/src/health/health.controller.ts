@@ -1,0 +1,59 @@
+import { Controller, Get } from '@nestjs/common';
+import { readFileSync, existsSync } from 'fs';
+import { resolve, dirname } from 'path';
+
+function findGitDir(): string | null {
+  let dir = __dirname;
+  for (let i = 0; i < 6; i++) {
+    const gitPath = resolve(dir, '.git');
+    if (existsSync(gitPath)) return gitPath;
+    dir = resolve(dir, '..');
+  }
+  return null;
+}
+
+function getGitHead(): string | null {
+  try {
+    const gitDir = findGitDir();
+    if (!gitDir) return null;
+    const head = readFileSync(resolve(gitDir, 'HEAD'), 'utf8').trim();
+    if (head.startsWith('ref: ')) {
+      const refPath = head.slice(5);
+      return readFileSync(resolve(gitDir, refPath), 'utf8').trim();
+    }
+    return head;
+  } catch {
+    return null;
+  }
+}
+
+function getBranch(): string | null {
+  try {
+    const gitDir = findGitDir();
+    if (!gitDir) return null;
+    const head = readFileSync(resolve(gitDir, 'HEAD'), 'utf8').trim();
+    if (head.startsWith('ref: ')) {
+      return head.slice(5).replace('refs/heads/', '');
+    }
+    return 'detached';
+  } catch {
+    return null;
+  }
+}
+
+@Controller('health')
+export class HealthController {
+  @Get()
+  health() {
+    return {
+      service: 'supportplane-api',
+      version: '0.1.0',
+      status: 'ok',
+      branch: getBranch(),
+      head: getGitHead(),
+      timestamp: new Date().toISOString(),
+      runtime: 'NestJS',
+      note: 'Mock-first ticket-aware API slice (BL-003)',
+    };
+  }
+}

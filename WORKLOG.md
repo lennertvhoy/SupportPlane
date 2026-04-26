@@ -191,3 +191,73 @@ Use this file for dated session notes, verification summaries, and references to
 - Prisma Client is not generated; `DATABASE_URL` is a placeholder.
 - Zod schemas are contract-only; no request/response envelopes or API-specific DTOs exist yet.
 - Integrity hash helper is a placeholder, not cryptographic.
+
+## 2026-04-26 - Mock-first ticket-aware API slice (BL-003)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** f934a883356242d0c98d91005edd9a42364f426c
+**Worktree:** clean
+
+### What changed
+
+- Installed NestJS (`@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`) and dependencies in `apps/api`.
+- Implemented `MockTicketingAdapter` in `packages/connectors/src/mock-ticketing-adapter.ts` with deterministic fixture data.
+- Updated `TicketingAdapterDriver` interface in `packages/connectors/src/index.ts` to include `tenantId` in `getTicket`.
+- Fixed `rootDir` in `packages/audit`, `packages/connectors`, `packages/ai`, `packages/policy`, and `packages/ui` tsconfigs so build outputs land in `dist/` (matching package.json `main`/`types`).
+- Scaffolded NestJS API in `apps/api`:
+  - `src/main.ts` - bootstrap on `API_PORT` (default 4100)
+  - `src/app.module.ts` - root module with `SupportSessionsModule` and `HealthController`
+  - `src/common/dev-identity.middleware.ts` - dev-only mock tenant/user context from headers
+  - `src/health/health.controller.ts` - health endpoint returning runtime info
+  - `src/support-sessions/support-sessions.controller.ts` - session CRUD, ticket-context, context-packets, audit-events
+  - `src/support-sessions/support-sessions.service.ts` - business logic with in-memory store
+  - `src/support-sessions/in-memory.store.ts` - tenant-scoped in-memory store
+- Implemented required endpoints:
+  - `GET /health`
+  - `POST /support-sessions`
+  - `GET /support-sessions/:id`
+  - `POST /support-sessions/:id/ticket-context`
+  - `POST /support-sessions/:id/context-packets`
+  - `GET /support-sessions/:id/context-packets`
+  - `GET /support-sessions/:id/audit-events`
+- Added `apps/api/test/api.test.ts` with 11 integration tests using `node:test` + `supertest`.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md`, `WORKLOG.md` to reflect BL-003 completion.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contract validation + Prisma schema validation).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `git status --short --branch` showed clean worktree on `main`.
+- `cd apps/api && npm test` passed: 11/11 integration tests passed.
+- Started API on port 4110 and verified with curl:
+  - Health endpoint returns `status: ok`, `runtime: NestJS`, branch/head.
+  - Session creation returns a `SupportSession` with correct tenant scoping.
+  - Missing `x-tenant-id` or `x-user-id` returns 400.
+  - Ticket-context endpoint creates `TicketReference`, `AIContextPacket`, updates session, and appends audit events.
+  - Context-packets endpoint creates manual packets with validated provenance.
+  - Listing endpoints return tenant-scoped data.
+  - Tenant isolation verified: cross-tenant requests return 404.
+
+### Evidence
+
+- API source: `apps/api/src/**/*.ts`
+- API tests: `apps/api/test/api.test.ts`
+- Mock connector: `packages/connectors/src/mock-ticketing-adapter.ts`
+- Runtime verification logs and curl outputs captured in this worklog entry.
+
+### Remaining Risk
+
+- In-memory store is not persistent; all data is lost on restart.
+- No real database, migrations, or Prisma Client integration yet.
+- No real authentication; dev identity headers are explicitly mock-only.
+- No real ticketing system integration; `MockTicketingAdapter` returns deterministic fixtures.
+- Integrity hash is a placeholder, not cryptographic.
+- No UI, queues, object storage, or external services were implemented.

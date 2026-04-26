@@ -19,6 +19,8 @@ export {
 export interface TicketingAdapterDriver {
   readonly adapterType: string;
   connect(config: Record<string, unknown>): Promise<void>;
-  getTicket(externalId: string): Promise<unknown>;
+  getTicket(tenantId: string, externalId: string): Promise<unknown>;
   writeInternalNote(ticketId: string, body: string): Promise<unknown>;
 }
+
+export { MockTicketingAdapter } from './mock-ticketing-adapter.js';

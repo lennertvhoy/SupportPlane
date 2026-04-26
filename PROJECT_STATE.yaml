@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-26T19:45:00+02:00
+  updated_at: 2026-04-26T19:55:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -40,19 +40,21 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: e0037894d98574a2ee989631b1312860ca69b246
+    head: f934a883356242d0c98d91005edd9a42364f426c
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
+      - BL-003 mock-first API slice committed
 
   operating_mode:
     status: observed
     mode: operating
     summary: >
-      Bootstrap is complete and BL-002 contracts/schema slice is finished.
-      The repository now contains MVP 1 domain contracts, Zod schemas,
-      and an initial Prisma schema. No product runtime exists yet.
+      Bootstrap is complete. BL-002 contracts/schema and BL-003 mock-first
+      API slice are finished. The repository now contains a running NestJS
+      API with support sessions, mock ticketing adapter, AI context packets,
+      and audit events. No UI or real database exists yet.
 
   project:
     name: SupportPlane
@@ -64,6 +66,17 @@ current_state:
       contracts_package: packages/contracts
       schema_location: prisma/schema.prisma
       validation: contracts_compile_and_schema_validates
+    bl_003_status:
+      completed: true
+      scope: mock_first_ticket_aware_api_slice
+      api_app: apps/api
+      validation: api_compiles_integration_tests_pass_http_verified
+      runtime:
+        framework: NestJS
+        port: 4110
+        in_memory: true
+        mock_connector: MockTicketingAdapter
+        mock_auth: dev_identity_headers
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
       tickets, calls, screen context, endpoint diagnostics, and remote support
@@ -86,18 +99,18 @@ current_state:
       - claiming full regulatory compliance in MVP
 
   runtime_identity:
-    status: scaffold_only
+    status: api_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: e0037894d98574a2ee989631b1312860ca69b246
-    process_or_container: none
-    port_or_base_url: none
-    rebuilt_in_current_slice: false
-    duplicate_runtimes_checked: false
+    head: f934a883356242d0c98d91005edd9a42364f426c
+    process_or_container: node process (NestJS)
+    port_or_base_url: http://localhost:4110
+    rebuilt_in_current_slice: true
+    duplicate_runtimes_checked: true
     notes:
-      - no SupportPlane product runtime exists yet
+      - NestJS API is running and verified via integration tests and curl
       - baseline health script exists at scripts/health.js and returns scaffold identity
-      - runtime identity proof is required before UI/API acceptance
+      - runtime identity proof was collected for API endpoints
 
   environment:
     status: observed
@@ -157,6 +170,7 @@ current_state:
       - scripts/init_template.py
       - scripts/check_state_docs.py
       - scripts/health.js
+      - apps/api/dist/src/main.js
     current_test_setup:
       - scripts/check_state_docs.py
       - python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py
@@ -184,9 +198,10 @@ current_state:
       - MVP local self-hosting through Docker Compose or Podman-compatible compose
       - production later may use Kubernetes, managed PostgreSQL, NATS cluster, object storage, and OpenTelemetry
     contradictions:
-      - repository still contains template fixtures; application code is placeholder only
+      - repository still contains template fixtures in some apps
       - AGENTS template language still includes some generic workflow framing
-      - apps/web, apps/api, apps/worker are scaffold placeholders without frameworks installed yet
+      - apps/web and apps/worker are scaffold placeholders without frameworks installed yet
+      - apps/api has NestJS runtime but uses in-memory store, not PostgreSQL
 
   target_architecture:
     frontend:

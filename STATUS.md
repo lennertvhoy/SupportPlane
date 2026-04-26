@@ -1,13 +1,14 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-26 19:45 CEST
+**Updated At:** 2026-04-26 19:55 CEST
 **Execution Mode:** operating
-**Project State:** bl_002_complete
+**Project State:** bl_003_complete
 **Public URL:** not configured
 
 ## Snapshot
 
 - SupportPlane is now defined as a governed AI support cockpit for IT teams and MSPs.
+- BL-003 complete: mock-first ticket-aware NestJS API slice is running with support sessions, mock ticketing adapter, AI context packets, and audit events.
 - BL-002 complete: MVP 1 domain contracts and initial Prisma schema are defined, compiled, and validated.
 - The first delivery target is MVP 1: ticket-aware AI cockpit with Zammad, SupportSession, AI Context Packet, AI chat, ticket summaries, draft/internal notes, writeback, and audit log.
 - The architecture is TypeScript-first for web/API/contracts, with later Go endpoint agent and Tauri operator companion.
@@ -16,13 +17,13 @@
 
 ## Immediate Priorities
 
-1. Build the MVP 1 backend foundation: NestJS, PostgreSQL/Prisma, mock model provider, mock/Zammad connector boundary, and audit log.
-2. Build the first cockpit screen around sessions, ticket context, AI context quality, and note drafting.
+1. Build the first Support Cockpit UI shell with session timeline, ticket context, AI context quality, and draft note panel (BL-004).
+2. Add mock AI provider and model gateway abstraction with prompt/version/context hash metadata (BL-005).
 
 ## Active Blockers
 
-- No product runtime, database, queue, object storage, or app server exists yet.
-- Scaffold typechecks pass but apps do not yet expose endpoints or UI.
+- No database, queue, object storage, or real external integrations exist yet.
+- No UI or authentication layer exists yet.
 
 ## Notes
 
