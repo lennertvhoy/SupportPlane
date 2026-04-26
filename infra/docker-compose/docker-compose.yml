@@ -1,0 +1,7 @@
+# SupportPlane local topology placeholder
+# Podman-compatible compose for web, API, worker, PostgreSQL, NATS, and MinIO
+version: "3.8"
+services:
+  placeholder:
+    image: alpine:latest
+    command: ["echo", "SupportPlane compose topology not yet implemented"]

@@ -1,0 +1,409 @@
+# PROJECT_STATE.yaml - Structured current truth
+
+metadata:
+  updated_at: 2026-04-26T19:17:00+02:00
+  updated_by: agent
+  version: "statedd-template-v3"
+
+workflow:
+  repo_mode: operating
+  bootstrap:
+    completed: true
+    completed_on: 2026-04-26
+    system_investigated: true
+    repo_investigated: true
+    user_intake_complete: true
+    completion_summary: >
+      Product architecture, target users, MVP sequence, core safety model,
+      implementation stack, external integration order, backlog, active queue,
+      and evidence references were captured from user-provided architecture and
+      direct local/source verification.
+    unknowns_remaining:
+      - exact repository hosting/branching model not configured
+      - production deployment target not selected beyond local Docker Compose first
+      - concrete Zammad instance credentials and schema constraints not configured
+      - AI provider, model names, and retention defaults not selected
+      - legal/compliance requirements need counsel review before market claims
+
+verification_labels:
+  observed: verified directly in the current session
+  unknown: not yet determined from currently available evidence
+  reported: provided by the user or prior context, not independently proven
+  blocked: verification attempted but prevented
+  assumed: temporary working assumption
+  stale: previously verified but no longer fresh
+  invalid: known false or superseded
+
+current_state:
+  repository:
+    canonical_path: /home/ff/Documents/Projects/SupportPlane
+    path_status: observed
+    git_repository: false
+    branch: null
+    head: null
+    worktree_status: not_proven
+    notes:
+      - git commands failed because this directory is not currently a Git repository
+
+  operating_mode:
+    status: observed
+    mode: operating
+    summary: >
+      Bootstrap has established enough truthful baseline to begin implementation
+      slices. The repository still contains workflow/template support scripts
+      and has not yet been converted into an application monorepo.
+
+  project:
+    name: SupportPlane
+    type: governed_ai_support_cockpit
+    lifecycle_stage: pre_implementation
+    truth_summary: >
+      SupportPlane is a multi-tenant, self-hostable AI support cockpit where
+      tickets, calls, screen context, endpoint diagnostics, and remote support
+      activity are unified into governed Support Sessions. AI assistance is
+      constrained by RBAC, ABAC, tenant/device policy, approvals, tool manifests,
+      execution gateways, and audit-grade evidence.
+    primary_users:
+      - IT support teams
+      - managed service providers
+      - support managers
+      - auditors/read-only reviewers
+    primary_promise: >
+      Every IT support interaction gets the right context, the right AI help,
+      and the right safety controls.
+    non_goals:
+      - unrestricted general-purpose AI agent
+      - direct model-to-endpoint privileged execution
+      - arbitrary shell execution in v1
+      - replacing remote desktop tooling in the first version
+      - claiming full regulatory compliance in MVP
+
+  runtime_identity:
+    status: unknown
+    repo_path: /home/ff/Documents/Projects/SupportPlane
+    branch: null
+    head: null
+    process_or_container: none
+    port_or_base_url: none
+    rebuilt_in_current_slice: false
+    duplicate_runtimes_checked: false
+    notes:
+      - no SupportPlane runtime exists yet
+      - runtime identity proof is required before UI/API acceptance
+
+  environment:
+    status: observed
+    host:
+      os: Fedora Linux 43 Workstation Edition
+      kernel: Linux 6.19.13-200.fc43.x86_64
+      shell: /bin/bash
+      terminal: dumb
+      timezone: Europe/Brussels
+    package_managers:
+      - dnf
+      - npm_or_corepack_not_verified
+    language_runtimes:
+      python: 3.14.4
+      node: 22.22.0
+      go: unknown
+      rust: unknown
+    container_tooling:
+      podman: 5.8.2
+      docker: absent
+    browser_tooling:
+      chrome: /usr/bin/google-chrome-stable
+    ports:
+      listeners_observed: true
+      notes:
+        - active listeners were observed with ss -ltn
+        - none were tied to a SupportPlane runtime
+
+  repository_structure:
+    status: observed
+    current_top_level_entries:
+      - .github
+      - .gitignore
+      - AGENTS.md
+      - BACKLOG.md
+      - LICENSE
+      - NEXT_ACTIONS.md
+      - PROJECT_ADAPTER.yaml
+      - PROJECT_DNA.yaml
+      - PROJECT_STATE.yaml
+      - README.md
+      - STATUS.md
+      - WORKLOG.md
+      - docs
+      - fixtures
+      - prompts
+      - scripts
+      - security_best_practices_report.md
+    current_entrypoints:
+      - scripts/init_template.py
+      - scripts/check_state_docs.py
+    current_test_setup:
+      - scripts/check_state_docs.py
+      - python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py
+    planned_monorepo:
+      apps:
+        - apps/web
+        - apps/api
+        - apps/worker
+        - apps/operator-companion
+        - apps/endpoint-agent
+      packages:
+        - packages/contracts
+        - packages/policy
+        - packages/connectors
+        - packages/ai
+        - packages/audit
+        - packages/ui
+      infra:
+        - infra/docker-compose
+        - infra/kubernetes
+        - infra/terraform-later
+    deployment_assumptions:
+      - MVP local self-hosting through Docker Compose or Podman-compatible compose
+      - production later may use Kubernetes, managed PostgreSQL, NATS cluster, object storage, and OpenTelemetry
+    contradictions:
+      - repository still contains template fixtures and no application code
+      - AGENTS template language still includes some generic workflow framing
+
+  target_architecture:
+    frontend:
+      app: apps/web
+      stack:
+        - Next.js
+        - React
+        - TypeScript
+        - Tailwind
+        - shadcn/ui
+        - OpenAPI-generated client
+      primary_screens:
+        - support cockpit
+        - ticket context view
+        - call console
+        - device console
+        - evidence bundle viewer
+        - admin
+    backend:
+      app: apps/api
+      stack:
+        - NestJS
+        - TypeScript
+        - PostgreSQL
+        - Prisma
+        - NATS
+        - OpenAPI
+        - OpenTelemetry
+      responsibilities:
+        - auth
+        - tenant isolation
+        - RBAC and ABAC
+        - support sessions
+        - ticket context
+        - call events
+        - AI orchestration
+        - connector gateway
+        - policy checks
+        - approval workflows
+        - audit events
+        - evidence bundles
+    worker:
+      app: apps/worker
+      responsibilities:
+        - async jobs
+        - connector sync
+        - evidence generation
+        - AI/background workflows
+    operator_companion:
+      app: apps/operator-companion
+      stack:
+        - Tauri
+        - Rust
+        - TypeScript
+      default_capture_mode: active_window_only
+      status: planned_after_mvp_2
+    endpoint_agent:
+      app: apps/endpoint-agent
+      language: Go
+      connection_model: outbound_only_websocket_or_mtls
+      v1_limitations:
+        - read-only diagnostics
+        - no arbitrary shell execution
+      status: planned_after_operator_companion
+
+  domain_model:
+    central_aggregate: SupportSession
+    important_entities:
+      - Tenant
+      - User
+      - Role
+      - Permission
+      - Policy
+      - ApprovalRule
+      - ConnectorInstallation
+      - SupportSession
+      - TicketReference
+      - CustomerReference
+      - CallEvent
+      - Device
+      - EndpointAgent
+      - OperatorCompanion
+      - ScreenObservation
+      - AIConversation
+      - AIContextPacket
+      - ToolManifest
+      - ToolInvocation
+      - ApprovalRequest
+      - AuditEvent
+      - EvidenceBundle
+      - KnowledgeSource
+      - ModelPolicy
+      - SecretReference
+
+  safety_model:
+    authority_chain:
+      - user role
+      - tenant policy
+      - device policy
+      - tool manifest
+      - risk level
+      - approval rules
+      - audit rules
+      - execution gateway
+    ai_authority: non_authoritative
+    ai_allowed_to:
+      - reason
+      - summarize
+      - suggest
+      - draft
+      - request policy-checked actions
+    ai_not_allowed_to:
+      - directly execute privileged work
+      - access raw secrets
+      - use hidden tools
+      - bypass approval or audit
+    mvp_tool_scope:
+      - read_only
+      - low_risk_with_approval_support
+
+  external_integrations:
+    ticketing_first:
+      provider: Zammad
+      status: planned
+      evidence_ref: EV-2026-04-26-001
+    ticketing_second:
+      provider: GLPI
+      status: planned
+      evidence_ref: EV-2026-04-26-002
+    phone_first:
+      provider: simulated webhook
+      status: planned_before_pbx
+    phone_later:
+      provider: Asterisk or FreePBX
+      status: planned
+      evidence_ref: EV-2026-04-26-003
+    remote_support_first:
+      provider: MeshCentral
+      status: planned
+      evidence_ref: EV-2026-04-26-004
+    firewall_context:
+      provider: Fortinet UI screen context first, API later
+      status: planned
+      notes:
+        - no deep Fortinet API integration in MVP
+
+  mvp_sequence:
+    mvp_1:
+      name: Ticket-aware AI cockpit
+      status: active_target
+      scope:
+        - Zammad connector boundary
+        - SupportSession
+        - AIContextPacket
+        - AI chat
+        - ticket summary
+        - draft internal note
+        - write note back to Zammad
+        - audit log
+    mvp_2:
+      name: Call simulator
+      status: planned
+    mvp_3:
+      name: Operator Companion
+      status: planned
+    mvp_4:
+      name: Endpoint Agent read-only diagnostics
+      status: planned
+    mvp_5:
+      name: Approval-gated low-risk remediation
+      status: planned
+
+  backlog:
+    status: observed
+    scope: complete_milestone_level
+    source: BACKLOG.md
+    total_items: 90
+    active_queue_source: NEXT_ACTIONS.md
+    operating_loop_prompt: prompts/OPERATING_LOOP_START_PROMPT.md
+    coverage:
+      - foundation
+      - ticket-aware AI cockpit
+      - call simulator
+      - operator companion
+      - endpoint agent read-only diagnostics
+      - approval-gated remediation
+      - post-MVP integrations
+      - admin governance and compliance evidence
+      - production hardening
+
+  evidence:
+    status: active
+    ledger: docs/EVIDENCE_LOG.md
+    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
+    artifact_root: docs/evidence
+    source_refs:
+      - EV-2026-04-26-001
+      - EV-2026-04-26-002
+      - EV-2026-04-26-003
+      - EV-2026-04-26-004
+      - EV-2026-04-26-005
+      - EV-2026-04-26-006
+      - EV-2026-04-26-007
+      - EV-2026-04-26-008
+
+  documentation:
+    status: observed
+    primary_user_guide: README.md
+    live_docs:
+      - README.md
+      - AGENTS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - PROJECT_DNA.yaml
+      - PROJECT_ADAPTER.yaml
+      - NEXT_ACTIONS.md
+      - BACKLOG.md
+      - WORKLOG.md
+      - docs/EVIDENCE_LOG.md
+      - docs/ACCEPTANCE_FREEZES.md
+      - docs/ARCHITECTURE.md
+      - docs/SECURITY_MODEL.md
+      - docs/AI_GOVERNANCE.md
+      - docs/CONNECTOR_CONTRACTS.md
+      - docs/EVIDENCE_MODEL.md
+      - docs/THREAT_MODEL.md
+      - prompts/OPERATING_LOOP_START_PROMPT.md
+
+active_problems:
+  - id: AP-001
+    status: open
+    severity: medium
+    title: Git repository not initialized
+    impact: Cannot produce branch/head/clean-worktree proof until git is initialized.
+  - id: AP-002
+    status: open
+    severity: low
+    title: No product runtime exists yet
+    impact: User-facing behavior cannot be verified until app scaffolding begins.

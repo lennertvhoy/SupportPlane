@@ -1,0 +1,21 @@
+{
+  "name": "@supportplane/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SupportPlane support cockpit and admin UI (Next.js)",
+  "scripts": {
+    "dev": "echo 'Next.js dev server not yet configured' && exit 1",
+    "build": "echo 'Next.js build not yet configured' && exit 1",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'No tests yet'"
+  },
+  "dependencies": {
+    "@supportplane/contracts": "*",
+    "@supportplane/ui": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "typescript": "^5.7.0"
+  }
+}

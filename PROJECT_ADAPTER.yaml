@@ -1,0 +1,79 @@
+# PROJECT_ADAPTER.yaml - Project-specific adapter
+
+version: "statedd-template-v3"
+
+project:
+  name: SupportPlane
+  short_name: SupportPlane
+  description: Governed AI support cockpit for IT support teams and MSPs.
+
+vocabulary:
+  support_session: "central support interaction timeline"
+  ai_context_packet: "explicit structured context passed to the AI orchestrator"
+  policy_engine: "deterministic allow/deny/approval evaluator"
+  execution_gateway: "server-side gateway that dispatches approved tool actions"
+  evidence_bundle: "exportable record of context, actions, approvals, and outputs"
+  operator_companion: "support-worker desktop app for active-window context"
+  endpoint_agent: "customer/device-side agent for diagnostics and approved actions"
+
+runtime:
+  execution_mode: operating
+  frontend_port: null
+  api_port: null
+  public_url: null
+  local_topology: docker_compose_or_podman_compose_planned
+  runtime_identity_surface: health endpoint plus build/version endpoint planned
+
+stack:
+  frontend:
+    - Next.js
+    - React
+    - TypeScript
+    - Tailwind
+    - shadcn/ui
+  backend:
+    - NestJS
+    - TypeScript
+    - PostgreSQL
+    - Prisma
+    - NATS
+    - OpenAPI
+  storage:
+    - PostgreSQL
+    - pgvector_later
+    - MinIO_local
+    - S3_compatible_later
+  desktop:
+    - Tauri
+    - Rust
+    - TypeScript
+  agent:
+    - Go
+
+integrations:
+  first_ticketing:
+    provider: Zammad
+    status: planned
+  second_ticketing:
+    provider: GLPI
+    status: planned
+  phone_mvp:
+    provider: simulated_webhook
+    status: planned
+  phone_later:
+    provider: Asterisk_FreePBX
+    status: planned
+  remote_support:
+    provider: MeshCentral
+    status: planned
+  model_providers:
+    - mock
+    - OpenAI
+    - Azure_OpenAI
+    - Anthropic_later
+    - Ollama_later
+
+notes:
+  - "MVP 1 starts with ticket-aware AI cockpit; no endpoint agent or operator companion yet."
+  - "Do not store raw sensitive prompts indefinitely unless tenant policy allows it."
+  - "Do not market MVP as fully compliant; market governance and evidence readiness only."

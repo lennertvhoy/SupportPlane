@@ -1,0 +1,174 @@
+# PROJECT_DNA.yaml - Canonical architecture blueprint
+
+version: "statedd-template-v3"
+schema_version: "1.0"
+
+product:
+  name: "SupportPlane"
+  one_sentence: >
+    Multi-tenant, self-hostable AI support cockpit for governed IT support
+    sessions across tickets, calls, screen context, endpoint diagnostics, and
+    remote support activity.
+  description: >
+    SupportPlane gives IT teams and MSPs a support cockpit where AI can reason,
+    summarize, suggest, draft, and request actions, while deterministic policy,
+    role, approval, tool, execution, and audit controls decide what is allowed.
+  is:
+    - governed_ai_support_cockpit
+    - support_session_centered
+    - tenant_isolated
+    - evidence_backed
+    - policy_first
+    - audit_oriented
+    - self_hostable_first
+  is_not:
+    - unrestricted_ai_agent
+    - direct_model_to_endpoint_executor
+    - remote_desktop_replacement_in_mvp
+    - compliance_claim_without_evidence
+
+truth_rules:
+  contract_files:
+    agents: AGENTS.md
+    status: STATUS.md
+    project_state: PROJECT_STATE.yaml
+    project_dna: PROJECT_DNA.yaml
+    project_adapter: PROJECT_ADAPTER.yaml
+    next_actions: NEXT_ACTIONS.md
+    backlog: BACKLOG.md
+    worklog: WORKLOG.md
+    evidence_log: docs/EVIDENCE_LOG.md
+    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
+  hard_rules:
+    - no_fake_completeness
+    - no_history_in_live_state
+    - evidence_required_for_user_facing_claims
+    - runtime_identity_required_for_user_facing_acceptance
+    - negative_search_results_do_not_prove_nonexistence
+    - active_queue_remains_short
+    - ai_is_not_authority
+    - no_arbitrary_shell_execution_in_v1
+    - secrets_never_enter_model_context
+  claim_states:
+    observed: verified directly now
+    unknown: not yet determined from available evidence
+    reported: supported by user input or prior evidence
+    blocked: verification currently prevented
+    assumed: provisional working assumption
+    stale: previously verified but aged out
+    invalid: known false or superseded
+  repo_modes:
+    bootstrap:
+      purpose: discover truth and establish baseline state
+      exit_condition: baseline completed and mode flipped to operating
+    operating:
+      purpose: steady-state human-in-the-loop delivery
+      exit_condition: none
+
+architecture:
+  central_aggregate:
+    name: SupportSession
+    description: >
+      A support interaction that binds worker, customer, tickets, call events,
+      device context, AI conversation, actions, approvals, audit events, and
+      evidence into one governed timeline.
+  primary_apps:
+    web:
+      path: apps/web
+      role: support cockpit and admin UI
+    api:
+      path: apps/api
+      role: auth, tenancy, sessions, AI orchestration, connectors, policy, audit
+    worker:
+      path: apps/worker
+      role: async connector sync, evidence generation, model/background jobs
+    operator_companion:
+      path: apps/operator-companion
+      role: support-worker active-window screen context
+    endpoint_agent:
+      path: apps/endpoint-agent
+      role: customer/device-side heartbeat, diagnostics, approved tools
+  shared_packages:
+    contracts: packages/contracts
+    policy: packages/policy
+    connectors: packages/connectors
+    ai: packages/ai
+    audit: packages/audit
+    ui: packages/ui
+  data_plane:
+    database: PostgreSQL with pgvector when vector search is needed
+    queue: NATS
+    object_storage: S3-compatible storage, MinIO locally
+    telemetry: OpenTelemetry
+  integration_order:
+    - Zammad ticketing
+    - simulated incoming call webhook
+    - operator companion screen context
+    - endpoint agent read-only diagnostics
+    - approval-gated low-risk remediation
+    - GLPI
+    - Asterisk or FreePBX
+    - MeshCentral
+
+safety:
+  authority_chain:
+    - user_role
+    - tenant_policy
+    - device_policy
+    - tool_manifest
+    - risk_level
+    - approval_rules
+    - audit_rules
+    - execution_gateway
+  model_permissions:
+    may:
+      - reason
+      - summarize
+      - suggest
+      - draft
+      - request_actions
+    must_not:
+      - execute_privileged_work_directly
+      - access_raw_secrets
+      - invent_tool_capabilities
+      - bypass_policy
+      - bypass_approval
+      - bypass_audit
+  tool_risk_levels:
+    - read_only
+    - low
+    - medium
+    - high
+    - critical
+  mvp_tool_boundary:
+    allowed:
+      - read_only
+      - low_with_approval_support
+    blocked:
+      - arbitrary_shell
+      - critical_actions
+      - unrestricted_remote_execution
+
+security_invariants:
+  - "Every tenant-scoped object includes tenant_id."
+  - "Database access must enforce tenant scoping."
+  - "AI receives explicit AIContextPacket objects, not arbitrary raw context."
+  - "Secrets are referenced by ID and resolved server-side only where allowed."
+  - "Endpoint agents connect outbound by default."
+  - "Operator screen capture is explicit, visible, and active-window-only by default."
+  - "Audit events are append-only and designed for hash chaining."
+  - "User-facing AI or action behavior needs runtime identity proof before acceptance."
+
+governance:
+  evidence_standard: browser_verification_or_test_output
+  evidence_artifact_root: docs/evidence
+  acceptance_freeze_log: docs/ACCEPTANCE_FREEZES.md
+  hygiene_check: scripts/check_state_docs.py
+  bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
+  update_policy:
+    status: when_current_truth_changes
+    project_state: when_structured_truth_changes
+    project_dna: when_stable_architecture_changes
+    project_adapter: when stack, ports, integrations, or vocabulary changes
+    worklog: when_work_is_completed
+    evidence_log: when_external claims or user-facing behavior are verified

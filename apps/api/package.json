@@ -1,0 +1,23 @@
+{
+  "name": "@supportplane/api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SupportPlane API (NestJS)",
+  "scripts": {
+    "dev": "echo 'NestJS dev server not yet configured' && exit 1",
+    "build": "echo 'NestJS build not yet configured' && exit 1",
+    "typecheck": "tsc --noEmit",
+    "test": "echo 'No tests yet'"
+  },
+  "dependencies": {
+    "@supportplane/contracts": "*",
+    "@supportplane/policy": "*",
+    "@supportplane/connectors": "*",
+    "@supportplane/ai": "*",
+    "@supportplane/audit": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
