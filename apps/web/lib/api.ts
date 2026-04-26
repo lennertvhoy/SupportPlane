@@ -192,6 +192,21 @@ export interface CallEvent {
   updatedAt: string;
 }
 
+export type AutoCreateSessionResult =
+  | 'not_requested'
+  | 'auto_created'
+  | 'linked_to_existing'
+  | 'skipped_no_match'
+  | 'skipped_invalid_phone';
+
+export interface IncomingCallResponse {
+  callEvent: CallEvent;
+  autoCreateResult: AutoCreateSessionResult;
+  createdSession?: SupportSession;
+  mockDevOnly: boolean;
+  receivedAt: string;
+}
+
 export interface EvidenceBundleSessionSummary {
   id: string;
   tenantId: string;
@@ -507,10 +522,17 @@ export const api = {
 
   // Calls
   createFakeIncomingCall: (
-    body: { externalCallId: string; rawCallerNumber: string; callerDisplayName?: string },
+    body: {
+      externalCallId: string;
+      rawCallerNumber: string;
+      callerDisplayName?: string;
+      autoCreateSession?: boolean;
+      preferredSessionTitle?: string;
+      preferredPriority?: string;
+    },
     identity?: DevIdentity
   ) =>
-    apiFetch<CallEvent>('/calls/fake-incoming', {
+    apiFetch<IncomingCallResponse>('/calls/fake-incoming', {
       method: 'POST',
       body: JSON.stringify(body),
     }, identity),

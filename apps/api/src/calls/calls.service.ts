@@ -6,11 +6,16 @@ import {
   CallDirection,
   AuditEventType,
   AuditActorType,
+  SupportSessionStatus,
+  SupportSessionPriority,
+  AutoCreateSessionResult,
   normalizePhoneNumber,
   matchCallerByPhone,
   type CallEvent as CallEventShape,
+  type SupportSession as SupportSessionShape,
   type TenantId,
   type AuditEventId,
+  type SupportSessionId,
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import { InMemoryStore } from '../support-sessions/in-memory.store.js';
@@ -25,8 +30,15 @@ export class CallsService {
 
   createFakeIncomingCall(
     identity: DevIdentity,
-    dto: { externalCallId: string; rawCallerNumber: string; callerDisplayName?: string }
-  ): CallEventShape {
+    dto: {
+      externalCallId: string;
+      rawCallerNumber: string;
+      callerDisplayName?: string;
+      autoCreateSession?: boolean;
+      preferredSessionTitle?: string;
+      preferredPriority?: string;
+    }
+  ): { callEvent: CallEventShape; autoCreateResult: AutoCreateSessionResult; createdSession?: SupportSessionShape } {
     const normalized = normalizePhoneNumber(dto.rawCallerNumber);
     const callerMatch = matchCallerByPhone(normalized);
     const now = new Date().toISOString();
@@ -78,7 +90,96 @@ export class CallsService {
       });
     }
 
-    return callEvent;
+    let autoCreateResult: AutoCreateSessionResult = AutoCreateSessionResult.enum.not_requested;
+    let createdSession: SupportSessionShape | undefined;
+
+    if (dto.autoCreateSession) {
+      if (!normalized.valid || callerMatch.status === 'invalid_number') {
+        autoCreateResult = AutoCreateSessionResult.enum.skipped_invalid_phone;
+      } else if (callerMatch.status !== 'matched') {
+        autoCreateResult = AutoCreateSessionResult.enum.skipped_no_match;
+      } else {
+        // Create a new support session from the matched caller
+        const sessionTitle =
+          dto.preferredSessionTitle ??
+          (callerMatch.customerName
+            ? `Incoming call from ${callerMatch.customerName}`
+            : `Incoming call from ${normalized.normalized ?? dto.rawCallerNumber}`);
+
+        const priority = dto.preferredPriority
+          ? SupportSessionPriority.parse(dto.preferredPriority)
+          : SupportSessionPriority.enum.normal;
+
+        const sessionId = randomUUID() as SupportSessionId;
+        const session: SupportSessionShape = {
+          id: sessionId,
+          tenantId: identity.tenantId as TenantId,
+          status: SupportSessionStatus.enum.open,
+          priority,
+          title: sessionTitle,
+          description: `Auto-created from incoming call ${dto.externalCallId}. Normalized: ${normalized.normalized ?? 'n/a'}`,
+          assignedUserId: identity.userId,
+          linkedTicketIds: callerMatch.matchedTicketIds ?? [],
+          aiContextPacketIds: [],
+          screenObservationIds: [],
+          callEventIds: [callEvent.id],
+          auditEventIds: [],
+          startedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        this.store.saveSession(session);
+        createdSession = session;
+
+        // Link call to session
+        const updatedCall: CallEventShape = {
+          ...callEvent,
+          sessionId: session.id,
+          status: CallStatus.enum.answered,
+          answeredAt: now,
+          updatedAt: now,
+        };
+        this.store.saveCallEvent(updatedCall);
+
+        autoCreateResult = AutoCreateSessionResult.enum.auto_created;
+
+        this.appendAuditEvent(
+          identity,
+          session.id,
+          AuditEventType.enum.support_session_auto_created,
+          'support_session',
+          session.id,
+          {
+            externalCallId: callEvent.externalCallId,
+            normalizedNumber: normalized.normalized,
+            customerId: callerMatch.customerId,
+            customerName: callerMatch.customerName,
+            matchedTicketIds: callerMatch.matchedTicketIds,
+            mockDevOnly: true,
+          }
+        );
+
+        this.appendAuditEvent(
+          identity,
+          session.id,
+          AuditEventType.enum.call_auto_linked_to_session,
+          'call_event',
+          callEvent.id,
+          {
+            externalCallId: callEvent.externalCallId,
+            sessionId: session.id,
+            normalizedNumber: normalized.normalized,
+            mockDevOnly: true,
+          }
+        );
+
+        // Return the updated call event (linked)
+        return { callEvent: updatedCall, autoCreateResult, createdSession };
+      }
+    }
+
+    return { callEvent, autoCreateResult, createdSession };
   }
 
   listRecentCalls(identity: DevIdentity): CallEventShape[] {

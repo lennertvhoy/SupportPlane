@@ -719,3 +719,114 @@
   - Evidence bundles include call event summaries and mock telephony disclaimers.
 - Type: docs-render-verification
 - as_of: 2026-04-26T22:01:00+02:00
+
+
+## EV-2026-04-26-116: BL-041 call simulator panel with auto-create option
+
+- File: output/playwright/session-041-auto-session-from-call/01-call-simulator-with-auto-create-option.png
+- Title: Call Simulator panel with auto-create checkbox visible
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Opened Support Cockpit and observed the Call Simulator panel.
+- Shows:
+  - "Auto-create support session on matched call" checkbox is visible and unchecked.
+  - "No real telephony connected" disclaimer is visible.
+  - "Fake webhook" badge is present.
+- Proves:
+  - The Call Simulator panel includes the auto-create toggle and honest mock labels.
+- Type: docs-render-verification
+- as_of: 2026-04-26T22:51:00+02:00
+
+## EV-2026-04-26-117: BL-041 matched fake incoming call auto-creates session
+
+- File: output/playwright/session-041-auto-session-from-call/02-matched-fake-incoming-call-creates-session.png
+- Title: Fake incoming call with auto-create result badge and answered status
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Checked auto-create checkbox, clicked Simulate incoming call with default fixture number.
+- Shows:
+  - Call status is "answered".
+  - Auto-create badge shows "auto_created".
+  - Match status: matched, Customer: Acme BVBA, Recent tickets: TICKET-101, TICKET-102.
+- Proves:
+  - A matched fake incoming call with autoCreateSession=true triggers automatic session creation.
+- Type: docs-render-verification
+- as_of: 2026-04-26T22:52:00+02:00
+
+## EV-2026-04-26-118: BL-041 auto-created session visible in cockpit
+
+- File: output/playwright/session-041-auto-session-from-call/03b-auto-created-session-in-list.png
+- Title: Auto-created session appears in session list after page refresh
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Refreshed the page after auto-creating a session from a fake call.
+- Shows:
+  - Session list shows "Incoming call from A..." with open badge.
+  - Session ID prefix e80c0151, priority normal, timestamp 10:51:47 PM.
+- Proves:
+  - The auto-created session is tenant-scoped and persists in the in-memory store for the current runtime.
+- Type: docs-render-verification
+- as_of: 2026-04-26T22:53:00+02:00
+
+## EV-2026-04-26-119: BL-041 call linked to auto-created session
+
+- File: output/playwright/session-041-auto-session-from-call/04-call-linked-to-auto-created-session.png
+- Title: Selected auto-created session shows Tickets: 2 and call audit trail
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Selected the auto-created session from the session list.
+- Shows:
+  - Session banner shows "Incoming call from Acme BVBA" with Tickets: 2.
+  - Call audit trail shows support_session_auto_created event.
+- Proves:
+  - The auto-created session is selectable and shows the correct linked ticket count from caller matching.
+- Type: docs-render-verification
+- as_of: 2026-04-26T22:53:00+02:00
+
+## EV-2026-04-26-120: BL-041 audit trail with auto-create and auto-link events
+
+- File: output/playwright/session-041-auto-session-from-call/05e-audit-trail-scrolled.png
+- Title: Audit Trail showing support_session_auto_created and call_auto_linked_to_session
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to the Audit Trail panel after selecting the auto-created session.
+- Shows:
+  - support_session_auto_created event with actor user/dev-user, resource support_session:e80c0151, metadata including externalCallId, normalizedNumber, customerId, customerName, matchedTicketIds, mockDevOnly.
+  - call_auto_linked_to_session event with actor user/dev-user, resource call_event:80ab5058, metadata including externalCallId, sessionId, normalizedNumber, mockDevOnly.
+- Proves:
+  - Auto-creation and auto-linking append detailed audit events with tenant, actor, and match metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-26T22:55:00+02:00
+
+## EV-2026-04-26-121: BL-041 evidence bundle markdown with linked call session
+
+- File: output/playwright/session-041-auto-session-from-call/06k-evidence-bundle-markdown-linked-session.png
+- Title: Markdown evidence bundle showing Call Events with Linked Session
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Generated an evidence bundle for the auto-created session and switched to Markdown tab.
+- Shows:
+  - Call Events section lists FAKE-1777236707922 with provider fake_webhook, direction inbound, status answered.
+  - Matched Customer: Acme BVBA, Matched Tickets: TICKET-101, TICKET-102.
+  - Linked Session: e80c0151-a777-4be0-8684-e2aa6b18b602.
+  - Mock/Dev-Only: true.
+- Proves:
+  - Evidence bundles include the auto-created call/session relationship and matched caller context.
+- Type: docs-render-verification
+- as_of: 2026-04-26T22:59:00+02:00
+
+## EV-2026-04-26-122: BL-041 evidence bundle mock telephony disclaimer
+
+- File: output/playwright/session-041-auto-session-from-call/06n-evidence-bundle-markdown-disclaimers-text.png
+- Title: Evidence bundle Mock/Dev-Only Disclaimers including auto-created session note
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to the Mock/Dev-Only Disclaimers section in the Markdown evidence bundle.
+- Shows:
+  - "Call events are simulated via fake webhook. No real telephony is co..."
+  - "Caller matching uses deterministic mock fixtures, not a real custom..."
+  - "Support sessions may be auto-created from fake incoming calls. Thes..."
+- Proves:
+  - Evidence bundles include honest mock telephony and auto-created session disclaimers.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:01:00+02:00

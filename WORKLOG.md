@@ -729,3 +729,69 @@ Use this file for dated session notes, verification summaries, and references to
 - No real authentication; dev identity headers are explicitly mock-only.
 - No automatic session creation from incoming calls yet (planned for BL-041).
 - No call console UI separate from the simulator panel yet (planned for BL-043).
+
+
+## 2026-04-26 - Automatic SupportSession creation from incoming calls (BL-041)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean after final commit
+
+### What changed
+
+- Extended `packages/contracts/src/call.ts` with `AutoCreateSessionResult` enum and updated `IncomingCallWebhookRequest`/`IncomingCallWebhookResponse` to support auto-create options.
+- Extended `packages/contracts/src/audit.ts` with `support_session_auto_created` and `call_auto_linked_to_session` audit event types.
+- Updated `apps/api/src/calls/calls.service.ts` to optionally auto-create a `SupportSession` when `autoCreateSession: true` and caller matches a fixture.
+- Updated `apps/api/src/calls/calls.controller.ts` to accept auto-create request fields.
+- Updated `apps/web/lib/api.ts` with `IncomingCallResponse` type and updated `createFakeIncomingCall` signature.
+- Updated `apps/web/components/CallSimulatorPanel.tsx` with auto-create toggle, result display, created session card, and "Open in cockpit" button.
+- Updated `apps/api/src/evidence-bundle/evidence-bundle.builder.ts` with auto-created session disclaimers.
+- Added `docs/CALL_SIMULATOR.md` documenting auto-create behavior, request/response examples, UI flow, and known limitations.
+- Added API integration tests for auto-create with match, no-match skip, invalid-phone skip, tenant isolation, audit events, and evidence bundle inclusion.
+- Added contract tests for `AutoCreateSessionResult`, auto-create request/response schemas.
+- Added web client tests for auto-create response shape handling.
+- Captured browser screenshots in `output/playwright/session-041-auto-session-from-call/`.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 48/48 integration tests passed.
+- `npm test --workspace @supportplane/contracts` passed: 16/16 tests passed.
+- `npm test --workspace @supportplane/web` passed: 8/8 tests passed.
+- `npm test --workspace @supportplane/connectors` passed: 13/13 tests passed.
+- `npm test --workspace @supportplane/ai` passed: 3/3 tests passed.
+- `npm run build --workspace @supportplane/web` passed.
+- Runtime API verified at `http://localhost:4110/health` and call endpoints.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Browser flow verified: simulate fake incoming call with auto-create enabled, view auto-created session, open in cockpit, verify audit trail shows `support_session_auto_created` and `call_auto_linked_to_session`, verify evidence bundle includes call event with linked session and mock telephony disclaimers.
+
+### Evidence
+
+- UI screenshots: `output/playwright/session-041-auto-session-from-call/01-call-simulator-with-auto-create-option.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call/02-matched-fake-incoming-call-creates-session.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call/03-auto-created-session-open-in-cockpit.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call/03b-auto-created-session-in-list.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call/04-call-linked-to-auto-created-session.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call/05e-audit-trail-scrolled.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call/06k-evidence-bundle-markdown-linked-session.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call/06n-evidence-bundle-markdown-disclaimers-text.png`
+- Evidence refs: `EV-2026-04-26-116` through `EV-2026-04-26-122`.
+- Acceptance freeze: `AF-2026-04-26-006`.
+
+### Remaining Risk
+
+- No real telephony or PBX integration exists; caller matching uses deterministic fixture data only.
+- Phone normalization is Belgian-style only; no international number support yet.
+- In-memory store is not persistent; all runtime data is lost on restart.
+- No real authentication; dev identity headers are explicitly mock-only.
+- No call console UI separate from the simulator panel yet (planned for BL-043).

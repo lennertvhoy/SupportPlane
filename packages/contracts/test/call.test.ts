@@ -6,6 +6,7 @@ import {
   IncomingCallWebhookResponse,
   CallSessionLinkRequest,
   CallSessionLinkResponse,
+  AutoCreateSessionResult,
   normalizePhoneNumber,
   matchCallerByPhone,
 } from '../src/index.js';
@@ -47,14 +48,30 @@ describe('call contracts', () => {
   it('IncomingCallWebhookResponse validates', () => {
     const now = new Date().toISOString();
     const res = IncomingCallWebhookResponse.parse({
-      callEventId: 'call-2',
-      tenantId: 'tenant-a',
-      externalCallId: 'FAKE-003',
-      normalizedNumber: '+32 2 555 0202',
+      callEvent: {
+        id: 'call-2',
+        tenantId: 'tenant-a',
+        provider: 'fake_webhook',
+        source: 'fake_webhook',
+        externalCallId: 'FAKE-003',
+        direction: 'inbound',
+        status: 'ringing',
+        caller: {
+          rawNumber: '02 555 0202',
+          normalizedNumber: '+32 2 555 0202',
+        },
+        startedAt: now,
+        mockDevOnly: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+      autoCreateResult: 'not_requested',
       mockDevOnly: true,
       receivedAt: now,
     });
     assert.strictEqual(res.mockDevOnly, true);
+    assert.strictEqual(res.autoCreateResult, 'not_requested');
+    assert.strictEqual(res.callEvent.externalCallId, 'FAKE-003');
   });
 
   it('CallSessionLinkRequest validates', () => {
@@ -71,6 +88,71 @@ describe('call contracts', () => {
       mockDevOnly: true,
     });
     assert.strictEqual(res.mockDevOnly, true);
+  });
+
+  it('AutoCreateSessionResult validates allowed values', () => {
+    assert.strictEqual(AutoCreateSessionResult.enum.auto_created, 'auto_created');
+    assert.strictEqual(AutoCreateSessionResult.enum.not_requested, 'not_requested');
+    assert.strictEqual(AutoCreateSessionResult.enum.skipped_no_match, 'skipped_no_match');
+    assert.strictEqual(AutoCreateSessionResult.enum.skipped_invalid_phone, 'skipped_invalid_phone');
+  });
+
+  it('IncomingCallWebhookRequest validates with autoCreateSession options', () => {
+    const req = IncomingCallWebhookRequest.parse({
+      externalCallId: 'FAKE-003',
+      rawCallerNumber: '03 555 01 01',
+      autoCreateSession: true,
+      preferredSessionTitle: 'Custom title',
+      preferredPriority: 'high',
+    });
+    assert.strictEqual(req.autoCreateSession, true);
+    assert.strictEqual(req.preferredSessionTitle, 'Custom title');
+    assert.strictEqual(req.preferredPriority, 'high');
+  });
+
+  it('IncomingCallWebhookResponse validates with auto-created session', () => {
+    const now = new Date().toISOString();
+    const res = IncomingCallWebhookResponse.parse({
+      callEvent: {
+        id: 'call-auto',
+        tenantId: 'tenant-a',
+        provider: 'fake_webhook',
+        source: 'fake_webhook',
+        externalCallId: 'FAKE-AUTO',
+        direction: 'inbound',
+        status: 'answered',
+        sessionId: 'session-auto',
+        caller: {
+          rawNumber: '03 555 01 01',
+          normalizedNumber: '+32 3 555 01 01',
+        },
+        startedAt: now,
+        mockDevOnly: true,
+        createdAt: now,
+        updatedAt: now,
+      },
+      autoCreateResult: 'auto_created',
+      createdSession: {
+        id: 'session-auto',
+        tenantId: 'tenant-a',
+        status: 'open',
+        priority: 'normal',
+        title: 'Incoming call from Acme BVBA',
+        linkedTicketIds: ['TICKET-101'],
+        aiContextPacketIds: [],
+        screenObservationIds: [],
+        callEventIds: ['call-auto'],
+        auditEventIds: [],
+        startedAt: now,
+        createdAt: now,
+        updatedAt: now,
+      },
+      mockDevOnly: true,
+      receivedAt: now,
+    });
+    assert.strictEqual(res.autoCreateResult, 'auto_created');
+    assert.ok(res.createdSession);
+    assert.strictEqual(res.createdSession.title, 'Incoming call from Acme BVBA');
   });
 });
 

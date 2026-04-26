@@ -191,28 +191,33 @@ describe('web API client', () => {
       assert.equal(init?.method, 'POST');
       return new Response(
         JSON.stringify({
-          id: 'call-1',
-          tenantId: 'dev-tenant',
-          provider: 'fake_webhook',
-          source: 'fake_webhook',
-          externalCallId: 'FAKE-001',
-          direction: 'inbound',
-          status: 'ringing',
-          caller: {
-            rawNumber: '03 555 01 01',
-            normalizedNumber: '+32 3 555 0101',
-            displayName: 'Mock Caller',
+          callEvent: {
+            id: 'call-1',
+            tenantId: 'dev-tenant',
+            provider: 'fake_webhook',
+            source: 'fake_webhook',
+            externalCallId: 'FAKE-001',
+            direction: 'inbound',
+            status: 'ringing',
+            caller: {
+              rawNumber: '03 555 01 01',
+              normalizedNumber: '+32 3 555 0101',
+              displayName: 'Mock Caller',
+            },
+            callerMatch: {
+              status: 'matched',
+              confidence: 1.0,
+              customerName: 'Acme BVBA',
+              matchedTicketIds: ['TICKET-101'],
+            },
+            startedAt: '2026-04-26T18:00:00.000Z',
+            mockDevOnly: true,
+            createdAt: '2026-04-26T18:00:00.000Z',
+            updatedAt: '2026-04-26T18:00:00.000Z',
           },
-          callerMatch: {
-            status: 'matched',
-            confidence: 1.0,
-            customerName: 'Acme BVBA',
-            matchedTicketIds: ['TICKET-101'],
-          },
-          startedAt: '2026-04-26T18:00:00.000Z',
+          autoCreateResult: 'not_requested',
           mockDevOnly: true,
-          createdAt: '2026-04-26T18:00:00.000Z',
-          updatedAt: '2026-04-26T18:00:00.000Z',
+          receivedAt: '2026-04-26T18:00:00.000Z',
         }),
         { status: 201, headers: { 'Content-Type': 'application/json' } }
       );
@@ -223,11 +228,84 @@ describe('web API client', () => {
         externalCallId: 'FAKE-001',
         rawCallerNumber: '03 555 01 01',
       });
-      assert.strictEqual(response.provider, 'fake_webhook');
-      assert.strictEqual(response.caller.normalizedNumber, '+32 3 555 0101');
-      assert.strictEqual(response.callerMatch?.status, 'matched');
-      assert.strictEqual(response.callerMatch?.customerName, 'Acme BVBA');
+      assert.strictEqual(response.callEvent.provider, 'fake_webhook');
+      assert.strictEqual(response.callEvent.caller.normalizedNumber, '+32 3 555 0101');
+      assert.strictEqual(response.callEvent.callerMatch?.status, 'matched');
+      assert.strictEqual(response.callEvent.callerMatch?.customerName, 'Acme BVBA');
+      assert.strictEqual(response.autoCreateResult, 'not_requested');
       assert.strictEqual(response.mockDevOnly, true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it('handles fake incoming call auto-create response shape', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/calls/fake-incoming');
+      assert.equal(init?.method, 'POST');
+      const body = JSON.parse((init?.body as string) ?? '{}');
+      assert.strictEqual(body.autoCreateSession, true);
+      return new Response(
+        JSON.stringify({
+          callEvent: {
+            id: 'call-2',
+            tenantId: 'dev-tenant',
+            provider: 'fake_webhook',
+            externalCallId: 'FAKE-002',
+            direction: 'inbound',
+            status: 'answered',
+            sessionId: 'session-auto-1',
+            caller: {
+              rawNumber: '03 555 01 01',
+              normalizedNumber: '+32 3 555 0101',
+            },
+            callerMatch: {
+              status: 'matched',
+              confidence: 1,
+              customerName: 'Acme BVBA',
+              matchedTicketIds: ['TICKET-101'],
+            },
+            startedAt: '2026-04-26T18:00:00.000Z',
+            mockDevOnly: true,
+            createdAt: '2026-04-26T18:00:00.000Z',
+            updatedAt: '2026-04-26T18:00:00.000Z',
+          },
+          autoCreateResult: 'auto_created',
+          createdSession: {
+            id: 'session-auto-1',
+            tenantId: 'dev-tenant',
+            status: 'open',
+            priority: 'normal',
+            title: 'Incoming call from Acme BVBA',
+            assignedUserId: 'dev-user',
+            linkedTicketIds: ['TICKET-101'],
+            aiContextPacketIds: [],
+            screenObservationIds: [],
+            callEventIds: ['call-2'],
+            auditEventIds: [],
+            startedAt: '2026-04-26T18:00:00.000Z',
+            createdAt: '2026-04-26T18:00:00.000Z',
+            updatedAt: '2026-04-26T18:00:00.000Z',
+          },
+          mockDevOnly: true,
+          receivedAt: '2026-04-26T18:00:00.000Z',
+        }),
+        { status: 201, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.createFakeIncomingCall({
+        externalCallId: 'FAKE-002',
+        rawCallerNumber: '03 555 01 01',
+        autoCreateSession: true,
+      });
+      assert.strictEqual(response.autoCreateResult, 'auto_created');
+      assert.ok(response.createdSession);
+      assert.strictEqual(response.createdSession.title, 'Incoming call from Acme BVBA');
+      assert.strictEqual(response.callEvent.sessionId, 'session-auto-1');
+      assert.strictEqual(response.callEvent.status, 'answered');
     } finally {
       globalThis.fetch = originalFetch;
     }

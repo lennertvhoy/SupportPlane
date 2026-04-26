@@ -6,10 +6,10 @@
 
 ## Active Work
 
-### P0 [BL-041] Automatic SupportSession creation from incoming call events
+### P0 [BL-042] Suggested greeting generation from call plus ticket context
 Owner: coding agent
-Next: extend fake incoming call endpoint to optionally auto-create a SupportSession when a caller matches
-Exit: incoming call with matched caller automatically creates a session and links the call to it
+Next: implement mock greeting suggestion endpoint using call context and matched ticket data
+Exit: operator can request a suggested greeting for an auto-created call session
 
 ## Queue Rules
 

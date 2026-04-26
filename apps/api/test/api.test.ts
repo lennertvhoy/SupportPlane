@@ -636,13 +636,14 @@ describe('Call simulator endpoints', () => {
       .send({ externalCallId: 'FAKE-1', rawCallerNumber: '03 555 01 01', callerDisplayName: 'Test' })
       .expect(201);
 
-    assert.strictEqual(res.body.provider, 'fake_webhook');
-    assert.strictEqual(res.body.direction, 'inbound');
-    assert.strictEqual(res.body.status, 'ringing');
-    assert.strictEqual(res.body.caller.rawNumber, '03 555 01 01');
-    assert.strictEqual(res.body.caller.normalizedNumber, '+32 3 555 01 01');
-    assert.strictEqual(res.body.mockDevOnly, true);
-    assert.ok(res.body.callerMatch);
+    assert.strictEqual(res.body.callEvent.provider, 'fake_webhook');
+    assert.strictEqual(res.body.callEvent.direction, 'inbound');
+    assert.strictEqual(res.body.callEvent.status, 'ringing');
+    assert.strictEqual(res.body.callEvent.caller.rawNumber, '03 555 01 01');
+    assert.strictEqual(res.body.callEvent.caller.normalizedNumber, '+32 3 555 01 01');
+    assert.strictEqual(res.body.callEvent.mockDevOnly, true);
+    assert.ok(res.body.callEvent.callerMatch);
+    assert.strictEqual(res.body.autoCreateResult, 'not_requested');
   });
 
   it('POST /calls/fake-incoming returns matched fixture customer', async () => {
@@ -653,9 +654,136 @@ describe('Call simulator endpoints', () => {
       .send({ externalCallId: 'FAKE-2', rawCallerNumber: '+32 3 555 01 01' })
       .expect(201);
 
-    assert.strictEqual(res.body.callerMatch.status, 'matched');
-    assert.strictEqual(res.body.callerMatch.customerName, 'Acme BVBA');
-    assert.deepStrictEqual(res.body.callerMatch.matchedTicketIds, ['TICKET-101', 'TICKET-102']);
+    assert.strictEqual(res.body.callEvent.callerMatch.status, 'matched');
+    assert.strictEqual(res.body.callEvent.callerMatch.customerName, 'Acme BVBA');
+    assert.deepStrictEqual(res.body.callEvent.callerMatch.matchedTicketIds, ['TICKET-101', 'TICKET-102']);
+  });
+
+  it('POST /calls/fake-incoming auto-creates session when autoCreateSession=true and caller matched', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-AUTO-1', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true })
+      .expect(201);
+
+    assert.strictEqual(res.body.autoCreateResult, 'auto_created');
+    assert.ok(res.body.createdSession);
+    assert.strictEqual(res.body.createdSession.tenantId, 'tenant-a');
+    assert.strictEqual(res.body.createdSession.title, 'Incoming call from Acme BVBA');
+    assert.strictEqual(res.body.createdSession.status, 'open');
+    assert.deepStrictEqual(res.body.createdSession.linkedTicketIds, ['TICKET-101', 'TICKET-102']);
+    assert.strictEqual(res.body.callEvent.sessionId, res.body.createdSession.id);
+    assert.strictEqual(res.body.callEvent.status, 'answered');
+  });
+
+  it('POST /calls/fake-incoming skips auto-create for no-match caller', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-AUTO-2', rawCallerNumber: '+32 9 999 9999', autoCreateSession: true })
+      .expect(201);
+
+    assert.strictEqual(res.body.autoCreateResult, 'skipped_no_match');
+    assert.strictEqual(res.body.createdSession, undefined);
+    assert.strictEqual(res.body.callEvent.status, 'ringing');
+  });
+
+  it('POST /calls/fake-incoming skips auto-create for invalid phone', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-AUTO-3', rawCallerNumber: 'not-a-number', autoCreateSession: true })
+      .expect(201);
+
+    assert.strictEqual(res.body.autoCreateResult, 'skipped_invalid_phone');
+    assert.strictEqual(res.body.createdSession, undefined);
+  });
+
+  it('auto-created session is tenant-scoped', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-AUTO-4', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true })
+      .expect(201);
+
+    const sessionId = res.body.createdSession.id;
+
+    // Should be accessible from same tenant
+    await supertest(server)
+      .get(`/support-sessions/${sessionId}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    // Should not be accessible from different tenant
+    await supertest(server)
+      .get(`/support-sessions/${sessionId}`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .expect(404);
+  });
+
+  it('auto-create appends support_session_auto_created and call_auto_linked_to_session audit events', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-AUTO-5', rawCallerNumber: '03 555 01 01', autoCreateSession: true })
+      .expect(201);
+
+    const sessionId = res.body.createdSession.id;
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${sessionId}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const autoCreateEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'support_session_auto_created'
+    );
+    assert.ok(autoCreateEvent, 'support_session_auto_created audit event should exist');
+    assert.strictEqual(autoCreateEvent.metadata.customerName, 'Acme BVBA');
+
+    const autoLinkEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'call_auto_linked_to_session'
+    );
+    assert.ok(autoLinkEvent, 'call_auto_linked_to_session audit event should exist');
+    assert.strictEqual(autoLinkEvent.metadata.sessionId, sessionId);
+  });
+
+  it('evidence bundle includes auto-created call and session relationship', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-AUTO-6', rawCallerNumber: '03 555 01 01', autoCreateSession: true })
+      .expect(201);
+
+    const sessionId = res.body.createdSession.id;
+
+    const bundleRes = await supertest(server)
+      .get(`/support-sessions/${sessionId}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(Array.isArray(bundleRes.body.bundle.callEvents));
+    assert.strictEqual(bundleRes.body.bundle.callEvents.length, 1);
+    assert.strictEqual(bundleRes.body.bundle.callEvents[0].externalCallId, 'FAKE-AUTO-6');
+    assert.strictEqual(bundleRes.body.bundle.callEvents[0].linkedSessionId, sessionId);
+    assert.strictEqual(bundleRes.body.bundle.callEvents[0].matchStatus, 'matched');
+    assert.strictEqual(bundleRes.body.bundle.sessionSummary.id, sessionId);
+
+    const auditTimeline = bundleRes.body.bundle.auditTimeline;
+    const autoCreateEvent = auditTimeline.find(
+      (e: { eventType: string }) => e.eventType === 'support_session_auto_created'
+    );
+    assert.ok(autoCreateEvent, 'support_session_auto_created should be in evidence bundle audit timeline');
   });
 
   it('GET /calls/recent lists recent calls', async () => {
@@ -686,12 +814,12 @@ describe('Call simulator endpoints', () => {
       .expect(201);
 
     const res = await supertest(server)
-      .get(`/calls/${created.body.id}`)
+      .get(`/calls/${created.body.callEvent.id}`)
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
       .expect(200);
 
-    assert.strictEqual(res.body.id, created.body.id);
+    assert.strictEqual(res.body.id, created.body.callEvent.id);
     assert.strictEqual(res.body.externalCallId, 'FAKE-4');
   });
 
@@ -711,7 +839,7 @@ describe('Call simulator endpoints', () => {
       .expect(201);
 
     const res = await supertest(server)
-      .post(`/calls/${call.body.id}/link-session`)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
       .send({ sessionId: session.body.id })
@@ -731,7 +859,7 @@ describe('Call simulator endpoints', () => {
       .expect(201);
 
     await supertest(server)
-      .get(`/calls/${call.body.id}`)
+      .get(`/calls/${call.body.callEvent.id}`)
       .set('x-tenant-id', 'tenant-b')
       .set('x-user-id', 'user-2')
       .expect(404);
@@ -753,7 +881,7 @@ describe('Call simulator endpoints', () => {
       .expect(201);
 
     await supertest(server)
-      .post(`/calls/${call.body.id}/link-session`)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
       .send({ sessionId: session.body.id })
@@ -789,7 +917,7 @@ describe('Call simulator endpoints', () => {
       .expect(201);
 
     await supertest(server)
-      .post(`/calls/${call.body.id}/link-session`)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
       .send({ sessionId: session.body.id })

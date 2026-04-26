@@ -21,7 +21,14 @@ export class CallsController {
   @Post('fake-incoming')
   createFakeIncoming(
     @Req() req: Request,
-    @Body() body: { externalCallId: string; rawCallerNumber: string; callerDisplayName?: string }
+    @Body() body: {
+      externalCallId: string;
+      rawCallerNumber: string;
+      callerDisplayName?: string;
+      autoCreateSession?: boolean;
+      preferredSessionTitle?: string;
+      preferredPriority?: string;
+    }
   ) {
     const identity = getDevIdentity(req);
     return this.service.createFakeIncomingCall(identity, body);

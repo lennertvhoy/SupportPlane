@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
+import { SupportSession } from './support-session.js';
 
 export const CallEventId = EntityId.brand<'CallEventId'>();
 export type CallEventId = z.infer<typeof CallEventId>;
@@ -80,12 +81,24 @@ export const CallEvent = z.object({
 });
 export type CallEvent = z.infer<typeof CallEvent>;
 
+export const AutoCreateSessionResult = z.enum([
+  'not_requested',
+  'auto_created',
+  'linked_to_existing',
+  'skipped_no_match',
+  'skipped_invalid_phone',
+]);
+export type AutoCreateSessionResult = z.infer<typeof AutoCreateSessionResult>;
+
 export const IncomingCallWebhookRequest = z.object({
   externalCallId: z.string().min(1).max(256),
   rawCallerNumber: z.string().min(1).max(64),
   callerDisplayName: z.string().max(256).optional(),
   direction: CallDirection.default('inbound'),
   status: CallStatus.default('ringing'),
+  autoCreateSession: z.boolean().optional(),
+  preferredSessionTitle: z.string().min(1).max(512).optional(),
+  preferredPriority: z.string().min(1).max(64).optional(),
   metadata: z.record(JsonValue).default({}),
 });
 export type IncomingCallWebhookRequest = z.infer<
@@ -93,11 +106,9 @@ export type IncomingCallWebhookRequest = z.infer<
 >;
 
 export const IncomingCallWebhookResponse = z.object({
-  callEventId: CallEventId,
-  tenantId: TenantId,
-  externalCallId: z.string(),
-  normalizedNumber: z.string().optional(),
-  callerMatch: CallerMatch.optional(),
+  callEvent: CallEvent,
+  autoCreateResult: AutoCreateSessionResult,
+  createdSession: SupportSession.optional(),
   mockDevOnly: z.boolean(),
   receivedAt: Timestamp,
 });

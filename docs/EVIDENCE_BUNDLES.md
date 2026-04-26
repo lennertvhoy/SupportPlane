@@ -92,6 +92,7 @@ Tests prove that `apiToken`, `ZAMMAD_API_TOKEN`, `secret`, `token=`, and `Bearer
 - **No tamper-evident storage:** Bundles are not stored in object storage or signed.
 - **No GDPR or legal compliance claims:** This MVP format is for operational review only.
 - **Pattern-based redaction:** Secret redaction uses pattern matching, not guaranteed zero-knowledge.
+- **Auto-created sessions:** Sessions created from mock incoming calls are development-only artifacts.
 
 ## Future persistence/object-storage path
 

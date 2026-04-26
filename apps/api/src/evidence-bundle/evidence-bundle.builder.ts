@@ -178,6 +178,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Connector mode is mock unless explicitly configured otherwise.',
       'Call events are simulated via fake webhook. No real telephony is connected.',
       'Caller matching uses deterministic mock fixtures, not a real customer database.',
+      'Support sessions may be auto-created from fake incoming calls. These are mock sessions for development only.',
     ],
     limitations: [
       'No cryptographic hash chain integrity guarantee.',
@@ -186,6 +187,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'No GDPR or legal compliance claims are made for this export format.',
       'Secrets and tokens have been redacted using pattern matching, not guaranteed zero-knowledge.',
       'Phone normalization is Belgian-style heuristic only, not telecom-grade validation.',
+      'Auto-created sessions are generated from mock call events and do not represent real customer interactions.',
     ],
     sourceProvenance: {
       storeType: 'in-memory',

@@ -230,3 +230,45 @@ and must be protected from quiet regression.
   - Phone normalization is Belgian-style only; international support is not implemented.
   - Caller matching is fixture-based mock data, not a real CRM or directory lookup.
   - In-memory store means call data is lost on API restart.
+
+
+## AF-2026-04-26-006: Automatic SupportSession creation from incoming calls (BL-041)
+
+- ID: AF-2026-04-26-006
+- Milestone: Automatic SupportSession creation from incoming call events
+- Scope: SupportPlane can optionally auto-create a SupportSession from a fake incoming call when the caller matches a fixture, link the call to the session, display the created session in the Call Simulator panel with an "Open in cockpit" button, append support_session_auto_created and call_auto_linked_to_session audit events, and include the linked call/session relationship in the evidence bundle with mock telephony and auto-created session disclaimers.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded_in_final_handoff
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /
+  - POST /calls/fake-incoming
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-26-116
+  - EV-2026-04-26-117
+  - EV-2026-04-26-118
+  - EV-2026-04-26-119
+  - EV-2026-04-26-120
+  - EV-2026-04-26-121
+  - EV-2026-04-26-122
+- regression_guard:
+  - Call Simulator panel must remain visible with auto-create checkbox and honest mock labels.
+  - POST /calls/fake-incoming must support autoCreateSession, preferredSessionTitle, and preferredPriority.
+  - Matched caller with autoCreateSession=true must create a tenant-scoped SupportSession with linked tickets from caller matching.
+  - Call event must be linked to the auto-created session and status updated to answered.
+  - Audit trail must display support_session_auto_created and call_auto_linked_to_session events.
+  - Evidence bundle must include callEvents with linkedSessionId and auto-created session disclaimers.
+  - Tenant isolation must be enforced for auto-created sessions.
+- Notes:
+  - No real telephony, PBX, or phone provider integration exists.
+  - Phone normalization is Belgian-style only; international support is not implemented.
+  - Caller matching is fixture-based mock data, not a real CRM or directory lookup.
+  - In-memory store means all data is lost on API restart.

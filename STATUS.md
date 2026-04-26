@@ -1,12 +1,13 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-26 22:04 CEST
+**Updated At:** 2026-04-26 23:02 CEST
 **Execution Mode:** operating
-**Project State:** bl_009_complete
+**Project State:** bl_041_complete
 **Public URL:** not configured
 
 ## Snapshot
 
+- BL-041 complete: Automatic SupportSession creation from incoming call events with auto-create toggle, matched caller session seeding, call linking, audit events, evidence bundle integration, and browser-verified UI flow.
 - BL-009 complete: Fake incoming call webhook with phone normalization, caller matching, session linking, and browser-verified Call Simulator panel.
 - BL-008 complete: Evidence bundle skeleton with JSON/Markdown MVP export, redaction, and browser-verified UI panel.
 - BL-007 complete: Zammad connector boundary with mock/zammad modes, ticket read, draft/writeback, and connector audit events.
@@ -16,7 +17,7 @@
 
 ## Immediate Priorities
 
-1. Continue toward Call Console UI (BL-043) or automatic session creation from incoming calls (BL-041).
+1. Continue toward Call Console UI (BL-043) or suggested greeting generation (BL-042).
 
 ## Active Blockers
 

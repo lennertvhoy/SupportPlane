@@ -46,6 +46,8 @@ export const AuditEventType = z.enum([
   'call_event_received',
   'caller_matched',
   'call_linked_to_session',
+  'support_session_auto_created',
+  'call_auto_linked_to_session',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;
