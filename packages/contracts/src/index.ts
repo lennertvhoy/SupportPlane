@@ -8,3 +8,4 @@ export * from './screen-observation.js';
 export * from './policy.js';
 export * from './audit.js';
 export * from './connector.js';
+export * from './evidence-bundle.js';

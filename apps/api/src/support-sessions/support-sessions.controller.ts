@@ -6,10 +6,12 @@ import {
   Param,
   Body,
   Req,
+  Res,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { SupportSessionsService } from './support-sessions.service.js';
 import { getDevIdentity } from '../common/dev-identity.middleware.js';
+import { EvidenceBundleFormat } from '@supportplane/contracts';
 
 @Controller('support-sessions')
 export class SupportSessionsController {
@@ -113,5 +115,30 @@ export class SupportSessionsController {
   getAuditEvents(@Req() req: Request, @Param('id') id: string) {
     const identity = getDevIdentity(req);
     return this.service.getAuditEvents(identity, id);
+  }
+
+  @Get(':id/evidence-bundle')
+  getEvidenceBundle(@Req() req: Request, @Param('id') id: string) {
+    const identity = getDevIdentity(req);
+    return this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.json);
+  }
+
+  @Get(':id/evidence-bundle.json')
+  getEvidenceBundleJson(@Req() req: Request, @Param('id') id: string) {
+    const identity = getDevIdentity(req);
+    return this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.json);
+  }
+
+  @Get(':id/evidence-bundle.md')
+  getEvidenceBundleMarkdown(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param('id') id: string
+  ) {
+    const identity = getDevIdentity(req);
+    const result = this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.markdown);
+    res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+    res.send(result.markdown);
+    return;
   }
 }

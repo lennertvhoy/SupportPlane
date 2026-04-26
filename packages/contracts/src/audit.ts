@@ -41,6 +41,8 @@ export const AuditEventType = z.enum([
   'approval_requested',
   'approval_granted',
   'approval_denied',
+  'evidence_bundle_generated',
+  'evidence_bundle_exported',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

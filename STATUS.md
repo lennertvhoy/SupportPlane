@@ -2,23 +2,22 @@
 
 **Updated At:** 2026-04-26 21:30 CEST
 **Execution Mode:** operating
-**Project State:** bl_007_complete
+**Project State:** bl_008_complete
 **Public URL:** not configured
 
 ## Snapshot
 
-- BL-007 complete: Zammad connector boundary with mock/zammad modes, status/test endpoints, ticket read, draft/writeback, and connector audit events.
-- BL-006 complete: local Podman-compatible topology with PostgreSQL, NATS, MinIO, and worker placeholder; host-run API and Web verified.
+- BL-008 complete: Evidence bundle skeleton with JSON/Markdown MVP export, redaction, audit events, and browser-verified UI panel.
+- BL-007 complete: Zammad connector boundary with mock/zammad modes, ticket read, draft/writeback, and connector audit events.
+- BL-006 complete: local Podman-compatible topology with PostgreSQL, NATS, MinIO, and worker placeholder.
 - BL-005 complete: mock AI gateway, draft suggestion endpoint, visible model metadata, and browser-verified cockpit flow.
-- BL-004 complete: Support Cockpit UI shell in Next.js on localhost:3200 with session list, ticket context, AI context, draft note, and audit trail.
-- BL-003 complete: mock-first ticket-aware NestJS API slice with sessions, ticketing adapter, AI context packets, and audit events.
-- BL-002 complete: MVP 1 domain contracts and initial Prisma schema are defined, compiled, and validated.
-- Architecture is TypeScript-first and AI is non-authoritative; policy, RBAC/ABAC, approvals, tool manifests, execution gateway, and audit decide what is allowed.
+- BL-004 complete: Support Cockpit UI shell in Next.js on localhost:3200.
+- BL-003 complete: mock-first ticket-aware NestJS API slice with sessions and audit events.
+- BL-002 complete: MVP 1 domain contracts and initial Prisma schema are defined and validated.
 
 ## Immediate Priorities
 
-1. Add evidence bundle skeleton and exportable JSON/Markdown MVP format (BL-008).
-2. Continue toward persisted SupportSession and ticket context after connector boundary is proven.
+1. Continue toward persisted SupportSession and ticket context after connector boundary is proven.
 
 ## Active Blockers
 

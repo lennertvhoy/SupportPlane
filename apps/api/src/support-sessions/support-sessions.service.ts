@@ -8,6 +8,7 @@ import {
   AuditActorType,
   ConnectorMode,
   InternalNoteWritebackResult,
+  EvidenceBundleFormat,
   type SupportSession as SupportSessionShape,
   type AIContextPacket as AIContextPacketShape,
   type AuditEvent as AuditEventShape,
@@ -18,6 +19,7 @@ import {
   type TicketingAdapterId,
   type InternalNoteDraft as InternalNoteDraftShape,
   type TicketReference as TicketReferenceShape,
+  type EvidenceBundle,
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import {
@@ -33,6 +35,10 @@ import {
 import { InMemoryStore } from './in-memory.store.js';
 import { type DevIdentity } from '../common/dev-identity.middleware.js';
 import { ConnectorsService } from '../connectors/connectors.service.js';
+import {
+  buildEvidenceBundle,
+  bundleToMarkdown,
+} from '../evidence-bundle/evidence-bundle.builder.js';
 
 @Injectable()
 export class SupportSessionsService {
@@ -402,6 +408,63 @@ export class SupportSessionsService {
 
   listSessions(identity: DevIdentity): SupportSessionShape[] {
     return this.store.listSessions(identity.tenantId);
+  }
+
+  generateEvidenceBundle(
+    identity: DevIdentity,
+    sessionId: string,
+    format: EvidenceBundleFormat
+  ): { bundle: EvidenceBundle; markdown?: string } {
+    const session = this.getSession(identity, sessionId);
+    const tickets = this.store.getTicketReferences(identity.tenantId, sessionId);
+    const contextPackets = this.store.getContextPackets(identity.tenantId, sessionId);
+    const auditEvents = this.store.getAuditEvents(identity.tenantId, sessionId);
+
+    const bundle = buildEvidenceBundle({
+      tenantId: identity.tenantId as TenantId,
+      sessionId: session.id as SupportSessionId,
+      generatedBy: identity.userId,
+      format,
+      session,
+      tickets,
+      contextPackets,
+      auditEvents,
+      connectorMode: this.connectorsService.getMode(),
+    });
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.evidence_bundle_generated,
+      'evidence_bundle',
+      bundle.bundleId,
+      { format, bundleId: bundle.bundleId, version: bundle.version }
+    );
+
+    if (format === EvidenceBundleFormat.enum.markdown) {
+      this.appendAuditEvent(
+        identity,
+        sessionId,
+        AuditEventType.enum.evidence_bundle_exported,
+        'evidence_bundle',
+        bundle.bundleId,
+        { format: 'markdown', bundleId: bundle.bundleId }
+      );
+    } else {
+      this.appendAuditEvent(
+        identity,
+        sessionId,
+        AuditEventType.enum.evidence_bundle_exported,
+        'evidence_bundle',
+        bundle.bundleId,
+        { format: 'json', bundleId: bundle.bundleId }
+      );
+    }
+
+    return {
+      bundle,
+      markdown: format === EvidenceBundleFormat.enum.markdown ? bundleToMarkdown(bundle) : undefined,
+    };
   }
 
   private appendAuditEvent(

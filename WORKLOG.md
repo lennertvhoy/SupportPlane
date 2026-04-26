@@ -505,6 +505,78 @@ Use this file for dated session notes, verification summaries, and references to
 - Docker Compose compatibility is expected but was not directly verified in this slice.
 - `npm audit` reports 10 dependency vulnerabilities (8 moderate, 2 high); no safe non-breaking fix was available.
 
+## 2026-04-26 - Evidence bundle skeleton (BL-008)
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean after final commit
+
+### What changed
+
+- Added `packages/contracts/src/evidence-bundle.ts` with Zod schemas for:
+  - `EvidenceBundle`, `EvidenceBundleFormat`, `EvidenceBundleSection`
+  - `EvidenceBundleSessionSummary`, `EvidenceBundleTicketSummary`, `EvidenceBundleContextPacketSummary`
+  - `EvidenceBundleConnectorOperationSummary`, `EvidenceBundleAiUsageSummary`, `EvidenceBundleAuditSummary`
+  - `EvidenceBundleExportRequest`, `EvidenceBundleExportResponse`
+- Extended `AuditEventType` in `packages/contracts/src/audit.ts` with `evidence_bundle_generated` and `evidence_bundle_exported`.
+- Implemented `apps/api/src/evidence-bundle/redaction.ts` with `redactSecrets` and `redactString` helpers.
+- Implemented `apps/api/src/evidence-bundle/evidence-bundle.builder.ts` with deterministic `buildEvidenceBundle` and `bundleToMarkdown`.
+- Updated `InMemoryStore` to support `listInternalNoteDrafts`.
+- Added `generateEvidenceBundle` to `SupportSessionsService` with tenant scoping and audit logging.
+- Added API endpoints:
+  - `GET /support-sessions/:id/evidence-bundle`
+  - `GET /support-sessions/:id/evidence-bundle.json`
+  - `GET /support-sessions/:id/evidence-bundle.md` (returns `text/markdown`)
+- Updated `apps/web/lib/api.ts` with `getEvidenceBundle`, `getEvidenceBundleJson`, `getEvidenceBundleMarkdown`.
+- Added `apps/web/components/EvidenceBundlePanel.tsx` with Summary/JSON/Markdown tabs, copy button, and mock/disclaimer labels.
+- Integrated Evidence Bundle panel into `apps/web/app/page.tsx`.
+- Added API tests for evidence bundle endpoints (JSON, Markdown, tenant isolation, audit events, secret redaction).
+- Added web client tests for evidence bundle JSON and Markdown response handling.
+- Added redaction unit tests proving secret keys, env values, bearer tokens, and Zammad tokens are redacted.
+- Updated `scripts/validate-contracts.js` to validate `EvidenceBundle` and related schemas.
+- Captured 6 browser screenshots in `output/playwright/session-008-evidence-bundle/`.
+- Added `docs/EVIDENCE_BUNDLES.md` with format documentation, redaction rules, limitations, and local verification steps.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md`, `WORKLOG.md`.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 33/33 integration tests passed.
+- `npm test --workspace @supportplane/ai` passed: 3/3 tests.
+- `npm test --workspace @supportplane/web` passed: 5/5 tests.
+- `npm test --workspace @supportplane/connectors` passed: 13/13 tests.
+- `npm run build --workspace @supportplane/web` passed.
+- Runtime API verified at `http://localhost:4110/health` and evidence bundle endpoints.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Browser flow verified: create session, load TICKET-101, generate mock draft, generate evidence bundle, view JSON preview, view Markdown preview, verify audit trail shows evidence_bundle_generated/exported events, verify no secrets in exported previews.
+
+### Evidence
+
+- UI screenshots: `output/playwright/session-008-evidence-bundle/01-evidence-bundle-panel-before-generation.png`
+- UI screenshots: `output/playwright/session-008-evidence-bundle/02-json-evidence-bundle-preview.png`
+- UI screenshots: `output/playwright/session-008-evidence-bundle/03-markdown-evidence-bundle-preview.png`
+- UI screenshots: `output/playwright/session-008-evidence-bundle/04-audit-trail-evidence-bundle-events.png`
+- UI screenshots: `output/playwright/session-008-evidence-bundle/05-mock-dev-only-disclaimer-visible.png`
+- UI screenshots: `output/playwright/session-008-evidence-bundle/06-no-secret-evidence.png`
+- Evidence refs: EV-2026-04-26-033 through EV-2026-04-26-038.
+
+### Remaining Risk
+
+- In-memory store is not persistent; all runtime data is lost on restart.
+- No real authentication; dev identity headers are explicitly mock-only.
+- Redaction is pattern-based, not cryptographically guaranteed.
+- No object storage, cryptographic signing, or compliance-grade integrity yet.
+
 ## 2026-04-26 - Zammad connector boundary (BL-007)
 
 **Type:** implementation

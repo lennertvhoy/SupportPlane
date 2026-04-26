@@ -344,6 +344,92 @@
 - Type: docs-render-verification
 - as_of: 2026-04-26T20:42:00+02:00
 
+## EV-2026-04-26-033: BL-008 evidence bundle panel before generation
+
+- File: output/playwright/session-008-evidence-bundle/01-evidence-bundle-panel-before-generation.png
+- Title: Evidence Bundle panel visible before generation
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Created a session and observed the Evidence Bundle panel before clicking Generate.
+- Shows:
+  - Evidence Bundle panel displays "Generate" button and MVP Export disclaimer.
+  - "This is an in-memory mock export. No real compliance or legal evidence is claimed."
+- Proves:
+  - The Evidence Bundle panel is visible and honest about its mock/in-memory limitations before any export.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:50:00+02:00
+
+## EV-2026-04-26-034: BL-008 JSON evidence bundle preview
+
+- File: output/playwright/session-008-evidence-bundle/02-json-evidence-bundle-preview.png
+- Title: JSON evidence bundle preview visible
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Generated an evidence bundle and switched to the JSON tab.
+- Shows:
+  - JSON preview contains bundleId, tenantId, sessionSummary, linkedTickets, contextPackets, aiUsage, connectorOperations, auditTimeline, mockDevOnlyDisclaimers, limitations, and sourceProvenance.
+- Proves:
+  - The API returns a deterministic, structured JSON evidence bundle with all required sections.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:52:00+02:00
+
+## EV-2026-04-26-035: BL-008 Markdown evidence bundle preview
+
+- File: output/playwright/session-008-evidence-bundle/03-markdown-evidence-bundle-preview.png
+- Title: Markdown evidence bundle preview visible
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Generated an evidence bundle and switched to the Markdown tab.
+- Shows:
+  - Markdown preview shows "# SupportPlane Evidence Bundle" with session summary, linked tickets, AI context packets, audit timeline, disclaimers, and limitations.
+- Proves:
+  - The API returns a readable Markdown export with all required sections.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:52:00+02:00
+
+## EV-2026-04-26-036: BL-008 audit trail with evidence bundle events
+
+- File: output/playwright/session-008-evidence-bundle/04-audit-trail-evidence-bundle-events.png
+- Title: Audit trail showing evidence_bundle_generated and evidence_bundle_exported
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to the Audit Trail panel after generating an evidence bundle.
+- Shows:
+  - evidence_bundle_generated events with format, bundleId, and version metadata.
+  - evidence_bundle_exported events with format and bundleId metadata.
+- Proves:
+  - Bundle generation and export append audit events with tenant, actor, and bundle metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:54:00+02:00
+
+## EV-2026-04-26-037: BL-008 mock/dev-only disclaimer visible
+
+- File: output/playwright/session-008-evidence-bundle/05-mock-dev-only-disclaimer-visible.png
+- Title: Evidence Bundle summary with mock/dev-only disclaimer
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Switched to the Summary tab after generating an evidence bundle.
+- Shows:
+  - "Mock / Dev-Only" block stating the bundle was generated from an in-memory mock development store.
+- Proves:
+  - The UI makes the mock/in-memory limitation explicit and visible.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:53:00+02:00
+
+## EV-2026-04-26-038: BL-008 no-secret evidence
+
+- File: output/playwright/session-008-evidence-bundle/06-no-secret-evidence.png
+- Title: Exported JSON preview with no token or secret content
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Inspected the JSON evidence bundle preview for secret leakage.
+- Shows:
+  - No API token, ZAMMAD_API_TOKEN, password, secret, or bearer token is visible in the exported JSON.
+- Proves:
+  - Redaction helpers successfully prevent secret exposure in bundle output.
+- Type: docs-render-verification
+- as_of: 2026-04-26T21:55:00+02:00
+
 ## Entry Format
 
 ```yaml

@@ -24,6 +24,8 @@ workflow:
       - concrete Zammad instance credentials and schema constraints not configured
       - AI provider, model names, and retention defaults not selected
       - legal/compliance requirements need counsel review before market claims
+      - evidence bundle object storage persistence not implemented
+      - evidence bundle cryptographic signing not implemented
 
 verification_labels:
   observed: verified directly in the current session
@@ -151,6 +153,23 @@ current_state:
           - internal_note_writeback_attempted
           - internal_note_writeback_succeeded
           - internal_note_writeback_failed
+    bl_008_status:
+      completed: true
+      scope: evidence_bundle_skeleton_json_markdown_mvp
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      validation: contract_tests_api_tests_web_client_tests_browser_verified
+      runtime:
+        evidence_bundle_builder: apps/api/src/evidence-bundle/evidence-bundle.builder.ts
+        redaction: apps/api/src/evidence-bundle/redaction.ts
+        export_formats:
+          - json
+          - markdown
+        audit_events:
+          - evidence_bundle_generated
+          - evidence_bundle_exported
+        store_type: in-memory
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
       tickets, calls, screen context, endpoint diagnostics, and remote support

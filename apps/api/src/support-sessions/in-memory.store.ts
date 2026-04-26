@@ -70,4 +70,10 @@ export class InMemoryStore {
   getInternalNoteDraft(tenantId: string, draftId: string): InternalNoteDraftShape | undefined {
     return this.drafts.get(`${tenantId}:${draftId}`);
   }
+
+  listInternalNoteDrafts(tenantId: string, sessionId: string): InternalNoteDraftShape[] {
+    return Array.from(this.drafts.values()).filter(
+      (d) => d.tenantId === tenantId && d.sessionId === sessionId
+    );
+  }
 }

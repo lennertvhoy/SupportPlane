@@ -15,6 +15,9 @@ const {
   ScreenObservation,
   PolicyDecision,
   AuditEvent,
+  EvidenceBundle,
+  EvidenceBundleExportRequest,
+  EvidenceBundleExportResponse,
 } = require('../packages/contracts/dist/index.js');
 
 function assertValid(label, schema, data) {
@@ -152,6 +155,76 @@ assertValid('AuditEvent', AuditEvent, {
   resourceId: 'session_001',
   metadata: {},
   createdAt: now,
+});
+
+assertValid('EvidenceBundle', EvidenceBundle, {
+  bundleId: 'bundle_001',
+  tenantId: 'tenant_001',
+  sessionId: 'session_001',
+  generatedAt: now,
+  generatedBy: 'user_001',
+  exportFormat: 'json',
+  version: '1.0.0-mvp',
+  sessionSummary: {
+    id: 'session_001',
+    tenantId: 'tenant_001',
+    status: 'open',
+    priority: 'normal',
+    title: 'Test session',
+    startedAt: now,
+    createdAt: now,
+    updatedAt: now,
+  },
+  linkedTickets: [],
+  contextPackets: [],
+  aiUsage: [],
+  connectorOperations: [],
+  auditTimeline: [],
+  mockDevOnlyDisclaimers: ['Mock disclaimer'],
+  limitations: ['Limitation 1'],
+  sourceProvenance: {
+    storeType: 'in-memory',
+    persistenceClaimed: false,
+    generatedByService: 'supportplane-api',
+    schemaVersion: '1.0.0-mvp',
+  },
+});
+
+assertValid('EvidenceBundleExportRequest', EvidenceBundleExportRequest, { format: 'markdown' });
+assertValid('EvidenceBundleExportResponse', EvidenceBundleExportResponse, {
+  bundle: {
+    bundleId: 'bundle_001',
+    tenantId: 'tenant_001',
+    sessionId: 'session_001',
+    generatedAt: now,
+    generatedBy: 'user_001',
+    exportFormat: 'json',
+    version: '1.0.0-mvp',
+    sessionSummary: {
+      id: 'session_001',
+      tenantId: 'tenant_001',
+      status: 'open',
+      priority: 'normal',
+      title: 'Test session',
+      startedAt: now,
+      createdAt: now,
+      updatedAt: now,
+    },
+    linkedTickets: [],
+    contextPackets: [],
+    aiUsage: [],
+    connectorOperations: [],
+    auditTimeline: [],
+    mockDevOnlyDisclaimers: ['Mock disclaimer'],
+    limitations: ['Limitation 1'],
+    sourceProvenance: {
+      storeType: 'in-memory',
+      persistenceClaimed: false,
+      generatedByService: 'supportplane-api',
+      schemaVersion: '1.0.0-mvp',
+    },
+  },
+  format: 'json',
 });
 
 console.log('\n✅ All contract validations passed.');

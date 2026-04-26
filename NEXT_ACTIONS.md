@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-26 21:30 CEST
+**Updated At:** 2026-04-26 21:56 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-008] Add evidence bundle skeleton and exportable JSON/Markdown MVP format
+### P0 [BL-009] Add fake incoming call webhook and caller matching for MVP 2
 Owner: coding agent
-Next: implement evidence bundle model, export endpoint, and basic viewer
-Exit: operator can export a support session evidence bundle to JSON and Markdown
+Next: implement CallEvent model, fake webhook endpoint, and basic caller matching
+Exit: operator can see a simulated incoming call matched to a customer and recent tickets
 
 ## Queue Rules
 

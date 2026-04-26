@@ -100,6 +100,46 @@ and must be protected from quiet regression.
 - Notes:
   - No real AI provider, external AI API call, production model governance, real authentication, database persistence, or ticket writeback is implemented.
 
+## AF-2026-04-26-004: Evidence bundle skeleton (BL-008)
+
+- ID: AF-2026-04-26-004
+- Milestone: Evidence bundle skeleton with JSON and Markdown MVP export
+- Scope: SupportPlane can generate a deterministic, tenant-scoped evidence bundle for a support session, export it to JSON and Markdown, display it in the Support Cockpit with summary/JSON/Markdown tabs, append evidence_bundle_generated and evidence_bundle_exported audit events, and redact secrets from all exported output.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded_in_final_handoff
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /
+  - GET /support-sessions/:id/evidence-bundle
+  - GET /support-sessions/:id/evidence-bundle.json
+  - GET /support-sessions/:id/evidence-bundle.md
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-26-033
+  - EV-2026-04-26-034
+  - EV-2026-04-26-035
+  - EV-2026-04-26-036
+  - EV-2026-04-26-037
+  - EV-2026-04-26-038
+- regression_guard:
+  - Evidence Bundle panel must remain visible with Generate button and mock/disclaimer labels.
+  - JSON export must include all required sections: sessionSummary, linkedTickets, contextPackets, aiUsage, connectorOperations, auditTimeline, mockDevOnlyDisclaimers, limitations, sourceProvenance.
+  - Markdown export must include readable headers for all required sections.
+  - Bundle generation must append evidence_bundle_generated and evidence_bundle_exported audit events.
+  - Secrets must not be exposed in JSON or Markdown bundle output.
+  - Tenant isolation must be enforced for all evidence bundle endpoints.
+- Notes:
+  - No real database persistence, object storage, cryptographic signing, or compliance-grade integrity is implemented.
+  - Redaction is pattern-based, not zero-knowledge.
+  - In-memory store means bundles are lost on API restart.
+
 ## Guidance
 
 - Do not treat screenshots alone as an acceptance freeze.

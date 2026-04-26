@@ -457,3 +457,154 @@ describe('Zammad connector endpoints', () => {
     assert.ok(!bodyStr.includes('token='), 'token must not be exposed');
   });
 });
+
+describe('Evidence bundle endpoints', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('GET /support-sessions/:id/evidence-bundle requires tenant identity', async () => {
+    const res = await supertest(server)
+      .get('/support-sessions/session-1/evidence-bundle')
+      .expect(400);
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('GET /support-sessions/:id/evidence-bundle returns JSON bundle', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Evidence bundle test' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.strictEqual(res.body.bundle.tenantId, 'tenant-a');
+    assert.strictEqual(res.body.bundle.sessionId, created.body.id);
+    assert.strictEqual(res.body.bundle.exportFormat, 'json');
+    assert.strictEqual(res.body.bundle.version, '1.0.0-mvp');
+    assert.ok(res.body.bundle.bundleId);
+    assert.ok(Array.isArray(res.body.bundle.mockDevOnlyDisclaimers));
+    assert.ok(Array.isArray(res.body.bundle.limitations));
+    assert.strictEqual(res.body.bundle.sourceProvenance.storeType, 'in-memory');
+    assert.strictEqual(res.body.bundle.sourceProvenance.persistenceClaimed, false);
+  });
+
+  it('GET /support-sessions/:id/evidence-bundle.md returns markdown', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Markdown bundle test' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/support-sessions/${created.body.id}/ticket-context`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalTicketId: 'TICKET-MD' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/evidence-bundle.md`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200)
+      .expect('Content-Type', /text\/markdown/);
+
+    assert.match(res.text, /SupportPlane Evidence Bundle/);
+    assert.match(res.text, /Session Summary/);
+    assert.match(res.text, /Linked Tickets/);
+    assert.match(res.text, /AI Context Packets/);
+    assert.match(res.text, /Audit Timeline/);
+    assert.match(res.text, /Mock \/ Dev-Only Disclaimers/);
+    assert.match(res.text, /Limitations/);
+  });
+
+  it('evidence bundle enforces tenant isolation', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Isolation bundle test' })
+      .expect(201);
+
+    await supertest(server)
+      .get(`/support-sessions/${created.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .expect(404);
+  });
+
+  it('evidence bundle generation appends audit events', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Audit bundle test' })
+      .expect(201);
+
+    await supertest(server)
+      .get(`/support-sessions/${created.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const generatedEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'evidence_bundle_generated'
+    );
+    assert.ok(generatedEvent, 'evidence_bundle_generated audit event should exist');
+    assert.strictEqual(generatedEvent.metadata.format, 'json');
+
+    const exportedEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'evidence_bundle_exported'
+    );
+    assert.ok(exportedEvent, 'evidence_bundle_exported audit event should exist');
+    assert.strictEqual(exportedEvent.metadata.format, 'json');
+  });
+
+  it('evidence bundle does not expose secrets', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Secret redaction test' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/support-sessions/${created.body.id}/ticket-context`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalTicketId: 'TICKET-SECRET' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const bodyStr = JSON.stringify(res.body);
+    assert.ok(!bodyStr.includes('apiToken'), 'apiToken must not be in bundle');
+    assert.ok(!bodyStr.includes('ZAMMAD_API_TOKEN'), 'ZAMMAD_API_TOKEN must not be in bundle');
+    assert.ok(!bodyStr.includes('secret'), 'secret must not be in bundle');
+    assert.ok(!bodyStr.includes('token='), 'token= must not be in bundle');
+    assert.ok(!bodyStr.includes('Bearer '), 'Bearer token must not be in bundle');
+  });
+});

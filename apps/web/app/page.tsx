@@ -8,7 +8,8 @@ import { AiContextPanel } from '@/components/AiContextPanel';
 import { DraftNotePanel } from '@/components/DraftNotePanel';
 import { AuditTrailPanel } from '@/components/AuditTrailPanel';
 import { ConnectorPanel } from '@/components/ConnectorPanel';
-import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, ApiClientError } from '@/lib/api';
+import { EvidenceBundlePanel } from '@/components/EvidenceBundlePanel';
+import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, ApiClientError } from '@/lib/api';
 
 export default function CockpitPage() {
   const [sessions, setSessions] = useState<SupportSession[]>([]);
@@ -19,6 +20,10 @@ export default function CockpitPage() {
   const [draftSuggestion, setDraftSuggestion] = useState<DraftSuggestionResponse | undefined>(undefined);
   const [writebackResult, setWritebackResult] = useState<InternalNoteWritebackResult | undefined>(undefined);
   const [connectorStatus, setConnectorStatus] = useState<ConnectorStatus | undefined>(undefined);
+  const [evidenceBundle, setEvidenceBundle] = useState<EvidenceBundleExportResponse | undefined>(undefined);
+  const [evidenceBundleMarkdown, setEvidenceBundleMarkdown] = useState<string | undefined>(undefined);
+  const [evidenceBundleLoading, setEvidenceBundleLoading] = useState(false);
+  const [evidenceBundleError, setEvidenceBundleError] = useState<string | null>(null);
 
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [ticketLoading, setTicketLoading] = useState(false);
@@ -87,10 +92,32 @@ export default function CockpitPage() {
       setDraftSuggestion(undefined);
       setWritebackResult(undefined);
       setDraftError(null);
+      setEvidenceBundle(undefined);
+      setEvidenceBundleMarkdown(undefined);
+      setEvidenceBundleError(null);
       await fetchSessionDetails(session);
     },
     [fetchSessionDetails]
   );
+
+  const handleGenerateEvidenceBundle = useCallback(async () => {
+    if (!selectedSession) return;
+    setEvidenceBundleLoading(true);
+    setEvidenceBundleError(null);
+    try {
+      const [jsonResult, mdResult] = await Promise.all([
+        api.getEvidenceBundleJson(selectedSession.id),
+        api.getEvidenceBundleMarkdown(selectedSession.id),
+      ]);
+      setEvidenceBundle(jsonResult);
+      setEvidenceBundleMarkdown(mdResult);
+      await fetchSessionDetails(selectedSession);
+    } catch (err) {
+      setEvidenceBundleError(err instanceof ApiClientError ? err.message : 'Failed to generate evidence bundle');
+    } finally {
+      setEvidenceBundleLoading(false);
+    }
+  }, [selectedSession, fetchSessionDetails]);
 
   const handleCreateSession = useCallback(
     async (title: string, description?: string) => {
@@ -273,6 +300,14 @@ export default function CockpitPage() {
           {/* Panels grid */}
           <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
             <ConnectorPanel />
+            <EvidenceBundlePanel
+              sessionId={selectedSession?.id}
+              bundle={evidenceBundle}
+              markdown={evidenceBundleMarkdown}
+              loading={evidenceBundleLoading}
+              error={evidenceBundleError}
+              onGenerate={handleGenerateEvidenceBundle}
+            />
             <TicketContextPanel
               session={selectedSession}
               ticket={ticket}

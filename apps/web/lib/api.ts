@@ -151,6 +151,110 @@ export interface InternalNoteWritebackResult {
   metadata: Record<string, unknown>;
 }
 
+export interface EvidenceBundleExportResponse {
+  bundle: EvidenceBundle;
+  format: 'json' | 'markdown';
+  markdown?: string;
+}
+
+export interface EvidenceBundleSessionSummary {
+  id: string;
+  tenantId: string;
+  status: string;
+  priority: string;
+  title: string;
+  description?: string;
+  assignedUserId?: string;
+  startedAt: string;
+  endedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EvidenceBundleTicketSummary {
+  id: string;
+  externalTicketId: string;
+  subject: string;
+  status: string;
+  priority: string;
+  customerName?: string;
+  customerEmail?: string;
+  adapterId: string;
+  lastSyncedAt?: string;
+}
+
+export interface EvidenceBundleContextPacketSummary {
+  id: string;
+  provenance: string;
+  sourceTicketIds: string[];
+  sourceAdapterId?: string;
+  payloadSummary: Record<string, unknown>;
+  redactionLog: Array<{ field: string; reason: string; method: string }>;
+  createdAt: string;
+}
+
+export interface EvidenceBundleAiUsageSummary {
+  provider: string;
+  model: string;
+  promptId?: string;
+  promptVersion?: string;
+  contextHash?: string;
+  mockOnly: boolean;
+  externalCallMade: boolean;
+  reviewRequired: boolean;
+  writebackAllowed: boolean;
+  generatedAt?: string;
+}
+
+export interface EvidenceBundleConnectorOperationSummary {
+  operationType: string;
+  connectorType: string;
+  connectorMode: string;
+  externalTicketId?: string;
+  success?: boolean;
+  externalArticleId?: string;
+  errorCode?: string;
+  errorMessage?: string;
+  occurredAt: string;
+}
+
+export interface EvidenceBundleAuditSummary {
+  id: string;
+  eventType: string;
+  actorType: string;
+  actorId: string;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  metadataSummary: Record<string, unknown>;
+  integrityHash?: string;
+  createdAt: string;
+}
+
+export interface EvidenceBundle {
+  bundleId: string;
+  tenantId: string;
+  sessionId: string;
+  generatedAt: string;
+  generatedBy: string;
+  exportFormat: 'json' | 'markdown';
+  version: string;
+  sessionSummary: EvidenceBundleSessionSummary;
+  linkedTickets: EvidenceBundleTicketSummary[];
+  contextPackets: EvidenceBundleContextPacketSummary[];
+  aiUsage: EvidenceBundleAiUsageSummary[];
+  connectorOperations: EvidenceBundleConnectorOperationSummary[];
+  auditTimeline: EvidenceBundleAuditSummary[];
+  mockDevOnlyDisclaimers: string[];
+  limitations: string[];
+  sourceProvenance: {
+    storeType: string;
+    persistenceClaimed: boolean;
+    generatedByService: string;
+    schemaVersion: string;
+  };
+}
+
 export interface ApiError {
   statusCode: number;
   error: string;
@@ -332,6 +436,46 @@ export const api = {
       { method: 'POST', body: JSON.stringify(body) },
       identity
     ),
+
+  // Evidence bundle
+  getEvidenceBundle: (sessionId: string, identity?: DevIdentity) =>
+    apiFetch<EvidenceBundleExportResponse>(
+      `/support-sessions/${sessionId}/evidence-bundle`,
+      { method: 'GET' },
+      identity
+    ),
+
+  getEvidenceBundleJson: (sessionId: string, identity?: DevIdentity) =>
+    apiFetch<EvidenceBundleExportResponse>(
+      `/support-sessions/${sessionId}/evidence-bundle.json`,
+      { method: 'GET' },
+      identity
+    ),
+
+  getEvidenceBundleMarkdown: async (sessionId: string, identity?: DevIdentity): Promise<string> => {
+    const url = `${API_BASE}/support-sessions/${sessionId}/evidence-bundle.md`;
+    const headers = new Headers();
+    headers.set('x-tenant-id', (identity ?? DEFAULT_IDENTITY).tenantId);
+    headers.set('x-user-id', (identity ?? DEFAULT_IDENTITY).userId);
+    if ((identity ?? DEFAULT_IDENTITY).userRole) {
+      headers.set('x-user-role', (identity ?? DEFAULT_IDENTITY).userRole!);
+    }
+    const res = await fetch(url, { method: 'GET', headers });
+    if (!res.ok) {
+      let body: ApiError | null = null;
+      try {
+        body = (await res.json()) as ApiError;
+      } catch {
+        // ignore
+      }
+      throw new ApiClientError(
+        body?.message ?? `HTTP ${res.status}`,
+        res.status,
+        body
+      );
+    }
+    return res.text();
+  },
 };
 
 export { ApiClientError };
