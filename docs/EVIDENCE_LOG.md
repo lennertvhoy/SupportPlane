@@ -430,6 +430,85 @@
 - Type: docs-render-verification
 - as_of: 2026-04-26T21:55:00+02:00
 
+## EV-2026-04-26-123: BL-041 closure — preferredPriority fix and UI priority selector
+
+- File: output/playwright/session-041-auto-session-from-call-final-closure/01-auto-create-option-visible.png
+- Title: Call Simulator panel with auto-create, priority dropdown, and session title input
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Opened Support Cockpit and observed the updated Call Simulator panel during BL-041 closure.
+- Shows:
+  - "Auto-create support session on matched call" checkbox is checked.
+  - "Preferred priority" dropdown is visible with "High" selected.
+  - "Preferred session title (optional)" input is visible.
+  - "No real telephony connected" disclaimer is visible.
+- Proves:
+  - The UI now exposes preferredPriority and preferredSessionTitle controls for auto-create.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:15:00+02:00
+
+## EV-2026-04-26-124: BL-041 closure — auto-created session with high priority
+
+- File: output/playwright/session-041-auto-session-from-call-final-closure/02-matched-fake-incoming-call-creates-session.png
+- Title: Matched fake incoming call auto-creates session with Priority: high
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Simulated fake incoming call with auto-create enabled and priority set to "High".
+- Shows:
+  - Call status is "answered".
+  - Auto-create badge shows "auto_created".
+  - Auto-created session card shows "ID: 72d03d7b... | Priority: high".
+- Proves:
+  - The selected preferred priority is reflected in the auto-created SupportSession.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:16:00+02:00
+
+## EV-2026-04-26-125: BL-041 closure — auto-created session selected in cockpit with high priority
+
+- File: output/playwright/session-041-auto-session-from-call-final-closure/03-auto-created-session-selected-open.png
+- Title: Auto-created session selected in cockpit showing open • high
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Clicked "Open in cockpit" on the auto-created session card.
+- Shows:
+  - Session banner shows "Incoming call from Acme BVBA" with "open • high".
+  - Tickets: 2 from matched fixtures.
+- Proves:
+  - The auto-created session is selectable and displays the correct priority in the cockpit.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:17:00+02:00
+
+## EV-2026-04-26-126: BL-041 closure — audit trail with auto-create and auto-link events
+
+- File: output/playwright/session-041-auto-session-from-call-final-closure/05-audit-trail-auto-create-events.png
+- Title: Audit Trail showing support_session_auto_created and call_auto_linked_to_session
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Scrolled to the Audit Trail panel after selecting the auto-created session.
+- Shows:
+  - support_session_auto_created event with actor, resource, and matched caller metadata.
+  - call_auto_linked_to_session event with sessionId and call metadata.
+- Proves:
+  - Auto-creation and auto-linking append detailed audit events with tenant, actor, and match metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:18:00+02:00
+
+## EV-2026-04-26-127: BL-041 closure — evidence bundle markdown with call session relationship
+
+- File: output/playwright/session-041-auto-session-from-call-final-closure/06-evidence-bundle-markdown-call-session.png
+- Title: Markdown evidence bundle showing Call Events with Linked Session and mock disclaimers
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Generated an evidence bundle for the auto-created session and switched to Markdown tab.
+- Shows:
+  - Session Summary with Priority: high.
+  - Call Events section with Linked Session ID.
+  - Mock/Dev-Only Disclaimers including auto-created session and mock telephony notes.
+- Proves:
+  - Evidence bundles include the auto-created call/session relationship, priority, and honest mock disclaimers.
+- Type: docs-render-verification
+- as_of: 2026-04-26T23:20:00+02:00
+
 ## Entry Format
 
 ```yaml

@@ -112,6 +112,17 @@ The following audit events are emitted during the fake incoming call flow:
 - **In-memory store:** All call events and auto-created sessions are lost on API restart.
 - **No real authentication:** Actor identity comes from mock dev headers (`x-tenant-id`, `x-user-id`).
 
+## Reserved / future result values
+
+`AutoCreateSessionResult` includes a `linked_to_existing` enum value. This is **reserved for future work** and is **not currently emitted** by `POST /calls/fake-incoming`. The current API only emits:
+
+- `not_requested`
+- `auto_created`
+- `skipped_no_match`
+- `skipped_invalid_phone`
+
+Future implementation may allow an incoming call to link to an existing open session for the same matched caller instead of always creating a new one. Until that slice is implemented, `linked_to_existing` is a contract placeholder only.
+
 ## Future path toward Call Console UI
 
 BL-041 completes the foundational auto-creation flow. The next slices toward a richer Call Console UI include:

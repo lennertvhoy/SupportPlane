@@ -311,6 +311,81 @@ describe('web API client', () => {
     }
   });
 
+  it('handles fake incoming call auto-create with preferredPriority response shape', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/calls/fake-incoming');
+      assert.equal(init?.method, 'POST');
+      const body = JSON.parse((init?.body as string) ?? '{}');
+      assert.strictEqual(body.autoCreateSession, true);
+      assert.strictEqual(body.preferredPriority, 'high');
+      assert.strictEqual(body.preferredSessionTitle, 'VIP Escalation');
+      return new Response(
+        JSON.stringify({
+          callEvent: {
+            id: 'call-3',
+            tenantId: 'dev-tenant',
+            provider: 'fake_webhook',
+            externalCallId: 'FAKE-003',
+            direction: 'inbound',
+            status: 'answered',
+            sessionId: 'session-auto-2',
+            caller: {
+              rawNumber: '03 555 01 01',
+              normalizedNumber: '+32 3 555 0101',
+            },
+            callerMatch: {
+              status: 'matched',
+              confidence: 1,
+              customerName: 'Acme BVBA',
+              matchedTicketIds: ['TICKET-101'],
+            },
+            startedAt: '2026-04-26T18:00:00.000Z',
+            mockDevOnly: true,
+            createdAt: '2026-04-26T18:00:00.000Z',
+            updatedAt: '2026-04-26T18:00:00.000Z',
+          },
+          autoCreateResult: 'auto_created',
+          createdSession: {
+            id: 'session-auto-2',
+            tenantId: 'dev-tenant',
+            status: 'open',
+            priority: 'high',
+            title: 'VIP Escalation',
+            assignedUserId: 'dev-user',
+            linkedTicketIds: ['TICKET-101'],
+            aiContextPacketIds: [],
+            screenObservationIds: [],
+            callEventIds: ['call-3'],
+            auditEventIds: [],
+            startedAt: '2026-04-26T18:00:00.000Z',
+            createdAt: '2026-04-26T18:00:00.000Z',
+            updatedAt: '2026-04-26T18:00:00.000Z',
+          },
+          mockDevOnly: true,
+          receivedAt: '2026-04-26T18:00:00.000Z',
+        }),
+        { status: 201, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.createFakeIncomingCall({
+        externalCallId: 'FAKE-003',
+        rawCallerNumber: '03 555 01 01',
+        autoCreateSession: true,
+        preferredPriority: 'high',
+        preferredSessionTitle: 'VIP Escalation',
+      });
+      assert.strictEqual(response.autoCreateResult, 'auto_created');
+      assert.ok(response.createdSession);
+      assert.strictEqual(response.createdSession.priority, 'high');
+      assert.strictEqual(response.createdSession.title, 'VIP Escalation');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it('handles call link response shape', async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input, init) => {

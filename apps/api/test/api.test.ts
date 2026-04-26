@@ -672,9 +672,38 @@ describe('Call simulator endpoints', () => {
     assert.strictEqual(res.body.createdSession.tenantId, 'tenant-a');
     assert.strictEqual(res.body.createdSession.title, 'Incoming call from Acme BVBA');
     assert.strictEqual(res.body.createdSession.status, 'open');
+    assert.strictEqual(res.body.createdSession.priority, 'normal');
     assert.deepStrictEqual(res.body.createdSession.linkedTicketIds, ['TICKET-101', 'TICKET-102']);
     assert.strictEqual(res.body.callEvent.sessionId, res.body.createdSession.id);
     assert.strictEqual(res.body.callEvent.status, 'answered');
+  });
+
+  it('POST /calls/fake-incoming uses preferredPriority when supplied and valid', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-AUTO-1-HIGH', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true, preferredPriority: 'high' })
+      .expect(201);
+
+    assert.strictEqual(res.body.autoCreateResult, 'auto_created');
+    assert.ok(res.body.createdSession);
+    assert.strictEqual(res.body.createdSession.priority, 'high');
+    assert.strictEqual(res.body.createdSession.title, 'Incoming call from Acme BVBA');
+  });
+
+  it('POST /calls/fake-incoming uses preferredSessionTitle when supplied', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-AUTO-1-TITLE', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true, preferredSessionTitle: 'VIP Escalation' })
+      .expect(201);
+
+    assert.strictEqual(res.body.autoCreateResult, 'auto_created');
+    assert.ok(res.body.createdSession);
+    assert.strictEqual(res.body.createdSession.title, 'VIP Escalation');
+    assert.strictEqual(res.body.createdSession.priority, 'normal');
   });
 
   it('POST /calls/fake-incoming skips auto-create for no-match caller', async () => {
@@ -934,5 +963,16 @@ describe('Call simulator endpoints', () => {
     assert.strictEqual(res.body.bundle.callEvents[0].externalCallId, 'FAKE-8');
     assert.strictEqual(res.body.bundle.callEvents[0].matchStatus, 'matched');
     assert.strictEqual(res.body.bundle.callEvents[0].mockDevOnly, true);
+  });
+
+  it('POST /calls/fake-incoming rejects invalid preferredPriority with 400', async () => {
+    const res = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-AUTO-BAD', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true, preferredPriority: 'urgent' })
+      .expect(400);
+
+    assert.ok(res.body.message.includes('Invalid preferredPriority'));
   });
 });

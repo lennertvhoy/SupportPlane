@@ -259,9 +259,15 @@ and must be protected from quiet regression.
   - EV-2026-04-26-120
   - EV-2026-04-26-121
   - EV-2026-04-26-122
+  - EV-2026-04-26-123
+  - EV-2026-04-26-124
+  - EV-2026-04-26-125
+  - EV-2026-04-26-126
+  - EV-2026-04-26-127
 - regression_guard:
-  - Call Simulator panel must remain visible with auto-create checkbox and honest mock labels.
+  - Call Simulator panel must remain visible with auto-create checkbox, priority dropdown, optional session title input, and honest mock labels.
   - POST /calls/fake-incoming must support autoCreateSession, preferredSessionTitle, and preferredPriority.
+  - preferredPriority must be validated; invalid values return 400; valid values are reflected in the auto-created session.
   - Matched caller with autoCreateSession=true must create a tenant-scoped SupportSession with linked tickets from caller matching.
   - Call event must be linked to the auto-created session and status updated to answered.
   - Audit trail must display support_session_auto_created and call_auto_linked_to_session events.
@@ -271,4 +277,5 @@ and must be protected from quiet regression.
   - No real telephony, PBX, or phone provider integration exists.
   - Phone normalization is Belgian-style only; international support is not implemented.
   - Caller matching is fixture-based mock data, not a real CRM or directory lookup.
+  - linked_to_existing is a reserved enum value, not yet implemented.
   - In-memory store means all data is lost on API restart.

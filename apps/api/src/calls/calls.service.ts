@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
   CallEvent,
@@ -106,9 +106,16 @@ export class CallsService {
             ? `Incoming call from ${callerMatch.customerName}`
             : `Incoming call from ${normalized.normalized ?? dto.rawCallerNumber}`);
 
-        const priority = dto.preferredPriority
-          ? SupportSessionPriority.parse(dto.preferredPriority)
-          : SupportSessionPriority.enum.normal;
+        let priority: SupportSessionPriority = SupportSessionPriority.enum.normal;
+        if (dto.preferredPriority) {
+          const parsed = SupportSessionPriority.safeParse(dto.preferredPriority);
+          if (!parsed.success) {
+            throw new BadRequestException(
+              `Invalid preferredPriority: ${dto.preferredPriority}. Allowed: ${SupportSessionPriority.options.join(', ')}`
+            );
+          }
+          priority = parsed.data;
+        }
 
         const sessionId = randomUUID() as SupportSessionId;
         const session: SupportSessionShape = {

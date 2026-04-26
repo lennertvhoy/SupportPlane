@@ -7,7 +7,7 @@
 
 ## Snapshot
 
-- BL-041 complete: Automatic SupportSession creation from incoming call events with auto-create toggle, matched caller session seeding, call linking, audit events, evidence bundle integration, and browser-verified UI flow.
+- BL-041 complete: Automatic SupportSession creation from incoming call events with auto-create toggle, preferred priority selection, matched caller session seeding, call linking, audit events, evidence bundle integration, and browser-verified UI flow.
 - BL-009 complete: Fake incoming call webhook with phone normalization, caller matching, session linking, and browser-verified Call Simulator panel.
 - BL-008 complete: Evidence bundle skeleton with JSON/Markdown MVP export, redaction, and browser-verified UI panel.
 - BL-007 complete: Zammad connector boundary with mock/zammad modes, ticket read, draft/writeback, and connector audit events.

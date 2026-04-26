@@ -795,3 +795,61 @@ Use this file for dated session notes, verification summaries, and references to
 - In-memory store is not persistent; all runtime data is lost on restart.
 - No real authentication; dev identity headers are explicitly mock-only.
 - No call console UI separate from the simulator panel yet (planned for BL-043).
+
+
+## 2026-04-26 - BL-041 closure and hygiene pass
+
+**Type:** closure
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean after closure commit
+
+### What changed
+
+- Fixed `preferredPriority` to be validated and honored in `apps/api/src/calls/calls.service.ts`. Invalid priorities now return `400 BadRequestException` with a clear message instead of causing an unhandled Zod error.
+- Added API integration tests proving `preferredPriority` default (`normal`) and custom (`high`) behavior, plus a test proving invalid priority rejection.
+- Added web client test proving `preferredPriority` and `preferredSessionTitle` are forwarded in the API request and reflected in the response.
+- Updated `CallSimulatorPanel.tsx` with a priority dropdown (`low` / `normal` / `high` / `critical`) and an optional preferred session title input, both sent to the API when auto-create is enabled.
+- Dispositioned `linked_to_existing` as reserved/future work. Updated `docs/CALL_SIMULATOR.md` to document that `linked_to_existing` is not currently emitted by `POST /calls/fake-incoming`.
+- Replaced the 23 original BL-041 screenshots with 6 canonical closure screenshots in `output/playwright/session-041-auto-session-from-call-final-closure/`.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `docs/CALL_SIMULATOR.md`, and this `WORKLOG.md`.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 51/51 integration tests passed (added 3 call tests).
+- `npm test --workspace @supportplane/contracts` passed: 16/16 tests passed.
+- `npm test --workspace @supportplane/web` passed: 9/9 tests passed (added 1 auto-create with priority test).
+- `npm test --workspace @supportplane/connectors` passed: 13/13 tests passed.
+- `npm test --workspace @supportplane/ai` passed: 3/3 tests passed.
+- `npm run build --workspace @supportplane/web` passed.
+- Runtime API verified at `http://localhost:4110/health` and call endpoints.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Browser flow verified: simulate fake incoming call with auto-create enabled and priority set to `high`, view auto-created session with `Priority: high`, open in cockpit, verify audit trail shows `support_session_auto_created` and `call_auto_linked_to_session`, verify evidence bundle includes call event with linked session and mock telephony disclaimers.
+
+### Evidence
+
+- UI screenshots: `output/playwright/session-041-auto-session-from-call-final-closure/01-auto-create-option-visible.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call-final-closure/02-matched-fake-incoming-call-creates-session.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call-final-closure/03-auto-created-session-selected-open.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call-final-closure/04-call-linked-to-auto-created-session.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call-final-closure/05-audit-trail-auto-create-events.png`
+- UI screenshots: `output/playwright/session-041-auto-session-from-call-final-closure/06-evidence-bundle-markdown-call-session.png`
+
+### Remaining Risk
+
+- No real telephony or PBX integration exists; caller matching uses deterministic fixture data only.
+- Phone normalization is Belgian-style only; no international number support yet.
+- In-memory store is not persistent; all runtime data is lost on restart.
+- No real authentication; dev identity headers are explicitly mock-only.
+- `linked_to_existing` is a reserved enum value, not yet implemented.
+- No call console UI separate from the simulator panel yet (planned for BL-043).

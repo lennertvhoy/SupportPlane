@@ -23,6 +23,8 @@ export function CallSimulatorPanel({
   const [callEvent, setCallEvent] = useState<CallEvent | undefined>(undefined);
   const [callResponse, setCallResponse] = useState<IncomingCallResponse | undefined>(undefined);
   const [autoCreate, setAutoCreate] = useState(false);
+  const [preferredPriority, setPreferredPriority] = useState<'low' | 'normal' | 'high' | 'critical'>('normal');
+  const [preferredSessionTitle, setPreferredSessionTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [linkLoading, setLinkLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +43,8 @@ export function CallSimulatorPanel({
         rawCallerNumber: rawNumber,
         callerDisplayName: 'Mock Caller',
         autoCreateSession: autoCreate,
+        preferredPriority: autoCreate ? preferredPriority : undefined,
+        preferredSessionTitle: autoCreate && preferredSessionTitle.trim() ? preferredSessionTitle.trim() : undefined,
       });
       setCallResponse(response);
       setCallEvent(response.callEvent);
@@ -128,6 +132,38 @@ export function CallSimulatorPanel({
           />
           Auto-create support session on matched call
         </label>
+
+        {autoCreate && (
+          <div className="space-y-2 rounded border border-cockpit-700/50 bg-cockpit-900/30 p-2">
+            <div className="space-y-1">
+              <label className="block text-[10px] font-medium text-cockpit-400">
+                Preferred priority
+              </label>
+              <select
+                value={preferredPriority}
+                onChange={(e) => setPreferredPriority(e.target.value as 'low' | 'normal' | 'high' | 'critical')}
+                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 focus:border-accent focus:outline-none"
+              >
+                <option value="low">Low</option>
+                <option value="normal">Normal</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="block text-[10px] font-medium text-cockpit-400">
+                Preferred session title (optional)
+              </label>
+              <input
+                type="text"
+                value={preferredSessionTitle}
+                onChange={(e) => setPreferredSessionTitle(e.target.value)}
+                placeholder="e.g. VIP Escalation"
+                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 focus:border-accent focus:outline-none"
+              />
+            </div>
+          </div>
+        )}
 
         <button
           onClick={handleSimulate}
