@@ -1,7 +1,7 @@
 # Call Simulator
 
 **Product:** SupportPlane  
-**Scope:** BL-009 Fake incoming call webhook, BL-041 Automatic SupportSession creation from incoming call events, and BL-043 Call Console handoff  
+**Scope:** BL-009 Fake incoming call webhook, BL-041 Automatic SupportSession creation from incoming call events, BL-043 Call Console handoff, and BL-044 Telephony Bridge boundary  
 **Last updated:** 2026-04-27
 
 ## Purpose
@@ -157,12 +157,22 @@ The Call Console shows:
 See `docs/CALL_CONSOLE.md` for the BL-043 route, lifecycle states, endpoints,
 audit events, evidence bundle behavior, and limitations.
 
+## Telephony Bridge boundary
+
+BL-044 adds a separate mock provider bridge at
+`POST /telephony/webhooks/fake-provider`. It maps fake provider lifecycle events
+into the same `CallEvent` flow used by the simulator, appends telephony bridge
+audit events, and exposes mock control intents through
+`POST /telephony/calls/:id/control`.
+
+This remains mock-only. No real provider webhook, PBX, SIP, WebRTC, voice media,
+recording, transcription, queue, or provider credential flow is connected.
+
 ## Future path after Call Console UI
 
 BL-043 completes the first dedicated Call Console UI. Later call-simulator slices
 include:
 
-- **BL-044:** Post-call summary review and ticket note draft workflow
 - **BL-045:** End-to-end call simulator demo fixtures and smoke tests
 
 The current Call Simulator panel will remain as the dev-only mock tool even after the Call Console UI is introduced.

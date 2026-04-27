@@ -53,3 +53,12 @@ export {
   MockZammadHttpClient,
   type ZammadHttpClient,
 } from './zammad-http-client.js';
+export {
+  MOCK_TELEPHONY_CAPABILITIES,
+  MockTelephonyAdapter,
+  createMockTelephonyConfig,
+  createTelephonyAdapter,
+  redactTelephonySecrets,
+  sanitizeTelephonyError,
+  type TelephonyAdapter,
+} from './telephony-adapter.js';

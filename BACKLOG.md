@@ -66,7 +66,7 @@ pulled into `NEXT_ACTIONS.md` and must reference these IDs.
 - [BL-041] Implement automatic SupportSession creation from incoming call events.
 - [BL-042] Implement suggested greeting generation from call plus ticket context.
 - [BL-043] Implement Call Console UI with caller, matched customer, recent tickets, and notes.
-- [BL-044] Implement post-call summary review and ticket note draft workflow.
+- [BL-044] Implement telephony adapter contract and bridge boundary for future PBX/WebRTC/phone-provider integration.
 - [BL-045] Add call simulator demo fixtures and end-to-end smoke test.
 
 ## MVP 3 - Operator Companion

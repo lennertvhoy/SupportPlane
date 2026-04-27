@@ -13,7 +13,10 @@ import {
   matchCallerByPhone,
   CallTimelineItem,
   CallTimelineItemType,
+  TelephonyAuditMetadata,
   type CallEvent as CallEventShape,
+  type TelephonyWebhookEvent as TelephonyWebhookEventShape,
+  type TelephonyAuditMetadata as TelephonyAuditMetadataShape,
   type SupportSession as SupportSessionShape,
   type TenantId,
   type AuditEventId,
@@ -192,6 +195,62 @@ export class CallsService {
     return { callEvent, autoCreateResult, createdSession };
   }
 
+  createFromTelephonyWebhook(
+    identity: DevIdentity,
+    webhookEvent: TelephonyWebhookEventShape,
+    mappedCall: CallEventShape
+  ): { callEvent: CallEventShape; receivedAt: string } {
+    const normalized = normalizePhoneNumber(
+      webhookEvent.rawCallerNumber ?? mappedCall.caller.rawNumber
+    );
+    const callerMatch = matchCallerByPhone(normalized);
+    const now = new Date().toISOString();
+    const callEvent: CallEventShape = CallEvent.parse({
+      ...mappedCall,
+      tenantId: identity.tenantId,
+      caller: {
+        ...mappedCall.caller,
+        normalizedNumber: mappedCall.caller.normalizedNumber ?? normalized.normalized,
+        countryCodeHint: normalized.countryCode,
+      },
+      callerMatch,
+      metadata: {
+        ...mappedCall.metadata,
+        sourceEventId: webhookEvent.sourceEventId,
+        adapterMode: webhookEvent.adapterMode,
+        verificationStatus: webhookEvent.verification.status,
+        telephonyBridgeBoundary: true,
+      },
+      updatedAt: now,
+    });
+
+    this.store.saveCallEvent(callEvent);
+
+    this.appendAuditEvent(identity, undefined, AuditEventType.enum.call_event_received, 'call_event', callEvent.id, {
+      externalCallId: callEvent.externalCallId,
+      provider: callEvent.provider,
+      normalizedNumber: callEvent.caller.normalizedNumber,
+      sourceEventId: webhookEvent.sourceEventId,
+      telephonyBridgeBoundary: true,
+      mockDevOnly: true,
+    });
+
+    if (callerMatch.status === 'matched') {
+      this.appendAuditEvent(identity, undefined, AuditEventType.enum.caller_matched, 'call_event', callEvent.id, {
+        externalCallId: callEvent.externalCallId,
+        normalizedNumber: callEvent.caller.normalizedNumber,
+        matchStatus: callerMatch.status,
+        matchConfidence: callerMatch.confidence,
+        customerId: callerMatch.customerId,
+        customerName: callerMatch.customerName,
+        telephonyBridgeBoundary: true,
+        mockDevOnly: true,
+      });
+    }
+
+    return { callEvent, receivedAt: now };
+  }
+
   listRecentCalls(identity: DevIdentity): CallEventShape[] {
     return this.store.listCallEvents(identity.tenantId);
   }
@@ -307,6 +366,24 @@ export class CallsService {
     );
 
     return { callEvent: updated, previousStatus, newStatus, changedAt: now };
+  }
+
+  recordTelephonyAuditEvent(
+    identity: DevIdentity,
+    sessionId: string | undefined,
+    eventType: AuditEventType,
+    resourceId: string,
+    metadata: TelephonyAuditMetadataShape
+  ): void {
+    const safeMetadata = TelephonyAuditMetadata.parse(metadata);
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      eventType,
+      'telephony_bridge',
+      resourceId,
+      safeMetadata
+    );
   }
 
   getCallTimeline(identity: DevIdentity, callId: string): { timelineItems: CallTimelineItemShape[]; generatedAt: string } {
@@ -458,6 +535,45 @@ export class CallsService {
           title: 'Greeting suggested',
           description: `Tone: ${evt.metadata.tone as string}`,
           metadata: { tone: evt.metadata.tone, provider: evt.metadata.provider, mockDevOnly: true },
+        })
+      );
+    }
+
+    const telephonyEventTypes = new Set<string>([
+      AuditEventType.enum.telephony_webhook_received,
+      AuditEventType.enum.telephony_webhook_verified,
+      AuditEventType.enum.telephony_call_control_requested,
+      AuditEventType.enum.telephony_call_control_succeeded,
+      AuditEventType.enum.telephony_call_control_failed,
+    ]);
+    const telephonyEvents = relatedAuditEvents.filter((e) =>
+      telephonyEventTypes.has(e.eventType)
+    );
+    for (const evt of telephonyEvents) {
+      const metadata: Record<string, string | boolean> = {
+        providerType: String(evt.metadata.providerType ?? 'mock'),
+        adapterMode: String(evt.metadata.adapterMode ?? 'mock'),
+        success: Boolean(evt.metadata.success ?? true),
+        mockDevOnly: true,
+      };
+      if (typeof evt.metadata.controlIntent === 'string') {
+        metadata.controlIntent = evt.metadata.controlIntent;
+      }
+      if (typeof evt.metadata.verificationStatus === 'string') {
+        metadata.verificationStatus = evt.metadata.verificationStatus;
+      }
+      items.push(
+        CallTimelineItem.parse({
+          id: `tl-${call.id.slice(0, 8)}-tel-${evt.id.slice(0, 8)}`,
+          callEventId: call.id,
+          sessionId: evt.sessionId ?? undefined,
+          type: CallTimelineItemType.enum.telephony_bridge_event,
+          timestamp: evt.createdAt,
+          actorId: evt.actorId,
+          actorType: evt.actorType,
+          title: 'Telephony bridge event',
+          description: evt.eventType,
+          metadata,
         })
       );
     }

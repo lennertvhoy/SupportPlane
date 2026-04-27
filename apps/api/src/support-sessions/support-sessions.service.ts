@@ -497,6 +497,7 @@ export class SupportSessionsService {
     const callAuditEvents = this.store.getAllAuditEvents(identity.tenantId).filter((event) => {
       if (event.sessionId === sessionId) return false;
       return (
+        event.eventType === AuditEventType.enum.telephony_adapter_tested ||
         callEventIds.has(event.resourceId) ||
         (typeof event.metadata.externalCallId === 'string' && externalCallIds.has(event.metadata.externalCallId))
       );

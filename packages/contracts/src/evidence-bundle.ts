@@ -65,6 +65,24 @@ export const EvidenceBundleConnectorOperationSummary = z.object({
 });
 export type EvidenceBundleConnectorOperationSummary = z.infer<typeof EvidenceBundleConnectorOperationSummary>;
 
+export const EvidenceBundleTelephonyBridgeSummary = z.object({
+  operationType: z.string(),
+  providerType: z.string(),
+  adapterMode: z.string(),
+  externalCallId: z.string().optional(),
+  callEventId: z.string().optional(),
+  controlIntent: z.string().optional(),
+  verificationStatus: z.string().optional(),
+  success: z.boolean().optional(),
+  errorCode: z.string().optional(),
+  errorMessage: z.string().optional(),
+  mockDevOnly: z.boolean(),
+  occurredAt: Timestamp,
+});
+export type EvidenceBundleTelephonyBridgeSummary = z.infer<
+  typeof EvidenceBundleTelephonyBridgeSummary
+>;
+
 export const EvidenceBundleAiUsageSummary = z.object({
   provider: z.string(),
   model: z.string(),
@@ -148,6 +166,7 @@ export const EvidenceBundle = z.object({
   contextPackets: z.array(EvidenceBundleContextPacketSummary),
   aiUsage: z.array(EvidenceBundleAiUsageSummary),
   connectorOperations: z.array(EvidenceBundleConnectorOperationSummary),
+  telephonyBridgeEvents: z.array(EvidenceBundleTelephonyBridgeSummary).default([]),
   callEvents: z.array(EvidenceBundleCallEventSummary),
   greetingSuggestions: z.array(EvidenceBundleGreetingSuggestionSummary).default([]),
   auditTimeline: z.array(EvidenceBundleAuditSummary),

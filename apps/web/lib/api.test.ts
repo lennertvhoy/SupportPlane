@@ -570,4 +570,128 @@ describe('web API client', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it('handles telephony status response shape', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/telephony/status');
+      assert.equal(init?.method, 'GET');
+      return new Response(
+        JSON.stringify({
+          tenantId: 'dev-tenant',
+          providerType: 'mock',
+          mode: 'mock',
+          health: 'healthy',
+          connected: true,
+          capabilities: {
+            inboundCalls: true,
+            answer: true,
+            hold: true,
+            resume: true,
+            end: true,
+            transfer: false,
+            recording: false,
+            transcription: false,
+          },
+          webhookVerification: {
+            status: 'not_required',
+            checkedAt: '2026-04-27T08:00:00.000Z',
+            signatureRequired: false,
+            mockDevOnly: true,
+          },
+          mockDevOnly: true,
+          disclaimers: ['No real PBX connected'],
+          metadata: {},
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.getTelephonyStatus();
+      assert.equal(response.providerType, 'mock');
+      assert.equal(response.mode, 'mock');
+      assert.equal(response.capabilities.answer, true);
+      assert.equal(response.webhookVerification.status, 'not_required');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it('handles telephony bridge test and call control responses', async () => {
+    const originalFetch = globalThis.fetch;
+    const calls: string[] = [];
+    globalThis.fetch = async (input, init) => {
+      calls.push(String(input));
+      if (String(input).endsWith('/telephony/test')) {
+        return new Response(
+          JSON.stringify({
+            tenantId: 'dev-tenant',
+            providerType: 'mock',
+            mode: 'mock',
+            health: 'healthy',
+            connected: true,
+            capabilities: {
+              inboundCalls: true,
+              answer: true,
+              hold: true,
+              resume: true,
+              end: true,
+              transfer: false,
+              recording: false,
+              transcription: false,
+            },
+            webhookVerification: {
+              status: 'not_required',
+              checkedAt: '2026-04-27T08:00:00.000Z',
+              signatureRequired: false,
+              mockDevOnly: true,
+            },
+            lastTestedAt: '2026-04-27T08:00:00.000Z',
+            mockDevOnly: true,
+            disclaimers: [],
+            metadata: {},
+          }),
+          { status: 201, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      assert.equal(input, 'http://localhost:4110/telephony/calls/call-1/control');
+      assert.equal(init?.method, 'POST');
+      const body = JSON.parse((init?.body as string) ?? '{}');
+      assert.equal(body.action, 'answer');
+      return new Response(
+        JSON.stringify({
+          intent: {
+            tenantId: 'dev-tenant',
+            actorId: 'dev-user',
+            callEventId: 'call-1',
+            externalCallId: 'TEL-1',
+            providerType: 'mock',
+            adapterMode: 'mock',
+            action: 'answer',
+            requestedAt: '2026-04-27T08:00:00.000Z',
+            mockDevOnly: true,
+          },
+          success: true,
+          providerType: 'mock',
+          adapterMode: 'mock',
+          resultingStatus: 'answered',
+          completedAt: '2026-04-27T08:00:01.000Z',
+          mockDevOnly: true,
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const status = await api.testTelephonyBridge();
+      const control = await api.controlTelephonyCall('call-1', { action: 'answer' });
+      assert.equal(status.lastTestedAt, '2026-04-27T08:00:00.000Z');
+      assert.equal(control.success, true);
+      assert.equal(control.resultingStatus, 'answered');
+      assert.ok(calls.includes('http://localhost:4110/telephony/test'));
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

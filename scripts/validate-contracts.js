@@ -18,6 +18,9 @@ const {
   EvidenceBundle,
   EvidenceBundleExportRequest,
   EvidenceBundleExportResponse,
+  TelephonyAdapterStatus,
+  TelephonyWebhookEvent,
+  TelephonyCallControlIntent,
 } = require('../packages/contracts/dist/index.js');
 
 function assertValid(label, schema, data) {
@@ -228,6 +231,59 @@ assertValid('EvidenceBundleExportResponse', EvidenceBundleExportResponse, {
     },
   },
   format: 'json',
+});
+
+assertValid('TelephonyAdapterStatus', TelephonyAdapterStatus, {
+  tenantId: 'tenant_001',
+  providerType: 'mock',
+  mode: 'mock',
+  health: 'healthy',
+  connected: true,
+  capabilities: {
+    inboundCalls: true,
+    answer: true,
+    hold: true,
+    resume: true,
+    end: true,
+    transfer: false,
+    recording: false,
+    transcription: false,
+  },
+  webhookVerification: {
+    status: 'not_required',
+    checkedAt: now,
+    signatureRequired: false,
+    mockDevOnly: true,
+  },
+  mockDevOnly: true,
+});
+
+assertValid('TelephonyWebhookEvent', TelephonyWebhookEvent, {
+  tenantId: 'tenant_001',
+  providerType: 'mock',
+  adapterMode: 'mock',
+  sourceEventId: 'provider_event_001',
+  externalCallId: 'external_call_001',
+  eventType: 'incoming_call',
+  rawCallerNumber: '03 555 01 01',
+  occurredAt: now,
+  verification: {
+    status: 'not_required',
+    checkedAt: now,
+    signatureRequired: false,
+    mockDevOnly: true,
+  },
+  mockDevOnly: true,
+});
+
+assertValid('TelephonyCallControlIntent', TelephonyCallControlIntent, {
+  tenantId: 'tenant_001',
+  actorId: 'user_001',
+  callEventId: 'call_001',
+  externalCallId: 'external_call_001',
+  action: 'answer',
+  requestedAt: now,
+  mockDevOnly: true,
 });
 
 console.log('\n✅ All contract validations passed.');

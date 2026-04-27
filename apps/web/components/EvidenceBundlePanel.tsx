@@ -135,11 +135,15 @@ export function EvidenceBundlePanel({
                   <div className="text-[10px] text-cockpit-500">Call Events</div>
                   <div className="text-xs text-cockpit-200">{bundle.bundle.callEvents?.length ?? 0}</div>
                 </div>
+                <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
+                  <div className="text-[10px] text-cockpit-500">Telephony Bridge</div>
+                  <div className="text-xs text-cockpit-200">{bundle.bundle.telephonyBridgeEvents?.length ?? 0}</div>
+                </div>
               </div>
               <div className="rounded border border-amber-700/30 bg-amber-900/20 p-2">
                 <div className="text-[10px] font-medium text-amber-300">Mock / Dev-Only</div>
                 <div className="mt-0.5 text-[10px] text-amber-400/80">
-                  {bundle.bundle.mockDevOnlyDisclaimers[0]}
+                  {bundle.bundle.mockDevOnlyDisclaimers[0]} No real telephony connected.
                 </div>
               </div>
             </div>

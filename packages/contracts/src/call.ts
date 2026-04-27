@@ -35,6 +35,7 @@ export const CallTimelineItemType = z.enum([
   'call_ended',
   'call_missed',
   'greeting_suggested',
+  'telephony_bridge_event',
   'evidence_bundle_generated',
   'audit_event',
 ]);

@@ -181,6 +181,80 @@ export interface ConnectorTestResult {
   metadata: Record<string, unknown>;
 }
 
+export interface TelephonyAdapterCapabilities {
+  inboundCalls: boolean;
+  answer: boolean;
+  hold: boolean;
+  resume: boolean;
+  end: boolean;
+  transfer: boolean;
+  recording: boolean;
+  transcription: boolean;
+}
+
+export interface TelephonyAdapterStatus {
+  tenantId: string;
+  providerType: string;
+  mode: string;
+  health: string;
+  connected: boolean;
+  capabilities: TelephonyAdapterCapabilities;
+  webhookVerification: {
+    status: string;
+    checkedAt: string;
+    signatureRequired: boolean;
+    mockDevOnly: boolean;
+    reason?: string;
+  };
+  lastTestedAt?: string;
+  mockDevOnly: boolean;
+  disclaimers: string[];
+  metadata: Record<string, unknown>;
+}
+
+export interface TelephonyCallControlResult {
+  intent: {
+    tenantId: string;
+    actorId: string;
+    callEventId: string;
+    externalCallId: string;
+    providerType: string;
+    adapterMode: string;
+    action: string;
+    reason?: string;
+    requestedAt: string;
+    mockDevOnly: boolean;
+  };
+  success: boolean;
+  providerType: string;
+  adapterMode: string;
+  callEvent?: CallEvent;
+  resultingStatus?: string;
+  error?: { code: string; message: string; safeToDisplay: boolean };
+  completedAt: string;
+  mockDevOnly: boolean;
+}
+
+export interface TelephonyWebhookResponse {
+  event: {
+    tenantId: string;
+    providerType: string;
+    adapterMode: string;
+    sourceEventId: string;
+    externalCallId: string;
+    eventType: string;
+    rawCallerNumber?: string;
+    normalizedPhoneNumber?: string;
+    callerDisplayName?: string;
+    occurredAt: string;
+    verification: { status: string; checkedAt: string; signatureRequired: boolean; mockDevOnly: boolean };
+    mockDevOnly: boolean;
+  };
+  callEvent: CallEvent;
+  mockDevOnly: boolean;
+  receivedAt: string;
+}
+
 export interface InternalNoteDraft {
   id: string;
   tenantId: string;
@@ -367,6 +441,20 @@ export interface EvidenceBundle {
   contextPackets: EvidenceBundleContextPacketSummary[];
   aiUsage: EvidenceBundleAiUsageSummary[];
   connectorOperations: EvidenceBundleConnectorOperationSummary[];
+  telephonyBridgeEvents: Array<{
+    operationType: string;
+    providerType: string;
+    adapterMode: string;
+    externalCallId?: string;
+    callEventId?: string;
+    controlIntent?: string;
+    verificationStatus?: string;
+    success?: boolean;
+    errorCode?: string;
+    errorMessage?: string;
+    mockDevOnly: boolean;
+    occurredAt: string;
+  }>;
   auditTimeline: EvidenceBundleAuditSummary[];
   mockDevOnlyDisclaimers: string[];
   limitations: string[];
@@ -554,6 +642,49 @@ export const api = {
     apiFetch<ConnectorTestResult>(
       '/connectors/zammad/test',
       { method: 'POST' },
+      identity
+    ),
+
+  getTelephonyStatus: (identity?: DevIdentity) =>
+    apiFetch<TelephonyAdapterStatus>(
+      '/telephony/status',
+      { method: 'GET' },
+      identity
+    ),
+
+  testTelephonyBridge: (identity?: DevIdentity) =>
+    apiFetch<TelephonyAdapterStatus>(
+      '/telephony/test',
+      { method: 'POST' },
+      identity
+    ),
+
+  sendFakeProviderWebhook: (
+    body: {
+      sourceEventId?: string;
+      externalCallId: string;
+      eventType?: string;
+      rawCallerNumber?: string;
+      callerDisplayName?: string;
+      autoCreateSession?: boolean;
+      metadata?: Record<string, unknown>;
+    },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<TelephonyWebhookResponse>(
+      '/telephony/webhooks/fake-provider',
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  controlTelephonyCall: (
+    callId: string,
+    body: { action: string; reason?: string; target?: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<TelephonyCallControlResult>(
+      `/telephony/calls/${callId}/control`,
+      { method: 'POST', body: JSON.stringify(body) },
       identity
     ),
 

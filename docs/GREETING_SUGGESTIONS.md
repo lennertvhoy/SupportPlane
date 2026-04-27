@@ -1,7 +1,7 @@
 # Greeting Suggestions
 
 **Product:** SupportPlane  
-**Scope:** BL-042 Suggested greeting generation from call plus ticket context and BL-043 Call Console integration  
+**Scope:** BL-042 Suggested greeting generation from call plus ticket context, BL-043 Call Console integration, and BL-044 Telephony Bridge context  
 **Last updated:** 2026-04-27
 
 ## Purpose
@@ -151,5 +151,6 @@ back automatically.
 ## Future path after BL-043
 
 Later slices may add post-call summaries, ticket-note draft review, and fuller
-demo fixtures. Real provider selection, voice, TTS, STT, and production
-telephony are not implemented by BL-043.
+demo fixtures. BL-044 adds a telephony adapter boundary and mock provider
+webhook/control intent flow, but real provider selection, voice, TTS, STT, and
+production telephony remain unimplemented.

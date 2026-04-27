@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-27T09:46:00+02:00
+  updated_at: 2026-04-27T10:20:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -258,6 +258,48 @@ current_state:
         mock_telephony: true
         mock_ai: true
         real_integrations: false
+    bl_044_status:
+      completed: true
+      scope: telephony_adapter_contract_and_bridge_boundary
+      contracts_package: packages/contracts
+      connectors_package: packages/connectors
+      api_app: apps/api
+      web_app: apps/web
+      docs:
+        - docs/TELEPHONY_ADAPTERS.md
+        - docs/CALL_CONSOLE.md
+        - docs/EVIDENCE_BUNDLES.md
+      validation: full_validation_gate_and_browser_boundary_verified
+      runtime:
+        api_endpoints:
+          - GET /telephony/status
+          - POST /telephony/test
+          - POST /telephony/webhooks/fake-provider
+          - POST /telephony/calls/:id/control
+        provider_type: mock
+        adapter_mode: mock
+        webhook_verification: not_required
+        capabilities:
+          inbound_calls: true
+          answer: true
+          hold: true
+          resume: true
+          end: true
+          transfer: false
+          recording: false
+          transcription: false
+        audit_events:
+          - telephony_adapter_tested
+          - telephony_webhook_received
+          - telephony_webhook_verified
+          - telephony_call_control_requested
+          - telephony_call_control_succeeded
+          - telephony_call_control_failed
+        evidence_bundle_includes: telephonyBridgeEvents
+        store_type: in-memory
+        mock_telephony: true
+        real_provider_calls: false
+        real_media_or_voice: false
         evidence_bundle_includes:
           - callEvents
           - call_status_changed auditTimeline entries

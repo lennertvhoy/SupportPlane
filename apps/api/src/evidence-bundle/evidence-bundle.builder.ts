@@ -11,6 +11,7 @@ import type {
   EvidenceBundleTicketSummary,
   EvidenceBundleContextPacketSummary,
   EvidenceBundleConnectorOperationSummary,
+  EvidenceBundleTelephonyBridgeSummary,
   EvidenceBundleAiUsageSummary,
   EvidenceBundleAuditSummary,
   EvidenceBundleCallEventSummary,
@@ -96,6 +97,34 @@ function toConnectorOperationSummaries(auditEvents: AuditEvent[]): EvidenceBundl
       externalArticleId: (e.metadata.externalArticleId as string) ?? undefined,
       errorCode: (e.metadata.errorCode as string) ?? undefined,
       errorMessage: (e.metadata.errorMessage as string) ?? undefined,
+      occurredAt: e.createdAt,
+    }));
+}
+
+function toTelephonyBridgeSummaries(auditEvents: AuditEvent[]): EvidenceBundleTelephonyBridgeSummary[] {
+  return auditEvents
+    .filter((e) =>
+      [
+        'telephony_adapter_tested',
+        'telephony_webhook_received',
+        'telephony_webhook_verified',
+        'telephony_call_control_requested',
+        'telephony_call_control_succeeded',
+        'telephony_call_control_failed',
+      ].includes(e.eventType)
+    )
+    .map((e) => ({
+      operationType: e.eventType,
+      providerType: (e.metadata.providerType as string) ?? 'unknown',
+      adapterMode: (e.metadata.adapterMode as string) ?? 'unknown',
+      externalCallId: (e.metadata.externalCallId as string) ?? undefined,
+      callEventId: (e.metadata.callEventId as string) ?? undefined,
+      controlIntent: (e.metadata.controlIntent as string) ?? undefined,
+      verificationStatus: (e.metadata.verificationStatus as string) ?? undefined,
+      success: (e.metadata.success as boolean) ?? undefined,
+      errorCode: ((e.metadata.error as Record<string, unknown> | undefined)?.code as string) ?? undefined,
+      errorMessage: ((e.metadata.error as Record<string, unknown> | undefined)?.message as string) ?? undefined,
+      mockDevOnly: (e.metadata.mockDevOnly as boolean) ?? true,
       occurredAt: e.createdAt,
     }));
 }
@@ -188,6 +217,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     contextPackets: toContextPacketSummaries(input.contextPackets),
     aiUsage: toAiUsageSummaries(input.auditEvents),
     connectorOperations: toConnectorOperationSummaries(input.auditEvents),
+    telephonyBridgeEvents: toTelephonyBridgeSummaries(input.auditEvents),
     callEvents: toCallEventSummaries(input.callEvents),
     greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
@@ -197,6 +227,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Data is lost on API restart. This is not production audit-grade evidence.',
       'Connector mode is mock unless explicitly configured otherwise.',
       'Call events are simulated via fake webhook. No real telephony is connected.',
+      'Telephony bridge events are adapter-boundary mock events only. No real PBX, provider, media, or voice path is connected.',
       'Caller matching uses deterministic mock fixtures, not a real customer database.',
       'Support sessions may be auto-created from fake incoming calls. These are mock sessions for development only.',
     ],
@@ -208,6 +239,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Secrets and tokens have been redacted using pattern matching, not guaranteed zero-knowledge.',
       'Phone normalization is Belgian-style heuristic only, not telecom-grade validation.',
       'Auto-created sessions are generated from mock call events and do not represent real customer interactions.',
+      'Telephony bridge controls update local mock state only and are not compliance-grade telephony evidence.',
     ],
     sourceProvenance: {
       storeType: 'in-memory',
@@ -349,6 +381,26 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       if (c.linkedSessionId) lines.push(`- **Linked Session:** ${c.linkedSessionId}`);
       lines.push(`- **Mock/Dev-Only:** ${c.mockDevOnly}`);
       lines.push(`- **Started:** ${c.startedAt}`);
+      lines.push(``);
+    }
+  }
+  lines.push(``);
+
+  lines.push(`## Telephony Bridge Events`);
+  lines.push(``);
+  if (bundle.telephonyBridgeEvents.length === 0) {
+    lines.push(`*No telephony bridge events recorded.*`);
+  } else {
+    for (const event of bundle.telephonyBridgeEvents) {
+      lines.push(`- **${event.operationType}** (${event.providerType} / ${event.adapterMode})`);
+      if (event.externalCallId) lines.push(`  - External Call ID: ${event.externalCallId}`);
+      if (event.callEventId) lines.push(`  - Call Event ID: ${event.callEventId}`);
+      if (event.controlIntent) lines.push(`  - Control Intent: ${event.controlIntent}`);
+      if (event.verificationStatus) lines.push(`  - Verification: ${event.verificationStatus}`);
+      if (event.success !== undefined) lines.push(`  - Success: ${event.success}`);
+      if (event.errorCode) lines.push(`  - Error: ${event.errorCode} — ${event.errorMessage ?? ''}`);
+      lines.push(`  - Mock/Dev-Only: ${event.mockDevOnly}`);
+      lines.push(`  - At: ${event.occurredAt}`);
       lines.push(``);
     }
   }

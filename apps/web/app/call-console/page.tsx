@@ -19,6 +19,7 @@ import {
   User,
   Ticket,
   Link2,
+  RadioTower,
 } from 'lucide-react';
 import { Panel } from '@/components/Panel';
 import { Badge } from '@/components/Badge';
@@ -28,6 +29,8 @@ import {
   type CallTimelineItem,
   type SupportSession,
   type GreetingSuggestionResponse,
+  type TelephonyAdapterStatus,
+  type TelephonyCallControlResult,
   ApiClientError,
 } from '@/lib/api';
 
@@ -45,6 +48,10 @@ export default function CallConsolePage() {
   const [greetingError, setGreetingError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [tone, setTone] = useState<'professional' | 'friendly' | 'concise'>('professional');
+  const [telephonyStatus, setTelephonyStatus] = useState<TelephonyAdapterStatus | undefined>(undefined);
+  const [lastBridgeTest, setLastBridgeTest] = useState<TelephonyAdapterStatus | undefined>(undefined);
+  const [lastControlResult, setLastControlResult] = useState<TelephonyCallControlResult | undefined>(undefined);
+  const [telephonyLoading, setTelephonyLoading] = useState(false);
 
   const fetchCalls = useCallback(async () => {
     setCallsLoading(true);
@@ -86,6 +93,12 @@ export default function CallConsolePage() {
     fetchCalls();
   }, [fetchCalls]);
 
+  useEffect(() => {
+    api.getTelephonyStatus()
+      .then(setTelephonyStatus)
+      .catch(() => setTelephonyStatus(undefined));
+  }, []);
+
   const handleSelectCall = useCallback(
     async (call: CallEvent) => {
       setSelectedCall(call);
@@ -99,12 +112,27 @@ export default function CallConsolePage() {
       if (!selectedCall) return;
       setActionLoading(newStatus);
       try {
-        const result = await api.updateCallStatus(selectedCall.id, { status: newStatus });
-        setSelectedCall(result.callEvent);
+        const action =
+          newStatus === 'answered' && selectedCall.status === 'on_hold'
+            ? 'resume'
+            : newStatus === 'answered'
+              ? 'answer'
+              : newStatus === 'on_hold'
+                ? 'hold'
+                : newStatus === 'ended'
+                  ? 'end'
+                  : 'end';
+        const result = await api.controlTelephonyCall(selectedCall.id, {
+          action,
+          reason: 'Call Console mock control',
+        });
+        setLastControlResult(result);
+        const updatedCall = result.callEvent ?? selectedCall;
+        setSelectedCall(updatedCall);
         setCalls((prev) =>
-          prev.map((c) => (c.id === result.callEvent.id ? result.callEvent : c))
+          prev.map((c) => (c.id === updatedCall.id ? updatedCall : c))
         );
-        await fetchCallDetails(result.callEvent);
+        await fetchCallDetails(updatedCall);
       } catch (err) {
         setCallsError(err instanceof ApiClientError ? err.message : 'Status transition failed');
       } finally {
@@ -144,6 +172,43 @@ export default function CallConsolePage() {
       // ignore
     }
   };
+
+  const handleBridgeTest = useCallback(async () => {
+    setTelephonyLoading(true);
+    try {
+      const status = await api.testTelephonyBridge();
+      setTelephonyStatus(status);
+      setLastBridgeTest(status);
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Bridge test failed');
+    } finally {
+      setTelephonyLoading(false);
+    }
+  }, []);
+
+  const handleFakeProviderWebhook = useCallback(async () => {
+    setTelephonyLoading(true);
+    try {
+      const response = await api.sendFakeProviderWebhook({
+        externalCallId: `BL-044-${Date.now()}`,
+        eventType: 'incoming_call',
+        rawCallerNumber: '03 555 01 01',
+        callerDisplayName: 'BL-044 Mock Caller',
+        metadata: {
+          bridgeProof: 'mock-only',
+          Authorization: 'Bearer ui-proof-token-must-redact',
+          signature: 'fake-signature-must-redact',
+        },
+      });
+      await fetchCalls();
+      setSelectedCall(response.callEvent);
+      await fetchCallDetails(response.callEvent);
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Fake provider webhook failed');
+    } finally {
+      setTelephonyLoading(false);
+    }
+  }, [fetchCalls, fetchCallDetails]);
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -333,6 +398,79 @@ export default function CallConsolePage() {
 
               {/* Grid */}
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <Panel
+                  title="Telephony Bridge"
+                  headerRight={<Badge variant="warning">Telephony bridge boundary</Badge>}
+                  className="lg:col-span-2"
+                >
+                  <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr]">
+                    <div className="space-y-2">
+                      <div className="rounded border border-amber-700/30 bg-amber-900/20 p-2">
+                        <div className="flex items-center gap-1 text-[10px] font-medium text-amber-300">
+                          <RadioTower size={10} />
+                          Telephony bridge boundary
+                        </div>
+                        <div className="mt-0.5 text-[10px] text-amber-400/80">
+                          Mock mode. No real PBX connected. No media or voice connected. Controls update local mock state only.
+                        </div>
+                      </div>
+                      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                        <dt className="text-cockpit-500">Provider type</dt>
+                        <dd className="text-cockpit-100">{telephonyStatus?.providerType ?? 'mock'}</dd>
+                        <dt className="text-cockpit-500">Adapter mode</dt>
+                        <dd className="text-cockpit-100">{telephonyStatus?.mode ?? 'mock'}</dd>
+                        <dt className="text-cockpit-500">Verification</dt>
+                        <dd className="text-cockpit-100">{telephonyStatus?.webhookVerification.status ?? 'not_required'}</dd>
+                        <dt className="text-cockpit-500">Mock/dev-only</dt>
+                        <dd className="text-cockpit-100">{telephonyStatus?.mockDevOnly === false ? 'No' : 'Yes'}</dd>
+                      </dl>
+                      <div className="flex flex-wrap gap-1">
+                        {telephonyStatus &&
+                          Object.entries(telephonyStatus.capabilities)
+                            .filter(([, enabled]) => enabled)
+                            .map(([name]) => (
+                              <span key={name} className="rounded border border-cockpit-700 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300">
+                                {name}
+                              </span>
+                            ))}
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={handleBridgeTest}
+                          disabled={telephonyLoading}
+                          className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+                        >
+                          {telephonyLoading && <Loader2 size={10} className="animate-spin" />}
+                          Test bridge
+                        </button>
+                        <button
+                          onClick={handleFakeProviderWebhook}
+                          disabled={telephonyLoading}
+                          className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-200 hover:bg-cockpit-800 disabled:opacity-50"
+                        >
+                          <PhoneIncoming size={10} />
+                          Fake provider webhook
+                        </button>
+                      </div>
+                      {lastBridgeTest && (
+                        <div className="rounded border border-emerald-700/30 bg-emerald-900/20 p-2 text-xs text-emerald-200">
+                          Last test result: {lastBridgeTest.health} / {lastBridgeTest.mode} / {lastBridgeTest.webhookVerification.status}
+                        </div>
+                      )}
+                      {lastControlResult && (
+                        <div className="rounded border border-blue-700/30 bg-blue-900/20 p-2 text-xs text-blue-100">
+                          Call control intent/result: {lastControlResult.intent.action} → {lastControlResult.resultingStatus ?? 'none'} ({lastControlResult.success ? 'succeeded' : 'failed'}) · mock-only
+                        </div>
+                      )}
+                      <div className="text-[10px] text-cockpit-500">
+                        No tokens, signatures, Authorization headers, env values, provider credentials, voice, recording, STT, or TTS are shown or connected.
+                      </div>
+                    </div>
+                  </div>
+                </Panel>
+
                 {/* Caller match panel */}
                 <Panel
                   title="Caller Identity"
@@ -628,6 +766,7 @@ export default function CallConsolePage() {
                                   {item.type === 'call_ended' && <PhoneOff size={12} className="text-cockpit-400" />}
                                   {item.type === 'call_missed' && <PhoneOff size={12} className="text-red-400" />}
                                   {item.type === 'greeting_suggested' && <Bot size={12} className="text-accent" />}
+                                  {item.type === 'telephony_bridge_event' && <RadioTower size={12} className="text-blue-400" />}
                                   {item.type === 'evidence_bundle_generated' && <Ticket size={12} className="text-cockpit-400" />}
                                   {item.type === 'audit_event' && <Clock size={12} className="text-cockpit-500" />}
                                   <span className="text-xs font-medium text-cockpit-200">{item.title}</span>

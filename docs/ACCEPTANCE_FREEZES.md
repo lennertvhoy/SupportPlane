@@ -183,6 +183,52 @@ and must be protected from quiet regression.
 - Tie the accepted state to repo truth, runtime truth, and evidence truth.
 - If a later report conflicts with the freeze, prove runtime identity before drawing conclusions from git history.
 
+## AF-2026-04-27-002: Telephony adapter boundary (BL-044)
+
+- ID: AF-2026-04-27-002
+- Milestone: Telephony adapter contract and bridge boundary
+- Scope: Mock-only telephony adapter contracts, connector boundary, `/telephony` API endpoints, Call Console Telephony Bridge panel, telephony audit events, and evidence bundle telephony summaries for future PBX/WebRTC/phone-provider integration.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded_in_final_handoff
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /call-console
+  - /
+  - GET /telephony/status
+  - POST /telephony/test
+  - POST /telephony/webhooks/fake-provider
+  - POST /telephony/calls/:id/control
+  - GET /support-sessions/:id/evidence-bundle
+  - GET /support-sessions/:id/evidence-bundle.md
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-27-009
+  - EV-2026-04-27-010
+  - EV-2026-04-27-011
+  - EV-2026-04-27-012
+  - EV-2026-04-27-013
+  - EV-2026-04-27-014
+  - EV-2026-04-27-015
+  - EV-2026-04-27-016
+- evidence_folder: output/playwright/session-044-telephony-adapter-boundary/
+- screenshot_count: 8
+- regression_guard:
+  - `/call-console` must keep the Telephony Bridge panel with honest mock labels.
+  - `/telephony/status` must default to provider `mock`, mode `mock`, and verification `not_required`.
+  - Fake provider webhook events must map into the existing CallEvent/caller matching flow without real provider calls.
+  - Call controls must remain local mock state updates until a real provider slice is explicitly accepted.
+  - Telephony audit events must not include tokens, signatures, Authorization headers, env values, or provider credentials.
+  - Evidence bundles must include telephonyBridgeEvents and no-real-telephony disclaimers where telephony bridge events are present.
+- Notes:
+  - No real phone integration, voice/TTS/STT, recording, transcription, real telephony provider call, real AI provider call, real auth, real database persistence, queue-backed workflow, object storage, real Zammad call, production call-center integration, or production deployment is implemented.
+
 ## AF-2026-04-27-001: Call Console UI closure (BL-043)
 
 - ID: AF-2026-04-27-001

@@ -1482,3 +1482,156 @@ describe('Call status transition endpoints', () => {
     assert.ok(matchedEvent, 'evidence bundle audit timeline should include caller_matched');
   });
 });
+
+describe('Telephony adapter boundary endpoints', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('GET /telephony/status requires tenant identity', async () => {
+    const res = await supertest(server)
+      .get('/telephony/status')
+      .expect(400);
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('GET /telephony/status returns mock status and capabilities', async () => {
+    const res = await supertest(server)
+      .get('/telephony/status')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.equal(res.body.providerType, 'mock');
+    assert.equal(res.body.mode, 'mock');
+    assert.equal(res.body.capabilities.inboundCalls, true);
+    assert.equal(res.body.capabilities.answer, true);
+    assert.equal(res.body.webhookVerification.status, 'not_required');
+  });
+
+  it('POST /telephony/webhooks/fake-provider maps into call flow', async () => {
+    const res = await supertest(server)
+      .post('/telephony/webhooks/fake-provider')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({
+        sourceEventId: 'provider-event-1',
+        externalCallId: 'TEL-1',
+        eventType: 'incoming_call',
+        rawCallerNumber: '03 555 01 01',
+        callerDisplayName: 'Telephony Caller',
+      })
+      .expect(201);
+
+    assert.equal(res.body.event.verification.status, 'not_required');
+    assert.equal(res.body.callEvent.provider, 'mock');
+    assert.equal(res.body.callEvent.source, 'telephony_bridge');
+    assert.equal(res.body.callEvent.callerMatch.status, 'matched');
+    assert.equal(res.body.mockDevOnly, true);
+  });
+
+  it('telephony call controls append audit events and update local mock state', async () => {
+    const call = await supertest(server)
+      .post('/telephony/webhooks/fake-provider')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({
+        externalCallId: 'TEL-CONTROL-1',
+        eventType: 'incoming_call',
+        rawCallerNumber: '03 555 01 01',
+      })
+      .expect(201);
+
+    const result = await supertest(server)
+      .post(`/telephony/calls/${call.body.callEvent.id}/control`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ action: 'answer' })
+      .expect(200);
+
+    assert.equal(result.body.success, true);
+    assert.equal(result.body.intent.action, 'answer');
+    assert.equal(result.body.callEvent.status, 'answered');
+
+    const timeline = await supertest(server)
+      .get(`/calls/${call.body.callEvent.id}/timeline`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const bridgeEvents = timeline.body.timelineItems.filter(
+      (item: { type: string }) => item.type === 'telephony_bridge_event'
+    );
+    assert.ok(bridgeEvents.length >= 3);
+  });
+
+  it('telephony endpoints enforce cross-tenant access rejection', async () => {
+    const call = await supertest(server)
+      .post('/telephony/webhooks/fake-provider')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({
+        externalCallId: 'TEL-ISOLATION-1',
+        eventType: 'incoming_call',
+        rawCallerNumber: '03 555 01 01',
+      })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/telephony/calls/${call.body.callEvent.id}/control`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .send({ action: 'answer' })
+      .expect(404);
+  });
+
+  it('evidence bundle includes telephony bridge audit summary', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Telephony evidence test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/telephony/webhooks/fake-provider')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({
+        externalCallId: 'TEL-EVIDENCE-1',
+        eventType: 'incoming_call',
+        rawCallerNumber: '03 555 01 01',
+      })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/telephony/calls/${call.body.callEvent.id}/control`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ action: 'hold' })
+      .expect(200);
+
+    const bundle = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(Array.isArray(bundle.body.bundle.telephonyBridgeEvents));
+    assert.ok(bundle.body.bundle.telephonyBridgeEvents.length >= 3);
+    assert.match(JSON.stringify(bundle.body.bundle.mockDevOnlyDisclaimers), /No real PBX/);
+    assert.ok(!JSON.stringify(bundle.body).includes('Bearer '));
+  });
+});

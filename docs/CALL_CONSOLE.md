@@ -1,7 +1,7 @@
 # Call Console
 
 **Product:** SupportPlane  
-**Scope:** BL-043 Call Console UI  
+**Scope:** BL-043 Call Console UI, extended by BL-044 Telephony Bridge boundary  
 **Last updated:** 2026-04-27
 
 ## Purpose
@@ -9,7 +9,8 @@
 The Call Console is a mock-only operator view for handling a simulated incoming
 call after caller matching. It gathers recent fake calls, caller identity,
 matched customer/ticket hints, linked support session context, mock lifecycle
-controls, greeting suggestions, and the call timeline into one screen.
+controls, telephony bridge boundary status, greeting suggestions, and the call
+timeline into one screen.
 
 ## Route / UX flow
 
@@ -23,9 +24,10 @@ controls, greeting suggestions, and the call timeline into one screen.
   3. Select the fake incoming call from **Recent fake incoming calls**.
   4. Review caller identity, matched customer, and recent ticket hints.
   5. Use mock lifecycle controls to answer, hold, resume, or end the call.
-  6. Review the linked support session.
-  7. Generate a mock AI greeting suggestion for operator review.
-  8. Inspect the Call Timeline and generate an evidence bundle from the Support Cockpit.
+  6. Review the Telephony Bridge panel for mock mode and capability status.
+  7. Review the linked support session.
+  8. Generate a mock AI greeting suggestion for operator review.
+  9. Inspect the Call Timeline and generate an evidence bundle from the Support Cockpit.
 
 ## Mock call lifecycle states
 
@@ -62,6 +64,10 @@ The `on_hold` to `answered` transition is displayed in the timeline as
 | `/calls/:id/status` | POST | Apply an allowed mock lifecycle status transition |
 | `/calls/:id/timeline` | GET | Return deterministic call timeline items |
 | `/calls/:id/link-session` | POST | Link a call to an existing SupportSession |
+| `/telephony/status` | GET | Return mock telephony bridge status/capabilities |
+| `/telephony/test` | POST | Run deterministic mock bridge test |
+| `/telephony/webhooks/fake-provider` | POST | Accept fake provider event and map to CallEvent |
+| `/telephony/calls/:id/control` | POST | Apply mock telephony control intent to local state |
 | `/support-sessions/:id/greeting-suggestion` | POST | Generate mock AI greeting suggestion |
 | `/support-sessions/:id/evidence-bundle` | GET | Generate JSON evidence bundle |
 | `/support-sessions/:id/evidence-bundle.md` | GET | Generate Markdown evidence bundle |
@@ -79,12 +85,34 @@ The Call Console and underlying call flow use these audit events:
 - `call_auto_linked_to_session`
 - `support_session_auto_created`
 - `call_status_changed`
+- `telephony_adapter_tested`
+- `telephony_webhook_received`
+- `telephony_webhook_verified`
+- `telephony_call_control_requested`
+- `telephony_call_control_succeeded`
+- `telephony_call_control_failed`
 - `greeting_suggestion_generated`
 - `evidence_bundle_generated`
 - `evidence_bundle_exported`
 
 Audit metadata includes mock/dev-only flags where applicable. Lifecycle events
 record previous and new status.
+
+## Telephony Bridge panel
+
+BL-044 adds a small **Telephony Bridge** panel to the Call Console. It shows:
+
+- provider type and adapter mode
+- mock capability discovery
+- webhook verification status
+- mock/dev-only warning
+- bridge test action and last test result
+- fake provider webhook action
+- last control intent/result
+
+Required honest labels are preserved: "Telephony bridge boundary", "Mock mode",
+"No real PBX connected", "No media or voice connected", and "Controls update
+local mock state only".
 
 ## Greeting suggestion integration
 
@@ -108,6 +136,8 @@ output for operator review only.
 Evidence bundles include BL-043 call-console proof through:
 
 - `callEvents` summaries for linked calls
+- `telephonyBridgeEvents` summaries for status/test, webhook, verification, and
+  control audit events where present
 - `auditTimeline` entries for call received, matched, linked, and status changes
 - `greetingSuggestions` summaries with provider/model/prompt/context metadata
 - mock telephony disclaimers
@@ -117,6 +147,10 @@ Evidence bundles include BL-043 call-console proof through:
 The final BL-043 closure browser proof is in:
 
 `output/playwright/session-043-call-console-ui-final-closure/`
+
+The BL-044 telephony adapter boundary browser proof is in:
+
+`output/playwright/session-044-telephony-adapter-boundary/`
 
 ## Known limitations
 

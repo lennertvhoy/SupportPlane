@@ -4,6 +4,41 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-27 - BL-044 Telephony adapter boundary
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Added telephony adapter Zod contracts for provider types, modes, capabilities, status, webhook events, verification, control intents/results, provider errors, and audit metadata.
+- Added `MockTelephonyAdapter` in `packages/connectors` with deterministic mock status/capabilities, safe redaction, webhook verification abstraction, provider-event mapping, and control intent handling.
+- Added `/telephony/status`, `/telephony/test`, `/telephony/webhooks/fake-provider`, and `/telephony/calls/:id/control`.
+- Added telephony bridge audit events and evidence bundle `telephonyBridgeEvents`.
+- Added the Call Console Telephony Bridge panel with mock labels, bridge test action, fake provider webhook action, last control result, and no-secret/no-real-telephony warnings.
+- Added `docs/TELEPHONY_ADAPTERS.md` and updated call/evidence docs.
+
+### Verification
+
+- Final browser proof captured exactly 8 screenshots in `output/playwright/session-044-telephony-adapter-boundary/`.
+- Verified fake provider webhook `BL-044-PROOF-1` mapped to a CallEvent, displayed in Call Console, matched Acme BVBA fixtures, accepted answer/hold mock control intents, showed telephony timeline events, and appeared in evidence bundle summaries.
+- Verified UI text did not expose injected `Authorization`, bearer token, or signature proof values.
+- Full validation gate results are recorded in the final handoff.
+
+### Evidence
+
+- EV-2026-04-27-009 through EV-2026-04-27-016.
+- Screenshot folder: `output/playwright/session-044-telephony-adapter-boundary/`.
+
+### Remaining Risk
+
+- No real phone integration, voice/TTS/STT, recording, transcription, real provider call, real AI provider call, real auth, real database persistence, queue-backed workflow, object storage, real Zammad call, production call-center integration, or production deployment exists.
+- BL-045 and BL-046 were not started.
+
 ## 2026-04-27 - BL-043 Call Console closure/hygiene pass
 
 **Type:** closure_hygiene

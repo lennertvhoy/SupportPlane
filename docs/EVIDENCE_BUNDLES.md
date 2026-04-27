@@ -1,7 +1,7 @@
 # Evidence Bundles
 
 **Product:** SupportPlane  
-**Scope:** BL-008 Evidence bundle skeleton and exportable JSON/Markdown MVP, extended through BL-043 Call Console lifecycle evidence  
+**Scope:** BL-008 Evidence bundle skeleton and exportable JSON/Markdown MVP, extended through BL-044 telephony bridge evidence  
 **Last updated:** 2026-04-27
 
 ## Purpose
@@ -38,6 +38,7 @@ Every bundle includes:
 | Greeting suggestions | Generated greeting text, tone, provider, model, prompt, context hash, mock/disabled flags |
 | Call lifecycle audit | Received, matched, linked, status-change, and greeting-related events through the audit timeline |
 | Connector operations | Ticket loads, drafts, writeback attempts/results |
+| Telephony bridge events | Mock adapter status/test, webhook verification, and control intent audit summaries |
 | Audit timeline | Full event list with actor, resource, metadata, integrity hash |
 | Mock/dev-only disclaimers | Honest labels about in-memory/mock limitations |
 | Limitations | Explicit statements about what is not guaranteed |
@@ -98,6 +99,9 @@ Tests prove that `apiToken`, `ZAMMAD_API_TOKEN`, `secret`, `token=`, and `Bearer
 - **Greeting suggestions:** Generated greetings are mock-AI suggestions only, not spoken or sent automatically.
 - **Call Console lifecycle:** BL-043 call status changes are mock lifecycle
   events only. They do not control a real phone, PBX, queue, or call center.
+- **Telephony bridge:** BL-044 telephony bridge events are adapter-boundary mock
+  events only. No real PBX, provider, media, voice, recording, or transcription
+  is connected.
 
 ## Future persistence/object-storage path
 
@@ -123,6 +127,10 @@ The bundle builder is structured so that real persistence or object storage can 
 10. For BL-043 Call Console evidence, verify the bundle includes `callEvents`,
     `call_status_changed`, `greeting_suggestion_generated`, `autoSend: false`,
     `voiceEnabled: false`, and mock telephony / mock AI disclaimers
+11. For BL-044 Telephony Bridge evidence, verify the bundle includes
+    `telephonyBridgeEvents`, `telephony_webhook_received`,
+    `telephony_webhook_verified`, `telephony_call_control_requested`, and
+    mock/no-real-telephony disclaimers where those events are present
 
 ## API endpoints
 

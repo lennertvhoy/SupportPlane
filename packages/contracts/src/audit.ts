@@ -50,6 +50,12 @@ export const AuditEventType = z.enum([
   'call_auto_linked_to_session',
   'call_status_changed',
   'greeting_suggestion_generated',
+  'telephony_adapter_tested',
+  'telephony_webhook_received',
+  'telephony_webhook_verified',
+  'telephony_call_control_requested',
+  'telephony_call_control_succeeded',
+  'telephony_call_control_failed',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

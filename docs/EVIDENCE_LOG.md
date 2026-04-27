@@ -2,6 +2,124 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-27-009: BL-044 Call Console Telephony Bridge panel
+
+- File: output/playwright/session-044-telephony-adapter-boundary/01-call-console-telephony-bridge-panel.png
+- Title: Call Console with Telephony Bridge panel
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/call-console
+- Action: Opened Call Console after creating fake provider webhook `BL-044-PROOF-1`.
+- Shows:
+  - Telephony Bridge panel with provider type `mock`, adapter mode `mock`, verification `not_required`, and mock/dev-only flag.
+  - Honest labels: Telephony bridge boundary, Mock mode, No real PBX connected, No media or voice connected, Controls update local mock state only.
+- Proves:
+  - BL-044 boundary visibility is present in the Call Console.
+- Type: docs-render-verification
+- as_of: 2026-04-27T10:16:00+02:00
+
+## EV-2026-04-27-010: BL-044 mock capabilities and bridge test result
+
+- File: output/playwright/session-044-telephony-adapter-boundary/02-telephony-status-capabilities-and-test-result.png
+- Title: Telephony status/capabilities and bridge test result
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/call-console
+- Action: Clicked **Test bridge** in the Telephony Bridge panel.
+- Shows:
+  - Capabilities `inboundCalls`, `answer`, `hold`, `resume`, and `end`.
+  - Last test result `healthy / mock / not_required`.
+- Proves:
+  - The mock adapter status/test flow is visible and deterministic.
+- Type: docs-render-verification
+- as_of: 2026-04-27T10:16:00+02:00
+
+## EV-2026-04-27-011: BL-044 bridge test result visible
+
+- File: output/playwright/session-044-telephony-adapter-boundary/03-bridge-test-result-visible.png
+- Title: Bridge test result visible
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/call-console
+- Action: Captured the Call Console after the mock bridge test completed.
+- Shows:
+  - Last test result remains visible in the Telephony Bridge panel.
+- Proves:
+  - The UI retains the last mock bridge test result for operator review.
+- Type: docs-render-verification
+- as_of: 2026-04-27T10:16:00+02:00
+
+## EV-2026-04-27-012: BL-044 fake provider webhook mapped incoming call
+
+- File: output/playwright/session-044-telephony-adapter-boundary/04-fake-provider-webhook-mapped-incoming-call.png
+- Title: Fake provider webhook mapped to selected incoming call
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/call-console
+- Action: Created a fake provider webhook event for `BL-044-PROOF-1` and selected it in the Call Console.
+- Shows:
+  - Selected fake incoming call, normalized phone number, matched Acme BVBA caller, and recent ticket hints.
+- Proves:
+  - The fake provider webhook maps into the existing CallEvent/caller matching flow.
+- Type: docs-render-verification
+- as_of: 2026-04-27T10:16:00+02:00
+
+## EV-2026-04-27-013: BL-044 mock control intent/result
+
+- File: output/playwright/session-044-telephony-adapter-boundary/05-call-control-intent-result-mock-only.png
+- Title: Mock telephony control intent/result
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/call-console
+- Action: Clicked **Answer** on the selected call.
+- Shows:
+  - Call status changed to `answered`.
+  - Telephony Bridge panel shows `Call control intent/result: answer -> answered (succeeded) - mock-only`.
+- Proves:
+  - Call controls are routed through the telephony bridge boundary and remain mock-only.
+- Type: docs-render-verification
+- as_of: 2026-04-27T10:17:00+02:00
+
+## EV-2026-04-27-014: BL-044 timeline/audit telephony bridge events
+
+- File: output/playwright/session-044-telephony-adapter-boundary/06-timeline-audit-telephony-bridge-events.png
+- Title: Timeline with telephony bridge events
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/call-console
+- Action: Scrolled to Call Timeline after webhook and control actions.
+- Shows:
+  - `telephony_webhook_received`, `telephony_webhook_verified`, `telephony_call_control_requested`, and `telephony_call_control_succeeded` timeline entries.
+- Proves:
+  - Telephony bridge audit events appear in the user-visible call timeline.
+- Type: docs-render-verification
+- as_of: 2026-04-27T10:17:00+02:00
+
+## EV-2026-04-27-015: BL-044 evidence bundle telephony events and disclaimers
+
+- File: output/playwright/session-044-telephony-adapter-boundary/07-evidence-bundle-telephony-events-disclaimers.png
+- Title: Evidence bundle with telephony bridge events
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/?session=dc8357ff-a906-4b1c-aa2a-6e5a565c29c7
+- Action: Linked the call to a support session, applied a mock hold control intent, and generated an evidence bundle.
+- Shows:
+  - Evidence Bundle summary with `Telephony Bridge` count.
+  - Mock/dev-only and no-real-telephony disclaimer.
+  - Audit Trail includes telephony control requested/succeeded events.
+- Proves:
+  - Evidence bundles include telephony bridge summaries and honest limitations.
+- Type: docs-render-verification
+- as_of: 2026-04-27T10:18:00+02:00
+
+## EV-2026-04-27-016: BL-044 no-secret evidence export
+
+- File: output/playwright/session-044-telephony-adapter-boundary/08-no-secret-evidence-export-redacted.png
+- Title: Evidence export does not show injected secret-like values
+- Source/System: screenshot
+- Route/Page: http://localhost:3200/?session=dc8357ff-a906-4b1c-aa2a-6e5a565c29c7
+- Action: Switched evidence preview to JSON and checked browser text for injected `Authorization`, bearer token, and signature proof values.
+- Shows:
+  - JSON evidence preview with telephony bridge events.
+  - No visible injected token/signature/Authorization values.
+- Proves:
+  - The BL-044 UI/export proof does not display the injected secret-like test values.
+- Type: docs-render-verification
+- as_of: 2026-04-27T10:18:00+02:00
+
 ## EV-2026-04-26-001: Zammad CTI planning reference verified
 
 - File: https://docs.zammad.org/en/latest/api/generic-cti/index.html
