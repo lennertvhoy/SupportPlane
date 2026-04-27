@@ -1253,3 +1253,71 @@ Use this file for dated session notes, verification summaries, and references to
 - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
 - No real database persistence; all data including sharing states is in-memory and lost on API restart.
 - Pattern-based redaction is not cryptographically guaranteed.
+
+## 2026-04-27 - BL-047/048/049 closure hygiene pass
+
+**Type:** closure_hygiene
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 8c4619164972f61f1c1b60151cdca3b9ae79d61d
+**Worktree:** clean after commit
+
+### What changed
+
+- Fixed documentation hygiene failures:
+  - Condensed STATUS.md Snapshot from 8 bullets to 7 bullets.
+  - Trimmed PROJECT_STATE.yaml from 915 to <= 900 non-empty lines by removing active_problems section, trimming evidence source_refs and documentation live_docs lists, and condensing closure_notes in bl_046_status and bl_047_048_049_status.
+- Added filesystem path redaction to `apps/api/src/evidence-bundle/redaction.ts` (`[REDACTED_PATH]` for Unix/Windows absolute paths).
+- Added redaction test for absolute filesystem paths in `apps/api/test/redaction.test.ts`.
+- Created `docs/SCREEN_CONTEXT_SAFETY.md` documenting what exists, what does not exist, redaction behavior, audit events, verification steps, and future safe path.
+- Updated `docs/EVIDENCE_LOG.md` with 10 new canonical evidence entries (EV-2026-04-27-042 through EV-2026-04-27-051).
+- Updated `docs/ACCEPTANCE_FREEZES.md` with AF-2026-04-27-005 for BL-047/048/049 final closure.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md` to reference the final closure folder.
+- Created fresh canonical screenshot folder `output/playwright/session-047-049-screen-context-hardening-final-closure/` with exactly 10 screenshots:
+  1. Call Console with Operator Companion panel, sharing indicator inactive
+  2. Sharing indicator active with mock/no-real-screen-capture labels
+  3. Active Window Metadata captured with redacted summary visible
+  4. Manual Screenshot Metadata attached with raw image retention disabled
+  5. Structured Upload observation with redaction status visible
+  6. Approved observation with Packet badge and context packet created
+  7. Support Cockpit AI Context Quality panel showing observation-derived packet
+  8. Audit Trail showing sharing/capture/redaction/context-packet events
+  9. Evidence Bundle JSON preview with screen observation summaries and disclaimers
+  10. No-secret/no-raw-image proof showing export/UI does not display raw token/password/Authorization/path/image content
+- Superseded earlier partial screenshot folder `output/playwright/session-047-049-screen-context-hardening/`; references updated throughout docs.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON with head `8c4619164972f61f1c1b60151cdca3b9ae79d61d`.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 102/102 integration tests passed (added 1 path-redaction test).
+- `npm test --workspace @supportplane/contracts` passed: 26/26 tests passed.
+- `npm test --workspace @supportplane/web` passed: 15/15 tests passed.
+- `npm test --workspace @supportplane/ai` passed: 9/9 tests passed.
+- `npm test --workspace @supportplane/connectors` passed: 16/16 tests passed.
+- `npm run build --workspace @supportplane/connectors` passed.
+- `npm run build --workspace @supportplane/web` passed.
+- Runtime API verified at `http://localhost:4110/health`.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- API no-secret proof passed: injected `apiToken=abc123`, `password=secret`, `Bearer tok123`, `ZAMMAD_API_TOKEN=zammad-secret-123`, `/home/user/screenshot.png`, `/etc/passwd`, and long token string into structured upload and manual screenshot metadata; verified evidence bundle JSON contains no raw secret/path strings and includes `[REDACTED]` / `[REDACTED_PATH]` markers.
+- Browser no-secret proof passed: inspected visible UI text for forbidden strings; none found; redaction markers visible.
+- Canonical 10 screenshots captured in fresh final-closure folder.
+
+### Evidence
+
+- Canonical screenshots: `output/playwright/session-047-049-screen-context-hardening-final-closure/01-operator-companion-inactive.png` through `10-no-secret-proof.png`.
+- Evidence refs: EV-2026-04-27-042 through EV-2026-04-27-051.
+- Acceptance freeze: AF-2026-04-27-005.
+
+### Remaining Risk
+
+- No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
+- No real database persistence; all data is in-memory and lost on API restart.
+- No post-BL-049 backlog work was started.

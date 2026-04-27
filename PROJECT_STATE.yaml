@@ -42,7 +42,7 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: bl_047_048_049_screen_context_hardening_complete
+    head: 8c4619164972f61f1c1b60151cdca3b9ae79d61d
     worktree_status: dirty_pending_final_commit
     notes:
       - git repository initialized during BL-001
@@ -440,10 +440,6 @@ current_state:
           - no real screen capture, raw pixels, clipboard access, or OCR performed
           - review gate required before AI context packet creation
           - pattern redaction applied to observation metadata in evidence bundle
-          - canonical closure proof captured in fresh session folder with exactly 9 screenshots
-          - full commit hash recorded in acceptance freeze and worklog
-          - closure hygiene pass fixed API controller to return wrapped ScreenObservationCaptureResponse
-          - stopped temporary Python HTTP server on port 8765
     bl_047_048_049_status:
       completed: true
       scope: screen_context_hardening_wave_sharing_state_active_window_screenshot_metadata_structured_upload_redaction
@@ -481,13 +477,12 @@ current_state:
         ui_panels:
           - Call Console Operator Companion panel with sharing indicator
           - Support Cockpit AI Context Quality panel with redaction status
-        screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
+        screenshot_folder: output/playwright/session-047-049-screen-context-hardening-final-closure/
         screenshot_count: 10
         closure_notes:
           - sharing state lifecycle fully verified via browser automation
-          - all 3 capture types (active_window, screenshot_metadata, structured_upload) verified
+          - all 3 capture types verified
           - evidence bundle JSON verified to include new structured fields
-          - redaction patterns expanded for apiToken=, password=, long secret-like strings
           - no real screen capture, raw pixels, clipboard access, or OCR performed
     bl_044_status:
       completed: true
@@ -889,13 +884,6 @@ current_state:
       - EV-2026-04-26-006
       - EV-2026-04-26-007
       - EV-2026-04-26-008
-      - EV-2026-04-26-009
-      - EV-2026-04-26-010
-      - EV-2026-04-26-011
-      - EV-2026-04-26-012
-      - EV-2026-04-26-013
-      - EV-2026-04-26-014
-      - EV-2026-04-26-015
 
   documentation:
     status: observed
@@ -912,22 +900,4 @@ current_state:
       - WORKLOG.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
-      - docs/ARCHITECTURE.md
-      - docs/SECURITY_MODEL.md
-      - docs/AI_GOVERNANCE.md
-      - docs/CONNECTOR_CONTRACTS.md
-      - docs/EVIDENCE_MODEL.md
-      - docs/THREAT_MODEL.md
       - prompts/OPERATING_LOOP_START_PROMPT.md
-
-active_problems:
-  - id: AP-001
-    status: closed
-    severity: medium
-    title: Git repository not initialized
-    impact: Git is initialized and worktree is clean.
-  - id: AP-002
-    status: closed
-    severity: low
-    title: No product runtime exists yet
-    impact: API and web runtimes are running and verified.

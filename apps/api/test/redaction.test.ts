@@ -50,4 +50,12 @@ describe('redaction', () => {
     const result = redactString(input);
     assert.strictEqual(result, input);
   });
+
+  it('redacts absolute filesystem paths', () => {
+    const input = 'Found config at /etc/passwd and image at C:\\Users\\admin\\screenshot.png';
+    const result = redactString(input);
+    assert.ok(!result.includes('/etc/passwd'));
+    assert.ok(!result.includes('C:\\Users\\admin\\screenshot.png'));
+    assert.ok(result.includes('[REDACTED_PATH]'));
+  });
 });

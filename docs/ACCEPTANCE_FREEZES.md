@@ -505,3 +505,57 @@ and must be protected from quiet regression.
   - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
   - No real database persistence; all data is in-memory and lost on API restart.
   - Closure hygiene pass fixed API controller to return wrapped `ScreenObservationCaptureResponse` and resolved lint errors.
+
+## AF-2026-04-27-005: BL-047/048/049 Screen Context Hardening Wave final closure
+
+- ID: AF-2026-04-27-005
+- Milestone: Screen Context Hardening Wave (BL-047, BL-048, BL-049)
+- Scope: Explicit sharing-state storage and lifecycle, deterministic active-window metadata capture, manual screenshot metadata capture with raw image retention disabled, structured observation upload, enhanced redaction with path redaction, expanded ScreenObservation contract, new audit event types, evidence bundle integration, Call Console Operator Companion panel with visible sharing indicator and capture forms, Support Cockpit AI Context Quality panel showing observation-derived packets with redaction status, and canonical 10-screenshot browser-verified closure proof with no-secret/no-raw-image proof.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: 8c4619164972f61f1c1b60151cdca3b9ae79d61d
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /call-console
+  - /
+  - GET /support-sessions/:id/screen-observations/sharing-state
+  - POST /support-sessions/:id/screen-observations/sharing-state
+  - POST /support-sessions/:id/screen-observations/active-window/mock
+  - POST /support-sessions/:id/screen-observations/manual-screenshot
+  - POST /support-sessions/:id/screen-observations/structured-upload
+  - GET /support-sessions/:id/screen-observations
+  - POST /support-sessions/:id/screen-observations/:observationId/review
+  - POST /support-sessions/:id/screen-observations/:observationId/context-packet
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-27-042
+  - EV-2026-04-27-043
+  - EV-2026-04-27-044
+  - EV-2026-04-27-045
+  - EV-2026-04-27-046
+  - EV-2026-04-27-047
+  - EV-2026-04-27-048
+  - EV-2026-04-27-049
+  - EV-2026-04-27-050
+  - EV-2026-04-27-051
+- evidence_folder: output/playwright/session-047-049-screen-context-hardening-final-closure/
+- screenshot_count: 10
+- regression_guard:
+  - `/call-console` must keep the Operator Companion panel with honest mock labels and visible sharing indicator.
+  - Sharing state transitions must remain constrained to inactive -> active, active -> paused, active -> inactive, paused -> active, paused -> inactive.
+  - `POST /support-sessions/:id/screen-observations/active-window/mock` must return observation with `mockDevOnly: true`, `noRawPixels: true`, `rawImageRetention: disabled`.
+  - `POST /support-sessions/:id/screen-observations/manual-screenshot` must return observation with `kind: screenshot_metadata` and `rawImageRetention: disabled`.
+  - `POST /support-sessions/:id/screen-observations/structured-upload` must apply redaction before storage and return `redactionStatus: pattern_redacted` when secrets/paths are present.
+  - Evidence bundle JSON and Markdown must include `screenObservations` with `sharingState`, `rawImageRetention`, `redactionStatus`, `safetyFlags`, and mock disclaimers.
+  - Audit trail must display `screen_observation_sharing_started`, `active_window_metadata_captured`, `manual_screenshot_metadata_attached`, `structured_screen_observation_uploaded`, `screen_observation_redaction_applied`, `screen_observation_reviewed`, `screen_observation_context_packet_created`, and `ai_context_loaded` events.
+  - No secrets, tokens, Authorization headers, filesystem paths, or raw image content may appear in UI or exported bundle output.
+- Notes:
+  - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
+  - No real database persistence; all data is in-memory and lost on API restart.
+  - The earlier partial screenshot folder `output/playwright/session-047-049-screen-context-hardening/` is superseded by this final closure folder.

@@ -1053,3 +1053,162 @@
   - Secret redaction prevents raw token/password exposure in evidence exports.
 - Type: docs-render-verification
 - as_of: 2026-04-27T13:00:00+02:00
+
+## EV-2026-04-27-042: BL-047/048/049 final closure — Operator Companion with sharing indicator inactive
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/01-operator-companion-inactive.png
+- Title: Call Console with Operator Companion panel, sharing indicator inactive
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Selected fake incoming call and captured full page showing Operator Companion panel with Sharing: inactive badge.
+- Shows:
+  - Operator Companion panel with mock screen observation safety disclaimers.
+  - Sharing indicator badge shows "Sharing: inactive".
+  - Start mock sharing button is visible.
+- Proves:
+  - BL-047 sharing indicator is visible in inactive state.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:22:00+02:00
+
+## EV-2026-04-27-043: BL-047/048/049 final closure — sharing indicator active
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/02-sharing-active.png
+- Title: Call Console with sharing indicator active
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Clicked Start mock sharing and captured full page.
+- Shows:
+  - Sharing badge updated to "Sharing: active".
+  - Pause and Stop controls visible.
+  - Mock/dev-only and no-real-screen-capture labels present.
+- Proves:
+  - BL-047 sharing state transitions from inactive to active and updates UI immediately.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:23:00+02:00
+
+## EV-2026-04-27-044: BL-047/048/049 final closure — active window metadata captured
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/03-active-window-captured.png
+- Title: Active Window Metadata captured with redacted summary
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Filled Active Window Metadata form and clicked Capture active window metadata.
+- Shows:
+  - Observation card with kind "active_window", status "review_required".
+  - Redacted summary visible: "Operator sees ticket detail view with apiToken=[REDACTED]".
+- Proves:
+  - BL-048 active-window metadata capture works and redaction is applied before display.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:24:00+02:00
+
+## EV-2026-04-27-045: BL-047/048/049 final closure — manual screenshot metadata attached
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/04-manual-screenshot-metadata.png
+- Title: Manual Screenshot Metadata form with raw image retention disabled
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Filled Manual Screenshot Metadata form and clicked Attach screenshot metadata.
+- Shows:
+  - "Raw image retention disabled" badge is visible.
+  - Observation card with kind "screenshot_metadata".
+- Proves:
+  - BL-048 manual screenshot metadata capture works and raw image retention is explicitly disabled.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:24:00+02:00
+
+## EV-2026-04-27-046: BL-047/048/049 final closure — structured upload with redaction status
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/05-structured-upload-redaction.png
+- Title: Structured Upload observation with pattern_redacted status
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Selected kind "redacted_context", filled note with token and path, clicked Upload structured observation.
+- Shows:
+  - Observation card with kind "redacted_context", redactionStatus "pattern_redacted".
+  - Note shows "Token: [REDACTED] and path [REDACTED_PATH]".
+- Proves:
+  - BL-049 structured upload works and pattern/placeholder redaction is visible in the UI.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:25:00+02:00
+
+## EV-2026-04-27-047: BL-047/048/049 final closure — approved observation with context packet
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/06-approved-context-packet.png
+- Title: Approved observation with Packet badge and context packet created
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Clicked Approve on the structured upload observation, then clicked Create context packet.
+- Shows:
+  - Observation status updated to "approved".
+  - "Packet" badge is visible.
+  - Reviewed timestamp visible.
+- Proves:
+  - Review gate works and approved observation can be converted to an AI context packet.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:26:00+02:00
+
+## EV-2026-04-27-048: BL-047/048/049 final closure — AI Context Quality panel with observation-derived packet
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/07-ai-context-quality-panel.png
+- Title: Support Cockpit AI Context Quality panel showing screen observation packet
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=...
+- Action: Navigated to Support Cockpit with the linked session.
+- Shows:
+  - SCREEN OBSERVATION packet with provenance "screen_observation".
+  - Warning badge, kind "redacted_context", "2 redacted" label.
+- Proves:
+  - BL-049 observation-derived context packet is visible in the Support Cockpit AI Context Quality panel.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:27:00+02:00
+
+## EV-2026-04-27-049: BL-047/048/049 final closure — audit trail with sharing/capture/redaction/context-packet events
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/08-audit-trail-events.png
+- Title: Audit Trail showing all BL-047/048/049 event types
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=...
+- Action: Scrolled to Audit Trail panel.
+- Shows:
+  - screen_observation_sharing_started
+  - active_window_metadata_captured
+  - manual_screenshot_metadata_attached
+  - structured_screen_observation_uploaded
+  - screen_observation_reviewed
+  - screen_observation_context_packet_created
+  - ai_context_loaded
+- Proves:
+  - All required audit events are appended and visible.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:28:00+02:00
+
+## EV-2026-04-27-050: BL-047/048/049 final closure — evidence bundle JSON with screen observations and redaction
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/09-evidence-bundle-json.png
+- Title: Evidence Bundle JSON preview with screen observation summaries
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=...
+- Action: Generated evidence bundle and switched to JSON tab.
+- Shows:
+  - screenObservations array with sharingState, rawImageRetention, redactionStatus, safetyFlags.
+  - Redacted summaries: "Token: [REDACTED] and path [REDACTED_PATH]".
+  - Mock screen observation disclaimers.
+- Proves:
+  - Evidence bundle includes all new structured fields and redaction markers.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:29:00+02:00
+
+## EV-2026-04-27-051: BL-047/048/049 final closure — no-secret/no-raw-image proof
+
+- File: output/playwright/session-047-049-screen-context-hardening-final-closure/10-no-secret-proof.png
+- Title: UI and exported JSON do not contain raw secrets, tokens, paths, or image content
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=...
+- Action: Injected secret-like strings into structured upload and manual screenshot metadata, then verified the visible UI/export text.
+- Shows:
+  - No apiToken=abc123, password=secret, Bearer tok123, ZAMMAD_API_TOKEN, /etc/passwd, or long token string is visible.
+  - [REDACTED] and [REDACTED_PATH] markers are present.
+- Proves:
+  - Redaction layer successfully prevents secret and path exposure in bundle output and UI.
+- Type: docs-render-verification
+- as_of: 2026-04-27T14:29:00+02:00

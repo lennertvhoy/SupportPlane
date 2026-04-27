@@ -7,8 +7,8 @@
 ## Active Work
 
 - [BL-047/048/049] Screen Context Hardening Wave — CLOSED
-  - Closure proof: `output/playwright/session-047-049-screen-context-hardening/` (10 canonical screenshots)
-  - Scope: sharing-state lifecycle, active-window metadata, manual screenshot metadata, structured upload, enhanced redaction
+  - Final closure proof: `output/playwright/session-047-049-screen-context-hardening-final-closure/` (10 canonical screenshots)
+  - Scope: sharing-state lifecycle, active-window metadata, manual screenshot metadata, structured upload, enhanced redaction, no-secret/no-raw-image evidence
   - Next: CTO review to choose next backlog slice
 
 ## Queue Rules

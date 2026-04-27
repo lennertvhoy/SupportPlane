@@ -111,5 +111,8 @@ export function redactString(input: string): string {
   out = out.replace(/(apiToken\s*=\s*).+/gi, '$1[REDACTED]');
   out = out.replace(/(password\s*=\s*).+/gi, '$1[REDACTED]');
   out = out.replace(/(?<![A-Za-z0-9_\-./+=])[A-Za-z0-9_\-./+=]{20,}(?![A-Za-z0-9_\-./+=])/g, '[REDACTED]');
+  // Redact obvious filesystem paths (Unix absolute and Windows absolute)
+  out = out.replace(/(?<![A-Za-z0-9_\-./:])(\/(?:[A-Za-z0-9_\-.]+\/)+[A-Za-z0-9_\-.]+)/g, '[REDACTED_PATH]');
+  out = out.replace(/([A-Z]:\\(?:[A-Za-z0-9_\-.\s]+\\)*[A-Za-z0-9_\-.\s]+)/g, '[REDACTED_PATH]');
   return out;
 }
