@@ -188,6 +188,28 @@ export const EvidenceBundleSupportNoteDraftSummary = z.object({
 });
 export type EvidenceBundleSupportNoteDraftSummary = z.infer<typeof EvidenceBundleSupportNoteDraftSummary>;
 
+export const EvidenceBundleActionOutboxSummary = z.object({
+  actionId: z.string(),
+  outboxItemId: z.string().optional(),
+  actionType: z.string(),
+  status: z.string(),
+  idempotencyKey: z.string(),
+  reviewDecision: z.string().optional(),
+  reviewedBy: z.string().optional(),
+  queuedAt: Timestamp.optional(),
+  mockDeliveredAt: Timestamp.optional(),
+  attemptCount: z.number().int().min(0),
+  latestAttemptState: z.string().optional(),
+  payloadSummary: z.record(JsonValue),
+  deliveryIntent: z.record(JsonValue).optional(),
+  safetyFlags: z.record(JsonValue),
+  mockDevOnly: z.boolean(),
+  realNetwork: z.literal(false),
+  externalWriteAttempted: z.literal(false),
+  writebackEnabled: z.literal(false),
+});
+export type EvidenceBundleActionOutboxSummary = z.infer<typeof EvidenceBundleActionOutboxSummary>;
+
 export const EvidenceBundleAuditSummary = z.object({
   id: EntityId,
   eventType: z.string(),
@@ -250,6 +272,7 @@ export const EvidenceBundle = z.object({
   customerReferences: z.array(EvidenceBundleCustomerSummary).default([]),
   connectorInstallations: z.array(EvidenceBundleConnectorInstallationSummary).default([]),
   supportNoteDrafts: z.array(EvidenceBundleSupportNoteDraftSummary).default([]),
+  actionOutbox: z.array(EvidenceBundleActionOutboxSummary).default([]),
   auditTimeline: z.array(EvidenceBundleAuditSummary),
   mockDevOnlyDisclaimers: z.array(z.string()),
   limitations: z.array(z.string()),

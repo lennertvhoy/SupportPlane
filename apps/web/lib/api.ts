@@ -322,6 +322,67 @@ export interface InternalNoteWritebackResult {
   metadata: Record<string, unknown>;
 }
 
+export interface SupportAction {
+  id: string;
+  tenantId: string;
+  sessionId: string;
+  callEventId?: string;
+  customerReferenceId?: string;
+  ticketReferenceId?: string;
+  connectorInstallationId?: string;
+  actionType: 'ticket_note';
+  status: string;
+  idempotencyKey: string;
+  requestedBy: string;
+  submittedAt?: string;
+  reviewedBy?: string;
+  reviewDecision?: 'approved' | 'rejected';
+  reviewReason?: string;
+  reviewedAt?: string;
+  queuedAt?: string;
+  mockDeliveredAt?: string;
+  failureReason?: string;
+  payloadSummary: Record<string, unknown>;
+  safeBodyPreview?: string;
+  mockDevOnly: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActionOutboxItem {
+  id: string;
+  tenantId: string;
+  supportActionId: string;
+  sessionId: string;
+  connectorInstallationId?: string;
+  actionType: 'ticket_note';
+  status: string;
+  idempotencyKey: string;
+  deliveryIntent: Record<string, unknown>;
+  attemptCount: number;
+  latestAttemptState?: string;
+  queuedAt: string;
+  mockDeliveredAt?: string;
+  lastError?: string;
+  safetyFlags: Record<string, unknown>;
+  mockDevOnly: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActionOutboxAttempt {
+  id: string;
+  tenantId: string;
+  outboxItemId: string;
+  supportActionId: string;
+  attemptNumber: number;
+  state: string;
+  deliveryResult: Record<string, unknown>;
+  errorMessage?: string;
+  attemptedAt: string;
+  mockDevOnly: boolean;
+}
+
 export interface EvidenceBundleExportResponse {
   bundle: EvidenceBundle;
   format: 'json' | 'markdown';
@@ -592,6 +653,27 @@ export interface EvidenceBundleConnectorInstallationSummary {
   lastError?: string;
 }
 
+export interface EvidenceBundleActionOutboxSummary {
+  actionId: string;
+  outboxItemId?: string;
+  actionType: string;
+  status: string;
+  idempotencyKey: string;
+  reviewDecision?: string;
+  reviewedBy?: string;
+  queuedAt?: string;
+  mockDeliveredAt?: string;
+  attemptCount: number;
+  latestAttemptState?: string;
+  payloadSummary: Record<string, unknown>;
+  deliveryIntent?: Record<string, unknown>;
+  safetyFlags: Record<string, unknown>;
+  mockDevOnly: boolean;
+  realNetwork: false;
+  externalWriteAttempted: false;
+  writebackEnabled: false;
+}
+
 export interface EvidenceBundle {
   bundleId: string;
   tenantId: string;
@@ -642,6 +724,7 @@ export interface EvidenceBundle {
   }>;
   customerReferences: EvidenceBundleCustomerReferenceSummary[];
   connectorInstallations: EvidenceBundleConnectorInstallationSummary[];
+  actionOutbox: EvidenceBundleActionOutboxSummary[];
   sourceProvenance: {
     storeType: string;
     persistenceClaimed: boolean;
@@ -936,6 +1019,43 @@ export const api = {
       { method: 'POST', body: JSON.stringify(body) },
       identity
     ),
+
+  // Durable actions and local outbox
+  listSessionActions: (sessionId: string, identity?: DevIdentity) =>
+    apiFetch<{ actions: SupportAction[]; outboxItems: ActionOutboxItem[] }>(
+      `/support-sessions/${sessionId}/actions`,
+      { method: 'GET' },
+      identity
+    ),
+
+  createSupportAction: (
+    sessionId: string,
+    body: { actionType?: 'ticket_note'; externalTicketId?: string; ticketReferenceId?: string; body: string; subject?: string; idempotencyKey?: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<{ action: SupportAction; idempotentReplay: boolean }>(
+      `/support-sessions/${sessionId}/actions`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  submitActionForReview: (actionId: string, identity?: DevIdentity) =>
+    apiFetch<{ action: SupportAction }>(`/actions/${actionId}/submit-for-review`, { method: 'POST' }, identity),
+
+  approveAction: (actionId: string, reason?: string, identity?: DevIdentity) =>
+    apiFetch<{ action: SupportAction }>(`/actions/${actionId}/approve`, { method: 'POST', body: JSON.stringify({ reason }) }, identity),
+
+  rejectAction: (actionId: string, reason?: string, identity?: DevIdentity) =>
+    apiFetch<{ action: SupportAction }>(`/actions/${actionId}/reject`, { method: 'POST', body: JSON.stringify({ reason }) }, identity),
+
+  queueAction: (actionId: string, identity?: DevIdentity) =>
+    apiFetch<{ action: SupportAction; outboxItem: ActionOutboxItem; idempotentReplay: boolean }>(`/actions/${actionId}/queue`, { method: 'POST' }, identity),
+
+  mockDeliverAction: (actionId: string, identity?: DevIdentity) =>
+    apiFetch<{ action: SupportAction; outboxItem: ActionOutboxItem; attempt: ActionOutboxAttempt; delivery: Record<string, unknown> }>(`/actions/${actionId}/mock-deliver`, { method: 'POST' }, identity),
+
+  getOutboxItem: (outboxId: string, identity?: DevIdentity) =>
+    apiFetch<{ outboxItem: ActionOutboxItem; attempts: ActionOutboxAttempt[] }>(`/outbox/${outboxId}`, { method: 'GET' }, identity),
 
   // Connector installations
   listConnectorInstallations: (identity?: DevIdentity) =>

@@ -35,6 +35,9 @@ model Tenant {
   callEvents          CallEvent[]
   callRecordings      CallRecording[]
   internalNoteDrafts  InternalNoteDraft[]
+  supportActions      SupportAction[]
+  actionOutboxItems   ActionOutboxItem[]
+  actionOutboxAttempts ActionOutboxAttempt[]
   sharingStates       SharingState[]
 
   @@index([slug])
@@ -129,6 +132,8 @@ model SupportSession {
   callEvents        CallEvent[]
   callRecordings    CallRecording[]
   internalNoteDrafts InternalNoteDraft[]
+  supportActions    SupportAction[]
+  actionOutboxItems ActionOutboxItem[]
   sharingStates     SharingState[]
   ticketSummaries   TicketSummary[]
 
@@ -475,4 +480,101 @@ model InternalNoteDraft {
   @@index([tenantId, sessionId])
   @@index([externalTicketId])
   @@map("internal_note_drafts")
+}
+
+model SupportAction {
+  id                      String   @id @default(cuid())
+  tenantId                String
+  sessionId               String
+  callEventId             String?
+  customerReferenceId     String?
+  ticketReferenceId       String?
+  connectorInstallationId String?
+  actionType              String
+  status                  String   @default("draft")
+  idempotencyKey          String
+  requestedBy             String
+  submittedAt             DateTime?
+  reviewedBy              String?
+  reviewDecision          String?
+  reviewReason            String?
+  reviewedAt              DateTime?
+  queuedAt                DateTime?
+  mockDeliveredAt         DateTime?
+  failureReason           String?
+  payloadSummary          Json     @default("{}")
+  safeBodyPreview         String?
+  mockDevOnly             Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  session      SupportSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  outboxItems  ActionOutboxItem[]
+  attempts     ActionOutboxAttempt[]
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@index([tenantId, status])
+  @@index([actionType])
+  @@index([createdAt])
+  @@map("support_actions")
+}
+
+model ActionOutboxItem {
+  id                      String   @id @default(cuid())
+  tenantId                String
+  supportActionId         String
+  sessionId               String
+  connectorInstallationId String?
+  actionType              String
+  status                  String   @default("queued")
+  idempotencyKey          String
+  deliveryIntent          Json     @default("{}")
+  attemptCount            Int      @default(0)
+  latestAttemptState      String?
+  queuedAt                DateTime @default(now())
+  mockDeliveredAt         DateTime?
+  lastError               String?
+  safetyFlags             Json     @default("{}")
+  mockDevOnly             Boolean  @default(true)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  tenant        Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  session       SupportSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  supportAction SupportAction         @relation(fields: [supportActionId], references: [id], onDelete: Cascade)
+  attempts      ActionOutboxAttempt[]
+
+  @@unique([tenantId, idempotencyKey])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, sessionId])
+  @@index([tenantId, supportActionId])
+  @@index([queuedAt])
+  @@map("action_outbox_items")
+}
+
+model ActionOutboxAttempt {
+  id              String   @id @default(cuid())
+  tenantId        String
+  outboxItemId    String
+  supportActionId String
+  attemptNumber   Int
+  state           String
+  deliveryResult  Json     @default("{}")
+  errorMessage    String?
+  attemptedAt     DateTime @default(now())
+  mockDevOnly     Boolean  @default(true)
+
+  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  outboxItem    ActionOutboxItem @relation(fields: [outboxItemId], references: [id], onDelete: Cascade)
+  supportAction SupportAction    @relation(fields: [supportActionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, outboxItemId])
+  @@index([tenantId, supportActionId])
+  @@index([attemptedAt])
+  @@map("action_outbox_attempts")
 }

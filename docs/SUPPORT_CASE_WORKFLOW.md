@@ -57,6 +57,7 @@ All new endpoints return explicit mock indicators:
 - Connector validate/test: `mode: "mock"`, `realNetwork: false`, `writebackEnabled: false`
 - Support note drafts: UI shows "Local mock only — not sent to Zammad — requires human review"
 - Evidence bundle: Includes `mockDevOnly: true`, `notSentToZammad: true`, `requiresHumanReview: true`
+- Action outbox: UI shows local/mock delivery only, human review required, no real Zammad writeback, no external queue worker, and no raw media capture.
 
 ## Database Notes
 
@@ -66,3 +67,10 @@ The `internal_note_drafts` table is represented in `prisma/schema.prisma` and th
 
 - Browser proof: `output/playwright/session-091-support-case-workflow-foundation/` (20 screenshots)
 - Verification script: `scripts/verify_support_case_workflow.sh`
+
+## Durable Action/Outbox Follow-up
+
+BL-092 adds `docs/ACTION_OUTBOX_WORKFLOW.md`, durable local action/outbox
+persistence, review/approval APIs, mock delivery attempts, case timeline
+entries, and evidence bundle `actionOutbox` summaries. It remains local/mock
+only and does not perform real connector writeback.

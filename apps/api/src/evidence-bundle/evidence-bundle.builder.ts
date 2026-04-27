@@ -20,6 +20,7 @@ import type {
   EvidenceBundleScreenObservationSummary,
   EvidenceBundleCustomerSummary,
   EvidenceBundleSupportNoteDraftSummary,
+  EvidenceBundleActionOutboxSummary,
   TenantId,
   SupportSessionId,
   EvidenceBundleId,
@@ -27,6 +28,8 @@ import type {
   ScreenObservation,
   CustomerReference,
   InternalNoteDraft,
+  SupportAction,
+  ActionOutboxItem,
 } from '@supportplane/contracts';
 import { redactSecrets, redactString } from './redaction.js';
 
@@ -45,6 +48,8 @@ export interface BuildEvidenceBundleInput {
   customerReferences?: CustomerReference[];
   connectorInstallations?: import('@supportplane/contracts').ConnectorInstallation[];
   supportNoteDrafts?: InternalNoteDraft[];
+  supportActions?: SupportAction[];
+  actionOutboxItems?: ActionOutboxItem[];
   connectorMode?: string;
   storeType?: 'memory' | 'postgres';
 }
@@ -257,6 +262,41 @@ function toSupportNoteDraftSummaries(drafts: InternalNoteDraft[] | undefined): E
   }));
 }
 
+function toActionOutboxSummaries(
+  actions: SupportAction[] | undefined,
+  outboxItems: ActionOutboxItem[] | undefined
+): EvidenceBundleActionOutboxSummary[] {
+  if (!actions) return [];
+  return actions.map((action) => {
+    const item = outboxItems?.find((candidate) => candidate.supportActionId === action.id);
+    return {
+      actionId: action.id,
+      outboxItemId: item?.id,
+      actionType: action.actionType,
+      status: action.status,
+      idempotencyKey: action.idempotencyKey,
+      reviewDecision: action.reviewDecision,
+      reviewedBy: action.reviewedBy,
+      queuedAt: action.queuedAt ?? item?.queuedAt,
+      mockDeliveredAt: action.mockDeliveredAt ?? item?.mockDeliveredAt,
+      attemptCount: item?.attemptCount ?? 0,
+      latestAttemptState: item?.latestAttemptState,
+      payloadSummary: redactSecrets(action.payloadSummary as Record<string, unknown>),
+      deliveryIntent: item ? redactSecrets(item.deliveryIntent as Record<string, unknown>) : undefined,
+      safetyFlags: {
+        ...(item ? redactSecrets(item.safetyFlags as Record<string, unknown>) : {}),
+        noSecrets: true,
+        noRawMedia: true,
+        localMockOnly: true,
+      },
+      mockDevOnly: true,
+      realNetwork: false,
+      externalWriteAttempted: false,
+      writebackEnabled: false,
+    };
+  });
+}
+
 function toGreetingSuggestionSummaries(auditEvents: AuditEvent[]): EvidenceBundleGreetingSuggestionSummary[] {
   return auditEvents
     .filter((e) => e.eventType === 'greeting_suggestion_generated')
@@ -314,6 +354,7 @@ function toCallEventSummaries(callEvents: CallEvent[] | undefined): EvidenceBund
 
 export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBundle {
   const now = new Date().toISOString();
+  const postgresStore = input.storeType === 'postgres';
 
   const bundle: EvidenceBundle = {
     bundleId: randomUUID() as EvidenceBundleId,
@@ -335,12 +376,19 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     customerReferences: toCustomerSummaries(input.customerReferences),
     connectorInstallations: toConnectorInstallationSummaries(input.connectorInstallations),
     supportNoteDrafts: toSupportNoteDraftSummaries(input.supportNoteDrafts),
+    actionOutbox: toActionOutboxSummaries(input.supportActions, input.actionOutboxItems),
     greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
     mockDevOnlyDisclaimers: [
-      'This evidence bundle was generated from an in-memory mock development store.',
-      'No real database persistence, external ticketing system, or AI provider was used.',
-      'Data is lost on API restart. This is not production audit-grade evidence.',
+      postgresStore
+        ? 'This evidence bundle was generated from the local PostgreSQL development store.'
+        : 'This evidence bundle was generated from an in-memory mock development store.',
+      postgresStore
+        ? 'Local PostgreSQL persistence is enabled for workflow state; no external ticketing writeback or AI provider was used.'
+        : 'No real database persistence, external ticketing system, or AI provider was used.',
+      postgresStore
+        ? 'Local workflow state can survive API restart, but this is not production audit-grade evidence.'
+        : 'Data is lost on API restart. This is not production audit-grade evidence.',
       'Connector mode is mock unless explicitly configured otherwise.',
       'Call events are simulated via fake webhook. No real telephony is connected.',
       'Telephony bridge events are adapter-boundary mock events only. No real PBX, provider, media, or voice path is connected.',
@@ -348,6 +396,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Screen observations are mock metadata only. No real screen capture, raw pixels, clipboard access, or OCR was performed. Not surveillance or compliance-grade.',
       'Caller matching uses deterministic mock fixtures, not a real customer database.',
       'Support sessions may be auto-created from fake incoming calls. These are mock sessions for development only.',
+      'Action outbox deliveries are local mock records only. No real external writeback, email, telephony, AI, queue worker, or object storage is used.',
     ],
     limitations: [
       'No cryptographic hash chain integrity guarantee.',
@@ -360,6 +409,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Telephony bridge controls update local mock state only and are not compliance-grade telephony evidence.',
       'Mock call recordings have no real audio content and do not constitute legal or compliance-grade call recording evidence.',
       'Mock screen observations have no real desktop, browser, or application content and do not constitute surveillance, monitoring, or compliance-grade evidence.',
+      'Action outbox records are durable local workflow state, not a production queue or compliance-grade immutable audit ledger.',
     ],
     sourceProvenance: {
       storeType: input.storeType ?? 'memory',
@@ -563,6 +613,27 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       lines.push(`- **Not Sent to Zammad:** ${d.notSentToZammad}`);
       lines.push(`- **Requires Human Review:** ${d.requiresHumanReview}`);
       if (d.generatedAt) lines.push(`- **Generated At:** ${d.generatedAt}`);
+      lines.push(``);
+    }
+  }
+  lines.push(``);
+
+  lines.push(`## Action Outbox`);
+  lines.push(``);
+  if (bundle.actionOutbox.length === 0) {
+    lines.push(`*No action/outbox records.*`);
+  } else {
+    for (const action of bundle.actionOutbox) {
+      lines.push(`### ${action.actionId}`);
+      lines.push(`- **Type:** ${action.actionType}`);
+      lines.push(`- **Status:** ${action.status}`);
+      if (action.outboxItemId) lines.push(`- **Outbox Item:** ${action.outboxItemId}`);
+      lines.push(`- **Attempts:** ${action.attemptCount}`);
+      if (action.latestAttemptState) lines.push(`- **Latest Attempt:** ${action.latestAttemptState}`);
+      lines.push(`- **Real Network:** ${action.realNetwork}`);
+      lines.push(`- **External Write Attempted:** ${action.externalWriteAttempted}`);
+      lines.push(`- **Writeback Enabled:** ${action.writebackEnabled}`);
+      lines.push(`- **Mock/Dev-Only:** ${action.mockDevOnly}`);
       lines.push(``);
     }
   }

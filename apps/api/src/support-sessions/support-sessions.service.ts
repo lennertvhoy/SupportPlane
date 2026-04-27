@@ -579,6 +579,8 @@ export class SupportSessionsService {
     const auditEvents = await this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEvents = await this.store.listCallEventsForSession(identity.tenantId, sessionId);
     const drafts = await this.store.listInternalNoteDrafts(identity.tenantId, sessionId);
+    const supportActions = await this.store.listSupportActions(identity.tenantId, { sessionId });
+    const outboxItems = await this.store.listActionOutboxItems(identity.tenantId, { sessionId });
 
     const timeline: Array<{ id: string; type: string; timestamp: string; title: string; description?: string; metadata: Record<string, unknown> }> = [];
 
@@ -607,6 +609,17 @@ export class SupportSessionsService {
         [AuditEventType.enum.connector_config_validated]: 'Connector validated',
         [AuditEventType.enum.connector_config_validation_failed]: 'Connector validation failed',
         [AuditEventType.enum.connector_tested]: 'Connector tested',
+        [AuditEventType.enum.action_created]: 'Action created',
+        [AuditEventType.enum.action_submitted_for_review]: 'Action submitted for review',
+        [AuditEventType.enum.action_approved]: 'Action approved',
+        [AuditEventType.enum.action_rejected]: 'Action rejected',
+        [AuditEventType.enum.action_queued]: 'Action queued',
+        [AuditEventType.enum.action_mock_delivered]: 'Action mock delivered',
+        [AuditEventType.enum.action_failed]: 'Action failed',
+        [AuditEventType.enum.action_cancelled]: 'Action cancelled',
+        [AuditEventType.enum.action_retry_requested]: 'Action retry requested',
+        [AuditEventType.enum.outbox_item_created]: 'Outbox item created',
+        [AuditEventType.enum.outbox_item_attempted]: 'Outbox item attempted',
       };
       timeline.push({
         id: event.id,
@@ -636,6 +649,40 @@ export class SupportSessionsService {
         title: 'Support note draft',
         description: draft.reviewed ? 'Reviewed' : 'Pending review',
         metadata: { externalTicketId: draft.externalTicketId, reviewed: draft.reviewed, draftLength: draft.body.length },
+      });
+    }
+
+    for (const action of supportActions) {
+      timeline.push({
+        id: action.id,
+        type: 'support_action',
+        timestamp: action.updatedAt,
+        title: `Action ${action.status}`,
+        description: `${action.actionType} / ${action.idempotencyKey}`,
+        metadata: {
+          status: action.status,
+          actionType: action.actionType,
+          reviewedBy: action.reviewedBy,
+          reviewDecision: action.reviewDecision,
+          mockDevOnly: action.mockDevOnly,
+        },
+      });
+    }
+
+    for (const item of outboxItems) {
+      timeline.push({
+        id: item.id,
+        type: 'action_outbox_item',
+        timestamp: item.updatedAt,
+        title: `Outbox ${item.status}`,
+        description: item.latestAttemptState ?? 'Local mock delivery state',
+        metadata: {
+          supportActionId: item.supportActionId,
+          attemptCount: item.attemptCount,
+          realNetwork: false,
+          writebackEnabled: false,
+          externalWriteAttempted: false,
+        },
       });
     }
 
@@ -1272,6 +1319,8 @@ export class SupportSessionsService {
     const customerReferences = customerRefsResult.customers as unknown as import('@supportplane/contracts').CustomerReference[];
     const connectorInstallations = await this.store.listConnectorInstallations(identity.tenantId);
     const supportNoteDrafts = await this.store.listInternalNoteDrafts(identity.tenantId, sessionId);
+    const supportActions = await this.store.listSupportActions(identity.tenantId, { sessionId });
+    const actionOutboxItems = await this.store.listActionOutboxItems(identity.tenantId, { sessionId });
     const sessionAuditEvents = await this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEventIds = new Set<string>(callEvents.map((call) => call.id));
     const externalCallIds = new Set(callEvents.map((call) => call.externalCallId));
@@ -1304,6 +1353,8 @@ export class SupportSessionsService {
       customerReferences,
       connectorInstallations,
       supportNoteDrafts,
+      supportActions,
+      actionOutboxItems,
       connectorMode: this.connectorsService.getMode(),
       storeType: storeType === 'postgres' ? 'postgres' : 'memory',
     });

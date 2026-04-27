@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-27T23:30:00+02:00
+  updated_at: 2026-04-28T00:00:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 1dba4bbe0b75bfb26112619e4b0b2b7af7426132
-    worktree_status: clean_after_bl_091_final_commit
+    head: pending_bl_092_final_commit
+    worktree_status: dirty_during_bl_092_validation
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -57,142 +57,22 @@ current_state:
     summary: >
       Bootstrap is complete. BL-002 contracts/schema, BL-003 mock-first API
       slice, BL-004 support cockpit UI shell, and BL-005 mock AI draft
-      suggestion workflow are implemented. The repository contains a running
-      NestJS API and Next.js web app with browser-verified panels. No real
-      database, external ticketing integration, or real AI provider exists yet.
+      suggestion workflow are implemented. The repository contains a NestJS API,
+      Next.js web app, and PostgreSQL-backed local persistence path with
+      browser-verified panels. External ticketing writeback, real AI provider
+      calls, and production delivery queues are not implemented.
 
   project:
     name: SupportPlane
     type: governed_ai_support_cockpit
-    lifecycle_stage: pre_implementation
-    bl_002_status:
-      completed: true
-      scope: mvp_1_contracts_and_database_model
-      contracts_package: packages/contracts
-      schema_location: prisma/schema.prisma
-      validation: contracts_compile_and_schema_validates
-    bl_003_status:
-      completed: true
-      scope: mock_first_ticket_aware_api_slice
-      api_app: apps/api
-      validation: api_compiles_integration_tests_pass_http_verified
-      runtime:
-        framework: NestJS
-        port: 4110
-        in_memory: true
-        mock_connector: MockTicketingAdapter
-        mock_auth: dev_identity_headers
-    bl_004_status:
-      completed: true
-      scope: support_cockpit_ui_shell
-      web_app: apps/web
-      validation: ui_compiles_browser_verified_screenshots_captured_lint_passing_committed
-      lint_status: passes
-      runtime:
-        framework: Next.js
-        port: 3200
-        stack:
-          - Next.js
-          - React
-          - TypeScript
-          - Tailwind CSS
-        api_client: apps/web/lib/api.ts
-        mock_auth: dev_identity_headers
-    bl_005_status:
-      completed: true
-      scope: mock_ai_provider_and_model_gateway
-      ai_package: packages/ai
-      api_endpoint: POST /support-sessions/:id/draft-suggestion
-      validation: ai_unit_tests_api_tests_web_client_test_browser_verified
-      runtime:
-        provider: MockAiProvider
-        model_gateway: ModelGateway
-        deterministic: true
-        external_ai_calls: false
-        audit_event: ai_draft_generated
-    bl_006_status:
-      completed: true
-      scope: local_podman_compatible_development_topology
-      compose_file: infra/docker-compose/compose.yaml
-      validation: infra_containers_verified_host_run_apps_documented_and_verified
-      strategy: infra_containers_verified_plus_host_run_apps_documented
-      runtime:
-        container_orchestrator: podman_compose
-        podman_version: 5.8.2
-        podman_compose_version: 1.5.0
-        docker_compose_verified: false
-        infra_services:
-          - postgres:5434
-          - nats_client:4222
-          - nats_monitoring:8222
-          - minio_api:9000
-          - minio_console:9001
-        host_services:
-          - api:4110
-          - web:3200
-        worker_status: placeholder_container_only
-    bl_007_status:
-      completed: true
-      scope: zammad_connector_boundary_read_draft_writeback_audit
-      contracts_package: packages/contracts
-      connectors_package: packages/connectors
-      api_app: apps/api
-      web_app: apps/web
-      validation: connector_tests_api_tests_web_client_tests_browser_verified
-      runtime:
-        connector_mode: mock_default
-        zammad_adapter: ZammadConnectorAdapter
-        mock_adapter: MockZammadConnectorAdapter
-        adapter_factory: createZammadAdapter
-        http_client: FetchZammadHttpClient
-        audit_events:
-          - connector_status_checked
-          - connector_tested
-          - zammad_ticket_loaded
-          - internal_note_drafted
-          - internal_note_writeback_attempted
-          - internal_note_writeback_succeeded
-          - internal_note_writeback_failed
-    bl_008_status:
-      completed: true
-      scope: evidence_bundle_skeleton_json_markdown_mvp
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      validation: contract_tests_api_tests_web_client_tests_browser_verified
-      runtime:
-        evidence_bundle_builder: apps/api/src/evidence-bundle/evidence-bundle.builder.ts
-        redaction: apps/api/src/evidence-bundle/redaction.ts
-        export_formats:
-          - json
-          - markdown
-        audit_events:
-          - evidence_bundle_generated
-          - evidence_bundle_exported
-        store_type: postgres_or_memory
-    bl_009_status:
-      completed: true
-      scope: fake_incoming_call_webhook_and_caller_matching
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      validation: contract_tests_api_tests_web_client_tests_browser_verified
-      runtime:
-        call_contracts: packages/contracts/src/call.ts
-        phone_normalization: packages/contracts/src/phone-normalization.ts
-        caller_matching: fixture_based_mock
-        api_endpoints:
-          - POST /calls/fake-incoming
-          - GET /calls/recent
-          - GET /calls/:id
-          - POST /calls/:id/link-session
-        audit_events:
-          - call_event_received
-          - caller_matched
-          - call_linked_to_session
-        store_type: postgres_or_memory
-        mock_telephony: true
-        honest_labels: true
+    lifecycle_stage: mvp_foundation
+    foundation_history:
+      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009]
+      summary: >
+        Early slices established contracts/schema, mock-first API, cockpit UI,
+        mock AI gateway, local Podman-compatible topology, Zammad connector
+        boundary, evidence bundle skeleton, and fake incoming call flow.
+      detail_location: WORKLOG.md
     bl_041_status:
       completed: true
       scope: automatic_support_session_creation_from_incoming_call_events
@@ -559,6 +439,48 @@ current_state:
       - Next.js web app verified via browser screenshots
       - BL-050 PostgreSQL persistence verified with restart-survival script
       - Infra containers verified via podman-compose with healthchecks
+    bl_092_status:
+      completed: false
+      status: final_validation_in_progress
+      scope: durable_action_outbox_workflow_foundation
+      backlog_id: BL-092
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      prisma_schema: prisma/schema.prisma
+      migration: prisma/migrations/20260427234000_durable_action_outbox_workflow/
+      docs:
+        - docs/ACTION_OUTBOX_WORKFLOW.md
+        - docs/PERSISTENCE.md
+        - docs/EVIDENCE_BUNDLES.md
+        - docs/SUPPORT_CASE_WORKFLOW.md
+      runtime:
+        store_mode: postgres
+        auth_mode: local
+        api_url: http://localhost:4110
+        web_url: http://localhost:3200
+        postgres: localhost:5434
+      new_api_endpoints:
+        - GET /support-sessions/:id/actions
+        - POST /support-sessions/:id/actions
+        - GET /actions/:id
+        - POST /actions/:id/submit-for-review
+        - POST /actions/:id/approve
+        - POST /actions/:id/reject
+        - POST /actions/:id/queue
+        - POST /actions/:id/mock-deliver
+        - POST /actions/:id/cancel
+        - GET /outbox
+        - GET /outbox/:id
+        - POST /outbox/:id/retry
+        - POST /outbox/:id/mock-deliver
+      screenshot_folder: output/playwright/session-092-durable-action-outbox-workflow-foundation/
+      screenshot_count: 17
+      notes:
+        - action/outbox delivery is local mock only with realNetwork=false and externalWriteAttempted=false
+        - viewer can inspect but cannot mutate; operator can create/submit; admin can approve/reject/queue
+        - API restart persistence proof passed against PostgreSQL local-auth runtime
+        - final validation and commit hash still pending
     bl_091_status:
       completed: true
       scope: support_case_workflow_foundation

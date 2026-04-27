@@ -38,6 +38,7 @@ Every bundle includes:
 | Greeting suggestions | Generated greeting text, tone, provider, model, prompt, context hash, mock/disabled flags |
 | Call lifecycle audit | Received, matched, linked, status-change, and greeting-related events through the audit timeline |
 | Connector operations | Ticket loads, drafts, writeback attempts/results |
+| Action outbox | Local support action review, queue, mock delivery, attempts, and safety flags |
 | Telephony bridge events | Mock adapter status/test, webhook verification, and control intent audit summaries |
 | Audit timeline | Full event list with actor, resource, metadata, integrity hash |
 | Mock/dev-only disclaimers | Honest labels about in-memory/mock limitations |

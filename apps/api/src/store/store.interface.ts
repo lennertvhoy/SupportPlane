@@ -9,6 +9,9 @@ import type {
   ScreenObservation as ScreenObservationShape,
   CustomerReference as CustomerReferenceShape,
   ConnectorInstallation as ConnectorInstallationShape,
+  SupportAction as SupportActionShape,
+  ActionOutboxItem as ActionOutboxItemShape,
+  ActionOutboxAttempt as ActionOutboxAttemptShape,
 } from '@supportplane/contracts';
 
 export interface SharingStateShape {
@@ -75,4 +78,14 @@ export interface Store {
   saveConnectorInstallation(installation: ConnectorInstallationShape): Promise<void> | void;
   getConnectorInstallation(tenantId: string, id: string): Promise<ConnectorInstallationShape | undefined> | ConnectorInstallationShape | undefined;
   listConnectorInstallations(tenantId: string): Promise<ConnectorInstallationShape[]> | ConnectorInstallationShape[];
+
+  // Durable action/outbox
+  saveSupportAction(action: SupportActionShape): Promise<void> | void;
+  getSupportAction(tenantId: string, id: string): Promise<SupportActionShape | undefined> | SupportActionShape | undefined;
+  listSupportActions(tenantId: string, options?: { sessionId?: string }): Promise<SupportActionShape[]> | SupportActionShape[];
+  saveActionOutboxItem(item: ActionOutboxItemShape): Promise<void> | void;
+  getActionOutboxItem(tenantId: string, id: string): Promise<ActionOutboxItemShape | undefined> | ActionOutboxItemShape | undefined;
+  listActionOutboxItems(tenantId: string, options?: { sessionId?: string; supportActionId?: string }): Promise<ActionOutboxItemShape[]> | ActionOutboxItemShape[];
+  saveActionOutboxAttempt(attempt: ActionOutboxAttemptShape): Promise<void> | void;
+  listActionOutboxAttempts(tenantId: string, outboxItemId: string): Promise<ActionOutboxAttemptShape[]> | ActionOutboxAttemptShape[];
 }

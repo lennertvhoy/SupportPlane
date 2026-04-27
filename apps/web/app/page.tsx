@@ -15,6 +15,7 @@ import { CustomerReferencePanel } from '@/components/CustomerReferencePanel';
 import { TicketSummaryPanel } from '@/components/TicketSummaryPanel';
 import { CaseTimelinePanel } from '@/components/CaseTimelinePanel';
 import { SupportNoteDraftPanel } from '@/components/SupportNoteDraftPanel';
+import { ActionOutboxPanel } from '@/components/ActionOutboxPanel';
 import { AuthGate, IdentityPill } from '@/components/AuthGate';
 import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, type GreetingSuggestionResponse, type AuthIdentity, ApiClientError } from '@/lib/api';
 
@@ -425,6 +426,13 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               session={selectedSession}
               identity={identity}
               externalTicketId={ticket?.externalTicketId}
+            />
+            <ActionOutboxPanel
+              session={selectedSession}
+              ticket={ticket}
+              identity={identity}
+              draftBody={draftSuggestion?.draft}
+              onChanged={selectedSession ? () => fetchSessionDetails(selectedSession) : undefined}
             />
             <AuditTrailPanel
               session={selectedSession}

@@ -9,6 +9,9 @@ import type {
   ScreenObservation as ScreenObservationShape,
   CustomerReference as CustomerReferenceShape,
   ConnectorInstallation as ConnectorInstallationShape,
+  SupportAction as SupportActionShape,
+  ActionOutboxItem as ActionOutboxItemShape,
+  ActionOutboxAttempt as ActionOutboxAttemptShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from '../store/store.interface.js';
 
@@ -24,6 +27,9 @@ export class InMemoryStore implements Store {
   private sharingStates = new Map<string, SharingStateShape>();
   private customerReferences = new Map<string, CustomerReferenceShape>();
   private connectorInstallations = new Map<string, ConnectorInstallationShape>();
+  private supportActions = new Map<string, SupportActionShape>();
+  private actionOutboxItems = new Map<string, ActionOutboxItemShape>();
+  private actionOutboxAttempts = new Map<string, ActionOutboxAttemptShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -196,5 +202,48 @@ export class InMemoryStore implements Store {
 
   listConnectorInstallations(tenantId: string): ConnectorInstallationShape[] {
     return Array.from(this.connectorInstallations.values()).filter((i) => i.tenantId === tenantId);
+  }
+
+  saveSupportAction(action: SupportActionShape): void {
+    this.supportActions.set(`${action.tenantId}:${action.id}`, action);
+  }
+
+  getSupportAction(tenantId: string, id: string): SupportActionShape | undefined {
+    return this.supportActions.get(`${tenantId}:${id}`);
+  }
+
+  listSupportActions(tenantId: string, options?: { sessionId?: string }): SupportActionShape[] {
+    return Array.from(this.supportActions.values())
+      .filter((a) => a.tenantId === tenantId && (!options?.sessionId || a.sessionId === options.sessionId))
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  saveActionOutboxItem(item: ActionOutboxItemShape): void {
+    this.actionOutboxItems.set(`${item.tenantId}:${item.id}`, item);
+  }
+
+  getActionOutboxItem(tenantId: string, id: string): ActionOutboxItemShape | undefined {
+    return this.actionOutboxItems.get(`${tenantId}:${id}`);
+  }
+
+  listActionOutboxItems(tenantId: string, options?: { sessionId?: string; supportActionId?: string }): ActionOutboxItemShape[] {
+    return Array.from(this.actionOutboxItems.values())
+      .filter(
+        (i) =>
+          i.tenantId === tenantId &&
+          (!options?.sessionId || i.sessionId === options.sessionId) &&
+          (!options?.supportActionId || i.supportActionId === options.supportActionId)
+      )
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  saveActionOutboxAttempt(attempt: ActionOutboxAttemptShape): void {
+    this.actionOutboxAttempts.set(`${attempt.tenantId}:${attempt.id}`, attempt);
+  }
+
+  listActionOutboxAttempts(tenantId: string, outboxItemId: string): ActionOutboxAttemptShape[] {
+    return Array.from(this.actionOutboxAttempts.values())
+      .filter((a) => a.tenantId === tenantId && a.outboxItemId === outboxItemId)
+      .sort((a, b) => a.attemptNumber - b.attemptNumber);
   }
 }

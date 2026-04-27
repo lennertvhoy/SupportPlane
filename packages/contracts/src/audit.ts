@@ -88,6 +88,19 @@ export const AuditEventType = z.enum([
   'connector_config_validated',
   'connector_config_validation_failed',
   'connector_safety_blocked',
+  // BL-092 Durable Action/Outbox Workflow Foundation
+  'action_created',
+  'action_submitted_for_review',
+  'action_approved',
+  'action_rejected',
+  'action_queued',
+  'action_mock_delivered',
+  'action_failed',
+  'action_cancelled',
+  'action_retry_requested',
+  'action_access_denied',
+  'outbox_item_created',
+  'outbox_item_attempted',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

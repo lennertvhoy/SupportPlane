@@ -1,0 +1,114 @@
+import { z } from 'zod';
+import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
+
+export const SupportActionStatus = z.enum([
+  'draft',
+  'review_required',
+  'approved',
+  'queued',
+  'mock_delivered',
+  'failed',
+  'cancelled',
+  'rejected',
+]);
+export type SupportActionStatus = z.infer<typeof SupportActionStatus>;
+
+export const SupportActionType = z.enum(['ticket_note']);
+export type SupportActionType = z.infer<typeof SupportActionType>;
+
+export const ActionOutboxStatus = z.enum([
+  'queued',
+  'mock_delivered',
+  'failed',
+  'cancelled',
+]);
+export type ActionOutboxStatus = z.infer<typeof ActionOutboxStatus>;
+
+export const ActionOutboxAttemptState = z.enum([
+  'mock_delivered',
+  'failed',
+  'retry_requested',
+]);
+export type ActionOutboxAttemptState = z.infer<typeof ActionOutboxAttemptState>;
+
+export const SupportAction = z.object({
+  id: EntityId,
+  tenantId: TenantId,
+  sessionId: EntityId,
+  callEventId: EntityId.optional(),
+  customerReferenceId: EntityId.optional(),
+  ticketReferenceId: EntityId.optional(),
+  connectorInstallationId: EntityId.optional(),
+  actionType: SupportActionType,
+  status: SupportActionStatus,
+  idempotencyKey: z.string().min(8).max(160),
+  requestedBy: EntityId,
+  submittedAt: Timestamp.optional(),
+  reviewedBy: EntityId.optional(),
+  reviewDecision: z.enum(['approved', 'rejected']).optional(),
+  reviewReason: z.string().max(1000).optional(),
+  reviewedAt: Timestamp.optional(),
+  queuedAt: Timestamp.optional(),
+  mockDeliveredAt: Timestamp.optional(),
+  failureReason: z.string().max(1000).optional(),
+  payloadSummary: z.record(JsonValue).default({}),
+  safeBodyPreview: z.string().max(800).optional(),
+  mockDevOnly: z.boolean().default(true),
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+});
+export type SupportAction = z.infer<typeof SupportAction>;
+
+export const ActionOutboxItem = z.object({
+  id: EntityId,
+  tenantId: TenantId,
+  supportActionId: EntityId,
+  sessionId: EntityId,
+  connectorInstallationId: EntityId.optional(),
+  actionType: SupportActionType,
+  status: ActionOutboxStatus,
+  idempotencyKey: z.string().min(8).max(160),
+  deliveryIntent: z.record(JsonValue).default({}),
+  attemptCount: z.number().int().min(0).default(0),
+  latestAttemptState: ActionOutboxAttemptState.optional(),
+  queuedAt: Timestamp,
+  mockDeliveredAt: Timestamp.optional(),
+  lastError: z.string().max(1000).optional(),
+  safetyFlags: z.record(JsonValue).default({}),
+  mockDevOnly: z.boolean().default(true),
+  createdAt: Timestamp,
+  updatedAt: Timestamp,
+});
+export type ActionOutboxItem = z.infer<typeof ActionOutboxItem>;
+
+export const ActionOutboxAttempt = z.object({
+  id: EntityId,
+  tenantId: TenantId,
+  outboxItemId: EntityId,
+  supportActionId: EntityId,
+  attemptNumber: z.number().int().min(1),
+  state: ActionOutboxAttemptState,
+  deliveryResult: z.record(JsonValue).default({}),
+  errorMessage: z.string().max(1000).optional(),
+  attemptedAt: Timestamp,
+  mockDevOnly: z.boolean().default(true),
+});
+export type ActionOutboxAttempt = z.infer<typeof ActionOutboxAttempt>;
+
+export const SupportActionCreateRequest = z.object({
+  actionType: SupportActionType.default('ticket_note'),
+  externalTicketId: z.string().max(128).optional(),
+  ticketReferenceId: EntityId.optional(),
+  customerReferenceId: EntityId.optional(),
+  callEventId: EntityId.optional(),
+  connectorInstallationId: EntityId.optional(),
+  body: z.string().min(1).max(8000),
+  subject: z.string().max(240).optional(),
+  idempotencyKey: z.string().min(8).max(160).optional(),
+});
+export type SupportActionCreateRequest = z.infer<typeof SupportActionCreateRequest>;
+
+export const SupportActionDecisionRequest = z.object({
+  reason: z.string().max(1000).optional(),
+});
+export type SupportActionDecisionRequest = z.infer<typeof SupportActionDecisionRequest>;

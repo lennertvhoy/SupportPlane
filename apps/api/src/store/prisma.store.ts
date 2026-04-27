@@ -17,6 +17,9 @@ import type {
   ScreenObservation as ScreenObservationShape,
   CustomerReference as CustomerReferenceShape,
   ConnectorInstallation as ConnectorInstallationShape,
+  SupportAction as SupportActionShape,
+  ActionOutboxItem as ActionOutboxItemShape,
+  ActionOutboxAttempt as ActionOutboxAttemptShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from './store.interface.js';
 
@@ -958,5 +961,223 @@ export class PrismaStore implements Store {
       createdAt: toISO(row.createdAt)!,
       updatedAt: toISO(row.updatedAt)!,
     };
+  }
+
+  async saveSupportAction(action: SupportActionShape): Promise<void> {
+    await this.prisma.supportAction.upsert({
+      where: { id: action.id },
+      create: {
+        id: action.id,
+        tenantId: action.tenantId,
+        sessionId: action.sessionId,
+        callEventId: action.callEventId ?? null,
+        customerReferenceId: action.customerReferenceId ?? null,
+        ticketReferenceId: action.ticketReferenceId ?? null,
+        connectorInstallationId: action.connectorInstallationId ?? null,
+        actionType: action.actionType,
+        status: action.status,
+        idempotencyKey: action.idempotencyKey,
+        requestedBy: action.requestedBy,
+        submittedAt: action.submittedAt ? new Date(action.submittedAt) : null,
+        reviewedBy: action.reviewedBy ?? null,
+        reviewDecision: action.reviewDecision ?? null,
+        reviewReason: action.reviewReason ?? null,
+        reviewedAt: action.reviewedAt ? new Date(action.reviewedAt) : null,
+        queuedAt: action.queuedAt ? new Date(action.queuedAt) : null,
+        mockDeliveredAt: action.mockDeliveredAt ? new Date(action.mockDeliveredAt) : null,
+        failureReason: action.failureReason ?? null,
+        payloadSummary: json(action.payloadSummary),
+        safeBodyPreview: action.safeBodyPreview ?? null,
+        mockDevOnly: action.mockDevOnly,
+        createdAt: dateOrNow(action.createdAt),
+        updatedAt: dateOrNow(action.updatedAt),
+      },
+      update: {
+        status: action.status,
+        submittedAt: action.submittedAt ? new Date(action.submittedAt) : null,
+        reviewedBy: action.reviewedBy ?? null,
+        reviewDecision: action.reviewDecision ?? null,
+        reviewReason: action.reviewReason ?? null,
+        reviewedAt: action.reviewedAt ? new Date(action.reviewedAt) : null,
+        queuedAt: action.queuedAt ? new Date(action.queuedAt) : null,
+        mockDeliveredAt: action.mockDeliveredAt ? new Date(action.mockDeliveredAt) : null,
+        failureReason: action.failureReason ?? null,
+        payloadSummary: json(action.payloadSummary),
+        safeBodyPreview: action.safeBodyPreview ?? null,
+        updatedAt: dateOrNow(action.updatedAt),
+      },
+    });
+  }
+
+  async getSupportAction(tenantId: string, id: string): Promise<SupportActionShape | undefined> {
+    const row = await this.prisma.supportAction.findFirst({ where: { tenantId, id } });
+    return row ? this.mapSupportAction(row) : undefined;
+  }
+
+  async listSupportActions(tenantId: string, options?: { sessionId?: string }): Promise<SupportActionShape[]> {
+    const rows = await this.prisma.supportAction.findMany({
+      where: { tenantId, ...(options?.sessionId ? { sessionId: options.sessionId } : {}) },
+      orderBy: { updatedAt: 'desc' },
+    });
+    return rows.map((r) => this.mapSupportAction(r));
+  }
+
+  private mapSupportAction(row: {
+    id: string; tenantId: string; sessionId: string; callEventId: string | null; customerReferenceId: string | null;
+    ticketReferenceId: string | null; connectorInstallationId: string | null; actionType: string; status: string;
+    idempotencyKey: string; requestedBy: string; submittedAt: Date | null; reviewedBy: string | null;
+    reviewDecision: string | null; reviewReason: string | null; reviewedAt: Date | null; queuedAt: Date | null;
+    mockDeliveredAt: Date | null; failureReason: string | null; payloadSummary: unknown; safeBodyPreview: string | null;
+    mockDevOnly: boolean; createdAt: Date; updatedAt: Date;
+  }): SupportActionShape {
+    return {
+      id: row.id as SupportActionShape['id'],
+      tenantId: row.tenantId as SupportActionShape['tenantId'],
+      sessionId: row.sessionId,
+      callEventId: row.callEventId ?? undefined,
+      customerReferenceId: row.customerReferenceId ?? undefined,
+      ticketReferenceId: row.ticketReferenceId ?? undefined,
+      connectorInstallationId: row.connectorInstallationId ?? undefined,
+      actionType: row.actionType as SupportActionShape['actionType'],
+      status: row.status as SupportActionShape['status'],
+      idempotencyKey: row.idempotencyKey,
+      requestedBy: row.requestedBy,
+      submittedAt: toISO(row.submittedAt),
+      reviewedBy: row.reviewedBy ?? undefined,
+      reviewDecision: row.reviewDecision as SupportActionShape['reviewDecision'],
+      reviewReason: row.reviewReason ?? undefined,
+      reviewedAt: toISO(row.reviewedAt),
+      queuedAt: toISO(row.queuedAt),
+      mockDeliveredAt: toISO(row.mockDeliveredAt),
+      failureReason: row.failureReason ?? undefined,
+      payloadSummary: row.payloadSummary as Record<string, unknown>,
+      safeBodyPreview: row.safeBodyPreview ?? undefined,
+      mockDevOnly: row.mockDevOnly,
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
+  }
+
+  async saveActionOutboxItem(item: ActionOutboxItemShape): Promise<void> {
+    await this.prisma.actionOutboxItem.upsert({
+      where: { id: item.id },
+      create: {
+        id: item.id,
+        tenantId: item.tenantId,
+        supportActionId: item.supportActionId,
+        sessionId: item.sessionId,
+        connectorInstallationId: item.connectorInstallationId ?? null,
+        actionType: item.actionType,
+        status: item.status,
+        idempotencyKey: item.idempotencyKey,
+        deliveryIntent: json(item.deliveryIntent),
+        attemptCount: item.attemptCount,
+        latestAttemptState: item.latestAttemptState ?? null,
+        queuedAt: dateOrNow(item.queuedAt),
+        mockDeliveredAt: item.mockDeliveredAt ? new Date(item.mockDeliveredAt) : null,
+        lastError: item.lastError ?? null,
+        safetyFlags: json(item.safetyFlags),
+        mockDevOnly: item.mockDevOnly,
+        createdAt: dateOrNow(item.createdAt),
+        updatedAt: dateOrNow(item.updatedAt),
+      },
+      update: {
+        status: item.status,
+        deliveryIntent: json(item.deliveryIntent),
+        attemptCount: item.attemptCount,
+        latestAttemptState: item.latestAttemptState ?? null,
+        mockDeliveredAt: item.mockDeliveredAt ? new Date(item.mockDeliveredAt) : null,
+        lastError: item.lastError ?? null,
+        safetyFlags: json(item.safetyFlags),
+        updatedAt: dateOrNow(item.updatedAt),
+      },
+    });
+  }
+
+  async getActionOutboxItem(tenantId: string, id: string): Promise<ActionOutboxItemShape | undefined> {
+    const row = await this.prisma.actionOutboxItem.findFirst({ where: { tenantId, id } });
+    return row ? this.mapActionOutboxItem(row) : undefined;
+  }
+
+  async listActionOutboxItems(tenantId: string, options?: { sessionId?: string; supportActionId?: string }): Promise<ActionOutboxItemShape[]> {
+    const rows = await this.prisma.actionOutboxItem.findMany({
+      where: {
+        tenantId,
+        ...(options?.sessionId ? { sessionId: options.sessionId } : {}),
+        ...(options?.supportActionId ? { supportActionId: options.supportActionId } : {}),
+      },
+      orderBy: { updatedAt: 'desc' },
+    });
+    return rows.map((r) => this.mapActionOutboxItem(r));
+  }
+
+  private mapActionOutboxItem(row: {
+    id: string; tenantId: string; supportActionId: string; sessionId: string; connectorInstallationId: string | null;
+    actionType: string; status: string; idempotencyKey: string; deliveryIntent: unknown; attemptCount: number;
+    latestAttemptState: string | null; queuedAt: Date; mockDeliveredAt: Date | null; lastError: string | null;
+    safetyFlags: unknown; mockDevOnly: boolean; createdAt: Date; updatedAt: Date;
+  }): ActionOutboxItemShape {
+    return {
+      id: row.id as ActionOutboxItemShape['id'],
+      tenantId: row.tenantId as ActionOutboxItemShape['tenantId'],
+      supportActionId: row.supportActionId,
+      sessionId: row.sessionId,
+      connectorInstallationId: row.connectorInstallationId ?? undefined,
+      actionType: row.actionType as ActionOutboxItemShape['actionType'],
+      status: row.status as ActionOutboxItemShape['status'],
+      idempotencyKey: row.idempotencyKey,
+      deliveryIntent: row.deliveryIntent as Record<string, unknown>,
+      attemptCount: row.attemptCount,
+      latestAttemptState: row.latestAttemptState as ActionOutboxItemShape['latestAttemptState'],
+      queuedAt: toISO(row.queuedAt)!,
+      mockDeliveredAt: toISO(row.mockDeliveredAt),
+      lastError: row.lastError ?? undefined,
+      safetyFlags: row.safetyFlags as Record<string, unknown>,
+      mockDevOnly: row.mockDevOnly,
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
+  }
+
+  async saveActionOutboxAttempt(attempt: ActionOutboxAttemptShape): Promise<void> {
+    await this.prisma.actionOutboxAttempt.upsert({
+      where: { id: attempt.id },
+      create: {
+        id: attempt.id,
+        tenantId: attempt.tenantId,
+        outboxItemId: attempt.outboxItemId,
+        supportActionId: attempt.supportActionId,
+        attemptNumber: attempt.attemptNumber,
+        state: attempt.state,
+        deliveryResult: json(attempt.deliveryResult),
+        errorMessage: attempt.errorMessage ?? null,
+        attemptedAt: dateOrNow(attempt.attemptedAt),
+        mockDevOnly: attempt.mockDevOnly,
+      },
+      update: {
+        state: attempt.state,
+        deliveryResult: json(attempt.deliveryResult),
+        errorMessage: attempt.errorMessage ?? null,
+      },
+    });
+  }
+
+  async listActionOutboxAttempts(tenantId: string, outboxItemId: string): Promise<ActionOutboxAttemptShape[]> {
+    const rows = await this.prisma.actionOutboxAttempt.findMany({
+      where: { tenantId, outboxItemId },
+      orderBy: { attemptNumber: 'asc' },
+    });
+    return rows.map((r) => ({
+      id: r.id as ActionOutboxAttemptShape['id'],
+      tenantId: r.tenantId as ActionOutboxAttemptShape['tenantId'],
+      outboxItemId: r.outboxItemId,
+      supportActionId: r.supportActionId,
+      attemptNumber: r.attemptNumber,
+      state: r.state as ActionOutboxAttemptShape['state'],
+      deliveryResult: r.deliveryResult as Record<string, unknown>,
+      errorMessage: r.errorMessage ?? undefined,
+      attemptedAt: toISO(r.attemptedAt)!,
+      mockDevOnly: r.mockDevOnly,
+    }));
   }
 }

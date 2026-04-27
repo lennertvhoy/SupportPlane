@@ -27,7 +27,13 @@ npx prisma migrate reset
 
 ## Persisted models
 
-The current Prisma schema persists tenants, users, roles, local auth sessions, support sessions, call events, call recordings, screen observations, sharing state, ticket references, AI context packets, audit events, policy decisions, internal note drafts, and ticketing adapters.
+The current Prisma schema persists tenants, users, roles, local auth sessions, support sessions, call events, call recordings, screen observations, sharing state, ticket references, AI context packets, audit events, policy decisions, internal note drafts, action/outbox workflow records, and ticketing adapters.
+
+BL-092 action/outbox persistence is represented by `support_actions`,
+`action_outbox_items`, and `action_outbox_attempts` in
+`prisma/migrations/20260427234000_durable_action_outbox_workflow/`. These tables
+are local/mock workflow state only; they are not a production queue and do not
+perform external writeback.
 
 ## Auth persistence
 

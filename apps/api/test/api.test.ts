@@ -199,6 +199,112 @@ describe('SupportPlane API', () => {
     assert.ok(event.integrityHash);
   });
 
+  it('durable action/outbox workflow creates, reviews, queues, and mock-delivers locally', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .send({ title: 'Action outbox test' })
+      .expect(201);
+
+    const actionCreated = await supertest(server)
+      .post(`/support-sessions/${created.body.id}/actions`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .send({
+        actionType: 'ticket_note',
+        externalTicketId: 'TICKET-101',
+        body: 'Local mock support note. password=secret should be redacted.',
+        idempotencyKey: `tenant-a:${created.body.id}:ticket-note:test`,
+      })
+      .expect(201);
+
+    assert.strictEqual(actionCreated.body.action.status, 'draft');
+    assert.match(actionCreated.body.action.safeBodyPreview, /\[REDACTED\]/);
+
+    const submitted = await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/submit-for-review`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+    assert.strictEqual(submitted.body.action.status, 'review_required');
+
+    await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/approve`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .send({})
+      .expect(403);
+
+    const approved = await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/approve`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ reason: 'Looks safe for mock delivery' })
+      .expect(201);
+    assert.strictEqual(approved.body.action.status, 'approved');
+
+    const queued = await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/queue`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({})
+      .expect(201);
+    assert.strictEqual(queued.body.outboxItem.status, 'queued');
+    assert.strictEqual(queued.body.outboxItem.deliveryIntent.realNetwork, false);
+
+    const delivered = await supertest(server)
+      .post(`/outbox/${queued.body.outboxItem.id}/mock-deliver`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+    assert.strictEqual(delivered.body.outboxItem.status, 'mock_delivered');
+    assert.strictEqual(delivered.body.delivery.realNetwork, false);
+    assert.strictEqual(delivered.body.delivery.externalWriteAttempted, false);
+    assert.strictEqual(delivered.body.delivery.writebackEnabled, false);
+
+    const outboxDetail = await supertest(server)
+      .get(`/outbox/${queued.body.outboxItem.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(200);
+    assert.strictEqual(outboxDetail.body.attempts.length, 1);
+
+    await supertest(server)
+      .get(`/actions/${actionCreated.body.action.id}`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'admin-2')
+      .set('x-user-role', 'admin')
+      .expect(404);
+
+    const timeline = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/case-timeline`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(200);
+    assert.ok(timeline.body.timeline.some((item: { type: string }) => item.type === 'action_outbox_item'));
+
+    const evidence = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(200);
+    assert.strictEqual(evidence.body.bundle.actionOutbox[0].realNetwork, false);
+    assert.doesNotMatch(JSON.stringify(evidence.body.bundle), /password=secret/);
+  });
+
   it('tenant isolation holds for context-packets and audit-events', async () => {
     const created = await supertest(server)
       .post('/support-sessions')

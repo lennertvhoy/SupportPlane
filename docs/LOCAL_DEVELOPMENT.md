@@ -178,6 +178,11 @@ Seeded users:
 
 Use `scripts/verify_local_auth_rbac.sh` with API running in local auth mode to verify login/logout, RBAC denial, tenant-boundary denial, forged-header resistance, and no auth secret leakage in evidence output.
 
+Use `scripts/verify_durable_action_outbox.sh` with API/Web running in
+PostgreSQL + local-auth mode to verify BL-092 action creation, review, approval,
+queueing, mock delivery, audit/timeline/evidence output, forged-header
+resistance, cross-tenant denial, and no secret leakage.
+
 ## Docker vs Podman notes
 
 - The `compose.yaml` avoids Docker-specific extensions and uses standard `healthcheck` blocks.
