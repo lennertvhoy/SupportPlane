@@ -1,7 +1,7 @@
 ---
 repo_mode: operating
 initialized_on: 2026-04-26
-last_updated: 2026-04-26
+last_updated: 2026-04-27
 ---
 
 # State Driven Development Template Contract
@@ -32,9 +32,11 @@ These rules apply in all modes:
 - user-facing acceptance requires runtime identity proof, not screenshots alone
 - negative searches stay negative: use `not found`, `not currently locatable`, or `not proven`
 - screenshots or evidence are required for user-visible changes
-- each evidence wave that captures screenshots must use a fresh numbered
-  screenshot folder under `output/playwright/`; do not mix final closure proof
-  with older partial screenshots
+- each backlog item gets exactly one screenshot folder under `output/playwright/`;
+  name it clearly (e.g., `session-046-operator-companion-closure-canonical/`).
+  if a canonical or final proof set supersedes an earlier partial folder,
+  delete the old folder and update all doc references. do not leave multiple
+  folders for the same backlog item
 - active queue stays short
 - history belongs in `WORKLOG.md`, not live state files
 - structured state must remain machine-checkable
