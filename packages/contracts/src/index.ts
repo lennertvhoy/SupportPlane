@@ -14,3 +14,4 @@ export * from './phone-normalization.js';
 export * from './caller-fixtures.js';
 export * from './greeting-suggestion.js';
 export * from './telephony.js';
+export * from './call-recording.js';

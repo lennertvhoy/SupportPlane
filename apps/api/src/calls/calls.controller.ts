@@ -79,4 +79,40 @@ export class CallsController {
     const { timelineItems, generatedAt } = this.service.getCallTimeline(identity, id);
     return { callEventId: id, timelineItems, generatedAt, mockDevOnly: true };
   }
+
+  @Post(':id/recordings/mock')
+  attachMockRecording(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { source?: string; durationSeconds?: number }
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.attachMockRecording(identity, id, body);
+  }
+
+  @Get(':id/recordings')
+  listRecordings(@Req() req: Request, @Param('id') id: string) {
+    const identity = getDevIdentity(req);
+    return this.service.listCallRecordings(identity, id);
+  }
+
+  @Post(':id/recordings/:recordingId/review')
+  reviewRecording(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('recordingId') recordingId: string
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.reviewCallRecording(identity, id, recordingId);
+  }
+
+  @Post(':id/recordings/:recordingId/playback')
+  recordPlayback(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('recordingId') recordingId: string
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.recordPlaybackOpened(identity, id, recordingId);
+  }
 }

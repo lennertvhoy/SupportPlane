@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-27T10:20:00+02:00
+  updated_at: 2026-04-27T10:53:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -258,6 +258,38 @@ current_state:
         mock_telephony: true
         mock_ai: true
         real_integrations: false
+    bl_045_status:
+      completed: true
+      scope: call_recording_attachment_and_playback_mock_foundation
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      docs:
+        - docs/CALL_RECORDINGS.md
+        - docs/EVIDENCE_BUNDLES.md
+      validation: full_validation_gate_and_browser_boundary_verified
+      runtime:
+        api_endpoints:
+          - POST /calls/:id/recordings/mock
+          - GET /calls/:id/recordings
+          - POST /calls/:id/recordings/:recordingId/review
+          - POST /calls/:id/recordings/:recordingId/playback
+        storage_type: mock_inline
+        object_storage: false
+        real_audio: false
+        audit_events:
+          - call_recording_attached
+          - call_recording_reviewed
+          - call_recording_playback_opened
+        evidence_bundle_includes:
+          - callRecordings
+          - mock recording disclaimers
+          - noRealAudio flags
+        screenshot_folder: output/playwright/bl045-
+        screenshot_count: 9
+        closure_notes:
+          - tenant isolation enforced on all recording endpoints
+          - no real audio generated, captured, or played back
     bl_044_status:
       completed: true
       scope: telephony_adapter_contract_and_bridge_boundary

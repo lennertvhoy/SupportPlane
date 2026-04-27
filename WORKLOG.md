@@ -4,6 +4,46 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-27 - BL-045 Call recording mock foundation
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** to_be_recorded
+**Worktree:** dirty_before_commit
+
+### What changed
+
+- Added `CallRecording`, `CallRecordingStatus`, `CallRecordingSource`, `CallRecordingStorageType`, `CallRecordingPlaybackState`, `CallRecordingReviewEvent`, and `CallRecordingEvidenceSummary` contracts in `packages/contracts/src/call-recording.ts`.
+- Extended `AuditEventType` with `call_recording_attached`, `call_recording_reviewed`, `call_recording_playback_opened`.
+- Extended `EvidenceBundle` with `callRecordings` array and `EvidenceBundleCallRecordingSummary`.
+- Added `attachMockRecording`, `listCallRecordings`, `reviewCallRecording`, `recordPlaybackOpened` to `CallsService` with deterministic mock metadata derived from call ID.
+- Added `POST /calls/:id/recordings/mock`, `GET /calls/:id/recordings`, `POST /calls/:id/recordings/:recordingId/review`, `POST /calls/:id/recordings/:recordingId/playback` to `CallsController`.
+- Extended `InMemoryStore` with `callRecordings` map and CRUD methods.
+- Integrated `callRecordings` into `EvidenceBundleBuilder` with mock disclaimers.
+- Fixed tenant isolation on recording endpoints (`listCallRecordings`, `reviewCallRecording`, `recordPlaybackOpened` all now call `getCall` first).
+- Call Console UI already contained the Mock Recording panel; verified it works end-to-end.
+- Added `docs/CALL_RECORDINGS.md`.
+
+### Verification
+
+- All 85 API tests pass (including tenant isolation test for recordings).
+- All 26 contract tests pass.
+- All 15 web API client tests pass.
+- All 9 workspace typechecks pass.
+- Browser proof: 9 screenshots in `output/playwright/bl045-*.png` showing call console, mock recording panel, attach action, and reviewed state.
+- Direct API verification: attach → list → review → playback all return expected mock metadata with `noRealAudio: true` and `mockDevOnly: true`.
+
+### Evidence
+
+- Screenshot files: `output/playwright/bl045-01-call-console-initial.png` through `bl045-09-recording-reviewed.png`.
+
+### Remaining Risk
+
+- No real audio recording, playback, TTS, STT, transcription, object storage, or provider integration exists.
+- BL-046 was not started.
+
 ## 2026-04-27 - BL-044 Telephony adapter boundary
 
 **Type:** implementation

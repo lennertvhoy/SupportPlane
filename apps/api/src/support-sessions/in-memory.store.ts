@@ -5,6 +5,7 @@ import type {
   AuditEvent as AuditEventShape,
   InternalNoteDraft as InternalNoteDraftShape,
   CallEvent as CallEventShape,
+  CallRecording as CallRecordingShape,
 } from '@supportplane/contracts';
 
 export class InMemoryStore {
@@ -14,6 +15,7 @@ export class InMemoryStore {
   private auditEvents = new Map<string, AuditEventShape[]>();
   private drafts = new Map<string, InternalNoteDraftShape>();
   private callEvents = new Map<string, CallEventShape>();
+  private callRecordings = new Map<string, CallRecordingShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -103,6 +105,20 @@ export class InMemoryStore {
   listCallEventsForSession(tenantId: string, sessionId: string): CallEventShape[] {
     return Array.from(this.callEvents.values())
       .filter((c) => c.tenantId === tenantId && c.sessionId === sessionId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  saveCallRecording(recording: CallRecordingShape): void {
+    this.callRecordings.set(`${recording.tenantId}:${recording.id}`, recording);
+  }
+
+  getCallRecording(tenantId: string, id: string): CallRecordingShape | undefined {
+    return this.callRecordings.get(`${tenantId}:${id}`);
+  }
+
+  listCallRecordings(tenantId: string, callEventId: string): CallRecordingShape[] {
+    return Array.from(this.callRecordings.values())
+      .filter((r) => r.tenantId === tenantId && r.callEventId === callEventId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 }

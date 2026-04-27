@@ -1,13 +1,13 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-27 10:20 CEST
+**Updated At:** 2026-04-27 10:53 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-No active implementation item. BL-044 telephony adapter boundary is complete.
-Do not start BL-045 or BL-046 until a CTO handoff selects the next slice.
+No active implementation item. BL-045 call recording mock foundation is complete.
+Do not start BL-046 or any new slice until a CTO handoff selects the next item.
 
 ## Queue Rules
 

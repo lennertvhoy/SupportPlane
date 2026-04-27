@@ -97,6 +97,22 @@ export const EvidenceBundleAiUsageSummary = z.object({
 });
 export type EvidenceBundleAiUsageSummary = z.infer<typeof EvidenceBundleAiUsageSummary>;
 
+export const EvidenceBundleCallRecordingSummary = z.object({
+  recordingId: z.string(),
+  callEventId: z.string(),
+  supportSessionId: z.string().optional(),
+  durationSeconds: z.number().optional(),
+  status: z.string(),
+  source: z.string(),
+  storageType: z.string(),
+  reviewedAt: z.string().optional(),
+  reviewedBy: z.string().optional(),
+  mockDevOnly: z.boolean(),
+  noRealAudio: z.boolean(),
+  complianceDisclaimer: z.string().optional(),
+});
+export type EvidenceBundleCallRecordingSummary = z.infer<typeof EvidenceBundleCallRecordingSummary>;
+
 export const EvidenceBundleGreetingSuggestionSummary = z.object({
   greetingText: z.string(),
   tone: z.string(),
@@ -169,6 +185,7 @@ export const EvidenceBundle = z.object({
   telephonyBridgeEvents: z.array(EvidenceBundleTelephonyBridgeSummary).default([]),
   callEvents: z.array(EvidenceBundleCallEventSummary),
   greetingSuggestions: z.array(EvidenceBundleGreetingSuggestionSummary).default([]),
+  callRecordings: z.array(EvidenceBundleCallRecordingSummary).default([]),
   auditTimeline: z.array(EvidenceBundleAuditSummary),
   mockDevOnlyDisclaimers: z.array(z.string()),
   limitations: z.array(z.string()),

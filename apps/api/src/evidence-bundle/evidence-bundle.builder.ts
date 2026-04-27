@@ -16,9 +16,11 @@ import type {
   EvidenceBundleAuditSummary,
   EvidenceBundleCallEventSummary,
   EvidenceBundleGreetingSuggestionSummary,
+  EvidenceBundleCallRecordingSummary,
   TenantId,
   SupportSessionId,
   EvidenceBundleId,
+  CallRecording,
 } from '@supportplane/contracts';
 import { redactSecrets, redactString } from './redaction.js';
 
@@ -32,6 +34,7 @@ export interface BuildEvidenceBundleInput {
   contextPackets: AIContextPacket[];
   auditEvents: AuditEvent[];
   callEvents?: CallEvent[];
+  callRecordings?: CallRecording[];
   connectorMode?: string;
 }
 
@@ -146,6 +149,25 @@ function toAiUsageSummaries(auditEvents: AuditEvent[]): EvidenceBundleAiUsageSum
     }));
 }
 
+function toCallRecordingSummaries(recordings: CallRecording[] | undefined): EvidenceBundleCallRecordingSummary[] {
+  if (!recordings) return [];
+  return recordings.map((r) => ({
+    recordingId: r.id,
+    callEventId: r.callEventId,
+    supportSessionId: r.supportSessionId,
+    durationSeconds: r.durationSeconds,
+    status: r.status,
+    source: r.source,
+    storageType: r.storageType,
+    reviewedAt: r.reviewedAt,
+    reviewedBy: r.reviewedBy,
+    mockDevOnly: r.mockDevOnly,
+    noRealAudio: r.noRealAudio,
+    complianceDisclaimer: r.complianceDisclaimer,
+    // Intentionally excluded: mockMediaUrl, checksumHash, placeholderReference
+  }));
+}
+
 function toGreetingSuggestionSummaries(auditEvents: AuditEvent[]): EvidenceBundleGreetingSuggestionSummary[] {
   return auditEvents
     .filter((e) => e.eventType === 'greeting_suggestion_generated')
@@ -219,6 +241,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     connectorOperations: toConnectorOperationSummaries(input.auditEvents),
     telephonyBridgeEvents: toTelephonyBridgeSummaries(input.auditEvents),
     callEvents: toCallEventSummaries(input.callEvents),
+    callRecordings: toCallRecordingSummaries(input.callRecordings),
     greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
     mockDevOnlyDisclaimers: [
@@ -228,6 +251,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Connector mode is mock unless explicitly configured otherwise.',
       'Call events are simulated via fake webhook. No real telephony is connected.',
       'Telephony bridge events are adapter-boundary mock events only. No real PBX, provider, media, or voice path is connected.',
+      'Call recordings are mock metadata only. No real audio was captured, stored, or played back. Not compliance-grade.',
       'Caller matching uses deterministic mock fixtures, not a real customer database.',
       'Support sessions may be auto-created from fake incoming calls. These are mock sessions for development only.',
     ],
@@ -240,6 +264,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Phone normalization is Belgian-style heuristic only, not telecom-grade validation.',
       'Auto-created sessions are generated from mock call events and do not represent real customer interactions.',
       'Telephony bridge controls update local mock state only and are not compliance-grade telephony evidence.',
+      'Mock call recordings have no real audio content and do not constitute legal or compliance-grade call recording evidence.',
     ],
     sourceProvenance: {
       storeType: 'in-memory',

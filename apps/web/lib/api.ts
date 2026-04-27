@@ -332,6 +332,50 @@ export interface CallTimelineItem {
   metadata: Record<string, unknown>;
 }
 
+export interface CallRecording {
+  id: string;
+  tenantId: string;
+  callEventId: string;
+  supportSessionId?: string;
+  source: string;
+  status: string;
+  durationSeconds?: number;
+  mockMediaUrl?: string;
+  placeholderReference?: string;
+  storageType: string;
+  checksumHash?: string;
+  createdAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  mockDevOnly: boolean;
+  complianceDisclaimer?: string;
+  noRealAudio: boolean;
+}
+
+export interface CallRecordingAttachmentResponse {
+  recording: CallRecording;
+  mockDevOnly: boolean;
+  attachedAt: string;
+}
+
+export interface CallRecordingReviewResponse {
+  recording: CallRecording;
+  reviewedAt: string;
+}
+
+export interface CallRecordingPlaybackResponse {
+  playbackState: {
+    recordingId: string;
+    callEventId: string;
+    openedAt: string;
+    openedBy: string;
+    mockDevOnly: boolean;
+    noRealAudio: boolean;
+    placeholderOnly: boolean;
+  };
+  recordedAt: string;
+}
+
 export interface CallTimelineResponse {
   callEventId: string;
   timelineItems: CallTimelineItem[];
@@ -786,6 +830,41 @@ export const api = {
 
   getCallTimeline: (callId: string, identity?: DevIdentity) =>
     apiFetch<CallTimelineResponse>(`/calls/${callId}/timeline`, { method: 'GET' }, identity),
+
+  attachMockRecording: (
+    callId: string,
+    body: { source?: string; durationSeconds?: number },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<CallRecordingAttachmentResponse>(`/calls/${callId}/recordings/mock`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }, identity),
+
+  listCallRecordings: (callId: string, identity?: DevIdentity) =>
+    apiFetch<CallRecording[]>(`/calls/${callId}/recordings`, { method: 'GET' }, identity),
+
+  reviewCallRecording: (
+    callId: string,
+    recordingId: string,
+    identity?: DevIdentity
+  ) =>
+    apiFetch<CallRecordingReviewResponse>(
+      `/calls/${callId}/recordings/${recordingId}/review`,
+      { method: 'POST' },
+      identity
+    ),
+
+  recordPlaybackOpened: (
+    callId: string,
+    recordingId: string,
+    identity?: DevIdentity
+  ) =>
+    apiFetch<CallRecordingPlaybackResponse>(
+      `/calls/${callId}/recordings/${recordingId}/playback`,
+      { method: 'POST' },
+      identity
+    ),
 
   getEvidenceBundleMarkdown: async (sessionId: string, identity?: DevIdentity): Promise<string> => {
     const url = `${API_BASE}/support-sessions/${sessionId}/evidence-bundle.md`;

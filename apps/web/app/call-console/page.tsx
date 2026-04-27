@@ -20,6 +20,9 @@ import {
   Ticket,
   Link2,
   RadioTower,
+  Mic,
+  Volume2,
+  Eye,
 } from 'lucide-react';
 import { Panel } from '@/components/Panel';
 import { Badge } from '@/components/Badge';
@@ -31,6 +34,7 @@ import {
   type GreetingSuggestionResponse,
   type TelephonyAdapterStatus,
   type TelephonyCallControlResult,
+  type CallRecording,
   ApiClientError,
 } from '@/lib/api';
 
@@ -52,6 +56,8 @@ export default function CallConsolePage() {
   const [lastBridgeTest, setLastBridgeTest] = useState<TelephonyAdapterStatus | undefined>(undefined);
   const [lastControlResult, setLastControlResult] = useState<TelephonyCallControlResult | undefined>(undefined);
   const [telephonyLoading, setTelephonyLoading] = useState(false);
+  const [recordings, setRecordings] = useState<CallRecording[]>([]);
+  const [recordingsLoading, setRecordingsLoading] = useState(false);
 
   const fetchCalls = useCallback(async () => {
     setCallsLoading(true);
@@ -87,6 +93,17 @@ export default function CallConsolePage() {
 
     setGreetingSuggestion(undefined);
     setGreetingError(null);
+
+    // Load recordings
+    setRecordingsLoading(true);
+    try {
+      const recs = await api.listCallRecordings(call.id);
+      setRecordings(recs);
+    } catch {
+      setRecordings([]);
+    } finally {
+      setRecordingsLoading(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -209,6 +226,49 @@ export default function CallConsolePage() {
       setTelephonyLoading(false);
     }
   }, [fetchCalls, fetchCallDetails]);
+
+  const handleAttachMockRecording = useCallback(async () => {
+    if (!selectedCall) return;
+    setRecordingsLoading(true);
+    try {
+      const response = await api.attachMockRecording(selectedCall.id, {
+        source: 'mock_generated',
+        durationSeconds: 42,
+      });
+      setRecordings((prev) => [response.recording, ...prev]);
+      if (selectedCall) {
+        await fetchCallDetails(selectedCall);
+      }
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to attach mock recording');
+    } finally {
+      setRecordingsLoading(false);
+    }
+  }, [selectedCall, fetchCallDetails]);
+
+  const handleReviewRecording = useCallback(async (recordingId: string) => {
+    if (!selectedCall) return;
+    setRecordingsLoading(true);
+    try {
+      const response = await api.reviewCallRecording(selectedCall.id, recordingId);
+      setRecordings((prev) =>
+        prev.map((r) => (r.id === recordingId ? response.recording : r))
+      );
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to review recording');
+    } finally {
+      setRecordingsLoading(false);
+    }
+  }, [selectedCall]);
+
+  const handlePlaybackPlaceholder = useCallback(async (recordingId: string) => {
+    if (!selectedCall) return;
+    try {
+      await api.recordPlaybackOpened(selectedCall.id, recordingId);
+    } catch (err) {
+      // Silently fail; playback is placeholder only
+    }
+  }, [selectedCall]);
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -732,6 +792,109 @@ export default function CallConsolePage() {
                         )}
                       </>
                     )}
+                  </div>
+                </Panel>
+
+                {/* Mock Recording panel */}
+                <Panel
+                  title="Mock Recording"
+                  headerRight={<Badge variant="warning">No real audio</Badge>}
+                  className="lg:col-span-2"
+                >
+                  <div className="space-y-3">
+                    <div className="rounded border border-amber-700/30 bg-amber-900/20 p-2">
+                      <div className="flex items-center gap-1 text-[10px] font-medium text-amber-300">
+                        <AlertTriangle size={10} />
+                        Mock recording — no real audio captured
+                      </div>
+                      <div className="mt-0.5 text-[10px] text-amber-400/80">
+                        Playback placeholder only. Not compliance-grade. No object storage connected.
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={handleAttachMockRecording}
+                        disabled={recordingsLoading}
+                        className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+                      >
+                        {recordingsLoading && <Loader2 size={10} className="animate-spin" />}
+                        <Mic size={10} />
+                        Attach mock recording
+                      </button>
+                    </div>
+
+                    {recordingsLoading && recordings.length === 0 && (
+                      <div className="flex items-center gap-2 text-xs text-cockpit-500">
+                        <Loader2 size={12} className="animate-spin" />
+                        Loading recordings...
+                      </div>
+                    )}
+
+                    {recordings.length === 0 && !recordingsLoading && (
+                      <div className="text-xs text-cockpit-500">
+                        No mock recordings attached. Click "Attach mock recording" to add deterministic mock metadata.
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      {recordings.map((rec) => (
+                        <div key={rec.id} className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <Mic size={12} className="text-cockpit-400" />
+                              <span className="text-xs font-medium text-cockpit-200">
+                                {rec.placeholderReference ?? rec.id.slice(0, 8)}
+                              </span>
+                              <Badge variant={rec.status === 'available' ? 'success' : 'default'} className="text-[10px]">
+                                {rec.status}
+                              </Badge>
+                            </div>
+                            <span className="text-[10px] text-cockpit-500">
+                              {rec.durationSeconds ?? 0}s
+                            </span>
+                          </div>
+
+                          <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px] text-cockpit-400">
+                            <span>Source</span>
+                            <span className="text-cockpit-200">{rec.source}</span>
+                            <span>Storage</span>
+                            <span className="text-cockpit-200">{rec.storageType}</span>
+                            <span>Checksum</span>
+                            <span className="break-all font-mono text-cockpit-200">{rec.checksumHash}</span>
+                          </div>
+
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            <button
+                              onClick={() => handlePlaybackPlaceholder(rec.id)}
+                              disabled={recordingsLoading}
+                              className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-800 disabled:opacity-50"
+                            >
+                              <Volume2 size={10} />
+                              Playback placeholder
+                            </button>
+                            <button
+                              onClick={() => handleReviewRecording(rec.id)}
+                              disabled={recordingsLoading || rec.status === 'mock_only'}
+                              className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-800 disabled:opacity-50"
+                            >
+                              <Eye size={10} />
+                              {rec.status === 'mock_only' ? 'Reviewed' : 'Mark reviewed'}
+                            </button>
+                          </div>
+
+                          {rec.reviewedAt && (
+                            <div className="mt-1 text-[10px] text-emerald-400">
+                              Reviewed at {new Date(rec.reviewedAt).toLocaleTimeString()}
+                            </div>
+                          )}
+
+                          <div className="mt-1 text-[10px] text-cockpit-500">
+                            {rec.complianceDisclaimer}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </Panel>
 

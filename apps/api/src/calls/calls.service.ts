@@ -14,6 +14,10 @@ import {
   CallTimelineItem,
   CallTimelineItemType,
   TelephonyAuditMetadata,
+  CallRecording,
+  CallRecordingStatus,
+  CallRecordingSource,
+  CallRecordingStorageType,
   type CallEvent as CallEventShape,
   type TelephonyWebhookEvent as TelephonyWebhookEventShape,
   type TelephonyAuditMetadata as TelephonyAuditMetadataShape,
@@ -22,6 +26,7 @@ import {
   type AuditEventId,
   type SupportSessionId,
   type CallTimelineItem as CallTimelineItemShape,
+  type CallRecording as CallRecordingShape,
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import { InMemoryStore } from '../support-sessions/in-memory.store.js';
@@ -384,6 +389,151 @@ export class CallsService {
       resourceId,
       safeMetadata
     );
+  }
+
+  attachMockRecording(
+    identity: DevIdentity,
+    callId: string,
+    dto: { source?: string; durationSeconds?: number }
+  ): { recording: CallRecordingShape; attachedAt: string } {
+    const call = this.getCall(identity, callId);
+    const now = new Date().toISOString();
+
+    const recording: CallRecordingShape = CallRecording.parse({
+      id: randomUUID(),
+      tenantId: identity.tenantId,
+      callEventId: call.id,
+      supportSessionId: call.sessionId,
+      source: dto.source ?? CallRecordingSource.enum.mock_generated,
+      status: CallRecordingStatus.enum.available,
+      durationSeconds: dto.durationSeconds ?? 0,
+      mockMediaUrl: `mock://recordings/${call.id}/placeholder.mp3`,
+      placeholderReference: `mock-ref-${call.id.slice(0, 8)}`,
+      storageType: CallRecordingStorageType.enum.mock_inline,
+      checksumHash: `sha256-mock-${call.id.slice(0, 8)}`,
+      createdAt: now,
+      mockDevOnly: true,
+      complianceDisclaimer: 'This is a mock recording. No real audio was captured. Not compliance-grade.',
+      noRealAudio: true,
+    });
+
+    this.store.saveCallRecording(recording);
+
+    this.appendAuditEvent(
+      identity,
+      call.sessionId ?? undefined,
+      AuditEventType.enum.call_recording_attached,
+      'call_recording',
+      recording.id,
+      {
+        callEventId: call.id,
+        supportSessionId: call.sessionId,
+        recordingId: recording.id,
+        source: recording.source,
+        status: recording.status,
+        durationSeconds: recording.durationSeconds,
+        storageType: recording.storageType,
+        mockDevOnly: true,
+        noRealAudio: true,
+      }
+    );
+
+    return { recording, attachedAt: now };
+  }
+
+  listCallRecordings(identity: DevIdentity, callId: string): CallRecordingShape[] {
+    this.getCall(identity, callId);
+    return this.store.listCallRecordings(identity.tenantId, callId);
+  }
+
+  reviewCallRecording(
+    identity: DevIdentity,
+    callId: string,
+    recordingId: string
+  ): { recording: CallRecordingShape; reviewedAt: string } {
+    this.getCall(identity, callId);
+    const recording = this.store.getCallRecording(identity.tenantId, recordingId);
+    if (!recording || recording.callEventId !== callId) {
+      throw new NotFoundException(`Recording ${recordingId} not found for call ${callId}`);
+    }
+
+    const now = new Date().toISOString();
+    const updated: CallRecordingShape = {
+      ...recording,
+      status: CallRecordingStatus.enum.mock_only,
+      reviewedAt: now,
+      reviewedBy: identity.userId,
+      updatedAt: now,
+    };
+
+    this.store.saveCallRecording(updated);
+
+    this.appendAuditEvent(
+      identity,
+      recording.supportSessionId ?? undefined,
+      AuditEventType.enum.call_recording_reviewed,
+      'call_recording',
+      recordingId,
+      {
+        callEventId: callId,
+        supportSessionId: recording.supportSessionId,
+        recordingId,
+        previousStatus: recording.status,
+        newStatus: updated.status,
+        reviewedBy: identity.userId,
+        mockDevOnly: true,
+        noRealAudio: true,
+      }
+    );
+
+    return { recording: updated, reviewedAt: now };
+  }
+
+  recordPlaybackOpened(
+    identity: DevIdentity,
+    callId: string,
+    recordingId: string
+  ): { playbackState: Record<string, unknown>; recordedAt: string } {
+    this.getCall(identity, callId);
+    const recording = this.store.getCallRecording(identity.tenantId, recordingId);
+    if (!recording || recording.callEventId !== callId) {
+      throw new NotFoundException(`Recording ${recordingId} not found for call ${callId}`);
+    }
+
+    const now = new Date().toISOString();
+
+    this.appendAuditEvent(
+      identity,
+      recording.supportSessionId ?? undefined,
+      AuditEventType.enum.call_recording_playback_opened,
+      'call_recording',
+      recordingId,
+      {
+        callEventId: callId,
+        supportSessionId: recording.supportSessionId,
+        recordingId,
+        source: recording.source,
+        status: recording.status,
+        durationSeconds: recording.durationSeconds,
+        storageType: recording.storageType,
+        mockDevOnly: true,
+        noRealAudio: true,
+        placeholderOnly: true,
+      }
+    );
+
+    return {
+      playbackState: {
+        recordingId,
+        callEventId: callId,
+        openedAt: now,
+        openedBy: identity.userId,
+        mockDevOnly: true,
+        noRealAudio: true,
+        placeholderOnly: true,
+      },
+      recordedAt: now,
+    };
   }
 
   getCallTimeline(identity: DevIdentity, callId: string): { timelineItems: CallTimelineItemShape[]; generatedAt: string } {

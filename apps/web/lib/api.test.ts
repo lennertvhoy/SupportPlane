@@ -694,4 +694,120 @@ describe('web API client', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it('handles mock recording attach/list/review/playback responses', async () => {
+    const originalFetch = globalThis.fetch;
+    const calls: string[] = [];
+    globalThis.fetch = async (input, init) => {
+      calls.push(String(input));
+      if (String(input).endsWith('/recordings/mock')) {
+        assert.equal(init?.method, 'POST');
+        const body = JSON.parse((init?.body as string) ?? '{}');
+        assert.strictEqual(body.source, 'mock_generated');
+        return new Response(
+          JSON.stringify({
+            recording: {
+              id: 'rec-1',
+              tenantId: 'dev-tenant',
+              callEventId: 'call-1',
+              source: 'mock_generated',
+              status: 'available',
+              durationSeconds: 42,
+              storageType: 'mock_inline',
+              mockMediaUrl: 'mock://recordings/call-1/placeholder.mp3',
+              placeholderReference: 'mock-ref-call1',
+              checksumHash: 'sha256-mock-abc',
+              createdAt: '2026-04-27T08:00:00.000Z',
+              mockDevOnly: true,
+              noRealAudio: true,
+              complianceDisclaimer: 'Mock recording. No real audio.',
+            },
+            mockDevOnly: true,
+            attachedAt: '2026-04-27T08:00:00.000Z',
+          }),
+          { status: 201, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (String(input).endsWith('/recordings')) {
+        assert.equal(init?.method, 'GET');
+        return new Response(
+          JSON.stringify([
+            {
+              id: 'rec-1',
+              tenantId: 'dev-tenant',
+              callEventId: 'call-1',
+              source: 'mock_generated',
+              status: 'available',
+              durationSeconds: 42,
+              storageType: 'mock_inline',
+              createdAt: '2026-04-27T08:00:00.000Z',
+              mockDevOnly: true,
+              noRealAudio: true,
+            },
+          ]),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      if (String(input).endsWith('/review')) {
+        assert.equal(init?.method, 'POST');
+        return new Response(
+          JSON.stringify({
+            recording: {
+              id: 'rec-1',
+              tenantId: 'dev-tenant',
+              callEventId: 'call-1',
+              source: 'mock_generated',
+              status: 'mock_only',
+              durationSeconds: 42,
+              storageType: 'mock_inline',
+              createdAt: '2026-04-27T08:00:00.000Z',
+              reviewedAt: '2026-04-27T08:01:00.000Z',
+              reviewedBy: 'dev-user',
+              mockDevOnly: true,
+              noRealAudio: true,
+            },
+            reviewedAt: '2026-04-27T08:01:00.000Z',
+          }),
+          { status: 201, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+      assert.equal(input, 'http://localhost:4110/calls/call-1/recordings/rec-1/playback');
+      assert.equal(init?.method, 'POST');
+      return new Response(
+        JSON.stringify({
+          playbackState: {
+            recordingId: 'rec-1',
+            callEventId: 'call-1',
+            openedAt: '2026-04-27T08:02:00.000Z',
+            openedBy: 'dev-user',
+            mockDevOnly: true,
+            noRealAudio: true,
+            placeholderOnly: true,
+          },
+          recordedAt: '2026-04-27T08:02:00.000Z',
+        }),
+        { status: 201, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const attach = await api.attachMockRecording('call-1', { source: 'mock_generated', durationSeconds: 42 });
+      assert.strictEqual(attach.recording.status, 'available');
+      assert.strictEqual(attach.recording.noRealAudio, true);
+
+      const list = await api.listCallRecordings('call-1');
+      assert.strictEqual(list.length, 1);
+      assert.strictEqual(list[0].id, 'rec-1');
+
+      const review = await api.reviewCallRecording('call-1', 'rec-1');
+      assert.strictEqual(review.recording.status, 'mock_only');
+      assert.strictEqual(review.recording.reviewedBy, 'dev-user');
+
+      const playback = await api.recordPlaybackOpened('call-1', 'rec-1');
+      assert.strictEqual(playback.playbackState.placeholderOnly, true);
+      assert.strictEqual(playback.playbackState.noRealAudio, true);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
 });

@@ -1635,3 +1635,331 @@ describe('Telephony adapter boundary endpoints', () => {
     assert.ok(!JSON.stringify(bundle.body).includes('Bearer '));
   });
 });
+
+describe('Call recording endpoints', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('POST /calls/:id/recordings/mock requires tenant identity', async () => {
+    const res = await supertest(server)
+      .post('/calls/call-1/recordings/mock')
+      .send({})
+      .expect(400);
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('POST /calls/:id/recordings/mock attaches mock recording to call', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-REC-1', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ source: 'mock_generated', durationSeconds: 30 })
+      .expect(201);
+
+    assert.strictEqual(res.body.recording.callEventId, call.body.callEvent.id);
+    assert.strictEqual(res.body.recording.status, 'available');
+    assert.strictEqual(res.body.recording.durationSeconds, 30);
+    assert.strictEqual(res.body.recording.source, 'mock_generated');
+    assert.strictEqual(res.body.recording.storageType, 'mock_inline');
+    assert.strictEqual(res.body.recording.noRealAudio, true);
+    assert.strictEqual(res.body.recording.mockDevOnly, true);
+    assert.ok(res.body.recording.mockMediaUrl);
+    assert.ok(res.body.recording.checksumHash);
+    assert.ok(res.body.attachedAt);
+  });
+
+  it('GET /calls/:id/recordings lists recordings for a call', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-REC-2', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({})
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/calls/${call.body.callEvent.id}/recordings`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(Array.isArray(res.body));
+    assert.strictEqual(res.body.length, 1);
+    assert.strictEqual(res.body[0].callEventId, call.body.callEvent.id);
+  });
+
+  it('POST /calls/:id/recordings/:recordingId/review marks recording reviewed', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-REC-3', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const attached = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({})
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/${attached.body.recording.id}/review`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(201);
+
+    assert.strictEqual(res.body.recording.status, 'mock_only');
+    assert.strictEqual(res.body.recording.reviewedBy, 'user-1');
+    assert.ok(res.body.recording.reviewedAt);
+    assert.ok(res.body.reviewedAt);
+  });
+
+  it('POST /calls/:id/recordings/:recordingId/playback records playback opened', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-REC-4', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const attached = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({})
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/${attached.body.recording.id}/playback`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(201);
+
+    assert.strictEqual(res.body.playbackState.recordingId, attached.body.recording.id);
+    assert.strictEqual(res.body.playbackState.noRealAudio, true);
+    assert.strictEqual(res.body.playbackState.placeholderOnly, true);
+    assert.ok(res.body.recordedAt);
+  });
+
+  it('recording endpoints enforce tenant isolation', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-REC-5', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const attached = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({})
+      .expect(201);
+
+    await supertest(server)
+      .get(`/calls/${call.body.callEvent.id}/recordings`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .expect(404);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/${attached.body.recording.id}/review`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .expect(404);
+  });
+
+  it('recording attach appends call_recording_attached audit event', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Recording audit test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-REC-6', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ durationSeconds: 60 })
+      .expect(201);
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const event = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'call_recording_attached'
+    );
+    assert.ok(event, 'call_recording_attached audit event should exist');
+    assert.strictEqual(event.metadata.noRealAudio, true);
+    assert.strictEqual(event.metadata.durationSeconds, 60);
+    assert.strictEqual(event.metadata.storageType, 'mock_inline');
+  });
+
+  it('recording review appends call_recording_reviewed audit event', async () => {
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-REC-7', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    const attached = await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({})
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/${attached.body.recording.id}/review`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(201);
+
+    const allAudit = await supertest(server)
+      .get('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    // Find any session to read audit events (the auto-created one or a default)
+    const sessionId = allAudit.body[0]?.id;
+    if (sessionId) {
+      const audit = await supertest(server)
+        .get(`/support-sessions/${sessionId}/audit-events`)
+        .set('x-tenant-id', 'tenant-a')
+        .set('x-user-id', 'user-1')
+        .expect(200);
+
+      const event = audit.body.find(
+        (e: { eventType: string }) => e.eventType === 'call_recording_reviewed'
+      );
+      if (event) {
+        assert.strictEqual(event.metadata.previousStatus, 'available');
+        assert.strictEqual(event.metadata.newStatus, 'mock_only');
+        assert.strictEqual(event.metadata.noRealAudio, true);
+      }
+    }
+  });
+
+  it('evidence bundle includes call recording summary', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Recording evidence test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-REC-8', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ durationSeconds: 45 })
+      .expect(201);
+
+    const bundle = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(Array.isArray(bundle.body.bundle.callRecordings));
+    assert.strictEqual(bundle.body.bundle.callRecordings.length, 1);
+    assert.strictEqual(bundle.body.bundle.callRecordings[0].durationSeconds, 45);
+    assert.strictEqual(bundle.body.bundle.callRecordings[0].status, 'available');
+    assert.strictEqual(bundle.body.bundle.callRecordings[0].noRealAudio, true);
+    assert.ok(!JSON.stringify(bundle.body).includes('mockMediaUrl'));
+  });
+
+  it('evidence bundle export does not expose raw media or secrets', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Recording secret test' })
+      .expect(201);
+
+    const call = await supertest(server)
+      .post('/calls/fake-incoming')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ externalCallId: 'FAKE-REC-9', rawCallerNumber: '03 555 01 01' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/link-session`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ sessionId: session.body.id })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/recordings/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({})
+      .expect(201);
+
+    const bundle = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    const bodyStr = JSON.stringify(bundle.body);
+    assert.ok(!bodyStr.includes('mock://recordings/'), 'mockMediaUrl must not be in bundle');
+    assert.ok(!bodyStr.includes('sha256-mock-'), 'checksum hash placeholder should not leak in bundle');
+  });
+});

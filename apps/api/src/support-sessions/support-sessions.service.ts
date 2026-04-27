@@ -491,6 +491,9 @@ export class SupportSessionsService {
     const tickets = this.store.getTicketReferences(identity.tenantId, sessionId);
     const contextPackets = this.store.getContextPackets(identity.tenantId, sessionId);
     const callEvents = this.store.listCallEventsForSession(identity.tenantId, sessionId);
+    const callRecordings = callEvents.flatMap((call) =>
+      this.store.listCallRecordings(identity.tenantId, call.id)
+    );
     const sessionAuditEvents = this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEventIds = new Set<string>(callEvents.map((call) => call.id));
     const externalCallIds = new Set(callEvents.map((call) => call.externalCallId));
@@ -516,6 +519,7 @@ export class SupportSessionsService {
       contextPackets,
       auditEvents,
       callEvents,
+      callRecordings,
       connectorMode: this.connectorsService.getMode(),
     });
 

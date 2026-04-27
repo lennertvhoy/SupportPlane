@@ -1,12 +1,13 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-27 10:20 CEST
+**Updated At:** 2026-04-27 10:53 CEST
 **Execution Mode:** operating
-**Project State:** bl_044_telephony_adapter_boundary_complete
+**Project State:** bl_045_call_recording_mock_foundation_complete
 **Public URL:** not configured
 
 ## Snapshot
 
+- BL-045 complete: mock call recording attachment/list/review/playback endpoints, `CallRecording` contracts, recording audit events, evidence bundle `callRecordings` summaries, Call Console Mock Recording panel with attach/playback-placeholder/review UI, and browser-verified screenshots. No real audio, storage, TTS, STT, or provider integration exists.
 - BL-044 complete: mock-only telephony adapter contracts, connector boundary, `/telephony` API endpoints, telephony audit events, Call Console Telephony Bridge panel, evidence bundle telephony summaries, and final 8-screenshot browser proof. No real PBX, provider, media, voice, TTS, STT, recording, transcription, or production telephony integration exists.
 - BL-043 closure complete: dedicated mock Call Console UI at `/call-console` with recent calls, caller match/ticket hints, linked SupportSession panel, mock answer/hold/resume/end lifecycle controls, greeting suggestion integration, timeline/audit panel, Support Cockpit navigation, evidence bundle lifecycle/greeting proof, and final 8-screenshot closure set.
 - BL-041 and BL-042 complete: automatic SupportSession creation from matched incoming calls and suggested greeting generation from call plus ticket context, both mock-only and browser verified.
@@ -17,7 +18,7 @@
 
 ## Immediate Priorities
 
-1. Review BL-044 handoff and choose the next backlog slice.
+1. Review BL-045 handoff and choose the next backlog slice.
 
 ## Active Blockers
 
@@ -27,6 +28,7 @@
 - No authentication layer exists yet (dev-only mock identity headers).
 - Mock AI draft and greeting generation are deterministic and dev-only; no real AI provider is connected.
 - No real telephony or PBX integration exists; BL-044 adds only a mock adapter boundary and local mock control intents.
+- No real audio recording, playback, or storage exists; BL-045 adds only mock metadata and audit placeholders.
 
 ## Notes
 
