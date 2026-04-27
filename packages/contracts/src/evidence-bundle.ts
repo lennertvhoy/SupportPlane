@@ -113,6 +113,25 @@ export const EvidenceBundleCallRecordingSummary = z.object({
 });
 export type EvidenceBundleCallRecordingSummary = z.infer<typeof EvidenceBundleCallRecordingSummary>;
 
+export const EvidenceBundleScreenObservationSummary = z.object({
+  observationId: z.string(),
+  sessionId: z.string(),
+  callEventId: z.string().optional(),
+  source: z.string(),
+  kind: z.string(),
+  status: z.string(),
+  description: z.string(),
+  reviewedAt: z.string().optional(),
+  reviewedBy: z.string().optional(),
+  redactedSummary: z.string().optional(),
+  mockDevOnly: z.boolean(),
+  noRealScreenCapture: z.boolean(),
+  noRawPixels: z.boolean(),
+  noClipboardAccess: z.boolean(),
+  complianceDisclaimer: z.string().optional(),
+});
+export type EvidenceBundleScreenObservationSummary = z.infer<typeof EvidenceBundleScreenObservationSummary>;
+
 export const EvidenceBundleGreetingSuggestionSummary = z.object({
   greetingText: z.string(),
   tone: z.string(),
@@ -186,6 +205,7 @@ export const EvidenceBundle = z.object({
   callEvents: z.array(EvidenceBundleCallEventSummary),
   greetingSuggestions: z.array(EvidenceBundleGreetingSuggestionSummary).default([]),
   callRecordings: z.array(EvidenceBundleCallRecordingSummary).default([]),
+  screenObservations: z.array(EvidenceBundleScreenObservationSummary).default([]),
   auditTimeline: z.array(EvidenceBundleAuditSummary),
   mockDevOnlyDisclaimers: z.array(z.string()),
   limitations: z.array(z.string()),

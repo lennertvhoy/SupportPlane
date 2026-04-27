@@ -455,3 +455,51 @@ and must be protected from quiet regression.
 - Notes:
   - No real audio recording, playback, TTS, STT, transcription, object storage, or provider integration exists.
   - The Markdown evidence bundle renderer does not yet include a dedicated "Call Recordings" section; recording data is present in JSON and via audit timeline entries in Markdown.
+
+## AF-2026-04-27-004: BL-046 Operator Companion Screen Observations
+
+- id: AF-2026-04-27-004
+- date: 2026-04-27
+- backlog_id: BL-046
+- title: Operator companion screen observations during active calls
+- status: accepted
+- verification_method: browser + api
+- runtime_identity:
+  - api_url: http://localhost:4110
+  - web_url: http://localhost:3200
+  - api_process: NestJS (tsx src/main.ts, API_PORT=4110)
+  - web_process: Next.js (next dev -p 3200)
+  - store: in-memory
+- git_head: recorded_at_commit
+- branch: main
+- verified_paths:
+  - /call-console
+  - /
+  - POST /support-sessions/:id/screen-observations/mock
+  - GET /support-sessions/:id/screen-observations
+  - POST /support-sessions/:id/screen-observations/:observationId/review
+  - POST /support-sessions/:id/screen-observations/:observationId/context-packet
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-27-025
+  - EV-2026-04-27-026
+  - EV-2026-04-27-027
+  - EV-2026-04-27-028
+  - EV-2026-04-27-029
+  - EV-2026-04-27-030
+  - EV-2026-04-27-031
+  - EV-2026-04-27-032
+- evidence_folder: output/playwright/session-046-operator-companion-final-closure/
+- screenshot_count: 18
+- regression_guard:
+  - `/call-console` must keep the Operator Companion panel with honest mock labels.
+  - `POST /support-sessions/:id/screen-observations/mock` must return observation with `mockDevOnly: true`, `noRawPixels: true`, `noClipboard: true`, `status: review_required`.
+  - `GET /support-sessions/:id/screen-observations` must list tenant-scoped observations.
+  - `POST .../review` must return `{observation, previousStatus, newStatus}` and append `screen_observation_reviewed` or `screen_observation_discarded` audit event.
+  - `POST .../context-packet` must require `approved` status, return `{observation, contextPacketId, mockDevOnly: true}`, and append `screen_observation_context_packet_created` + `ai_context_loaded` audit events.
+  - Evidence bundles must include `screenObservations` summaries with mock disclaimers and safety flags.
+  - Audit events must not include raw pixels, clipboard data, or secrets.
+- Notes:
+  - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
+  - No real database persistence; all data is in-memory and lost on API restart.

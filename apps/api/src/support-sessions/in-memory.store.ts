@@ -6,6 +6,7 @@ import type {
   InternalNoteDraft as InternalNoteDraftShape,
   CallEvent as CallEventShape,
   CallRecording as CallRecordingShape,
+  ScreenObservation as ScreenObservationShape,
 } from '@supportplane/contracts';
 
 export class InMemoryStore {
@@ -16,6 +17,7 @@ export class InMemoryStore {
   private drafts = new Map<string, InternalNoteDraftShape>();
   private callEvents = new Map<string, CallEventShape>();
   private callRecordings = new Map<string, CallRecordingShape>();
+  private screenObservations = new Map<string, ScreenObservationShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -119,6 +121,26 @@ export class InMemoryStore {
   listCallRecordings(tenantId: string, callEventId: string): CallRecordingShape[] {
     return Array.from(this.callRecordings.values())
       .filter((r) => r.tenantId === tenantId && r.callEventId === callEventId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  saveScreenObservation(observation: ScreenObservationShape): void {
+    this.screenObservations.set(`${observation.tenantId}:${observation.id}`, observation);
+  }
+
+  getScreenObservation(tenantId: string, id: string): ScreenObservationShape | undefined {
+    return this.screenObservations.get(`${tenantId}:${id}`);
+  }
+
+  listScreenObservations(tenantId: string, sessionId: string): ScreenObservationShape[] {
+    return Array.from(this.screenObservations.values())
+      .filter((o) => o.tenantId === tenantId && o.sessionId === sessionId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  listScreenObservationsForCallEvent(tenantId: string, callEventId: string): ScreenObservationShape[] {
+    return Array.from(this.screenObservations.values())
+      .filter((o) => o.tenantId === tenantId && o.callEventId === callEventId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 }

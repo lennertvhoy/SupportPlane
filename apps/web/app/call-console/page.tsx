@@ -23,6 +23,11 @@ import {
   Mic,
   Volume2,
   Eye,
+  Monitor,
+  FileText,
+  ThumbsUp,
+  Trash2,
+  Send,
 } from 'lucide-react';
 import { Panel } from '@/components/Panel';
 import { Badge } from '@/components/Badge';
@@ -35,6 +40,7 @@ import {
   type TelephonyAdapterStatus,
   type TelephonyCallControlResult,
   type CallRecording,
+  type ScreenObservation,
   ApiClientError,
 } from '@/lib/api';
 
@@ -58,6 +64,13 @@ export default function CallConsolePage() {
   const [telephonyLoading, setTelephonyLoading] = useState(false);
   const [recordings, setRecordings] = useState<CallRecording[]>([]);
   const [recordingsLoading, setRecordingsLoading] = useState(false);
+  const [observations, setObservations] = useState<ScreenObservation[]>([]);
+  const [observationsLoading, setObservationsLoading] = useState(false);
+  const [observationKind, setObservationKind] = useState<string>('manual_note');
+  const [observationNote, setObservationNote] = useState('');
+  const [observationApp, setObservationApp] = useState('');
+  const [observationWindow, setObservationWindow] = useState('');
+  const [observationUrl, setObservationUrl] = useState('');
 
   const fetchCalls = useCallback(async () => {
     setCallsLoading(true);
@@ -103,6 +116,21 @@ export default function CallConsolePage() {
       setRecordings([]);
     } finally {
       setRecordingsLoading(false);
+    }
+
+    // Load screen observations for linked session
+    setObservationsLoading(true);
+    try {
+      if (call.sessionId) {
+        const obs = await api.listScreenObservations(call.sessionId);
+        setObservations(obs);
+      } else {
+        setObservations([]);
+      }
+    } catch {
+      setObservations([]);
+    } finally {
+      setObservationsLoading(false);
     }
   }, []);
 
@@ -269,6 +297,62 @@ export default function CallConsolePage() {
       // Silently fail; playback is placeholder only
     }
   }, [selectedCall]);
+
+  const handleCaptureObservation = useCallback(async () => {
+    if (!linkedSession) return;
+    setObservationsLoading(true);
+    try {
+      const response = await api.captureMockScreenObservation(linkedSession.id, {
+        kind: observationKind,
+        callEventId: selectedCall?.id,
+        rawInputPlaceholder: observationNote || undefined,
+        appLabel: observationApp || undefined,
+        windowLabel: observationWindow || undefined,
+        urlLabel: observationUrl || undefined,
+      });
+      setObservations((prev) => [response.observation, ...prev]);
+      setObservationNote('');
+      setObservationApp('');
+      setObservationWindow('');
+      setObservationUrl('');
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to capture observation');
+    } finally {
+      setObservationsLoading(false);
+    }
+  }, [linkedSession, selectedCall, observationKind, observationNote, observationApp, observationWindow, observationUrl]);
+
+  const handleReviewObservation = useCallback(async (observationId: string, status: 'approved' | 'discarded') => {
+    if (!linkedSession) return;
+    setObservationsLoading(true);
+    try {
+      const response = await api.reviewScreenObservation(linkedSession.id, observationId, { status });
+      setObservations((prev) =>
+        prev.map((o) => (o.id === observationId ? response.observation : o))
+      );
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to review observation');
+    } finally {
+      setObservationsLoading(false);
+    }
+  }, [linkedSession]);
+
+  const handleCreateContextPacketFromObservation = useCallback(async (observationId: string) => {
+    if (!linkedSession) return;
+    setObservationsLoading(true);
+    try {
+      const response = await api.createContextPacketFromObservation(linkedSession.id, observationId, {
+        provenance: 'screen_observation',
+      });
+      setObservations((prev) =>
+        prev.map((o) => (o.id === observationId ? response.observation : o))
+      );
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to create context packet');
+    } finally {
+      setObservationsLoading(false);
+    }
+  }, [linkedSession]);
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -790,6 +874,223 @@ export default function CallConsolePage() {
                             </div>
                           </div>
                         )}
+                      </>
+                    )}
+                  </div>
+                </Panel>
+
+                {/* Operator Companion panel */}
+                <Panel
+                  title="Operator Companion"
+                  headerRight={<Badge variant="warning">Mock screen observation</Badge>}
+                  className="lg:col-span-2"
+                >
+                  <div className="space-y-3">
+                    <div className="rounded border border-amber-700/30 bg-amber-900/20 p-2">
+                      <div className="flex items-center gap-1 text-[10px] font-medium text-amber-300">
+                        <AlertTriangle size={10} />
+                        Mock screen observation — no real screen capture
+                      </div>
+                      <div className="mt-0.5 text-[10px] text-amber-400/80">
+                        No raw pixels, clipboard access, or OCR. Review before AI context. Pattern redaction only.
+                      </div>
+                    </div>
+
+                    {!linkedSession ? (
+                      <div className="text-xs text-cockpit-500">
+                        Link a support session to capture mock screen observations.
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <div className="space-y-1">
+                            <label className="block text-[10px] font-medium text-cockpit-400">Kind</label>
+                            <select
+                              value={observationKind}
+                              onChange={(e) => setObservationKind(e.target.value)}
+                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 focus:border-accent focus:outline-none"
+                            >
+                              <option value="active_window">Active window</option>
+                              <option value="application">Application</option>
+                              <option value="url">URL</option>
+                              <option value="manual_note">Manual note</option>
+                              <option value="redacted_context">Redacted context</option>
+                            </select>
+                          </div>
+                          <div className="space-y-1">
+                            <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
+                            <input
+                              type="text"
+                              value={observationApp}
+                              onChange={(e) => setObservationApp(e.target.value)}
+                              placeholder="e.g. Zammad"
+                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
+                            <input
+                              type="text"
+                              value={observationWindow}
+                              onChange={(e) => setObservationWindow(e.target.value)}
+                              placeholder="e.g. Ticket #12345"
+                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="block text-[10px] font-medium text-cockpit-400">URL label</label>
+                            <input
+                              type="text"
+                              value={observationUrl}
+                              onChange={(e) => setObservationUrl(e.target.value)}
+                              placeholder="e.g. https://help.example.com/ticket/123"
+                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                            />
+                          </div>
+                          <div className="space-y-1 sm:col-span-2">
+                            <label className="block text-[10px] font-medium text-cockpit-400">Note / placeholder</label>
+                            <textarea
+                              value={observationNote}
+                              onChange={(e) => setObservationNote(e.target.value)}
+                              placeholder="Enter mock observation text..."
+                              rows={2}
+                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            onClick={handleCaptureObservation}
+                            disabled={observationsLoading}
+                            className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+                          >
+                            {observationsLoading && <Loader2 size={10} className="animate-spin" />}
+                            <Monitor size={10} />
+                            Capture mock observation
+                          </button>
+                        </div>
+
+                        {observationsLoading && observations.length === 0 && (
+                          <div className="flex items-center gap-2 text-xs text-cockpit-500">
+                            <Loader2 size={12} className="animate-spin" />
+                            Loading observations...
+                          </div>
+                        )}
+
+                        {observations.length === 0 && !observationsLoading && (
+                          <div className="text-xs text-cockpit-500">
+                            No mock screen observations. Capture one above to add deterministic mock metadata.
+                          </div>
+                        )}
+
+                        <div className="space-y-2">
+                          {observations.map((obs) => (
+                            <div key={obs.id} className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5">
+                                  <Monitor size={12} className="text-cockpit-400" />
+                                  <span className="text-xs font-medium text-cockpit-200">
+                                    {obs.kind}
+                                  </span>
+                                  <Badge
+                                    variant={
+                                      obs.status === 'approved'
+                                        ? 'success'
+                                        : obs.status === 'discarded'
+                                        ? 'danger'
+                                        : obs.status === 'review_required'
+                                        ? 'warning'
+                                        : 'default'
+                                    }
+                                    className="text-[10px]"
+                                  >
+                                    {obs.status}
+                                  </Badge>
+                                  {obs.contextPacketId && (
+                                    <Badge variant="info" className="text-[10px]">
+                                      <FileText size={8} className="mr-0.5" />
+                                      Packet
+                                    </Badge>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-cockpit-500">
+                                  {new Date(obs.createdAt).toLocaleTimeString()}
+                                </span>
+                              </div>
+
+                              <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[10px] text-cockpit-400">
+                                {obs.appLabel && (
+                                  <>
+                                    <span>App</span>
+                                    <span className="text-cockpit-200">{obs.appLabel}</span>
+                                  </>
+                                )}
+                                {obs.windowLabel && (
+                                  <>
+                                    <span>Window</span>
+                                    <span className="text-cockpit-200">{obs.windowLabel}</span>
+                                  </>
+                                )}
+                                {obs.urlLabel && (
+                                  <>
+                                    <span>URL</span>
+                                    <span className="break-all text-cockpit-200">{obs.urlLabel}</span>
+                                  </>
+                                )}
+                                {obs.rawInputPlaceholder && (
+                                  <>
+                                    <span>Note</span>
+                                    <span className="text-cockpit-200">{obs.rawInputPlaceholder.substring(0, 120)}{obs.rawInputPlaceholder.length > 120 ? '...' : ''}</span>
+                                  </>
+                                )}
+                              </div>
+
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {obs.status === 'review_required' && (
+                                  <>
+                                    <button
+                                      onClick={() => handleReviewObservation(obs.id, 'approved')}
+                                      disabled={observationsLoading}
+                                      className="inline-flex items-center gap-1 rounded border border-emerald-600 bg-emerald-900/30 px-2 py-0.5 text-[10px] text-emerald-200 hover:bg-emerald-900/50 disabled:opacity-50"
+                                    >
+                                      <ThumbsUp size={10} />
+                                      Approve
+                                    </button>
+                                    <button
+                                      onClick={() => handleReviewObservation(obs.id, 'discarded')}
+                                      disabled={observationsLoading}
+                                      className="inline-flex items-center gap-1 rounded border border-red-600 bg-red-900/30 px-2 py-0.5 text-[10px] text-red-200 hover:bg-red-900/50 disabled:opacity-50"
+                                    >
+                                      <Trash2 size={10} />
+                                      Discard
+                                    </button>
+                                  </>
+                                )}
+                                {obs.status === 'approved' && !obs.contextPacketId && (
+                                  <button
+                                    onClick={() => handleCreateContextPacketFromObservation(obs.id)}
+                                    disabled={observationsLoading}
+                                    className="inline-flex items-center gap-1 rounded border border-accent bg-accent/20 px-2 py-0.5 text-[10px] text-accent hover:bg-accent/30 disabled:opacity-50"
+                                  >
+                                    <Send size={10} />
+                                    Create context packet
+                                  </button>
+                                )}
+                              </div>
+
+                              {obs.reviewedAt && (
+                                <div className="mt-1 text-[10px] text-emerald-400">
+                                  Reviewed at {new Date(obs.reviewedAt).toLocaleTimeString()}
+                                </div>
+                              )}
+
+                              <div className="mt-1 text-[10px] text-cockpit-500">
+                                Mock/dev-only • No real screen capture • No raw pixels • No clipboard access
+                              </div>
+                            </div>
+                          ))}
+                        </div>
                       </>
                     )}
                   </div>

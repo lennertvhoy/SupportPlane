@@ -1381,3 +1381,133 @@
   - Markdown export includes explicit mock recording disclaimers.
 - Type: docs-render-verification
 - as_of: 2026-04-27T11:55:00+02:00
+
+## EV-2026-04-27-025: BL-046 Call Console Operator Companion panel
+
+- File: output/playwright/session-046-operator-companion-final-closure/04-operator-companion-panel-in-view.png
+- Title: Call Console with Operator Companion panel visible
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Selected a linked call and scrolled to Operator Companion panel.
+- Shows:
+  - "Operator Companion" panel with "Mock screen observation" badge.
+  - Disclaimers: "Mock screen observation — no real screen capture", "No raw pixels, clipboard access, or OCR. Review before AI context. Pattern redaction only."
+  - Capture form with Kind, App label, Window label, URL label, Note/placeholder fields.
+  - "Capture mock observation" button.
+- Proves:
+  - BL-046 UI panel is present with required safety labels and capture controls.
+- Type: ui-verification
+- as_of: 2026-04-27T12:24:00+02:00
+
+## EV-2026-04-27-026: BL-046 Approved observation with Packet badge
+
+- File: output/playwright/session-046-operator-companion-final-closure/05-operator-companion-observation-item.png
+- Title: Approved screen observation with Packet badge
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Scrolled to show observation list item.
+- Shows:
+  - `manual_note` observation with `approved` badge and `Packet` badge.
+  - App: SupportPlane, Window: Call Console.
+  - Note: "Customer unable to access billing portal. Suggested password reset."
+  - "Reviewed at 12:22:58 PM".
+  - Footer: "Mock/dev-only • No real screen capture • No raw pixels • No clipboard access".
+- Proves:
+  - Observation lifecycle (capture → review → context packet) is visible in UI.
+- Type: ui-verification
+- as_of: 2026-04-27T12:24:00+02:00
+
+## EV-2026-04-27-027: BL-046 Support Cockpit AI Context Quality panel
+
+- File: output/playwright/session-046-operator-companion-final-closure/08-ai-context-quality-with-packet.png
+- Title: AI Context Quality panel showing screen_observation packet
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=ed25d3d7-4db0-4d54-b735-5175aef06765
+- Action: Navigated to Support Cockpit and scrolled to AI Context Quality panel.
+- Shows:
+  - "AI Context Quality" panel with `screen_observation` entry under "Other".
+  - `source: screen_observation`, `observationId`, `kind: manual_note`.
+  - `Warning` badge and `2 redacted` indicator.
+- Proves:
+  - Approved observation-derived context packets appear in Support Cockpit with source label.
+- Type: ui-verification
+- as_of: 2026-04-27T12:25:00+02:00
+
+## EV-2026-04-27-028: BL-046 Audit trail screen observation events
+
+- File: output/playwright/session-046-operator-companion-final-closure/11-audit-trail-screen-obs-events.png
+- Title: Audit trail with screen observation captured/reviewed/context events
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=ed25d3d7-4db0-4d54-b735-5175aef06765
+- Action: Scrolled to Audit Trail panel.
+- Shows:
+  - `screen_observation_captured` event with kind and mockDevOnly metadata.
+  - `screen_observation_reviewed` event with previousStatus/newStatus.
+  - `screen_observation_context_packet_created` event with contextPacketId.
+  - `ai_context_loaded` event with provenance: screen_observation.
+- Proves:
+  - All 4 BL-046 audit event types are emitted and visible in the audit trail.
+- Type: ui-verification
+- as_of: 2026-04-27T12:26:00+02:00
+
+## EV-2026-04-27-029: BL-046 Evidence bundle JSON screenObservations array
+
+- File: output/playwright/session-046-operator-companion-final-closure/13-evidence-bundle-screen-obs-section.png
+- Title: Evidence bundle JSON with screenObservations array
+- Source/System: browser
+- Route/Page: http://localhost:8765/bl046-evidence-bundle.html
+- Action: Navigated to rendered evidence bundle JSON and scrolled to screenObservations.
+- Shows:
+  - `"screenObservations"` array containing one observation.
+  - `observationId`, `kind: manual_note`, `status: approved`, `reviewedBy: dev-user`.
+  - `mockDevOnly: true`, `noRealScreenCapture: true`, `noRawPixels: true`, `noClipboardAccess: true`.
+- Proves:
+  - Evidence bundle includes screen observation summaries with all safety flags.
+- Type: api-response-verification
+- as_of: 2026-04-27T12:28:00+02:00
+
+## EV-2026-04-27-030: BL-046 Evidence bundle compliance disclaimer
+
+- File: output/playwright/session-046-operator-companion-final-closure/14-evidence-bundle-disclaimers.png
+- Title: Evidence bundle observation with compliance disclaimer
+- Source/System: browser
+- Route/Page: http://localhost:8765/bl046-evidence-bundle.html
+- Action: Scrolled to show full observation entry.
+- Shows:
+  - `complianceDisclaimer`: "Mock screen observation only. No real screen capture, raw pixels, clipboard access, or OCR was performed."
+  - Audit timeline starts immediately after screenObservations.
+- Proves:
+  - Each observation summary carries an explicit compliance disclaimer.
+- Type: api-response-verification
+- as_of: 2026-04-27T12:28:00+02:00
+
+## EV-2026-04-27-031: BL-046 Redaction proof in evidence bundle audit
+
+- File: output/playwright/session-046-operator-companion-final-closure/15-evidence-bundle-limitations.png
+- Title: Redaction proof — [REDACTED] values in audit metadata
+- Source/System: browser
+- Route/Page: http://localhost:8765/bl046-evidence-bundle.html
+- Action: Scrolled to audit timeline section.
+- Shows:
+  - `screen_observation_captured` event where `source` is `[REDACTED]`.
+  - `ai_context_loaded` event where `observationId` is `[REDACTED]`.
+  - `evidence_bundle_generated` event where `bundleId` is `[REDACTED]`.
+- Proves:
+  - Deterministic redaction is active on observation IDs, source values, and bundle IDs in evidence bundle output.
+- Type: api-response-verification
+- as_of: 2026-04-27T12:28:00+02:00
+
+## EV-2026-04-27-032: BL-046 Evidence bundle mock disclaimers
+
+- File: output/playwright/session-046-operator-companion-final-closure/17-evidence-bundle-mock-disclaimers.png
+- Title: Evidence bundle mock/dev-only disclaimers
+- Source/System: browser
+- Route/Page: http://localhost:8765/bl046-evidence-bundle.html
+- Action: Scrolled to mockDevOnlyDisclaimers and limitations sections.
+- Shows:
+  - "Screen observations are mock metadata only. No real screen capture, raw pixels, clipboard access, or OCR was performed. Not surveillance or compliance-grade."
+  - "Mock screen observations have no real desktop, browser, or application content and do not constitute surveillance, monitoring, or compliance-grade evidence."
+- Proves:
+  - Evidence bundle includes explicit screen observation disclaimers and limitations.
+- Type: api-response-verification
+- as_of: 2026-04-27T12:28:00+02:00

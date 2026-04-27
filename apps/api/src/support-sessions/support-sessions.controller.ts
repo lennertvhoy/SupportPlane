@@ -12,6 +12,11 @@ import type { Request, Response } from 'express';
 import { SupportSessionsService } from './support-sessions.service.js';
 import { getDevIdentity } from '../common/dev-identity.middleware.js';
 import { EvidenceBundleFormat } from '@supportplane/contracts';
+import type {
+  ScreenObservationCaptureRequest,
+  ScreenObservationReviewRequest,
+  ScreenObservationContextPacketRequest,
+} from '@supportplane/contracts';
 
 @Controller('support-sessions')
 export class SupportSessionsController {
@@ -155,5 +160,43 @@ export class SupportSessionsController {
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
     res.send(result.markdown);
     return;
+  }
+
+  @Post(':id/screen-observations/mock')
+  captureMockScreenObservation(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: ScreenObservationCaptureRequest
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.captureMockScreenObservation(identity, id, body);
+  }
+
+  @Get(':id/screen-observations')
+  listScreenObservations(@Req() req: Request, @Param('id') id: string) {
+    const identity = getDevIdentity(req);
+    return this.service.listScreenObservations(identity, id);
+  }
+
+  @Post(':id/screen-observations/:observationId/review')
+  reviewScreenObservation(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('observationId') observationId: string,
+    @Body() body: ScreenObservationReviewRequest
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.reviewScreenObservation(identity, id, observationId, body);
+  }
+
+  @Post(':id/screen-observations/:observationId/context-packet')
+  createContextPacketFromObservation(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('observationId') observationId: string,
+    @Body() body: ScreenObservationContextPacketRequest
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.createContextPacketFromObservation(identity, id, observationId, body);
   }
 }

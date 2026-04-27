@@ -11,6 +11,8 @@ import {
   InternalNoteWritebackResult,
   EvidenceBundleFormat,
   GreetingSuggestionTone,
+  ScreenObservationSource,
+  ScreenObservationStatus,
   type SupportSession as SupportSessionShape,
   type AIContextPacket as AIContextPacketShape,
   type AuditEvent as AuditEventShape,
@@ -22,6 +24,9 @@ import {
   type InternalNoteDraft as InternalNoteDraftShape,
   type TicketReference as TicketReferenceShape,
   type EvidenceBundle,
+  type ScreenObservation as ScreenObservationShape,
+  type ScreenObservationId,
+  type ScreenObservationSessionId,
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import {
@@ -482,6 +487,202 @@ export class SupportSessionsService {
     return this.store.listSessions(identity.tenantId);
   }
 
+  captureMockScreenObservation(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: {
+      kind: string;
+      callEventId?: string;
+      rawInputPlaceholder?: string;
+      appLabel?: string;
+      windowLabel?: string;
+      urlLabel?: string;
+    }
+  ): ScreenObservationShape {
+    const session = this.getSession(identity, sessionId);
+    const now = new Date().toISOString();
+    const id = randomUUID();
+
+    const observation: ScreenObservationShape = {
+      id: id as ScreenObservationId,
+      tenantId: identity.tenantId as TenantId,
+      sessionId: session.id,
+      callEventId: dto.callEventId,
+      source: ScreenObservationSource.enum.mock_operator_companion,
+      kind: dto.kind as ScreenObservationShape['kind'],
+      status: ScreenObservationStatus.enum.review_required,
+      rawInputPlaceholder: dto.rawInputPlaceholder,
+      appLabel: dto.appLabel,
+      windowLabel: dto.windowLabel,
+      urlLabel: dto.urlLabel,
+      noRawPixels: true,
+      noClipboard: true,
+      noOcr: true,
+      noCredentialCapture: true,
+      mockDevOnly: true,
+      createdAt: now,
+    };
+
+    this.store.saveScreenObservation(observation);
+    this.store.saveSession({
+      ...session,
+      screenObservationIds: Array.from(new Set([...session.screenObservationIds, observation.id])),
+      updatedAt: now,
+    });
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.screen_observation_captured,
+      'screen_observation',
+      observation.id,
+      {
+        kind: observation.kind,
+        source: observation.source,
+        callEventId: observation.callEventId,
+        mockDevOnly: true,
+        noRawPixels: true,
+        noClipboard: true,
+      }
+    );
+
+    return observation;
+  }
+
+  listScreenObservations(
+    identity: DevIdentity,
+    sessionId: string
+  ): ScreenObservationShape[] {
+    this.getSession(identity, sessionId);
+    return this.store.listScreenObservations(identity.tenantId, sessionId);
+  }
+
+  reviewScreenObservation(
+    identity: DevIdentity,
+    sessionId: string,
+    observationId: string,
+    dto: { status: 'approved' | 'discarded' }
+  ): { observation: ScreenObservationShape; previousStatus: string; newStatus: string } {
+    this.getSession(identity, sessionId);
+    const observation = this.store.getScreenObservation(identity.tenantId, observationId);
+    if (!observation) {
+      throw new NotFoundException(`Screen observation ${observationId} not found`);
+    }
+    if (observation.sessionId !== sessionId) {
+      throw new NotFoundException(`Screen observation ${observationId} does not belong to session ${sessionId}`);
+    }
+
+    const previousStatus = observation.status;
+    const now = new Date().toISOString();
+    const updated: ScreenObservationShape = {
+      ...observation,
+      status: dto.status as ScreenObservationShape['status'],
+      reviewedAt: now,
+      reviewedBy: identity.userId,
+    };
+
+    this.store.saveScreenObservation(updated);
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      dto.status === 'approved'
+        ? AuditEventType.enum.screen_observation_reviewed
+        : AuditEventType.enum.screen_observation_discarded,
+      'screen_observation',
+      observationId,
+      {
+        previousStatus,
+        newStatus: dto.status,
+        reviewedBy: identity.userId,
+        mockDevOnly: true,
+      }
+    );
+
+    return { observation: updated, previousStatus, newStatus: dto.status };
+  }
+
+  createContextPacketFromObservation(
+    identity: DevIdentity,
+    sessionId: string,
+    observationId: string,
+    dto?: { provenance?: string }
+  ): { observation: ScreenObservationShape; contextPacketId: string; mockDevOnly: boolean } {
+    const session = this.getSession(identity, sessionId);
+    const observation = this.store.getScreenObservation(identity.tenantId, observationId);
+    if (!observation) {
+      throw new NotFoundException(`Screen observation ${observationId} not found`);
+    }
+    if (observation.sessionId !== sessionId) {
+      throw new NotFoundException(`Screen observation ${observationId} does not belong to session ${sessionId}`);
+    }
+    if (observation.status !== 'approved') {
+      throw new Error(`Screen observation ${observationId} must be approved before creating a context packet`);
+    }
+
+    const provenance = dto?.provenance ?? 'screen_observation';
+    const packet: AIContextPacketShape = {
+      id: randomUUID() as AIContextPacketId,
+      tenantId: identity.tenantId as TenantId,
+      sessionId,
+      provenance: provenance as AIContextPacketShape['provenance'],
+      sourceTicketIds: [],
+      payload: {
+        source: 'screen_observation',
+        observationId: observation.id,
+        kind: observation.kind,
+        appLabel: observation.appLabel,
+        windowLabel: observation.windowLabel,
+        urlLabel: observation.urlLabel,
+        redactedSummary: observation.redactedSummary,
+        rawInputPlaceholder: observation.rawInputPlaceholder,
+        mockDevOnly: true,
+      },
+      redactionLog: [
+        { field: 'rawInputPlaceholder', reason: 'secret', method: 'mask' },
+        { field: 'payload', reason: 'policy', method: 'mask' },
+      ],
+      createdAt: new Date().toISOString(),
+    };
+
+    this.store.saveContextPacket(packet);
+    this.store.saveSession({
+      ...session,
+      aiContextPacketIds: Array.from(new Set([...session.aiContextPacketIds, packet.id])),
+      updatedAt: new Date().toISOString(),
+    });
+
+    const updatedObservation: ScreenObservationShape = {
+      ...observation,
+      contextPacketId: packet.id,
+    };
+    this.store.saveScreenObservation(updatedObservation);
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.screen_observation_context_packet_created,
+      'screen_observation',
+      observationId,
+      {
+        contextPacketId: packet.id,
+        provenance,
+        mockDevOnly: true,
+      }
+    );
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.ai_context_loaded,
+      'ai_context_packet',
+      packet.id,
+      { provenance, source: 'screen_observation', observationId }
+    );
+
+    return { observation: updatedObservation, contextPacketId: packet.id, mockDevOnly: true };
+  }
+
   generateEvidenceBundle(
     identity: DevIdentity,
     sessionId: string,
@@ -494,6 +695,7 @@ export class SupportSessionsService {
     const callRecordings = callEvents.flatMap((call) =>
       this.store.listCallRecordings(identity.tenantId, call.id)
     );
+    const screenObservations = this.store.listScreenObservations(identity.tenantId, sessionId);
     const sessionAuditEvents = this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEventIds = new Set<string>(callEvents.map((call) => call.id));
     const externalCallIds = new Set(callEvents.map((call) => call.externalCallId));
@@ -520,6 +722,7 @@ export class SupportSessionsService {
       auditEvents,
       callEvents,
       callRecordings,
+      screenObservations,
       connectorMode: this.connectorsService.getMode(),
     });
 

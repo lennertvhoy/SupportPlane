@@ -17,10 +17,12 @@ import type {
   EvidenceBundleCallEventSummary,
   EvidenceBundleGreetingSuggestionSummary,
   EvidenceBundleCallRecordingSummary,
+  EvidenceBundleScreenObservationSummary,
   TenantId,
   SupportSessionId,
   EvidenceBundleId,
   CallRecording,
+  ScreenObservation,
 } from '@supportplane/contracts';
 import { redactSecrets, redactString } from './redaction.js';
 
@@ -35,6 +37,7 @@ export interface BuildEvidenceBundleInput {
   auditEvents: AuditEvent[];
   callEvents?: CallEvent[];
   callRecordings?: CallRecording[];
+  screenObservations?: ScreenObservation[];
   connectorMode?: string;
 }
 
@@ -168,6 +171,35 @@ function toCallRecordingSummaries(recordings: CallRecording[] | undefined): Evid
   }));
 }
 
+function toScreenObservationSummaries(observations: ScreenObservation[] | undefined): EvidenceBundleScreenObservationSummary[] {
+  if (!observations) return [];
+  return observations.map((o) => {
+    const parts: string[] = [];
+    if (o.appLabel) parts.push(`App: ${o.appLabel}`);
+    if (o.windowLabel) parts.push(`Window: ${o.windowLabel}`);
+    if (o.urlLabel) parts.push(`URL: ${o.urlLabel}`);
+    if (o.rawInputPlaceholder) parts.push(`Note: ${o.rawInputPlaceholder.substring(0, 200)}`);
+    const description = parts.join(' | ') || `[${o.kind}]`;
+    return {
+      observationId: o.id,
+      sessionId: o.sessionId,
+      callEventId: o.callEventId,
+      source: o.source,
+      kind: o.kind,
+      status: o.status,
+      description,
+      reviewedAt: o.reviewedAt,
+      reviewedBy: o.reviewedBy,
+      redactedSummary: o.redactedSummary,
+      mockDevOnly: o.mockDevOnly,
+      noRealScreenCapture: o.noRawPixels,
+      noRawPixels: o.noRawPixels,
+      noClipboardAccess: o.noClipboard,
+      complianceDisclaimer: 'Mock screen observation only. No real screen capture, raw pixels, clipboard access, or OCR was performed.',
+    };
+  });
+}
+
 function toGreetingSuggestionSummaries(auditEvents: AuditEvent[]): EvidenceBundleGreetingSuggestionSummary[] {
   return auditEvents
     .filter((e) => e.eventType === 'greeting_suggestion_generated')
@@ -242,6 +274,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     telephonyBridgeEvents: toTelephonyBridgeSummaries(input.auditEvents),
     callEvents: toCallEventSummaries(input.callEvents),
     callRecordings: toCallRecordingSummaries(input.callRecordings),
+    screenObservations: toScreenObservationSummaries(input.screenObservations),
     greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
     mockDevOnlyDisclaimers: [
@@ -252,6 +285,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Call events are simulated via fake webhook. No real telephony is connected.',
       'Telephony bridge events are adapter-boundary mock events only. No real PBX, provider, media, or voice path is connected.',
       'Call recordings are mock metadata only. No real audio was captured, stored, or played back. Not compliance-grade.',
+      'Screen observations are mock metadata only. No real screen capture, raw pixels, clipboard access, or OCR was performed. Not surveillance or compliance-grade.',
       'Caller matching uses deterministic mock fixtures, not a real customer database.',
       'Support sessions may be auto-created from fake incoming calls. These are mock sessions for development only.',
     ],
@@ -265,6 +299,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Auto-created sessions are generated from mock call events and do not represent real customer interactions.',
       'Telephony bridge controls update local mock state only and are not compliance-grade telephony evidence.',
       'Mock call recordings have no real audio content and do not constitute legal or compliance-grade call recording evidence.',
+      'Mock screen observations have no real desktop, browser, or application content and do not constitute surveillance, monitoring, or compliance-grade evidence.',
     ],
     sourceProvenance: {
       storeType: 'in-memory',
@@ -426,6 +461,28 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       if (event.errorCode) lines.push(`  - Error: ${event.errorCode} — ${event.errorMessage ?? ''}`);
       lines.push(`  - Mock/Dev-Only: ${event.mockDevOnly}`);
       lines.push(`  - At: ${event.occurredAt}`);
+      lines.push(``);
+    }
+  }
+  lines.push(``);
+
+  lines.push(`## Screen Observations`);
+  lines.push(``);
+  if (bundle.screenObservations.length === 0) {
+    lines.push(`*No screen observations recorded.*`);
+  } else {
+    for (const o of bundle.screenObservations) {
+      lines.push(`### ${o.observationId} (${o.kind})`);
+      lines.push(`- **Source:** ${o.source}`);
+      lines.push(`- **Status:** ${o.status}`);
+      lines.push(`- **Description:** ${o.description}`);
+      if (o.reviewedAt) lines.push(`- **Reviewed At:** ${o.reviewedAt} by ${o.reviewedBy ?? 'unknown'}`);
+      if (o.redactedSummary) lines.push(`- **Redacted Summary:** ${o.redactedSummary}`);
+      lines.push(`- **Mock/Dev-Only:** ${o.mockDevOnly}`);
+      lines.push(`- **No Real Screen Capture:** ${o.noRealScreenCapture}`);
+      lines.push(`- **No Raw Pixels:** ${o.noRawPixels}`);
+      lines.push(`- **No Clipboard Access:** ${o.noClipboardAccess}`);
+      if (o.complianceDisclaimer) lines.push(`- **Disclaimer:** ${o.complianceDisclaimer}`);
       lines.push(``);
     }
   }

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-27T10:53:00+02:00
+  updated_at: 2026-04-27T12:28:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -290,6 +290,47 @@ current_state:
         closure_notes:
           - tenant isolation enforced on all recording endpoints
           - no real audio generated, captured, or played back
+          - canonical closure proof captured in fresh session folder
+          - full commit hash recorded in acceptance freeze and worklog
+    bl_046_status:
+      completed: true
+      scope: operator_companion_screen_observations_during_active_calls
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      docs:
+        - docs/CALL_CONSOLE.md
+        - docs/EVIDENCE_BUNDLES.md
+      validation: full_validation_gate_and_browser_boundary_verified
+      runtime:
+        api_endpoints:
+          - POST /support-sessions/:id/screen-observations/mock
+          - GET /support-sessions/:id/screen-observations
+          - POST /support-sessions/:id/screen-observations/:observationId/review
+          - POST /support-sessions/:id/screen-observations/:observationId/context-packet
+        storage_type: in-memory
+        real_screen_capture: false
+        real_clipboard: false
+        real_ocr: false
+        audit_events:
+          - screen_observation_captured
+          - screen_observation_reviewed
+          - screen_observation_discarded
+          - screen_observation_context_packet_created
+        evidence_bundle_includes:
+          - screenObservations
+          - mock screen observation disclaimers
+          - noRealScreenCapture / noRawPixels / noClipboardAccess flags
+        ui_panels:
+          - Call Console Operator Companion panel
+          - Support Cockpit AI Context Quality panel (observation-derived packets)
+        screenshot_folder: output/playwright/session-046-operator-companion-final-closure/
+        screenshot_count: 18
+        closure_notes:
+          - tenant isolation enforced on all screen observation endpoints
+          - no real screen capture, raw pixels, clipboard access, or OCR performed
+          - review gate required before AI context packet creation
+          - pattern redaction applied to observation metadata in evidence bundle
           - canonical closure proof captured in fresh session folder
           - full commit hash recorded in acceptance freeze and worklog
     bl_044_status:

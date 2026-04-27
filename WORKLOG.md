@@ -1068,3 +1068,43 @@ Use this file for dated session notes, verification summaries, and references to
 
 - Markdown evidence bundle does not yet include a dedicated "Call Recordings" section.
 - No real audio recording, playback, TTS, STT, transcription, object storage, or provider integration exists.
+
+## 2026-04-27 — BL-046 Operator Companion Screen Observations Closure
+
+### What changed
+
+- Rewrote `packages/contracts/src/screen-observation.ts` with full BL-046 schema: `ScreenObservation`, `ScreenObservationSession`, `ScreenObservationSource` (`mock_operator_companion`), `ScreenObservationKind` (`active_window`, `application`, `url`, `manual_note`, `redacted_context`), `ScreenObservationStatus` (`captured`, `review_required`, `approved`, `discarded`, `redacted`), capture/review/context-packet request/response types, `ScreenObservationEvidenceSummary`, and `ScreenObservationRedactionResult`.
+- Added `EvidenceBundleScreenObservationSummary` to `packages/contracts/src/evidence-bundle.ts` and wired `screenObservations` array into `EvidenceBundle` schema.
+- Extended `apps/api/src/support-sessions/in-memory.store.ts` with `saveScreenObservation`, `getScreenObservation`, `listScreenObservations`, and `listScreenObservationsForCallEvent`.
+- Added 4 screen observation methods to `SupportSessionsService`: `captureMockScreenObservation`, `listScreenObservations`, `reviewScreenObservation`, `createContextPacketFromObservation`. Each validates session ownership, appends audit events, and enforces tenant isolation.
+- Added 4 controller endpoints to `SupportSessionsController`: `POST /support-sessions/:id/screen-observations/mock`, `GET /support-sessions/:id/screen-observations`, `POST .../review`, `POST .../context-packet`.
+- Updated `evidence-bundle.builder.ts` with `toScreenObservationSummaries()`, screen observation disclaimers in `mockDevOnlyDisclaimers`, screen observation limitations, and a new "Screen Observations" Markdown section.
+- Added `ScreenObservation` API types and 4 client methods to `apps/web/lib/api.ts`.
+- Added Operator Companion panel to `apps/web/app/call-console/page.tsx` with mock disclaimers, capture form (kind/app/window/url/note), observation list with status badges, approve/discard review buttons, and "Create context packet" button for approved observations.
+- Built and restarted API (`localhost:4110`) and web (`localhost:3200`).
+- Created canonical screenshot folder `output/playwright/session-046-operator-companion-final-closure/` with 18 browser-verified screenshots.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md`, `WORKLOG.md`, `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`.
+
+### Verification
+
+- API verified: `POST /support-sessions/:id/screen-observations/mock` returns observation with `status: review_required`, `mockDevOnly: true`, `noRawPixels: true`, `noClipboard: true`.
+- `GET /support-sessions/:id/screen-observations` lists tenant-scoped observations.
+- `POST .../review` returns wrapped `{observation, previousStatus, newStatus}` and appends `screen_observation_reviewed` or `screen_observation_discarded` audit event.
+- `POST .../context-packet` returns `{observation, contextPacketId, mockDevOnly: true}` and appends `screen_observation_context_packet_created` and `ai_context_loaded` audit events.
+- Call Console Operator Companion panel renders with capture form, observation list, approved/discarded badges, and "Create context packet" button.
+- Support Cockpit AI Context Quality panel shows `screen_observation` packet with `Warning` badge, source label, and `2 redacted` indicator.
+- Evidence bundle JSON includes `screenObservations` array with `noRealScreenCapture`, `noRawPixels`, `noClipboardAccess`, and compliance disclaimer.
+- Evidence bundle Markdown includes "Screen Observations" section.
+- Redaction proven: audit metadata shows `[REDACTED]` for `source` in `screen_observation_captured` and `observationId` in `ai_context_loaded` events within the bundle.
+- Typecheck passes for all packages (`npm run typecheck`).
+
+### Evidence
+
+- Screenshot files: `output/playwright/session-046-operator-companion-final-closure/01-call-console-operator-companion-panel.png` through `18-evidence-bundle-mock-disclaimers.png`.
+- Evidence refs: EV-2026-04-27-025 through EV-2026-04-27-042.
+- Acceptance freeze: AF-2026-04-27-004.
+
+### Remaining Risk
+
+- No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
+- No real database persistence; all data is in-memory and lost on API restart.

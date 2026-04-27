@@ -376,6 +376,49 @@ export interface CallRecordingPlaybackResponse {
   recordedAt: string;
 }
 
+export interface ScreenObservation {
+  id: string;
+  tenantId: string;
+  sessionId: string;
+  callEventId?: string;
+  observationSessionId?: string;
+  source: string;
+  kind: string;
+  status: string;
+  rawInputPlaceholder?: string;
+  redactedSummary?: string;
+  appLabel?: string;
+  windowLabel?: string;
+  urlLabel?: string;
+  noRawPixels: boolean;
+  noClipboard: boolean;
+  noOcr: boolean;
+  noCredentialCapture: boolean;
+  mockDevOnly: boolean;
+  createdAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  contextPacketId?: string;
+}
+
+export interface ScreenObservationCaptureResponse {
+  observation: ScreenObservation;
+  redactedSummary: string;
+  mockDevOnly: boolean;
+}
+
+export interface ScreenObservationReviewResponse {
+  observation: ScreenObservation;
+  previousStatus: string;
+  newStatus: string;
+}
+
+export interface ScreenObservationContextPacketResponse {
+  observation: ScreenObservation;
+  contextPacketId: string;
+  mockDevOnly: boolean;
+}
+
 export interface CallTimelineResponse {
   callEventId: string;
   timelineItems: CallTimelineItem[];
@@ -863,6 +906,56 @@ export const api = {
     apiFetch<CallRecordingPlaybackResponse>(
       `/calls/${callId}/recordings/${recordingId}/playback`,
       { method: 'POST' },
+      identity
+    ),
+
+  // Screen observations
+  captureMockScreenObservation: (
+    sessionId: string,
+    body: {
+      kind: string;
+      callEventId?: string;
+      rawInputPlaceholder?: string;
+      appLabel?: string;
+      windowLabel?: string;
+      urlLabel?: string;
+    },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<ScreenObservationCaptureResponse>(
+      `/support-sessions/${sessionId}/screen-observations/mock`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  listScreenObservations: (sessionId: string, identity?: DevIdentity) =>
+    apiFetch<ScreenObservation[]>(
+      `/support-sessions/${sessionId}/screen-observations`,
+      { method: 'GET' },
+      identity
+    ),
+
+  reviewScreenObservation: (
+    sessionId: string,
+    observationId: string,
+    body: { status: 'approved' | 'discarded' },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<ScreenObservationReviewResponse>(
+      `/support-sessions/${sessionId}/screen-observations/${observationId}/review`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  createContextPacketFromObservation: (
+    sessionId: string,
+    observationId: string,
+    body?: { provenance?: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<ScreenObservationContextPacketResponse>(
+      `/support-sessions/${sessionId}/screen-observations/${observationId}/context-packet`,
+      { method: 'POST', body: JSON.stringify(body ?? {}) },
       identity
     ),
 

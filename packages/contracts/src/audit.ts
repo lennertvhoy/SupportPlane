@@ -59,6 +59,10 @@ export const AuditEventType = z.enum([
   'call_recording_attached',
   'call_recording_playback_opened',
   'call_recording_reviewed',
+  'screen_observation_captured',
+  'screen_observation_reviewed',
+  'screen_observation_discarded',
+  'screen_observation_context_packet_created',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;
