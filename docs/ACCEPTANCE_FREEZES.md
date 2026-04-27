@@ -720,6 +720,6 @@ and must be protected from quiet regression.
   - Viewer role must be denied `connector_installation:write/test` and `ticket:write` server-side with 403.
   - Cross-tenant access must return 404 for resources and 403 for permission denied.
 - Notes:
-  - `internal_note_drafts` table was created manually; a proper Prisma migration should be generated before production.
+  - BL-091 closure was repaired on 2026-04-27 by verifying `internal_note_drafts` in `prisma/schema.prisma` and `prisma/migrations/20260427124815_init_persistence_foundation/migration.sql`; `npx prisma validate` and `npx prisma migrate status` passed against `localhost:5434`.
   - No real Zammad, telephony, AI provider, queue, object storage, SSO, MFA, or password reset implemented.
   - All new behavior is deterministic local/mock-only with visible UI warnings.

@@ -60,7 +60,7 @@ All new endpoints return explicit mock indicators:
 
 ## Database Notes
 
-The `internal_note_drafts` table was created manually for this slice. A proper Prisma migration should be generated before production deployment.
+The `internal_note_drafts` table is represented in `prisma/schema.prisma` and the committed migration `prisma/migrations/20260427124815_init_persistence_foundation/migration.sql`. The local database must be reproducible with Prisma migrations and seed commands; hidden manual table or index creation is not accepted project truth.
 
 ## Evidence
 

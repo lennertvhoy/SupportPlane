@@ -239,6 +239,16 @@ Final handoffs must include full commit hashes, not short hashes.
 "Implementation complete" is forbidden when core acceptance behavior remains partial.
 Incomplete validation-gate reporting means not closure-grade even when code appears to work.
 
+### Database migration and drift rule (mandatory)
+
+A backlog item may not be claimed complete if it requires manual database changes
+not represented in committed schema and migrations. Any new persisted table,
+column, index, enum, relation, or seed dependency must be reproducible from
+committed migrations and documented seed/reset commands. Manual SQL is allowed
+only as a committed migration file or an explicitly documented one-off repair,
+never as hidden runtime state. A clean worktree is not enough if the running
+database contains uncommitted schema drift.
+
 These rules are repo truth. Violations mean "not closure-grade."}}}}
 
 Use `prompts/FINAL_HANDOFF_TEMPLATE.md` when you need a canonical handoff shape.

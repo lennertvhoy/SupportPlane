@@ -1521,7 +1521,7 @@ End-to-end support case workflow unifying calls, customers, tickets, sessions, o
   - Viewer explicitly lacks write/test permissions
 
 - **Database**:
-  - Created `internal_note_drafts` table manually (was in schema but missing migration)
+  - `internal_note_drafts` is represented in `prisma/schema.prisma` and committed migration `prisma/migrations/20260427124815_init_persistence_foundation/migration.sql`
   - Table has proper indexes on tenantId, sessionId, externalTicketId
 
 ### Verification
@@ -1544,6 +1544,6 @@ End-to-end support case workflow unifying calls, customers, tickets, sessions, o
 
 ### Remaining Risk
 
-- `internal_note_drafts` table was created manually; a proper Prisma migration should be generated before production
+- BL-091 database drift concern was repaired on 2026-04-27 by confirming `internal_note_drafts` is reproducible from committed Prisma schema/migration; hidden manual database drift remains unacceptable under AGENTS.md
 - No real Zammad, telephony, AI provider, queue, object storage, SSO, MFA, or password reset implemented
 - All new behavior is deterministic local/mock-only with visible UI warnings

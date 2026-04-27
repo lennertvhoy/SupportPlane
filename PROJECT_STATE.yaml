@@ -587,7 +587,7 @@ current_state:
       screenshot_folder: output/playwright/session-091-support-case-workflow-foundation/
       screenshot_count: 20
       notes:
-        - internal_note_drafts table created manually; proper Prisma migration needed before production
+        - internal_note_drafts is represented in prisma/schema.prisma and committed migration prisma/migrations/20260427124815_init_persistence_foundation/migration.sql; npx prisma validate and migrate status passed on 2026-04-27
         - All new behavior is deterministic local/mock-only with visible UI warnings
         - No real Zammad, telephony, AI provider, queue, object storage, SSO, MFA, or password reset implemented
     bl_020_status:
