@@ -1264,3 +1264,31 @@
   - Evidence bundle correctly reports `storeType: postgres`.
 - Type: docs-render-verification
 - as_of: 2026-04-27T16:11:00+02:00
+
+## EV-2026-04-27-076 through EV-2026-04-27-095: BL-091 Support Case Workflow Foundation browser proof
+
+- Files: `output/playwright/session-091-support-case-workflow-foundation/01-login-page.png` through `20-call-simulator-active.png`
+- Source/System: visible Chromium via Playwright CLI against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - local login page (01)
+  - cockpit overview with all panels (02)
+  - ticket summary panel with search (03)
+  - session created and selected (04-05)
+  - simulated incoming call with caller matching (06)
+  - call linked to session (07)
+  - connector test result with "Mock mode — no real network call was made" (08)
+  - ticket context loaded showing Zammad ticket TICKET-101 (09)
+  - support note draft generated with "not sent to Zammad" warnings (10)
+  - evidence bundle generated with summary counts (11)
+  - postgres-persisted verify session with ticket loaded (12)
+  - support note draft generated on persisted session (13)
+  - evidence bundle JSON showing supportNoteDrafts array (14)
+  - evidence bundle Markdown showing Support Note Drafts section (15)
+  - case timeline with session_created, internal_note_drafted, evidence_bundle_generated events (16)
+  - connector panel with installations list, Test and Validate buttons (17)
+  - connector validate result with valid: true, mode: mock, realNetwork: false (18)
+  - viewer role with disabled New button, disabled Generate local-only draft button (19)
+  - call simulator with active fake incoming call (20)
+- Type: browser-runtime-verification
+- as_of: 2026-04-27T23:25:00+02:00

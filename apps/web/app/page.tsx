@@ -12,6 +12,9 @@ import { EvidenceBundlePanel } from '@/components/EvidenceBundlePanel';
 import { CallSimulatorPanel } from '@/components/CallSimulatorPanel';
 import { GreetingSuggestionPanel } from '@/components/GreetingSuggestionPanel';
 import { CustomerReferencePanel } from '@/components/CustomerReferencePanel';
+import { TicketSummaryPanel } from '@/components/TicketSummaryPanel';
+import { CaseTimelinePanel } from '@/components/CaseTimelinePanel';
+import { SupportNoteDraftPanel } from '@/components/SupportNoteDraftPanel';
 import { AuthGate, IdentityPill } from '@/components/AuthGate';
 import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, type GreetingSuggestionResponse, type AuthIdentity, ApiClientError } from '@/lib/api';
 
@@ -374,7 +377,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               onSelectSession={handleSelectSession}
               auditEvents={auditEvents}
             />
-            <ConnectorPanel />
+            <ConnectorPanel identity={identity} />
             <CustomerReferencePanel />
             <EvidenceBundlePanel
               sessionId={selectedSession?.id}
@@ -384,6 +387,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               error={evidenceBundleError}
               onGenerate={handleGenerateEvidenceBundle}
             />
+            <TicketSummaryPanel identity={identity} selectedTicket={ticket} />
             <TicketContextPanel
               session={selectedSession}
               ticket={ticket}
@@ -392,6 +396,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               onLoad={handleLoadTicket}
               connectorMode={connectorStatus?.mode}
             />
+            <CaseTimelinePanel session={selectedSession} />
             <AiContextPanel
               session={selectedSession}
               packets={packets}
@@ -415,6 +420,11 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               loading={greetingLoading}
               error={greetingError}
               onGenerate={handleGenerateGreeting}
+            />
+            <SupportNoteDraftPanel
+              session={selectedSession}
+              identity={identity}
+              externalTicketId={ticket?.externalTicketId}
             />
             <AuditTrailPanel
               session={selectedSession}

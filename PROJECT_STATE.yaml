@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-27T18:40:00+02:00
+  updated_at: 2026-04-27T23:30:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 45c677e
-    worktree_status: clean_after_bl_020_final_commit
+    head: pending_bl_091_final_commit
+    worktree_status: dirty_during_bl_091_closure
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -545,7 +545,7 @@ current_state:
     status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: 45c677e
+    head: pending_bl_091_final_commit
     process_or_container:
       - node process (NestJS) on port 4110
       - node process (Next.js) on port 3200
@@ -559,6 +559,37 @@ current_state:
       - Next.js web app verified via browser screenshots
       - BL-050 PostgreSQL persistence verified with restart-survival script
       - Infra containers verified via podman-compose with healthchecks
+    bl_091_status:
+      completed: true
+      scope: support_case_workflow_foundation
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      prisma_schema: prisma/schema.prisma
+      new_modules:
+        - apps/api/src/tickets/
+      new_ui_components:
+        - apps/web/components/TicketSummaryPanel.tsx
+        - apps/web/components/CaseTimelinePanel.tsx
+        - apps/web/components/SupportNoteDraftPanel.tsx
+      updated_ui_components:
+        - apps/web/components/ConnectorPanel.tsx
+        - apps/web/app/page.tsx
+        - apps/web/lib/api.ts
+      new_api_endpoints:
+        - GET /tickets
+        - GET /tickets/:id
+        - PATCH /connector-installations/:id
+        - POST /connector-installations/:id/validate
+        - POST /connector-installations/:id/test
+        - POST /support-sessions/:id/support-note-drafts
+      validation: all_typechecks_pass_111_api_tests_pass_browser_proof_20_screenshots
+      screenshot_folder: output/playwright/session-091-support-case-workflow-foundation/
+      screenshot_count: 20
+      notes:
+        - internal_note_drafts table created manually; proper Prisma migration needed before production
+        - All new behavior is deterministic local/mock-only with visible UI warnings
+        - No real Zammad, telephony, AI provider, queue, object storage, SSO, MFA, or password reset implemented
     bl_020_status:
       completed: true
       scope: ticket_context_connector_safety_foundation

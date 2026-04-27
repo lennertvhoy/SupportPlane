@@ -51,6 +51,12 @@ export class InMemoryStore implements Store {
     return this.ticketReferences.get(`${tenantId}:${sessionId}`) ?? [];
   }
 
+  listAllTicketReferences(tenantId: string): TicketReferenceShape[] {
+    return Array.from(this.ticketReferences.values())
+      .flat()
+      .filter((t) => t.tenantId === tenantId);
+  }
+
   saveContextPacket(packet: AIContextPacketShape): void {
     const key = `${packet.tenantId}:${packet.sessionId}`;
     const existing = this.contextPackets.get(key) ?? [];

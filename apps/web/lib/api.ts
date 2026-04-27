@@ -910,12 +910,60 @@ export const api = {
   getCustomer: (id: string, identity?: DevIdentity) =>
     apiFetch<{ customer: CustomerReference }>(`/customers/${id}`, { method: 'GET' }, identity).then(r => r.customer),
 
+  // Tickets
+  listTickets: (params?: { customerId?: string; email?: string; status?: string; priority?: string }, identity?: DevIdentity) =>
+    apiFetch<{ tickets: TicketReference[] }>(`/tickets?${new URLSearchParams(params ?? {}).toString()}`, { method: 'GET' }, identity).then(r => r.tickets),
+
+  getTicket: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ ticket: TicketReference }>(`/tickets/${id}`, { method: 'GET' }, identity).then(r => r.ticket),
+
+  // Case timeline
+  getCaseTimeline: (sessionId: string, identity?: DevIdentity) =>
+    apiFetch<{ timeline: Array<{ id: string; type: string; timestamp: string; title: string; description?: string; metadata: Record<string, unknown> }>; generatedAt: string }>(
+      `/support-sessions/${sessionId}/case-timeline`,
+      { method: 'GET' },
+      identity
+    ),
+
+  // Support note drafts
+  createSupportNoteDraft: (
+    sessionId: string,
+    body: { externalTicketId: string; operatorNotes?: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<{ draft: string; mockDevOnly: true; notSentToZammad: true; requiresHumanReview: true; generatedAt: string }>(
+      `/support-sessions/${sessionId}/support-note-drafts`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
   // Connector installations
   listConnectorInstallations: (identity?: DevIdentity) =>
     apiFetch<{ installations: ConnectorInstallation[] }>('/connector-installations', { method: 'GET' }, identity).then(r => r.installations),
 
   getConnectorInstallation: (id: string, identity?: DevIdentity) =>
     apiFetch<{ installation: ConnectorInstallation }>(`/connector-installations/${id}`, { method: 'GET' }, identity).then(r => r.installation),
+
+  updateConnectorInstallation: (
+    id: string,
+    body: { name?: string; config?: Record<string, unknown>; status?: string; safetyFlags?: Record<string, unknown> },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<{ installation: ConnectorInstallation }>(`/connector-installations/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, identity).then(r => r.installation),
+
+  validateConnectorInstallation: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ installationId: string; result: { valid: boolean; mode: string; realNetwork: boolean; writebackEnabled: boolean; errors: string[]; warnings: string[]; timestamp: string } }>(
+      `/connector-installations/${id}/validate`,
+      { method: 'POST' },
+      identity
+    ),
+
+  testConnectorInstallation: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ installationId: string; result: { success: boolean; mode: string; realNetwork: boolean; writebackEnabled: boolean; latencyMs: number; responseSummary: string; timestamp: string } }>(
+      `/connector-installations/${id}/test`,
+      { method: 'POST' },
+      identity
+    ),
 
   // Evidence bundle
   getEvidenceBundle: (sessionId: string, identity?: DevIdentity) =>

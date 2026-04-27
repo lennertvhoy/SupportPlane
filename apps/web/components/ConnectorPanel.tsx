@@ -1,18 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Plug, CheckCircle, XCircle, RefreshCw, Shield, Settings } from 'lucide-react';
+import { Loader2, AlertCircle, Plug, CheckCircle, XCircle, RefreshCw, Shield, Settings, Wrench, TestTube } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
-import { api, type ConnectorStatus, type ConnectorTestResult, type ConnectorInstallation, ApiClientError } from '@/lib/api';
+import { api, type ConnectorStatus, type ConnectorTestResult, type ConnectorInstallation, type AuthIdentity, ApiClientError } from '@/lib/api';
 
-export function ConnectorPanel() {
+export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
   const [status, setStatus] = useState<ConnectorStatus | undefined>(undefined);
   const [testResult, setTestResult] = useState<ConnectorTestResult | undefined>(undefined);
   const [installations, setInstallations] = useState<ConnectorInstallation[]>([]);
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [installationResults, setInstallationResults] = useState<Record<string, { type: string; result: unknown }>>({});
+
+  const canTest = identity?.permissions.includes('*') || identity?.permissions.includes('connector_installation:test');
 
   async function fetchStatus() {
     setLoading(true);
@@ -41,6 +44,34 @@ export function ConnectorPanel() {
       setError(err instanceof ApiClientError ? err.message : 'Test failed');
     } finally {
       setTesting(false);
+    }
+  }
+
+  async function handleValidateInstallation(id: string) {
+    if (!canTest) {
+      setError('Viewer role cannot validate connectors');
+      return;
+    }
+    setInstallationResults((prev) => ({ ...prev, [id]: { type: 'validating', result: undefined } }));
+    try {
+      const r = await api.validateConnectorInstallation(id);
+      setInstallationResults((prev) => ({ ...prev, [id]: { type: 'validate', result: r } }));
+    } catch (err) {
+      setInstallationResults((prev) => ({ ...prev, [id]: { type: 'validate', result: { error: err instanceof ApiClientError ? err.message : 'Validation failed' } } }));
+    }
+  }
+
+  async function handleTestInstallation(id: string) {
+    if (!canTest) {
+      setError('Viewer role cannot test connectors');
+      return;
+    }
+    setInstallationResults((prev) => ({ ...prev, [id]: { type: 'testing', result: undefined } }));
+    try {
+      const r = await api.testConnectorInstallation(id);
+      setInstallationResults((prev) => ({ ...prev, [id]: { type: 'test', result: r } }));
+    } catch (err) {
+      setInstallationResults((prev) => ({ ...prev, [id]: { type: 'test', result: { error: err instanceof ApiClientError ? err.message : 'Test failed' } } }));
     }
   }
 
@@ -199,6 +230,33 @@ export function ConnectorPanel() {
                 {inst.lastError && (
                   <div className="mt-1 text-[10px] text-danger">{inst.lastError}</div>
                 )}
+                <div className="mt-2 flex items-center gap-2">
+                  <button
+                    onClick={() => handleValidateInstallation(inst.id)}
+                    disabled={!canTest || installationResults[inst.id]?.type === 'validating'}
+                    className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
+                  >
+                    {installationResults[inst.id]?.type === 'validating' ? <Loader2 size={10} className="animate-spin" /> : <Wrench size={10} />}
+                    Validate
+                  </button>
+                  <button
+                    onClick={() => handleTestInstallation(inst.id)}
+                    disabled={!canTest || installationResults[inst.id]?.type === 'testing'}
+                    className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
+                  >
+                    {installationResults[inst.id]?.type === 'testing' ? <Loader2 size={10} className="animate-spin" /> : <TestTube size={10} />}
+                    Test
+                  </button>
+                </div>
+                {(() => {
+                  const res = installationResults[inst.id]?.result;
+                  if (!res) return null;
+                  return (
+                    <div className="mt-1 rounded border border-cockpit-700 bg-cockpit-900/50 p-1.5 text-[10px] text-cockpit-300">
+                      {JSON.stringify(res as Record<string, unknown>, null, 2)}
+                    </div>
+                  );
+                })()}
               </div>
             ))}
           </div>

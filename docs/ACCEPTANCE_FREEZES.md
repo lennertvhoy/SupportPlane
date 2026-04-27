@@ -671,3 +671,55 @@ and must be protected from quiet regression.
   - Standalone script seeds via raw SQL for isolated verification.
   - PostgreSQL container must be running (sp-postgres on localhost:5434).
   - All previous in-memory behavior remains unchanged when `SUPPORTPLANE_STORE` is unset or `memory`.
+
+## AF-2026-04-27-009: BL-091 Support Case Workflow Foundation
+
+- ID: AF-2026-04-27-009
+- Milestone: Support Case Workflow Foundation
+- Scope: End-to-end support case workflow unifying calls, customers, tickets, sessions, observations, connector validation, support note drafts, and evidence bundles. New TicketsModule with GET /tickets and GET /tickets/:id (tenant-scoped, RBAC-protected). Connector installation PATCH/validate/test endpoints with honest mock-only behavior. CaseTimelinePanel showing unified session/call/ticket/link/observation/draft events. SupportNoteDraftPanel generating deterministic local-only mock drafts with visible warnings. Evidence bundle including supportNoteDrafts in JSON and Markdown. Viewer role restrictions enforced server-side.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: pending_final_commit
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+  - Podman container `sp-postgres` on port 5434
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- routes:
+  - /
+  - GET /tickets
+  - GET /tickets/:id
+  - PATCH /connector-installations/:id
+  - POST /connector-installations/:id/validate
+  - POST /connector-installations/:id/test
+  - POST /support-sessions/:id/support-note-drafts
+  - GET /support-sessions/:id/evidence-bundle
+  - GET /support-sessions/:id/evidence-bundle.json
+  - GET /support-sessions/:id/evidence-bundle.md
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-27-076 through EV-2026-04-27-095
+- evidence_folder: output/playwright/session-091-support-case-workflow-foundation/
+- screenshot_count: 20
+- regression_guard:
+  - TicketSummaryPanel must remain visible with tenant-scoped ticket list and search.
+  - GET /tickets and GET /tickets/:id must enforce tenant isolation and `ticket:read` RBAC.
+  - ConnectorPanel must show per-installation Test and Validate buttons with honest mock results.
+  - PATCH /connector-installations/:id must validate status literals and enforce `connector_installation:write`.
+  - POST /connector-installations/:id/validate and POST /connector-installations/:id/test must return explicit `mode: "mock"`, `realNetwork: false`, `writebackEnabled: false`.
+  - SupportNoteDraftPanel must show "Local mock only — not sent to Zammad — requires human review" warning.
+  - POST /support-sessions/:id/support-note-drafts must persist InternalNoteDraft records and append `internal_note_drafted` audit events.
+  - Evidence bundle JSON and Markdown must include `supportNoteDrafts` section with `mockDevOnly: true`, `notSentToZammad: true`, `requiresHumanReview: true`.
+  - CaseTimelinePanel must display session_created, call_linked, ticket_linked, observation_created, draft_generated, and evidence_bundle_exported events.
+  - Viewer role must be denied `connector_installation:write/test` and `ticket:write` server-side with 403.
+  - Cross-tenant access must return 404 for resources and 403 for permission denied.
+- Notes:
+  - `internal_note_drafts` table was created manually; a proper Prisma migration should be generated before production.
+  - No real Zammad, telephony, AI provider, queue, object storage, SSO, MFA, or password reset implemented.
+  - All new behavior is deterministic local/mock-only with visible UI warnings.

@@ -175,6 +175,19 @@ export const EvidenceBundleGreetingSuggestionSummary = z.object({
 });
 export type EvidenceBundleGreetingSuggestionSummary = z.infer<typeof EvidenceBundleGreetingSuggestionSummary>;
 
+export const EvidenceBundleSupportNoteDraftSummary = z.object({
+  draftId: z.string(),
+  externalTicketId: z.string(),
+  subject: z.string().optional(),
+  bodyPreview: z.string(),
+  reviewed: z.boolean(),
+  mockDevOnly: z.boolean(),
+  notSentToZammad: z.boolean(),
+  requiresHumanReview: z.boolean(),
+  generatedAt: Timestamp.optional(),
+});
+export type EvidenceBundleSupportNoteDraftSummary = z.infer<typeof EvidenceBundleSupportNoteDraftSummary>;
+
 export const EvidenceBundleAuditSummary = z.object({
   id: EntityId,
   eventType: z.string(),
@@ -236,6 +249,7 @@ export const EvidenceBundle = z.object({
   screenObservations: z.array(EvidenceBundleScreenObservationSummary).default([]),
   customerReferences: z.array(EvidenceBundleCustomerSummary).default([]),
   connectorInstallations: z.array(EvidenceBundleConnectorInstallationSummary).default([]),
+  supportNoteDrafts: z.array(EvidenceBundleSupportNoteDraftSummary).default([]),
   auditTimeline: z.array(EvidenceBundleAuditSummary),
   mockDevOnlyDisclaimers: z.array(z.string()),
   limitations: z.array(z.string()),

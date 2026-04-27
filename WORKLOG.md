@@ -1479,3 +1479,71 @@ Implement PostgreSQL persistence foundation for SupportPlane API, enabling runti
 - No real telephony or PBX integration exists
 - No real audio recording, playback, or storage exists
 - No real screen capture, raw pixels, clipboard access, OCR, or desktop monitoring exists
+
+---
+
+## 2026-04-27 — BL-091: Support Case Workflow Foundation
+
+### Scope
+
+End-to-end support case workflow unifying calls, customers, tickets, sessions, observations, connector validation, support note drafts, and evidence bundles into a coherent cockpit.
+
+### What Changed
+
+- **Tickets API** (`apps/api/src/tickets/`):
+  - New `TicketsModule` with `GET /tickets` and `GET /tickets/:id`
+  - Tenant-scoped, RBAC-protected (`ticket:read`)
+  - `PrismaStore.getTicketReferences` fixed to accept `linkedTicketIds: string[]`
+
+- **Connector Installation Mutations** (`apps/api/src/connector-installations/`):
+  - `ConnectorInstallationsService` with honest mock-only `updateInstallation`, `validateInstallation`, `testInstallation`
+  - `PATCH /connector-installations/:id`, `POST /connector-installations/:id/validate`, `POST /connector-installations/:id/test`
+  - Returns explicit `mode: "mock"`, `realNetwork: false`, `writebackEnabled: false`
+  - Audit events emitted for all operations
+
+- **Support Note Drafts** (`apps/api/src/support-sessions/support-sessions.service.ts`):
+  - `POST /support-sessions/:id/support-note-drafts` persists `InternalNoteDraft` records to PostgreSQL
+  - Deterministic local-only mock generation with ticket/customer context
+  - Appends `internal_note_drafted` audit event
+
+- **Evidence Bundle Extension** (`apps/api/src/evidence-bundle/evidence-bundle.builder.ts`, `packages/contracts/src/evidence-bundle.ts`):
+  - Added `EvidenceBundleSupportNoteDraftSummary` schema
+  - `supportNoteDrafts` included in `buildEvidenceBundle()` and `bundleToMarkdown()`
+
+- **Frontend Panels** (`apps/web/components/`):
+  - `TicketSummaryPanel`: tenant-scoped ticket list and search
+  - `CaseTimelinePanel`: unified timeline for session, call, ticket, link, observation, draft events
+  - `SupportNoteDraftPanel`: deterministic local-only mock draft generation with "not sent to Zammad / not real AI" warnings
+  - `ConnectorPanel` enhanced with per-installation Test/Validate buttons
+
+- **RBAC** (`apps/api/src/auth/rbac.ts`):
+  - Added `ticket:read`, `connector_installation:write`, `connector_installation:test` to operator/support_agent
+  - Viewer explicitly lacks write/test permissions
+
+- **Database**:
+  - Created `internal_note_drafts` table manually (was in schema but missing migration)
+  - Table has proper indexes on tenantId, sessionId, externalTicketId
+
+### Verification
+
+- `npm run lint` — pass
+- `npm run typecheck --workspaces --if-present` — pass
+- API tests: 111/111 pass
+- Web tests: 15/15 pass
+- Contract tests: 26/26 pass
+- Connector tests: 16/16 pass
+- AI tests: 9/9 pass
+- Verification script `scripts/verify_support_case_workflow.sh` — all checks pass
+- Browser proof: 20 screenshots in `output/playwright/session-091-support-case-workflow-foundation/`
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-091-support-case-workflow-foundation/`
+- Screenshot count: 20
+- Covers: login, session selection, ticket context, connector test/validate, support note draft generation, evidence bundle JSON/Markdown with drafts, case timeline, viewer restrictions, call simulator
+
+### Remaining Risk
+
+- `internal_note_drafts` table was created manually; a proper Prisma migration should be generated before production
+- No real Zammad, telephony, AI provider, queue, object storage, SSO, MFA, or password reset implemented
+- All new behavior is deterministic local/mock-only with visible UI warnings

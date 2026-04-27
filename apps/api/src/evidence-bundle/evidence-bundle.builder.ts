@@ -19,12 +19,14 @@ import type {
   EvidenceBundleCallRecordingSummary,
   EvidenceBundleScreenObservationSummary,
   EvidenceBundleCustomerSummary,
+  EvidenceBundleSupportNoteDraftSummary,
   TenantId,
   SupportSessionId,
   EvidenceBundleId,
   CallRecording,
   ScreenObservation,
   CustomerReference,
+  InternalNoteDraft,
 } from '@supportplane/contracts';
 import { redactSecrets, redactString } from './redaction.js';
 
@@ -42,6 +44,7 @@ export interface BuildEvidenceBundleInput {
   screenObservations?: ScreenObservation[];
   customerReferences?: CustomerReference[];
   connectorInstallations?: import('@supportplane/contracts').ConnectorInstallation[];
+  supportNoteDrafts?: InternalNoteDraft[];
   connectorMode?: string;
   storeType?: 'memory' | 'postgres';
 }
@@ -239,6 +242,21 @@ function toScreenObservationSummaries(observations: ScreenObservation[] | undefi
   });
 }
 
+function toSupportNoteDraftSummaries(drafts: InternalNoteDraft[] | undefined): EvidenceBundleSupportNoteDraftSummary[] {
+  if (!drafts) return [];
+  return drafts.map((d) => ({
+    draftId: d.id,
+    externalTicketId: d.externalTicketId,
+    subject: d.subject,
+    bodyPreview: d.body.substring(0, 200),
+    reviewed: d.reviewed,
+    mockDevOnly: true,
+    notSentToZammad: true,
+    requiresHumanReview: true,
+    generatedAt: d.createdAt,
+  }));
+}
+
 function toGreetingSuggestionSummaries(auditEvents: AuditEvent[]): EvidenceBundleGreetingSuggestionSummary[] {
   return auditEvents
     .filter((e) => e.eventType === 'greeting_suggestion_generated')
@@ -316,6 +334,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     screenObservations: toScreenObservationSummaries(input.screenObservations),
     customerReferences: toCustomerSummaries(input.customerReferences),
     connectorInstallations: toConnectorInstallationSummaries(input.connectorInstallations),
+    supportNoteDrafts: toSupportNoteDraftSummaries(input.supportNoteDrafts),
     greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
     mockDevOnlyDisclaimers: [
@@ -524,6 +543,26 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       lines.push(`- **No Raw Pixels:** ${o.noRawPixels}`);
       lines.push(`- **No Clipboard Access:** ${o.noClipboardAccess}`);
       if (o.complianceDisclaimer) lines.push(`- **Disclaimer:** ${o.complianceDisclaimer}`);
+      lines.push(``);
+    }
+  }
+  lines.push(``);
+
+  lines.push(`## Support Note Drafts`);
+  lines.push(``);
+  if (bundle.supportNoteDrafts.length === 0) {
+    lines.push(`*No support note drafts recorded.*`);
+  } else {
+    for (const d of bundle.supportNoteDrafts) {
+      lines.push(`### ${d.draftId}`);
+      lines.push(`- **Ticket:** ${d.externalTicketId}`);
+      if (d.subject) lines.push(`- **Subject:** ${d.subject}`);
+      lines.push(`- **Preview:** ${d.bodyPreview}`);
+      lines.push(`- **Reviewed:** ${d.reviewed}`);
+      lines.push(`- **Mock Only:** ${d.mockDevOnly}`);
+      lines.push(`- **Not Sent to Zammad:** ${d.notSentToZammad}`);
+      lines.push(`- **Requires Human Review:** ${d.requiresHumanReview}`);
+      if (d.generatedAt) lines.push(`- **Generated At:** ${d.generatedAt}`);
       lines.push(``);
     }
   }

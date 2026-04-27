@@ -76,6 +76,12 @@ export class SupportSessionsController {
     return this.service.getCustomerReferencesForSession(identity, id);
   }
 
+  @Get(':id/case-timeline')
+  getCaseTimeline(@Req() req: Request, @Param('id') id: string) {
+    const identity = getCurrentIdentity(req);
+    return this.service.getCaseTimeline(identity, id);
+  }
+
   @Post(':id/ticket-context')
   async loadTicketContext(
     @Req() req: Request,
@@ -159,6 +165,16 @@ export class SupportSessionsController {
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.generateGreetingSuggestion(identity, id, body);
+  }
+
+  @Post(':id/support-note-drafts')
+  createSupportNoteDraft(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { externalTicketId: string; operatorNotes?: string }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.service.createSupportNoteDraft(identity, id, body);
   }
 
   @Get(':id/audit-events')

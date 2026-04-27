@@ -193,6 +193,14 @@ export class PrismaStore implements Store {
     return rows.map((r) => this.mapTicketReference(r));
   }
 
+  async listAllTicketReferences(tenantId: string): Promise<TicketReferenceShape[]> {
+    const rows = await this.prisma.ticketReference.findMany({
+      where: { tenantId },
+      orderBy: { updatedAt: 'desc' },
+    });
+    return rows.map((r) => this.mapTicketReference(r));
+  }
+
   private mapTicketReference(row: {
     id: string;
     tenantId: string;

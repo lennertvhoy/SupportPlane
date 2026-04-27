@@ -569,6 +569,146 @@ export class SupportSessionsService {
     return { customers };
   }
 
+  async getCaseTimeline(
+    identity: DevIdentity,
+    sessionId: string
+  ): Promise<{ timeline: Array<{ id: string; type: string; timestamp: string; title: string; description?: string; metadata: Record<string, unknown> }>; generatedAt: string }> {
+    requirePermission(identity, 'support_session:read');
+    await this.getSession(identity, sessionId);
+
+    const auditEvents = await this.store.getAuditEvents(identity.tenantId, sessionId);
+    const callEvents = await this.store.listCallEventsForSession(identity.tenantId, sessionId);
+    const drafts = await this.store.listInternalNoteDrafts(identity.tenantId, sessionId);
+
+    const timeline: Array<{ id: string; type: string; timestamp: string; title: string; description?: string; metadata: Record<string, unknown> }> = [];
+
+    for (const event of auditEvents) {
+      const titleMap: Record<string, string> = {
+        [AuditEventType.enum.session_created]: 'Session created',
+        [AuditEventType.enum.ticket_linked]: 'Ticket linked',
+        [AuditEventType.enum.ticket_unlinked]: 'Ticket unlinked',
+        [AuditEventType.enum.ai_context_loaded]: 'AI context loaded',
+        [AuditEventType.enum.ai_draft_generated]: 'AI draft generated',
+        [AuditEventType.enum.greeting_suggestion_generated]: 'Greeting suggestion generated',
+        [AuditEventType.enum.screen_observation_captured]: 'Observation captured',
+        [AuditEventType.enum.screen_observation_reviewed]: 'Observation reviewed',
+        [AuditEventType.enum.screen_observation_context_packet_created]: 'Context packet created from observation',
+        [AuditEventType.enum.internal_note_drafted]: 'Internal note drafted',
+        [AuditEventType.enum.internal_note_writeback_attempted]: 'Writeback attempted',
+        [AuditEventType.enum.internal_note_writeback_succeeded]: 'Writeback succeeded',
+        [AuditEventType.enum.internal_note_writeback_failed]: 'Writeback failed',
+        [AuditEventType.enum.evidence_bundle_generated]: 'Evidence bundle generated',
+        [AuditEventType.enum.evidence_bundle_exported]: 'Evidence bundle exported',
+        [AuditEventType.enum.call_linked_to_session]: 'Call linked',
+        [AuditEventType.enum.call_auto_linked_to_session]: 'Call auto-linked',
+        [AuditEventType.enum.call_event_received]: 'Call received',
+        [AuditEventType.enum.caller_matched]: 'Caller matched',
+        [AuditEventType.enum.call_status_changed]: 'Call status changed',
+        [AuditEventType.enum.connector_config_validated]: 'Connector validated',
+        [AuditEventType.enum.connector_config_validation_failed]: 'Connector validation failed',
+        [AuditEventType.enum.connector_tested]: 'Connector tested',
+      };
+      timeline.push({
+        id: event.id,
+        type: `audit:${event.eventType}`,
+        timestamp: event.createdAt,
+        title: titleMap[event.eventType] ?? event.eventType,
+        metadata: { ...event.metadata, actorId: event.actorId, resourceType: event.resourceType, resourceId: event.resourceId },
+      });
+    }
+
+    for (const call of callEvents) {
+      timeline.push({
+        id: call.id,
+        type: 'call_event',
+        timestamp: call.createdAt,
+        title: `Call ${call.direction} — ${call.status}`,
+        description: call.caller?.displayName || call.externalCallId,
+        metadata: { externalCallId: call.externalCallId, provider: call.provider, status: call.status, callerMatch: call.callerMatch },
+      });
+    }
+
+    for (const draft of drafts) {
+      timeline.push({
+        id: draft.id,
+        type: 'internal_note_draft',
+        timestamp: draft.createdAt,
+        title: 'Support note draft',
+        description: draft.reviewed ? 'Reviewed' : 'Pending review',
+        metadata: { externalTicketId: draft.externalTicketId, reviewed: draft.reviewed, draftLength: draft.body.length },
+      });
+    }
+
+    timeline.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+    return { timeline, generatedAt: new Date().toISOString() };
+  }
+
+  async createSupportNoteDraft(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: { externalTicketId: string; operatorNotes?: string }
+  ): Promise<{ draft: string; mockDevOnly: true; notSentToZammad: true; requiresHumanReview: true; generatedAt: string }> {
+    requirePermission(identity, 'ticket:write');
+    await this.getSession(identity, sessionId);
+
+    const tickets = await this.store.getTicketReferences(identity.tenantId, sessionId);
+    const ticket = tickets.find((t) => t.externalTicketId === dto.externalTicketId);
+    const customer = ticket?.customerId ? await this.store.getCustomerReference(identity.tenantId, ticket.customerId) : undefined;
+
+    const draftLines = [
+      `[LOCAL MOCK SUPPORT NOTE DRAFT — NOT SENT TO ZAMMAD — REQUIRES HUMAN REVIEW]`,
+      ``,
+      `Ticket: ${dto.externalTicketId}`,
+      `Customer: ${customer?.name ?? ticket?.customerName ?? 'Unknown'}`,
+      `Subject: ${ticket?.subject ?? 'N/A'}`,
+      ``,
+      `Operator notes: ${dto.operatorNotes ?? 'None provided'}`,
+      ``,
+      `This draft was generated deterministically by the local mock AI provider.`,
+      `It is NOT connected to a real AI model.`,
+      `It is NOT written back to Zammad automatically.`,
+      `Review and edit before any manual copy-paste.`,
+    ];
+
+    const draft = draftLines.join('\n');
+
+    const noteDraft: InternalNoteDraftShape = {
+      id: randomUUID() as never,
+      tenantId: identity.tenantId as TenantId,
+      sessionId,
+      externalTicketId: dto.externalTicketId,
+      subject: ticket?.subject,
+      body: draft,
+      reviewed: false,
+      createdAt: new Date().toISOString(),
+    };
+    await this.store.saveInternalNoteDraft(noteDraft);
+
+    await this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.internal_note_drafted,
+      'support_note_draft',
+      randomUUID(),
+      {
+        externalTicketId: dto.externalTicketId,
+        mockDevOnly: true,
+        notSentToZammad: true,
+        draftLength: draft.length,
+        source: 'deterministic_local_mock',
+      }
+    );
+
+    return {
+      draft,
+      mockDevOnly: true,
+      notSentToZammad: true,
+      requiresHumanReview: true,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+
   async getAuditEvents(
     identity: DevIdentity,
     sessionId: string
@@ -1131,6 +1271,7 @@ export class SupportSessionsService {
     const customerRefsResult = await this.getCustomerReferencesForSession(identity, sessionId);
     const customerReferences = customerRefsResult.customers as unknown as import('@supportplane/contracts').CustomerReference[];
     const connectorInstallations = await this.store.listConnectorInstallations(identity.tenantId);
+    const supportNoteDrafts = await this.store.listInternalNoteDrafts(identity.tenantId, sessionId);
     const sessionAuditEvents = await this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEventIds = new Set<string>(callEvents.map((call) => call.id));
     const externalCallIds = new Set(callEvents.map((call) => call.externalCallId));
@@ -1162,6 +1303,7 @@ export class SupportSessionsService {
       screenObservations,
       customerReferences,
       connectorInstallations,
+      supportNoteDrafts,
       connectorMode: this.connectorsService.getMode(),
       storeType: storeType === 'postgres' ? 'postgres' : 'memory',
     });

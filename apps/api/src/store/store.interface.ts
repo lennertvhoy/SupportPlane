@@ -29,6 +29,7 @@ export interface Store {
   // TicketReference
   saveTicketReference(sessionId: string, ticket: TicketReferenceShape): Promise<void> | void;
   getTicketReferences(tenantId: string, sessionId: string): Promise<TicketReferenceShape[]> | TicketReferenceShape[];
+  listAllTicketReferences(tenantId: string): Promise<TicketReferenceShape[]> | TicketReferenceShape[];
 
   // AIContextPacket
   saveContextPacket(packet: AIContextPacketShape): Promise<void> | void;
