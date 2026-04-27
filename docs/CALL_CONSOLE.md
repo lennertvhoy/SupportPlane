@@ -201,7 +201,7 @@ The BL-046 Operator Companion canonical browser proof is in:
 
 The BL-047/048/049 Screen Context Hardening Wave canonical browser proof is in:
 
-`output/playwright/session-047-049-screen-context-hardening/`
+`output/playwright/session-047-049-screen-context-hardening-final-closure/`
 
 ## Known limitations
 
