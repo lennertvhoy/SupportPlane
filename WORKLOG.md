@@ -32,12 +32,12 @@ Use this file for dated session notes, verification summaries, and references to
 - All 26 contract tests pass.
 - All 15 web API client tests pass.
 - All 9 workspace typechecks pass.
-- Browser proof: 9 screenshots in `output/playwright/bl045-*.png` showing call console, mock recording panel, attach action, and reviewed state.
+- Browser proof: 9 screenshots in `output/playwright/bl045/` showing call console, mock recording panel, attach action, and reviewed state.
 - Direct API verification: attach → list → review → playback all return expected mock metadata with `noRealAudio: true` and `mockDevOnly: true`.
 
 ### Evidence
 
-- Screenshot files: `output/playwright/bl045-01-call-console-initial.png` through `bl045-09-recording-reviewed.png`.
+- Screenshot files: `output/playwright/bl045/bl045-01-call-console-initial.png` through `bl045-09-recording-reviewed.png`.
 
 ### Remaining Risk
 

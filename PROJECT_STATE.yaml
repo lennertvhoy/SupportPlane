@@ -285,7 +285,7 @@ current_state:
           - callRecordings
           - mock recording disclaimers
           - noRealAudio flags
-        screenshot_folder: output/playwright/bl045-
+        screenshot_folder: output/playwright/bl045/
         screenshot_count: 9
         closure_notes:
           - tenant isolation enforced on all recording endpoints
