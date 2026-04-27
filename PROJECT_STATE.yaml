@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-27T17:45:00+02:00
+  updated_at: 2026-04-27T18:40:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: b4b42fbe701d7c6b2165f84e69302cfbcff34b03
-    worktree_status: clean_after_bl_018_final_commit
+    head: 45c677e
+    worktree_status: clean_after_bl_020_final_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -545,7 +545,7 @@ current_state:
     status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: bl_050_postgres_persistence_foundation_complete
+    head: 45c677e
     process_or_container:
       - node process (NestJS) on port 4110
       - node process (Next.js) on port 3200
@@ -566,6 +566,30 @@ current_state:
       - BL-006 local topology verification script exists at scripts/check_local_topology.sh
       - Infra containers (Postgres, NATS, MinIO) verified via podman-compose with healthchecks
       - Host-run API and Web verified against running infra with HTTP and browser checks
+    bl_020_status:
+      completed: true
+      scope: ticket_context_connector_safety_foundation
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      prisma_schema: prisma/schema.prisma
+      migration: prisma/migrations/20260427160804_ticket_context_connector_safety_foundation/
+      new_contracts:
+        - packages/contracts/src/customer.ts
+        - packages/contracts/src/connector-installation.ts
+      new_modules:
+        - apps/api/src/customers/
+        - apps/api/src/connector-installations/
+      new_ui_components:
+        - apps/web/components/CustomerReferencePanel.tsx
+      updated_ui_components:
+        - apps/web/components/ConnectorPanel.tsx
+        - apps/web/components/EvidenceBundlePanel.tsx
+        - apps/web/lib/api.ts
+      validation: all_typechecks_pass_102_api_tests_pass_browser_proof_13_screenshots
+      notes:
+        - All new entities default to mockDevOnly: true
+        - No real production Zammad, telephony, AI, or object storage implemented
     bl_018_status:
       completed: true
       scope: local_auth_rbac_tenant_boundary_foundation

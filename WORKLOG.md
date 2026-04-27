@@ -4,6 +4,52 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-27 - BL-020 Ticket Context and Connector Safety Foundation
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 45c677e
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Prisma schema adds `CustomerReference`, `TicketSummary`, `ConnectorInstallation` models with tenant scoping and relations.
+- Migration `20260427160804_ticket_context_connector_safety_foundation` applied against PostgreSQL on localhost:5434.
+- Contracts: `packages/contracts/src/customer.ts`, `packages/contracts/src/connector-installation.ts`, updated `evidence-bundle.ts` with `EvidenceBundleConnectorInstallationSummary`.
+- Store interface extended with `saveCustomerReference`, `getCustomerReference`, `listCustomerReferences`, `saveConnectorInstallation`, `getConnectorInstallation`, `listConnectorInstallations`.
+- `PrismaStore` and `InMemoryStore` implementations with full CRUD mapping.
+- `CustomersModule`: `GET /customers`, `GET /customers/:id` with tenant-scoped RBAC (`customer:read`).
+- `ConnectorInstallationsModule`: `GET /connector-installations`, `GET /connector-installations/:id` with RBAC (`connector_installation:read`).
+- RBAC permissions added: `customer:read/write`, `connector_installation:read/test`.
+- Evidence bundle builder: `toCustomerSummaries()`, `toConnectorInstallationSummaries()` with `redactSecrets`/`redactString` on safety flags and errors.
+- `SupportSessionsService.generateEvidenceBundle` fetches and passes `connectorInstallations` to builder.
+- Web API client (`apps/web/lib/api.ts`): `CustomerReference`, `ConnectorInstallation` types; `listCustomers`, `getCustomer`, `listConnectorInstallations`, `getConnectorInstallation` methods.
+- UI: `CustomerReferencePanel` showing tenant customer list with email/phone/company; `ConnectorPanel` updated with Installations section showing status, type, safety flags; `EvidenceBundlePanel` updated with Customers and Connectors summary counts.
+- Seed data: demo `CustomerReference` (Acme BVBA), `TicketReference` (TICKET-101/102/201), `ConnectorInstallation` (Local Zammad Mock) for both tenants.
+- Verification script: `scripts/verify_ticket_context_connector.sh`.
+
+### Verification
+
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `cd apps/api && npm test` passed: 102/102 tests.
+- `scripts/verify_ticket_context_connector.sh` passed against `http://localhost:4110` with `SUPPORTPLANE_STORE=postgres`.
+- API endpoints verified via curl: `/customers`, `/customers/:id`, `/connector-installations`, `/connector-installations/:id`, `/support-sessions/:id/evidence-bundle.json`.
+- Browser proof captured 13 screenshots in `output/playwright/session-020-ticket-context-connector-safety-foundation/`.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-020-ticket-context-connector-safety-foundation/`.
+- Git commit: `45c677e`.
+
+### Remaining Risk
+
+- All new entities default to `mockDevOnly: true`. No real production Zammad, telephony, AI, or object storage is implemented.
+- Customer lookup is seeded mock data only; no real connector-backed customer lookup is implemented.
+- Connector installation validation and test endpoints are stubbed in controller; full PATCH/POST/validate/test routes are not yet implemented.
+- `TicketSummary` model exists in schema and store but has no dedicated API endpoint yet; only used via evidence bundle.
+
 ## 2026-04-27 - BL-018 Local auth, RBAC, and tenant boundary foundation
 
 **Type:** implementation
