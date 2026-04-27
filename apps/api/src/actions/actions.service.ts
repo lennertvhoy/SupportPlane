@@ -31,7 +31,14 @@ export class ActionsService {
     await this.assertPermission(identity, 'action:read', sessionId);
     await this.requireSession(identity, sessionId);
     const actions = await this.store.listSupportActions(identity.tenantId, { sessionId });
-    const outboxItems = await this.store.listActionOutboxItems(identity.tenantId, { sessionId });
+    // Only return outbox items for actions that have reached queue or beyond.
+    // Draft and review_required actions must not display outbox/attempt state.
+    const hasQueuedOrDelivered = actions.some(
+      (a) => a.status === 'queued' || a.status === 'mock_delivered' || a.status === 'failed'
+    );
+    const outboxItems = hasQueuedOrDelivered
+      ? await this.store.listActionOutboxItems(identity.tenantId, { sessionId })
+      : [];
     return { actions, outboxItems };
   }
 

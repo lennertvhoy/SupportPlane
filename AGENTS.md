@@ -249,6 +249,18 @@ only as a committed migration file or an explicitly documented one-off repair,
 never as hidden runtime state. A clean worktree is not enough if the running
 database contains uncommitted schema drift.
 
+### Screenshot and lifecycle contradiction rule (mandatory)
+
+Browser proof must not contain state-machine contradictions.
+If a UI panel shows related lifecycle data, it must be scoped to the selected
+entity or clearly labeled as historical/global.
+A backlog item is not closure-grade if screenshots show stale, unrelated, or
+contradictory state without explicit explanation.
+State-machine workflows must include proof that invalid transitions are impossible
+and that related UI data belongs to the selected item.
+Final handoff must explicitly call out any screenshot anomaly or stale-state
+artifact instead of presenting it as clean proof.
+
 These rules are repo truth. Violations mean "not closure-grade."}}}}
 
 Use `prompts/FINAL_HANDOFF_TEMPLATE.md` when you need a canonical handoff shape.

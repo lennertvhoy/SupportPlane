@@ -56,11 +56,17 @@ export function ActionOutboxPanel({
     setError(null);
     try {
       const res = await api.listSessionActions(session.id);
-      setActions(res.actions);
-      setOutboxItems(res.outboxItems);
-      const deliveredOrQueued = res.outboxItems[0];
-      if (deliveredOrQueued) {
-        const detail = await api.getOutboxItem(deliveredOrQueued.id);
+      const newActions = res.actions;
+      const newOutboxItems = res.outboxItems;
+      setActions(newActions);
+      setOutboxItems(newOutboxItems);
+      // Scope attempt history to the latest action's outbox item only.
+      const latestAction = newActions[0];
+      const matchedOutbox = latestAction
+        ? newOutboxItems.find((item) => item.supportActionId === latestAction.id)
+        : undefined;
+      if (matchedOutbox) {
+        const detail = await api.getOutboxItem(matchedOutbox.id);
         setAttempts(detail.attempts);
       } else {
         setAttempts([]);

@@ -43,11 +43,21 @@ echo "$ACTION_RES" | jq -e '.action.status == "draft"' >/dev/null
 echo "$ACTION_RES" | jq -e '.action.safeBodyPreview | contains("[REDACTED]")' >/dev/null
 echo "PASS ($ACTION_ID)"
 
-echo "5. Submit for review"
+echo "5. Draft has no outbox item"
+DRAFT_LIST=$(curl -fsS -b "$COOKIE_OPERATOR" "$API_URL/support-sessions/$SESSION_ID/actions")
+echo "$DRAFT_LIST" | jq -e "[.outboxItems[] | select(.supportActionId == \"$ACTION_ID\")] | length == 0" >/dev/null
+echo "PASS"
+
+echo "6. Submit for review"
 curl -fsS -b "$COOKIE_OPERATOR" -X POST "$API_URL/actions/$ACTION_ID/submit-for-review" | jq -e '.action.status == "review_required"' >/dev/null
 echo "PASS"
 
-echo "6. Viewer forged-header approval remains forbidden in local auth"
+echo "7. review_required has no outbox item"
+REVIEW_LIST=$(curl -fsS -b "$COOKIE_OPERATOR" "$API_URL/support-sessions/$SESSION_ID/actions")
+echo "$REVIEW_LIST" | jq -e "[.outboxItems[] | select(.supportActionId == \"$ACTION_ID\")] | length == 0" >/dev/null
+echo "PASS"
+
+echo "8. Viewer forged-header approval remains forbidden in local auth"
 FORGED_CODE=$(curl -s -o /tmp/bl092-forged-response.json -w "%{http_code}" -b "$COOKIE_VIEWER" -H "x-user-role: admin" -X POST "$API_URL/actions/$ACTION_ID/approve" || true)
 if [ "$FORGED_CODE" != "403" ]; then
   echo "FAIL: expected 403, got $FORGED_CODE"
@@ -56,34 +66,43 @@ if [ "$FORGED_CODE" != "403" ]; then
 fi
 echo "PASS (403)"
 
-echo "7. Admin approves"
+echo "9. Admin approves"
 curl -fsS -b "$COOKIE_ADMIN" -X POST "$API_URL/actions/$ACTION_ID/approve" -H "Content-Type: application/json" \
   -d '{"reason":"Approved for local mock delivery"}' | jq -e '.action.status == "approved"' >/dev/null
 echo "PASS"
 
-echo "8. Queue approved action"
+echo "10. approved has no outbox item and no attempts"
+APPROVED_LIST=$(curl -fsS -b "$COOKIE_OPERATOR" "$API_URL/support-sessions/$SESSION_ID/actions")
+echo "$APPROVED_LIST" | jq -e "[.outboxItems[] | select(.supportActionId == \"$ACTION_ID\")] | length == 0" >/dev/null
+echo "PASS"
+
+echo "11. Queue approved action"
 QUEUE_RES=$(curl -fsS -b "$COOKIE_ADMIN" -X POST "$API_URL/actions/$ACTION_ID/queue")
 OUTBOX_ID=$(echo "$QUEUE_RES" | jq -r '.outboxItem.id')
 echo "$QUEUE_RES" | jq -e '.outboxItem.status == "queued"' >/dev/null
+echo "$QUEUE_RES" | jq -e '.outboxItem.attemptCount == 0' >/dev/null
 echo "$QUEUE_RES" | jq -e '.outboxItem.deliveryIntent.realNetwork == false and .outboxItem.deliveryIntent.writebackEnabled == false and .outboxItem.deliveryIntent.externalWriteAttempted == false' >/dev/null
 echo "PASS ($OUTBOX_ID)"
 
-echo "9. Mock deliver"
+echo "12. Mock deliver"
 DELIVERY=$(curl -fsS -b "$COOKIE_OPERATOR" -X POST "$API_URL/outbox/$OUTBOX_ID/mock-deliver")
 echo "$DELIVERY" | jq -e '.outboxItem.status == "mock_delivered"' >/dev/null
+echo "$DELIVERY" | jq -e '.outboxItem.attemptCount == 1' >/dev/null
 echo "$DELIVERY" | jq -e '.delivery.realNetwork == false and .delivery.writebackEnabled == false and .delivery.externalWriteAttempted == false and .delivery.deliveryClaim == "mock_delivered"' >/dev/null
 echo "PASS"
 
-echo "10. Outbox attempt history"
-curl -fsS -b "$COOKIE_VIEWER" "$API_URL/outbox/$OUTBOX_ID" | jq -e '.attempts | length == 1' >/dev/null
+echo "13. Outbox attempt history scoped to correct item"
+OUTBOX_DETAIL=$(curl -fsS -b "$COOKIE_VIEWER" "$API_URL/outbox/$OUTBOX_ID")
+echo "$OUTBOX_DETAIL" | jq -e '.attempts | length == 1' >/dev/null
+echo "$OUTBOX_DETAIL" | jq -e ".attempts[0].supportActionId == \"$ACTION_ID\"" >/dev/null
 echo "PASS"
 
-echo "11. Audit and timeline include action/outbox events"
+echo "14. Audit and timeline include action/outbox events"
 curl -fsS -b "$COOKIE_VIEWER" "$API_URL/support-sessions/$SESSION_ID/audit-events" | jq -e '[.[].eventType] | index("action_mock_delivered") and index("outbox_item_attempted")' >/dev/null
 curl -fsS -b "$COOKIE_VIEWER" "$API_URL/support-sessions/$SESSION_ID/case-timeline" | jq -e '.timeline[] | select(.type == "action_outbox_item")' >/dev/null
 echo "PASS"
 
-echo "12. Evidence bundle includes action/outbox summary and redacts secrets"
+echo "15. Evidence bundle includes action/outbox summary and redacts secrets"
 EVIDENCE=$(curl -fsS -b "$COOKIE_VIEWER" "$API_URL/support-sessions/$SESSION_ID/evidence-bundle.json")
 echo "$EVIDENCE" | jq -e '.bundle.actionOutbox[0].realNetwork == false and .bundle.actionOutbox[0].externalWriteAttempted == false and .bundle.actionOutbox[0].writebackEnabled == false' >/dev/null
 if echo "$EVIDENCE" | grep -E 'super-secret-token|password=secret-value' >/dev/null; then
@@ -92,7 +111,7 @@ if echo "$EVIDENCE" | grep -E 'super-secret-token|password=secret-value' >/dev/n
 fi
 echo "PASS"
 
-echo "13. Cross-tenant access denied"
+echo "16. Cross-tenant access denied"
 ALT_CODE=$(curl -s -o /dev/null -w "%{http_code}" -b "$COOKIE_ALT" "$API_URL/actions/$ACTION_ID" || true)
 if [ "$ALT_CODE" != "404" ]; then
   echo "FAIL: expected 404, got $ALT_CODE"
@@ -100,7 +119,7 @@ if [ "$ALT_CODE" != "404" ]; then
 fi
 echo "PASS (404)"
 
-echo "14. Web root reachable"
+echo "17. Web root reachable"
 WEB_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$WEB_URL/" || true)
 if [ "$WEB_CODE" != "200" ]; then
   echo "FAIL: expected 200, got $WEB_CODE"

@@ -305,6 +305,140 @@ describe('SupportPlane API', () => {
     assert.doesNotMatch(JSON.stringify(evidence.body.bundle), /password=secret/);
   });
 
+  it('action/outbox state-machine lifecycle prevents attempts before queue', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .send({ title: 'State machine test' })
+      .expect(201);
+
+    // 1. draft has no outbox item and zero attempts
+    const actionCreated = await supertest(server)
+      .post(`/support-sessions/${created.body.id}/actions`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .send({ actionType: 'ticket_note', externalTicketId: 'TICKET-SM-1', body: 'Draft' })
+      .expect(201);
+    assert.strictEqual(actionCreated.body.action.status, 'draft');
+    const draftList = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/actions`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+    assert.strictEqual(draftList.body.outboxItems.filter((i: { supportActionId: string }) => i.supportActionId === actionCreated.body.action.id).length, 0);
+
+    // 2. review_required has no outbox item and zero attempts
+    const submitted = await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/submit-for-review`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .expect(201);
+    assert.strictEqual(submitted.body.action.status, 'review_required');
+    const reviewList = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/actions`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+    assert.strictEqual(reviewList.body.outboxItems.filter((i: { supportActionId: string }) => i.supportActionId === actionCreated.body.action.id).length, 0);
+
+    // 3. approved has no outbox item and zero attempts
+    const approved = await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/approve`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ reason: 'Approved' })
+      .expect(201);
+    assert.strictEqual(approved.body.action.status, 'approved');
+    const approvedList = await supertest(server)
+      .get(`/support-sessions/${created.body.id}/actions`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+    assert.strictEqual(approvedList.body.outboxItems.filter((i: { supportActionId: string }) => i.supportActionId === actionCreated.body.action.id).length, 0);
+
+    // 4. queued creates outbox item with attemptCount 0
+    const queued = await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/queue`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(201);
+    assert.strictEqual(queued.body.outboxItem.status, 'queued');
+    assert.strictEqual(queued.body.outboxItem.attemptCount, 0);
+
+    // 5. mock delivery creates exactly one attempt for the correct outbox item
+    const delivered = await supertest(server)
+      .post(`/outbox/${queued.body.outboxItem.id}/mock-deliver`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .expect(201);
+    assert.strictEqual(delivered.body.outboxItem.status, 'mock_delivered');
+    assert.strictEqual(delivered.body.attempt.attemptNumber, 1);
+    assert.strictEqual(delivered.body.attempt.outboxItemId, queued.body.outboxItem.id);
+    assert.strictEqual(delivered.body.attempt.supportActionId, actionCreated.body.action.id);
+
+    // 6. attempt history belongs to the selected outbox item
+    const outboxDetail = await supertest(server)
+      .get(`/outbox/${queued.body.outboxItem.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(200);
+    assert.strictEqual(outboxDetail.body.attempts.length, 1);
+    assert.strictEqual(outboxDetail.body.attempts[0].supportActionId, actionCreated.body.action.id);
+  });
+
+  it('action/outbox invalid transitions are rejected', async () => {
+    const created = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .send({ title: 'Invalid transition test' })
+      .expect(201);
+
+    const actionCreated = await supertest(server)
+      .post(`/support-sessions/${created.body.id}/actions`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .send({ actionType: 'ticket_note', externalTicketId: 'TICKET-INV-1', body: 'Draft' })
+      .expect(201);
+
+    // Cannot approve from draft
+    await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/approve`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({})
+      .expect(400);
+
+    // Cannot queue from draft
+    await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/queue`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({})
+      .expect(400);
+
+    // Cannot mock-deliver without outbox item
+    await supertest(server)
+      .post(`/actions/${actionCreated.body.action.id}/mock-deliver`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(400);
+  });
+
   it('tenant isolation holds for context-packets and audit-events', async () => {
     const created = await supertest(server)
       .post('/support-sessions')
