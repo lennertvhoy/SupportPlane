@@ -132,7 +132,7 @@ podman compose -f infra/docker-compose/compose.yaml down -v
 
 ## Known limitations
 
-- **No real persistence migration:** The API still uses an in-memory store. PostgreSQL is available in the topology but the app does not yet use Prisma Client against it.
+- **Persistence mode:** The API supports both `memory` (default) and `postgres` stores via `SUPPORTPLANE_STORE` env var. PostgreSQL persistence requires `SUPPORTPLANE_STORE=postgres` and `DATABASE_URL` pointing to the local PostgreSQL container (default port 5434). Run `npx prisma migrate deploy` and `npx prisma db seed` before first use in postgres mode.
 - **No real authentication:** Dev-only mock identity headers (`x-tenant-id`, `x-user-id`, `x-user-role`) are used.
 - **No real AI provider:** The AI gateway uses deterministic mock output.
 - **No real ticketing integration:** `MockTicketingAdapter` returns fixture data.

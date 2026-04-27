@@ -1230,3 +1230,18 @@
   - Store switching works at runtime via env var.
 - Type: api-behavior-verification
 - as_of: 2026-04-27T15:24:00+02:00
+
+## EV-2026-04-27-053: BL-050 PostgreSQL mode browser closure proof
+
+- File: output/playwright/session-050-postgres-persistence-foundation-final-closure/
+- Title: BL-050 PostgreSQL Persistence Foundation canonical browser closure proof
+- Source/System: browser
+- Action: Verified Support Cockpit and Call Console in PostgreSQL mode with persisted data.
+- Shows:
+  - 14 sequential screenshots covering initial state, session creation, ticket context, fake incoming call, call linking, operator companion observation, context packet, call recording metadata, AI context quality, restart persistence, audit trail, evidence bundle JSON (before and after restart), and no-secret proof.
+- Proves:
+  - UI functions correctly in PostgreSQL store mode.
+  - Data persists across API restart and remains visible in the browser.
+  - Evidence bundle correctly reports `storeType: postgres`.
+- Type: docs-render-verification
+- as_of: 2026-04-27T16:11:00+02:00

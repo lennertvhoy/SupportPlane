@@ -211,6 +211,23 @@ Every implementation session ends with:
 - next recommended action
 - handoff wording suitable for direct paste into the CTO chat
 
+### Closure-grade validation gate (mandatory)
+
+A backlog item may **not** be claimed complete unless the final handoff includes:
+- full final commit hash
+- clean worktree proof (`git status --short --branch`)
+- exact validation commands run and exact pass/fail results
+- screenshot folder path and screenshot count for user-visible/browser-tested work
+- browser proof summary where required
+- runtime status and ports where services are involved
+- explicit unresolved limitations or risks
+
+Unacceptable shortcuts:
+- "Tests pass" or "validated" without listing the exact commands
+- dirty worktree, unchanged HEAD after claimed work, missing commit, missing browser proof, incomplete validation reporting, or unexplained contradictions
+
+These rules are repo truth. Violations mean "not closure-grade."}}
+
 Use `prompts/FINAL_HANDOFF_TEMPLATE.md` when you need a canonical handoff shape.
 Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics.
 Use `prompts/ACCEPTANCE_FREEZE_TEMPLATE.md` after accepting a user-facing milestone.
