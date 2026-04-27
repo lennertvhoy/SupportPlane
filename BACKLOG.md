@@ -132,6 +132,10 @@ pulled into `NEXT_ACTIONS.md` and must reference these IDs.
 - [BL-089] Add threat-model review checkpoints and security regression tests.
 - [BL-090] Add release packaging, demo dataset reset, and operator deployment documentation.
 
+## Cross-cutting Workflow Integration
+
+- [BL-091] End-to-end support case workflow foundation. Unify ticket summary API, ticket/session linking, caller-to-customer matching, unified case timeline, connector validate/test endpoints, deterministic local-only support note draft, and evidence bundle provenance into a coherent operator cockpit. Honest mock/local labels throughout. No real telephony, Zammad writeback, AI provider, or production deployment claims.
+
 ## WATCHLIST
 
 - AI tool execution must stay policy-gated and auditable.

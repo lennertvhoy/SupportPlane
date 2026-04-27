@@ -603,6 +603,53 @@ and must be protected from quiet regression.
   - The earlier partial screenshot folder `output/playwright/session-047-049-screen-context-hardening/` is superseded by this final closure folder.
 
 
+## AF-2026-04-27-008: BL-020 Ticket Context and Connector Safety Foundation
+
+- ID: AF-2026-04-27-008
+- Milestone: Ticket Context and Connector Safety Foundation
+- Scope: Persistent tenant-scoped CustomerReference, TicketSummary, and ConnectorInstallation models; Prisma migration; GET /customers and GET /customers/:id with RBAC; GET /connector-installations and GET /connector-installations/:id with RBAC; evidence bundle integration with redaction; CustomerReferencePanel and updated ConnectorPanel/EvidenceBundlePanel in web UI; seed data for demo customers, tickets, and connector installations.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: 208d8fa83b3bddc93b496c1c035777049e0e1cbe
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+  - Podman container `sp-postgres` on port 5434
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- routes:
+  - /
+  - GET /customers
+  - GET /customers/:id
+  - GET /connector-installations
+  - GET /connector-installations/:id
+  - GET /support-sessions/:id/evidence-bundle
+  - GET /support-sessions/:id/evidence-bundle.json
+  - GET /support-sessions/:id/evidence-bundle.md
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-27-064 through EV-2026-04-27-075
+- evidence_folder: output/playwright/session-020-ticket-context-connector-safety-foundation-final-closure/
+- screenshot_count: 12
+- regression_guard:
+  - CustomerReferencePanel must remain visible with tenant-scoped customer list.
+  - ConnectorPanel must show Installations section with status, type, and safety flags.
+  - EvidenceBundlePanel must include Customers and Connectors counts.
+  - GET /customers and GET /connector-installations must enforce tenant isolation and RBAC.
+  - Evidence bundle JSON/Markdown must include customerReferences and connectorInstallations sections with redaction.
+  - No connector credentials, tokens, or raw secrets may appear in UI, API responses, or evidence exports.
+- Notes:
+  - TicketSummary model exists but has no dedicated API endpoint or UI panel yet.
+  - Connector installation PATCH/validate/test endpoints are deferred.
+  - Full customer lookup by email/phone query params is accepted but adapter-backed lookup is not implemented.
+  - All new entities default to mockDevOnly: true.
+  - No real production Zammad, telephony, AI, or object storage is implemented.
+
 ---
 
 ## AF-2026-04-27-006: BL-050 PostgreSQL Persistence Foundation
