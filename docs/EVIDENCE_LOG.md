@@ -1008,3 +1008,133 @@
   - Evidence bundles include greeting suggestion summaries and honest mock/disabled flags.
 - Type: docs-render-verification
 - as_of: 2026-04-26T23:46:00+02:00
+
+## EV-2026-04-27-001: BL-043 final closure Call Console route
+
+- File: output/playwright/session-043-call-console-ui-final-closure/01-call-console-route-mock-labels.png
+- Title: Call Console route with mock labels
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Opened `/call-console` during the final BL-043 closure flow.
+- Shows:
+  - Mock Call Console header.
+  - "No real telephony connected" label.
+  - Recent fake incoming calls list.
+- Proves:
+  - The dedicated Call Console route renders with honest mock telephony labels.
+- Type: docs-render-verification
+- as_of: 2026-04-27T09:46:00+02:00
+
+## EV-2026-04-27-002: BL-043 selected fake call with match and ticket hints
+
+- File: output/playwright/session-043-call-console-ui-final-closure/02-selected-fake-call-caller-match-ticket-hints.png
+- Title: Selected fake incoming call with caller match data
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Selected the final closure fake incoming call.
+- Shows:
+  - Caller Identity panel.
+  - Matched customer Acme BVBA.
+  - Recent tickets TICKET-101 and TICKET-102.
+  - Mock matching disclaimer.
+- Proves:
+  - The Call Console displays caller identity, customer match, and ticket hints.
+- Type: docs-render-verification
+- as_of: 2026-04-27T09:46:00+02:00
+
+## EV-2026-04-27-003: BL-043 linked support session visible
+
+- File: output/playwright/session-043-call-console-ui-final-closure/03-linked-support-session-visible.png
+- Title: Linked SupportSession panel visible from Call Console
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Answered the fake call, linked it to the closure SupportSession, and reloaded the Call Console.
+- Shows:
+  - Linked Support Session panel.
+  - Session title, status, priority, ticket count, and Open in cockpit button.
+- Proves:
+  - A selected fake call can display its linked SupportSession in the Call Console.
+- Type: docs-render-verification
+- as_of: 2026-04-27T09:46:00+02:00
+
+## EV-2026-04-27-004: BL-043 mock lifecycle controls and timeline
+
+- File: output/playwright/session-043-call-console-ui-final-closure/04-mock-call-controls-answer-hold-resume-end-lifecycle.png
+- Title: Mock answer, hold, resume, end lifecycle
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Used mock lifecycle controls for answer, hold, resume, and end.
+- Shows:
+  - Ended fake call state.
+  - Call Timeline entries for call answered, call placed on hold, call resumed, and call ended.
+  - Mock controls disclaimer.
+- Proves:
+  - BL-043 lifecycle controls update local call state and timeline without real telephony.
+- Type: docs-render-verification
+- as_of: 2026-04-27T09:46:00+02:00
+
+## EV-2026-04-27-005: BL-043 greeting suggestion visible in Call Console
+
+- File: output/playwright/session-043-call-console-ui-final-closure/05-suggested-greeting-model-prompt-context-metadata.png
+- Title: Suggested greeting and model metadata in Call Console
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Generated a professional mock greeting for the linked call/session.
+- Shows:
+  - Greeting text.
+  - Provider/model/prompt/context metadata.
+  - Auto-send and voice disabled state.
+  - Mock AI and review-before-use labels.
+- Proves:
+  - The Call Console integrates the BL-042 greeting suggestion workflow.
+- Type: docs-render-verification
+- as_of: 2026-04-27T09:46:00+02:00
+
+## EV-2026-04-27-006: BL-043 timeline includes call, link, status, and greeting events
+
+- File: output/playwright/session-043-call-console-ui-final-closure/06-timeline-received-matched-linked-status-greeting.png
+- Title: Call timeline with received, matched, linked, status, and greeting events
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Scrolled to the timeline after lifecycle changes and greeting generation.
+- Shows:
+  - Call received.
+  - Caller matched.
+  - Call linked to session.
+  - Call status lifecycle entries.
+  - Greeting suggested.
+- Proves:
+  - `GET /calls/:id/timeline` feeds the Call Console audit/timeline panel.
+- Type: docs-render-verification
+- as_of: 2026-04-27T09:46:00+02:00
+
+## EV-2026-04-27-007: BL-043 navigation between Call Console and Support Cockpit
+
+- File: output/playwright/session-043-call-console-ui-final-closure/07-navigation-between-call-console-and-support-cockpit.png
+- Title: Support Cockpit opened from Call Console linked session
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=777c478a-0042-44cf-b6ce-1ea85924b101
+- Action: Clicked Open in cockpit from the Call Console.
+- Shows:
+  - Support Cockpit route with the linked session selected.
+  - Call Console navigation button in the cockpit header.
+- Proves:
+  - Operators can navigate between Call Console and Support Cockpit for the linked session.
+- Type: docs-render-verification
+- as_of: 2026-04-27T09:46:00+02:00
+
+## EV-2026-04-27-008: BL-043 evidence bundle lifecycle, greeting, and mock disclaimers
+
+- File: output/playwright/session-043-call-console-ui-final-closure/08-evidence-bundle-call-lifecycle-greeting-mock-disclaimers.png
+- Title: Evidence bundle preview with call lifecycle and greeting information
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=777c478a-0042-44cf-b6ce-1ea85924b101
+- Action: Generated an evidence bundle from the Support Cockpit and opened the Markdown preview.
+- Shows:
+  - Evidence bundle preview for the same linked support session.
+  - Call lifecycle audit and greeting suggestion information.
+  - Mock/dev-only disclaimers.
+- Proves:
+  - Evidence bundles include call lifecycle, greeting information, mock telephony disclaimers, and mock AI/disabled voice flags.
+- Type: docs-render-verification
+- as_of: 2026-04-27T09:46:00+02:00

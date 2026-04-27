@@ -124,10 +124,10 @@ export default function CallConsolePage() {
         callEventId: selectedCall?.id,
         modelSelection: { provider: 'mock', model: 'mock-greeting-v1' },
       });
-      setGreetingSuggestion(response);
       if (selectedCall) {
         await fetchCallDetails(selectedCall);
       }
+      setGreetingSuggestion(response);
     } catch (err) {
       setGreetingError(err instanceof ApiClientError ? err.message : 'Failed to generate greeting');
     } finally {

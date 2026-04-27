@@ -1,8 +1,8 @@
 # Evidence Bundles
 
 **Product:** SupportPlane  
-**Scope:** BL-008 Evidence bundle skeleton and exportable JSON/Markdown MVP  
-**Last updated:** 2026-04-26
+**Scope:** BL-008 Evidence bundle skeleton and exportable JSON/Markdown MVP, extended through BL-043 Call Console lifecycle evidence  
+**Last updated:** 2026-04-27
 
 ## Purpose
 
@@ -36,6 +36,7 @@ Every bundle includes:
 | AI context packets | Provenance, payload summary, redaction log |
 | AI usage | Provider, model, prompt version, context hash, mock flags |
 | Greeting suggestions | Generated greeting text, tone, provider, model, prompt, context hash, mock/disabled flags |
+| Call lifecycle audit | Received, matched, linked, status-change, and greeting-related events through the audit timeline |
 | Connector operations | Ticket loads, drafts, writeback attempts/results |
 | Audit timeline | Full event list with actor, resource, metadata, integrity hash |
 | Mock/dev-only disclaimers | Honest labels about in-memory/mock limitations |
@@ -95,6 +96,8 @@ Tests prove that `apiToken`, `ZAMMAD_API_TOKEN`, `secret`, `token=`, and `Bearer
 - **Pattern-based redaction:** Secret redaction uses pattern matching, not guaranteed zero-knowledge.
 - **Auto-created sessions:** Sessions created from mock incoming calls are development-only artifacts.
 - **Greeting suggestions:** Generated greetings are mock-AI suggestions only, not spoken or sent automatically.
+- **Call Console lifecycle:** BL-043 call status changes are mock lifecycle
+  events only. They do not control a real phone, PBX, queue, or call center.
 
 ## Future persistence/object-storage path
 
@@ -117,6 +120,9 @@ The bundle builder is structured so that real persistence or object storage can 
 7. Switch between **Summary**, **JSON**, and **Markdown** tabs
 8. Scroll to the Audit Trail to see `evidence_bundle_generated` and `evidence_bundle_exported` events
 9. Verify no secrets appear in JSON or Markdown previews
+10. For BL-043 Call Console evidence, verify the bundle includes `callEvents`,
+    `call_status_changed`, `greeting_suggestion_generated`, `autoSend: false`,
+    `voiceEnabled: false`, and mock telephony / mock AI disclaimers
 
 ## API endpoints
 

@@ -4,6 +4,42 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-27 - BL-043 Call Console closure/hygiene pass
+
+**Type:** closure_hygiene
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Added BL-043 closure documentation in `docs/CALL_CONSOLE.md`.
+- Updated repo state/docs for BL-043 closure: `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md`, `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`, `docs/CALL_SIMULATOR.md`, `docs/GREETING_SUGGESTIONS.md`, and `docs/EVIDENCE_BUNDLES.md`.
+- Added an `AGENTS.md` rule requiring each screenshot evidence wave to use a fresh numbered folder under `output/playwright/`.
+- Fixed Call Console greeting generation so the generated greeting remains visible after timeline refresh.
+- Fixed call timeline mapping so resume transitions display as `call_resumed`, not a second generic answered event.
+- Added API regression coverage for `call_resumed` timeline output.
+
+### Verification
+
+- Final browser closure evidence captured exactly 8 screenshots in `output/playwright/session-043-call-console-ui-final-closure/`.
+- Verified the final fake incoming call flow: Call Console selection, answer, link to SupportSession, hold, resume, end, generate greeting, timeline review, Support Cockpit navigation, evidence bundle generation.
+- Verified API evidence bundle output includes `call_status_changed`, `greeting_suggestion_generated`, `autoSend`, `voiceEnabled`, and mock telephony disclaimers.
+- Full validation gate results are recorded in the final handoff.
+
+### Evidence
+
+- EV-2026-04-27-001 through EV-2026-04-27-008.
+- Screenshot folder: `output/playwright/session-043-call-console-ui-final-closure/`.
+
+### Remaining Risk
+
+- No real database persistence; runtime state is in memory.
+- No real telephony/PBX, voice/TTS/STT, real AI provider, real auth, queue-backed workflow, object storage, real Zammad call, production call-center integration, or production deployment exists.
+- BL-044, BL-045, and BL-046 were not started.
+
 ## 2026-04-26 - Monorepo scaffold initialized (BL-001)
 
 **Type:** implementation

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-26T22:04:00+02:00
+  updated_at: 2026-04-27T09:46:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -235,6 +235,41 @@ current_state:
         mock_ai: true
         honest_labels: true
         evidence_bundle_includes: greetingSuggestions
+    bl_043_status:
+      completed: true
+      scope: call_console_ui_closure
+      api_app: apps/api
+      web_app: apps/web
+      docs:
+        - docs/CALL_CONSOLE.md
+      validation: full_validation_gate_and_browser_closure_verified
+      runtime:
+        route:
+          - /call-console
+        api_endpoints:
+          - POST /calls/:id/status
+          - GET /calls/:id/timeline
+        audit_events:
+          - call_status_changed
+          - greeting_suggestion_generated
+          - evidence_bundle_generated
+          - evidence_bundle_exported
+        store_type: in-memory
+        mock_telephony: true
+        mock_ai: true
+        real_integrations: false
+        evidence_bundle_includes:
+          - callEvents
+          - call_status_changed auditTimeline entries
+          - greetingSuggestions
+          - mock telephony disclaimers
+          - mock AI / disabled voice and auto-send flags
+        screenshot_folder: output/playwright/session-043-call-console-ui-final-closure/
+        screenshot_count: 8
+        closure_notes:
+          - final closure supersedes earlier partial folder output/playwright/session-043-call-console-ui/
+          - call resume timeline now displays call_resumed instead of a second call_answered
+          - Call Console greeting generation now remains visible after timeline refresh
     truth_summary: >
       SupportPlane is a multi-tenant, self-hostable AI support cockpit where
       tickets, calls, screen context, endpoint diagnostics, and remote support
@@ -272,7 +307,7 @@ current_state:
     notes:
       - NestJS API is running and verified via integration tests and curl
       - Next.js web app is running and verified via browser screenshots
-      - BL-005 draft suggestion workflow is verified in Chromium with model metadata and audit event visible
+      - BL-043 closure verified in Chromium with 8 screenshots in output/playwright/session-043-call-console-ui-final-closure/
       - baseline health script exists at scripts/health.js and returns scaffold identity
       - runtime identity proof was collected for API endpoints and UI panels
       - BL-006 local topology verification script exists at scripts/check_local_topology.sh

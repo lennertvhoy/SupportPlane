@@ -413,9 +413,16 @@ export class CallsService {
     const statusEvents = relatedAuditEvents.filter((e) => e.eventType === AuditEventType.enum.call_status_changed);
     for (const evt of statusEvents) {
       const newStatus = evt.metadata.newStatus as string;
+      const previousStatus = evt.metadata.previousStatus as string;
       let type: CallTimelineItemType = CallTimelineItemType.enum.audit_event;
       let title = `Status changed to ${newStatus}`;
-      if (newStatus === CallStatus.enum.answered) { type = CallTimelineItemType.enum.call_answered; title = 'Call answered'; }
+      if (newStatus === CallStatus.enum.answered && previousStatus === CallStatus.enum.on_hold) {
+        type = CallTimelineItemType.enum.call_resumed;
+        title = 'Call resumed';
+      } else if (newStatus === CallStatus.enum.answered) {
+        type = CallTimelineItemType.enum.call_answered;
+        title = 'Call answered';
+      }
       if (newStatus === CallStatus.enum.on_hold) { type = CallTimelineItemType.enum.call_held; title = 'Call placed on hold'; }
       if (newStatus === CallStatus.enum.ended) { type = CallTimelineItemType.enum.call_ended; title = 'Call ended'; }
       if (newStatus === CallStatus.enum.missed) { type = CallTimelineItemType.enum.call_missed; title = 'Call missed'; }

@@ -1,8 +1,8 @@
 # Greeting Suggestions
 
 **Product:** SupportPlane  
-**Scope:** BL-042 Suggested greeting generation from call plus ticket context  
-**Last updated:** 2026-04-26
+**Scope:** BL-042 Suggested greeting generation from call plus ticket context and BL-043 Call Console integration  
+**Last updated:** 2026-04-27
 
 ## Purpose
 
@@ -129,10 +129,27 @@ Evidence bundles include a `greetingSuggestions` array with:
 - **In-memory store:** All data is lost on API restart.
 - **No real authentication:** Actor identity comes from mock dev headers.
 
-## Future path toward BL-043 Call Console UI
+## Call Console integration
 
-BL-042 provides the backend greeting suggestion capability. BL-043 will introduce a dedicated Call Console UI that may:
-- Surface the greeting suggestion automatically when a call is matched.
-- Show caller identity, matched tickets, and recent history in a unified caller card.
-- Allow inline editing and one-click copy of the greeting.
-- Track post-call notes and ticket drafts.
+BL-043 exposes greeting suggestions inside `/call-console` when the selected
+fake call is linked to a SupportSession. The Call Console passes `callEventId`,
+tone, and mock model selection to `POST /support-sessions/:id/greeting-suggestion`
+and displays:
+
+- the generated greeting text
+- provider `mock`
+- model `mock-greeting-v1`
+- prompt version `mock-v1`
+- context hash
+- tone
+- `Auto-send: No`
+- `Voice: No`
+
+The generated greeting remains review-only and is not spoken, sent, or written
+back automatically.
+
+## Future path after BL-043
+
+Later slices may add post-call summaries, ticket-note draft review, and fuller
+demo fixtures. Real provider selection, voice, TTS, STT, and production
+telephony are not implemented by BL-043.

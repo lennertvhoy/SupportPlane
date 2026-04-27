@@ -490,8 +490,20 @@ export class SupportSessionsService {
     const session = this.getSession(identity, sessionId);
     const tickets = this.store.getTicketReferences(identity.tenantId, sessionId);
     const contextPackets = this.store.getContextPackets(identity.tenantId, sessionId);
-    const auditEvents = this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEvents = this.store.listCallEventsForSession(identity.tenantId, sessionId);
+    const sessionAuditEvents = this.store.getAuditEvents(identity.tenantId, sessionId);
+    const callEventIds = new Set<string>(callEvents.map((call) => call.id));
+    const externalCallIds = new Set(callEvents.map((call) => call.externalCallId));
+    const callAuditEvents = this.store.getAllAuditEvents(identity.tenantId).filter((event) => {
+      if (event.sessionId === sessionId) return false;
+      return (
+        callEventIds.has(event.resourceId) ||
+        (typeof event.metadata.externalCallId === 'string' && externalCallIds.has(event.metadata.externalCallId))
+      );
+    });
+    const auditEvents = [...sessionAuditEvents, ...callAuditEvents].sort((a, b) =>
+      a.createdAt.localeCompare(b.createdAt)
+    );
 
     const bundle = buildEvidenceBundle({
       tenantId: identity.tenantId as TenantId,

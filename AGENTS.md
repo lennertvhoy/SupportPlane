@@ -32,6 +32,9 @@ These rules apply in all modes:
 - user-facing acceptance requires runtime identity proof, not screenshots alone
 - negative searches stay negative: use `not found`, `not currently locatable`, or `not proven`
 - screenshots or evidence are required for user-visible changes
+- each evidence wave that captures screenshots must use a fresh numbered
+  screenshot folder under `output/playwright/`; do not mix final closure proof
+  with older partial screenshots
 - active queue stays short
 - history belongs in `WORKLOG.md`, not live state files
 - structured state must remain machine-checkable

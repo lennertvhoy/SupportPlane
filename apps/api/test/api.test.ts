@@ -809,6 +809,14 @@ describe('Call simulator endpoints', () => {
     assert.strictEqual(bundleRes.body.bundle.sessionSummary.id, sessionId);
 
     const auditTimeline = bundleRes.body.bundle.auditTimeline;
+    const receivedEvent = auditTimeline.find(
+      (e: { eventType: string }) => e.eventType === 'call_event_received'
+    );
+    assert.ok(receivedEvent, 'call_event_received should be in evidence bundle audit timeline');
+    const matchedEvent = auditTimeline.find(
+      (e: { eventType: string }) => e.eventType === 'caller_matched'
+    );
+    assert.ok(matchedEvent, 'caller_matched should be in evidence bundle audit timeline');
     const autoCreateEvent = auditTimeline.find(
       (e: { eventType: string }) => e.eventType === 'support_session_auto_created'
     );
@@ -1397,6 +1405,13 @@ describe('Call status transition endpoints', () => {
       .expect(200);
 
     await supertest(server)
+      .post(`/calls/${call.body.callEvent.id}/status`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ status: 'answered' })
+      .expect(200);
+
+    await supertest(server)
       .post(`/support-sessions/${session.body.id}/greeting-suggestion`)
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
@@ -1410,8 +1425,10 @@ describe('Call status transition endpoints', () => {
       .expect(200);
 
     const held = res.body.timelineItems.find((t: { type: string }) => t.type === 'call_held');
+    const resumed = res.body.timelineItems.find((t: { type: string }) => t.type === 'call_resumed');
     const greeting = res.body.timelineItems.find((t: { type: string }) => t.type === 'greeting_suggested');
     assert.ok(held, 'timeline should include call_held');
+    assert.ok(resumed, 'timeline should include call_resumed');
     assert.ok(greeting, 'timeline should include greeting_suggested');
   });
 
@@ -1455,5 +1472,13 @@ describe('Call status transition endpoints', () => {
     );
     assert.ok(statusEvent, 'evidence bundle audit timeline should include call_status_changed');
     assert.strictEqual(statusEvent.metadataSummary.newStatus, 'ended');
+    const receivedEvent = res.body.bundle.auditTimeline.find(
+      (e: { eventType: string }) => e.eventType === 'call_event_received'
+    );
+    assert.ok(receivedEvent, 'evidence bundle audit timeline should include call_event_received');
+    const matchedEvent = res.body.bundle.auditTimeline.find(
+      (e: { eventType: string }) => e.eventType === 'caller_matched'
+    );
+    assert.ok(matchedEvent, 'evidence bundle audit timeline should include caller_matched');
   });
 });

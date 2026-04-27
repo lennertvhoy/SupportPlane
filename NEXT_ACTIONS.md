@@ -1,15 +1,13 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-26 23:50 CEST
+**Updated At:** 2026-04-27 09:46 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P0 [BL-043] Call Console UI
-Owner: coding agent
-Next: implement dedicated Call Console UI with caller card, matched customer, recent tickets, and notes
-Exit: operator can view a dedicated call console for matched incoming calls
+No active implementation item. BL-043 closure is complete. Do not start BL-044
+until a CTO handoff selects it.
 
 ## Queue Rules
 

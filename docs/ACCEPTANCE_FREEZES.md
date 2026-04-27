@@ -183,6 +183,53 @@ and must be protected from quiet regression.
 - Tie the accepted state to repo truth, runtime truth, and evidence truth.
 - If a later report conflicts with the freeze, prove runtime identity before drawing conclusions from git history.
 
+## AF-2026-04-27-001: Call Console UI closure (BL-043)
+
+- ID: AF-2026-04-27-001
+- Milestone: Call Console UI closure
+- Scope: Dedicated mock Call Console at `/call-console` with recent fake calls, caller identity/match panel, recent ticket hints, linked SupportSession panel, mock answer/hold/resume/end lifecycle controls, greeting suggestion integration, timeline/audit panel, Support Cockpit navigation, and evidence bundle inclusion of call lifecycle/greeting data and mock disclaimers.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded_in_final_handoff
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /call-console
+  - /
+  - POST /calls/:id/status
+  - GET /calls/:id/timeline
+  - POST /support-sessions/:id/greeting-suggestion
+  - GET /support-sessions/:id/evidence-bundle
+  - GET /support-sessions/:id/evidence-bundle.md
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-27-001
+  - EV-2026-04-27-002
+  - EV-2026-04-27-003
+  - EV-2026-04-27-004
+  - EV-2026-04-27-005
+  - EV-2026-04-27-006
+  - EV-2026-04-27-007
+  - EV-2026-04-27-008
+- evidence_folder: output/playwright/session-043-call-console-ui-final-closure/
+- screenshot_count: 8
+- regression_guard:
+  - `/call-console` must remain reachable from the Support Cockpit and show honest mock telephony labels.
+  - Recent fake incoming calls must be selectable and show caller match/ticket hints.
+  - Linked SupportSession details and Open in cockpit navigation must remain visible.
+  - Mock lifecycle transitions must remain constrained to ringing -> answered/missed, answered -> on_hold/ended, and on_hold -> answered/ended.
+  - Timeline must distinguish call_resumed from first call_answered.
+  - Greeting suggestions generated from the Call Console must remain visible with provider/model/prompt/context metadata and disabled auto-send/voice flags.
+  - Evidence bundles must include callEvents, call_status_changed audit entries, greetingSuggestions, and mock telephony / mock AI disclaimers.
+- Notes:
+  - This supersedes the partial BL-043 screenshot folder `output/playwright/session-043-call-console-ui/`.
+  - No real phone integration, voice/TTS/STT, real AI provider call, real auth, real database persistence, queue-backed workflow, object storage, real Zammad call, production call-center integration, or production deployment is implemented.
+
 ## AF-2026-04-26-003: Zammad connector boundary (BL-007)
 
 - ID: AF-2026-04-26-003

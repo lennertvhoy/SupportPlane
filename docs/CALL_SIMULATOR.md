@@ -1,8 +1,8 @@
 # Call Simulator
 
 **Product:** SupportPlane  
-**Scope:** BL-009 Fake incoming call webhook and BL-041 Automatic SupportSession creation from incoming call events  
-**Last updated:** 2026-04-26
+**Scope:** BL-009 Fake incoming call webhook, BL-041 Automatic SupportSession creation from incoming call events, and BL-043 Call Console handoff  
+**Last updated:** 2026-04-27
 
 ## Purpose
 
@@ -136,11 +136,32 @@ When a matched incoming call auto-creates or is linked to a support session, the
 
 The greeting is never spoken or sent automatically. It is a mock-AI suggestion only.
 
-## Future path toward Call Console UI
+## Call Console handoff
 
-BL-041 and BL-042 complete the foundational auto-creation and greeting suggestion flows. The next slices toward a richer Call Console UI include:
+BL-043 adds a dedicated `/call-console` route for reviewing fake incoming calls
+after they have been created by the simulator or API. The Call Simulator remains
+the dev-only call creation tool; the Call Console is the operator-facing mock
+handling view for selected calls.
 
-- **BL-043:** Dedicated Call Console UI with caller card, matched customer, recent tickets, and real-time notes
+The Call Console shows:
+
+- recent fake incoming calls
+- caller identity and deterministic fixture match data
+- matched customer and recent ticket hints
+- linked support session context
+- mock lifecycle controls
+- greeting suggestion generation
+- call timeline/audit history
+- navigation back to the Support Cockpit
+
+See `docs/CALL_CONSOLE.md` for the BL-043 route, lifecycle states, endpoints,
+audit events, evidence bundle behavior, and limitations.
+
+## Future path after Call Console UI
+
+BL-043 completes the first dedicated Call Console UI. Later call-simulator slices
+include:
+
 - **BL-044:** Post-call summary review and ticket note draft workflow
 - **BL-045:** End-to-end call simulator demo fixtures and smoke tests
 
