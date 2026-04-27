@@ -1,7 +1,7 @@
 # Call Console
 
 **Product:** SupportPlane  
-**Scope:** BL-043 Call Console UI, extended by BL-044 Telephony Bridge boundary  
+**Scope:** BL-043 Call Console UI, extended by BL-044 Telephony Bridge boundary and BL-046 Operator Companion  
 **Last updated:** 2026-04-27
 
 ## Purpose
@@ -26,8 +26,9 @@ timeline into one screen.
   5. Use mock lifecycle controls to answer, hold, resume, or end the call.
   6. Review the Telephony Bridge panel for mock mode and capability status.
   7. Review the linked support session.
-  8. Generate a mock AI greeting suggestion for operator review.
-  9. Inspect the Call Timeline and generate an evidence bundle from the Support Cockpit.
+  8. Use the Operator Companion panel to capture, review, and convert mock screen observations into AI context packets.
+  9. Generate a mock AI greeting suggestion for operator review.
+  10. Inspect the Call Timeline and generate an evidence bundle from the Support Cockpit.
 
 ## Mock call lifecycle states
 
@@ -68,6 +69,10 @@ The `on_hold` to `answered` transition is displayed in the timeline as
 | `/telephony/test` | POST | Run deterministic mock bridge test |
 | `/telephony/webhooks/fake-provider` | POST | Accept fake provider event and map to CallEvent |
 | `/telephony/calls/:id/control` | POST | Apply mock telephony control intent to local state |
+| `/support-sessions/:id/screen-observations/mock` | POST | Capture mock screen observation |
+| `/support-sessions/:id/screen-observations` | GET | List observations for a session |
+| `/support-sessions/:id/screen-observations/:observationId/review` | POST | Approve or discard an observation |
+| `/support-sessions/:id/screen-observations/:observationId/context-packet` | POST | Create AI context packet from approved observation |
 | `/support-sessions/:id/greeting-suggestion` | POST | Generate mock AI greeting suggestion |
 | `/support-sessions/:id/evidence-bundle` | GET | Generate JSON evidence bundle |
 | `/support-sessions/:id/evidence-bundle.md` | GET | Generate Markdown evidence bundle |
@@ -92,6 +97,10 @@ The Call Console and underlying call flow use these audit events:
 - `telephony_call_control_succeeded`
 - `telephony_call_control_failed`
 - `greeting_suggestion_generated`
+- `screen_observation_captured`
+- `screen_observation_reviewed`
+- `screen_observation_discarded`
+- `screen_observation_context_packet_created`
 - `evidence_bundle_generated`
 - `evidence_bundle_exported`
 
@@ -113,6 +122,22 @@ BL-044 adds a small **Telephony Bridge** panel to the Call Console. It shows:
 Required honest labels are preserved: "Telephony bridge boundary", "Mock mode",
 "No real PBX connected", "No media or voice connected", and "Controls update
 local mock state only".
+
+## Operator Companion panel
+
+BL-046 adds an **Operator Companion** panel to the Call Console when a call is
+linked to a support session. It shows:
+
+- mock screen observation safety disclaimers
+- capture form with `kind`, `appLabel`, `windowLabel`, `urlLabel`, and note placeholder
+- captured observation list with status badges (`review_required`, `approved`, `discarded`)
+- **Approve** and **Discard** review buttons
+- **Create context packet** button for approved observations
+- honest mock labels: "Mock screen observation", "No real screen capture", "No raw pixels", "No clipboard access", "No OCR"
+
+Required honest labels are preserved. See `docs/OPERATOR_COMPANION.md` for the
+full feature documentation, API details, and future safe desktop/browser companion
+path.
 
 ## Greeting suggestion integration
 
@@ -151,6 +176,10 @@ The final BL-043 closure browser proof is in:
 The BL-044 telephony adapter boundary browser proof is in:
 
 `output/playwright/session-044-telephony-adapter-boundary/`
+
+The BL-046 Operator Companion canonical browser proof is in:
+
+`output/playwright/session-046-operator-companion-closure-canonical/`
 
 ## Known limitations
 

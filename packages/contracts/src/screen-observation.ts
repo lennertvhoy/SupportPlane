@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
+import { EntityId, Timestamp, TenantId } from './base.js';
 
 export const ScreenObservationId = EntityId.brand<'ScreenObservationId'>();
 export type ScreenObservationId = z.infer<typeof ScreenObservationId>;

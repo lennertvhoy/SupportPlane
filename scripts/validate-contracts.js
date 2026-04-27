@@ -125,10 +125,14 @@ assertValid('ScreenObservation', ScreenObservation, {
   id: 'obs_001',
   tenantId: 'tenant_001',
   sessionId: 'session_001',
-  observationType: 'window_title',
-  metadata: { title: 'Zammad Ticket #42' },
-  privacyConsentGiven: true,
-  rawImageStored: false,
+  source: 'mock_operator_companion',
+  kind: 'active_window',
+  status: 'captured',
+  noRawPixels: true,
+  noClipboard: true,
+  noOcr: true,
+  noCredentialCapture: true,
+  mockDevOnly: true,
   createdAt: now,
 });
 

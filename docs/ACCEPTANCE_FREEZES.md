@@ -482,16 +482,18 @@ and must be protected from quiet regression.
 - rebuilt_in_slice: true
 - duplicate_runtimes_checked: true
 - evidence_refs:
-  - EV-2026-04-27-025
-  - EV-2026-04-27-026
-  - EV-2026-04-27-027
-  - EV-2026-04-27-028
-  - EV-2026-04-27-029
-  - EV-2026-04-27-030
-  - EV-2026-04-27-031
-  - EV-2026-04-27-032
-- evidence_folder: output/playwright/session-046-operator-companion-final-closure/
-- screenshot_count: 18
+  - EV-2026-04-27-033
+  - EV-2026-04-27-034
+  - EV-2026-04-27-035
+  - EV-2026-04-27-036
+  - EV-2026-04-27-037
+  - EV-2026-04-27-038
+  - EV-2026-04-27-039
+  - EV-2026-04-27-040
+  - EV-2026-04-27-041
+- evidence_folder: output/playwright/session-046-operator-companion-closure-canonical/
+- screenshot_count: 9
+- original_18_screenshots: output/playwright/session-046-operator-companion-final-closure/ (kept as reference)
 - regression_guard:
   - `/call-console` must keep the Operator Companion panel with honest mock labels.
   - `POST /support-sessions/:id/screen-observations/mock` must return observation with `mockDevOnly: true`, `noRawPixels: true`, `noClipboard: true`, `status: review_required`.
@@ -503,3 +505,4 @@ and must be protected from quiet regression.
 - Notes:
   - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
   - No real database persistence; all data is in-memory and lost on API restart.
+  - Closure hygiene pass fixed API controller to return wrapped `ScreenObservationCaptureResponse` and resolved lint errors.

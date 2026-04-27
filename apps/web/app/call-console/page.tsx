@@ -293,7 +293,7 @@ export default function CallConsolePage() {
     if (!selectedCall) return;
     try {
       await api.recordPlaybackOpened(selectedCall.id, recordingId);
-    } catch (err) {
+    } catch {
       // Silently fail; playback is placeholder only
     }
   }, [selectedCall]);

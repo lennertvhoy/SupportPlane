@@ -26,7 +26,7 @@ import {
   type EvidenceBundle,
   type ScreenObservation as ScreenObservationShape,
   type ScreenObservationId,
-  type ScreenObservationSessionId,
+
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import {

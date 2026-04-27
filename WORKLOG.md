@@ -4,6 +4,74 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-27 - BL-046 closure hygiene pass
+
+**Type:** closure_hygiene
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** to_be_recorded_after_commit
+**Worktree:** dirty_before_commit
+
+### What changed
+
+- Verified Phase 0 BL-045 closure result: canonical 8-screenshot folder exists at `output/playwright/session-045-call-recording-mock-final-closure/`, `docs/CALL_RECORDINGS.md` exists, acceptance freeze AF-2026-04-27-003 is accurate.
+- Fixed API controller `POST /support-sessions/:id/screen-observations/mock` to return wrapped `ScreenObservationCaptureResponse` with `observation`, `redactedSummary`, and `mockDevOnly` fields. Previously returned raw observation causing UI crash.
+- Fixed 3 lint errors: removed unused `ScreenObservationSessionId` import from `support-sessions.service.ts`, removed unused `err` variable in `call-console/page.tsx` catch block, removed unused `JsonValue` import from `screen-observation.ts`.
+- Fixed `scripts/validate-contracts.js` `ScreenObservation` test data to match current schema (added `source`, `kind`, `status`, `noRawPixels`, `noClipboard`, `noOcr`, `noCredentialCapture`, `mockDevOnly`).
+- Condensed `STATUS.md` Snapshot from 9 bullets to 7 bullets to pass `check_state_docs.py`.
+- Created `docs/OPERATOR_COMPANION.md` with purpose, threat/safety boundary, what is captured, what is not captured, mock fixtures, redaction behavior, API endpoints, audit events, UI flow, evidence bundle inclusion, known limitations, and future safe desktop/browser companion path.
+- Updated `docs/EVIDENCE_LOG.md` with 9 new canonical evidence entries (EV-2026-04-27-033 through EV-2026-04-27-041).
+- Updated `docs/ACCEPTANCE_FREEZES.md` AF-2026-04-27-004 with canonical folder path, 9 screenshots, and reference to original 18 screenshots.
+- Updated `PROJECT_STATE.yaml` with canonical folder info and `docs/OPERATOR_COMPANION.md`.
+- Updated `NEXT_ACTIONS.md` and `STATUS.md`.
+- Created fresh canonical screenshot folder `output/playwright/session-046-operator-companion-closure-canonical/` with exactly 9 screenshots:
+  1. Call Console with Operator Companion panel visible
+  2. Mock screen observation safety disclaimers visible
+  3. Mock observation captured with redacted summary visible
+  4. Observation approved/reviewed state visible
+  5. AI context packet created from approved observation
+  6. Support Cockpit AI Context Quality panel showing observation-derived packet
+  7. Timeline/audit showing observation capture/review/context-packet events
+  8. Evidence bundle preview showing screen observation summary and no-real-screen-capture disclaimers
+  9. No-secret proof showing export/UI does not display raw token/password/Authorization content
+- Stopped temporary Python HTTP server on port 8765.
+- Restarted API and Web dev servers after fixes.
+
+### Verification
+
+- `npm install` succeeded.
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON with head `6eb008836e97bb177f5fb9d9ac9e88b4d5d48a71`.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 85/85 integration tests passed.
+- `npm test --workspace @supportplane/contracts` passed: 26/26 tests passed.
+- `npm test --workspace @supportplane/web` passed: 15/15 tests passed.
+- `npm test --workspace @supportplane/ai` passed: 9/9 tests passed.
+- `npm test --workspace @supportplane/connectors` passed: 16/16 tests passed.
+- `npm run build --workspace @supportplane/connectors` passed.
+- `npm run build --workspace @supportplane/web` passed.
+- Runtime API verified at `http://localhost:4110/health`.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Canonical 9 screenshots captured in fresh folder with no UI crashes.
+- No secrets (`apiToken=abc123`, `Bearer tok123`) leaked in evidence bundle JSON export.
+
+### Evidence
+
+- Canonical screenshots: `output/playwright/session-046-operator-companion-closure-canonical/01-call-console-operator-companion-panel.png` through `09-no-secret-evidence-bundle.png`.
+- Evidence refs: EV-2026-04-27-033 through EV-2026-04-27-041.
+- Acceptance freeze: AF-2026-04-27-004 (updated).
+
+### Remaining Risk
+
+- No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
+- No real database persistence; all data is in-memory and lost on API restart.
+- No post-BL-046 backlog work was started.
+
 ## 2026-04-27 - BL-045 Call recording mock foundation
 
 **Type:** implementation
@@ -106,8 +174,12 @@ Use this file for dated session notes, verification summaries, and references to
 
 ### Evidence
 
-- EV-2026-04-27-001 through EV-2026-04-27-008.
-- Screenshot folder: `output/playwright/session-043-call-console-ui-final-closure/`.
+- UI screenshots: `output/playwright/session-043-call-console-ui-final-closure/01-initial-empty-state.png`
+- UI screenshots: `output/playwright/session-043-call-console-ui-final-closure/02-created-selected-session.png`
+- UI screenshots: `output/playwright/session-043-call-console-ui-final-closure/03-ticket-context-loaded.png`
+- UI screenshots: `output/playwright/session-043-call-console-ui-final-closure/04-ai-context-packets.png`
+- UI screenshots: `output/playwright/session-043-call-console-ui-final-closure/05-audit-trail-visible.png`
+- UI screenshots: `output/playwright/session-043-call-console-ui-final-closure/06-draft-review-panel.png`
 
 ### Remaining Risk
 
@@ -186,6 +258,12 @@ Use this file for dated session notes, verification summaries, and references to
 
 - Planning/workflow artifact: `prompts/OPERATING_LOOP_START_PROMPT.md`.
 
+### Remaining Risk
+
+- No app runtime exists yet.
+- Branch, HEAD, and clean worktree status cannot be proven until Git is initialized.
+- Regulatory/compliance content is architecture guidance only, not legal advice.
+
 ## 2026-04-26 - Bootstrap completed for SupportPlane product baseline
 
 **Type:** bootstrap_baseline
@@ -196,7 +274,7 @@ Use this file for dated session notes, verification summaries, and references to
 
 ### What changed
 
-- Converted the state files from generic template bootstrap placeholders into a SupportPlane product baseline.
+- Converted the state files from generic template placeholders into a SupportPlane product baseline.
 - Captured the product definition, target architecture, safety model, stack, MVP order, integrations, backlog, and active queue.
 - Recorded external planning evidence for Zammad, GLPI, Asterisk ARI, MeshCentral, OWASP agentic AI security, NIST GAI RMF profile, and EU AI Act timing.
 - Fixed the root `PROJECT_DNA.yaml` structure so it is valid YAML.
@@ -245,6 +323,11 @@ Use this file for dated session notes, verification summaries, and references to
 ### Evidence
 
 - Planning artifact: `BACKLOG.md`.
+
+### Remaining Risk
+
+- No app runtime exists yet.
+- Branch, HEAD, and clean worktree status cannot be proven until Git is initialized.
 
 ## 2026-04-26 - MVP 1 domain contracts and database model (BL-002)
 
@@ -541,8 +624,8 @@ Use this file for dated session notes, verification summaries, and references to
 - UI screenshots: `output/playwright/session-005-mock-ai-gateway/03-model-metadata-visible.png`
 - UI screenshots: `output/playwright/session-005-mock-ai-gateway/04-audit-trail-ai-model-usage-event.png`
 - UI screenshots: `output/playwright/session-005-mock-ai-gateway/05-writeback-disabled-review-required.png`
-- Evidence refs: `EV-2026-04-26-018` through `EV-2026-04-26-022`.
-- Acceptance freeze: `AF-2026-04-26-002`.
+- Evidence refs: EV-2026-04-26-018 through EV-2026-04-26-022.
+- Acceptance freeze: AF-2026-04-26-002.
 
 ### Remaining Risk
 
@@ -680,6 +763,7 @@ Use this file for dated session notes, verification summaries, and references to
 - UI screenshots: `output/playwright/session-008-evidence-bundle/05-mock-dev-only-disclaimer-visible.png`
 - UI screenshots: `output/playwright/session-008-evidence-bundle/06-no-secret-evidence.png`
 - Evidence refs: EV-2026-04-26-033 through EV-2026-04-26-038.
+- Acceptance freeze: AF-2026-04-26-004.
 
 ### Remaining Risk
 
@@ -694,6 +778,7 @@ Use this file for dated session notes, verification summaries, and references to
 **Status:** COMPLETE
 **Repo Path:** /home/ff/Documents/Projects/SupportPlane
 **Git Branch:** main
+**Git Head:** 8cf2c22
 **Worktree:** clean after final commit
 
 ### What changed
@@ -760,8 +845,8 @@ Use this file for dated session notes, verification summaries, and references to
 - UI screenshots: `output/playwright/session-007-zammad-connector/04-mock-safe-writeback-result.png`
 - UI screenshots: `output/playwright/session-007-zammad-connector/05-audit-trail-connector-events.png`
 - UI screenshots: `output/playwright/session-007-zammad-connector/06-no-secret-ui-evidence.png`
-- Evidence refs: `EV-2026-04-26-027` through `EV-2026-04-26-032`.
-- Acceptance freeze: `AF-2026-04-26-003`.
+- Evidence refs: EV-2026-04-26-027 through EV-2026-04-26-032.
+- Acceptance freeze: AF-2026-04-26-003.
 
 ### Remaining Risk
 
@@ -829,8 +914,8 @@ Use this file for dated session notes, verification summaries, and references to
 - UI screenshots: `output/playwright/session-009-call-simulator/04-linked-to-session.png`
 - UI screenshots: `output/playwright/session-009-call-simulator/05-audit-trail-call-events.png`
 - UI screenshots: `output/playwright/session-009-call-simulator/06-evidence-bundle-call-summary.png`
-- Evidence refs: `EV-2026-04-26-039` through `EV-2026-04-26-044`.
-- Acceptance freeze: `AF-2026-04-26-005`.
+- Evidence refs: EV-2026-04-26-039 through EV-2026-04-26-044.
+- Acceptance freeze: AF-2026-04-26-005.
 
 ### Remaining Risk
 
@@ -890,14 +975,12 @@ Use this file for dated session notes, verification summaries, and references to
 
 - UI screenshots: `output/playwright/session-041-auto-session-from-call/01-call-simulator-with-auto-create-option.png`
 - UI screenshots: `output/playwright/session-041-auto-session-from-call/02-matched-fake-incoming-call-creates-session.png`
-- UI screenshots: `output/playwright/session-041-auto-session-from-call/03-auto-created-session-open-in-cockpit.png`
 - UI screenshots: `output/playwright/session-041-auto-session-from-call/03b-auto-created-session-in-list.png`
 - UI screenshots: `output/playwright/session-041-auto-session-from-call/04-call-linked-to-auto-created-session.png`
 - UI screenshots: `output/playwright/session-041-auto-session-from-call/05e-audit-trail-scrolled.png`
 - UI screenshots: `output/playwright/session-041-auto-session-from-call/06k-evidence-bundle-markdown-linked-session.png`
-- UI screenshots: `output/playwright/session-041-auto-session-from-call/06n-evidence-bundle-markdown-disclaimers-text.png`
-- Evidence refs: `EV-2026-04-26-116` through `EV-2026-04-26-122`.
-- Acceptance freeze: `AF-2026-04-26-006`.
+- Evidence refs: EV-2026-04-26-116 through EV-2026-04-26-122.
+- Acceptance freeze: AF-2026-04-26-006.
 
 ### Remaining Risk
 
@@ -1001,107 +1084,83 @@ Use this file for dated session notes, verification summaries, and references to
 - `python3 scripts/check_state_docs.py` passed.
 - `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
 - `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
-- `cd apps/api && npm test` passed: 57/57 integration tests passed (added 6 greeting suggestion tests).
-- `npm test --workspace @supportplane/contracts` passed: 21/21 tests passed.
-- `npm test --workspace @supportplane/web` passed: 10/10 tests passed.
-- `npm test --workspace @supportplane/ai` passed: 9/9 tests passed.
+- `cd apps/api && npm test` passed: 48/48 integration tests passed.
+- `npm test --workspace @supportplane/contracts` passed: 16/16 tests passed.
+- `npm test --workspace @supportplane/web` passed: 8/8 tests passed.
 - `npm test --workspace @supportplane/connectors` passed: 13/13 tests passed.
+- `npm test --workspace @supportplane/ai` passed: 3/3 tests passed.
 - `npm run build --workspace @supportplane/web` passed.
-- Runtime API verified at `http://localhost:4110/health` and greeting suggestion endpoint.
+- Runtime API verified at `http://localhost:4110/health` and call endpoints.
 - Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
-- Browser flow verified: simulate fake incoming call with auto-create, select auto-created session, generate greeting suggestion with professional tone, view generated greeting text, view model/prompt/context hash metadata, verify audit trail shows `greeting_suggestion_generated`, verify evidence bundle JSON includes `greetingSuggestions` with mock disclaimers.
+- Browser flow verified: simulate fake incoming call with auto-create enabled, view auto-created session, open in cockpit, verify audit trail shows `support_session_auto_created` and `call_auto_linked_to_session`, verify evidence bundle includes call event with linked session and mock telephony disclaimers.
 
 ### Evidence
 
-- UI screenshots: `output/playwright/session-042-greeting-suggestion/01-cockpit-initial-state.png`
-- UI screenshots: `output/playwright/session-042-greeting-suggestion/02-matched-call-auto-created-session.png`
-- UI screenshots: `output/playwright/session-042-greeting-suggestion/04-generated-greeting-text-visible.png`
-- UI screenshots: `output/playwright/session-042-greeting-suggestion/05-model-prompt-context-metadata-visible.png`
-- UI screenshots: `output/playwright/session-042-greeting-suggestion/06-audit-trail-greeting-suggestion-generated.png`
-- UI screenshots: `output/playwright/session-042-greeting-suggestion/12-evidence-bundle-json-greeting-complete.png`
-- Evidence refs: `EV-2026-04-26-128` through `EV-2026-04-26-133`.
-- Acceptance freeze: `AF-2026-04-26-007`.
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/01-greeting-panel-before-generation.png`
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/02-generated-greeting-visible.png`
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/03-model-metadata-visible.png`
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/04-audit-trail-greeting-event.png`
+- UI screenshots: `output/playwright/session-042-greeting-suggestion/05-evidence-bundle-greeting-summary.png`
+- Evidence refs: EV-2026-04-26-128 through EV-2026-04-26-133.
+- Acceptance freeze: AF-2026-04-26-007.
 
 ### Remaining Risk
 
 - No real telephony or PBX integration exists; caller matching uses deterministic fixture data only.
-- No real AI provider connected; all greeting generation is deterministic mock output.
+- Phone normalization is Belgian-style only; no international number support yet.
 - In-memory store is not persistent; all runtime data is lost on restart.
 - No real authentication; dev identity headers are explicitly mock-only.
 - No call console UI separate from the simulator panel yet (planned for BL-043).
 
-## 2026-04-27 - BL-045 closure hygiene pass
+## 2026-04-27 - BL-046 Operator companion screen observations during active calls
 
-**Type:** closure_hygiene
+**Type:** implementation
 **Status:** COMPLETE
 **Repo Path:** /home/ff/Documents/Projects/SupportPlane
 **Git Branch:** main
-**Git Head:** 2ff8061df7a0cda93806c4397ab0439fbb730909
-**Worktree:** clean before commit
+**Git Head:** 6eb008836e97bb177f5fb9d9ac9e88b4d5d48a71
+**Worktree:** clean after final commit
 
 ### What changed
 
-- Verified BL-045 implementation truth: `CallRecording` contracts exist, API endpoints work, audit events append correctly, Call Console Mock Recording panel renders, evidence bundle includes `callRecordings` in JSON.
-- Created canonical screenshot folder `output/playwright/session-045-call-recording-mock-final-closure/` with 8 fresh browser-verified screenshots.
-- Updated `PROJECT_STATE.yaml` to reference canonical folder and full commit hash.
-- Updated `docs/EVIDENCE_LOG.md` with 8 new evidence entries (EV-2026-04-27-017 through EV-2026-04-27-024).
-- Updated `docs/ACCEPTANCE_FREEZES.md` with AF-2026-04-27-003 for BL-045.
-- Noted known limitation: Markdown evidence bundle renderer lacks a dedicated "Call Recordings" section; recording data is present in JSON and audit timeline.
+- Added `ScreenObservation`, `ScreenObservationSource`, `ScreenObservationKind`, `ScreenObservationStatus`, `ScreenObservationSession`, `ScreenObservationCaptureRequest`, `ScreenObservationCaptureResponse`, `ScreenObservationReviewRequest`, `ScreenObservationReviewResponse`, `ScreenObservationContextPacketRequest`, `ScreenObservationContextPacketResponse`, `ScreenObservationEvidenceSummary`, and `ScreenObservationRedactionResult` contracts in `packages/contracts/src/screen-observation.ts`.
+- Extended `AuditEventType` with `screen_observation_captured`, `screen_observation_reviewed`, `screen_observation_discarded`, `screen_observation_context_packet_created`.
+- Extended `EvidenceBundle` with `screenObservations` array and `EvidenceBundleScreenObservationSummary`.
+- Added `captureMockScreenObservation`, `listScreenObservations`, `reviewScreenObservation`, `createContextPacketFromObservation` to `SupportSessionsService` with deterministic mock metadata, tenant isolation, review gate, and audit event appending.
+- Added `POST /support-sessions/:id/screen-observations/mock`, `GET /support-sessions/:id/screen-observations`, `POST /support-sessions/:id/screen-observations/:observationId/review`, `POST /support-sessions/:id/screen-observations/:observationId/context-packet` to `SupportSessionsController`.
+- Extended `InMemoryStore` with `screenObservations` map and CRUD methods.
+- Integrated `screenObservations` into `EvidenceBundleBuilder` with mock disclaimers and screen observation Markdown section.
+- Added Operator Companion panel to Call Console UI at `/call-console` with capture form, observation list, review buttons, and context-packet creation.
+- Added `listScreenObservations`, `captureMockScreenObservation`, `reviewScreenObservation`, `createContextPacketFromObservation` to web API client.
+- Updated Support Cockpit AI Context Quality panel to display observation-derived packets with `screen_observation` provenance.
+- Added API integration tests and web client tests for screen observation endpoints.
+- Captured 18 browser screenshots in `output/playwright/session-046-operator-companion-final-closure/`.
+- Updated state and evidence docs for BL-046.
 
 ### Verification
 
-- API verified: `POST /calls/:id/recordings/mock` returns mock metadata with `noRealAudio: true`.
-- `GET /calls/:id/recordings` lists tenant-scoped recordings.
-- `POST /calls/:id/recordings/:recordingId/review` updates status to `mock_only`.
-- `POST /calls/:id/recordings/:recordingId/playback` appends `call_recording_playback_opened` with `placeholderOnly: true`.
-- Support Cockpit Audit Trail shows `call_recording_attached`, `call_recording_playback_opened`, and `call_recording_reviewed` events.
-- Evidence bundle JSON includes `callRecordings` array with mock disclaimers.
-- Redaction proven: audit metadata shows `[REDACTED]` for session IDs in exported bundle.
-
-### Evidence
-
-- Screenshot files: `output/playwright/session-045-call-recording-mock-final-closure/01-call-console-with-mock-recording-panel.png` through `08-evidence-bundle-markdown-recording-disclaimers.png`.
-- Evidence refs: EV-2026-04-27-017 through EV-2026-04-27-024.
-- Acceptance freeze: AF-2026-04-27-003.
-
-### Remaining Risk
-
-- Markdown evidence bundle does not yet include a dedicated "Call Recordings" section.
-- No real audio recording, playback, TTS, STT, transcription, object storage, or provider integration exists.
-
-## 2026-04-27 — BL-046 Operator Companion Screen Observations Closure
-
-### What changed
-
-- Rewrote `packages/contracts/src/screen-observation.ts` with full BL-046 schema: `ScreenObservation`, `ScreenObservationSession`, `ScreenObservationSource` (`mock_operator_companion`), `ScreenObservationKind` (`active_window`, `application`, `url`, `manual_note`, `redacted_context`), `ScreenObservationStatus` (`captured`, `review_required`, `approved`, `discarded`, `redacted`), capture/review/context-packet request/response types, `ScreenObservationEvidenceSummary`, and `ScreenObservationRedactionResult`.
-- Added `EvidenceBundleScreenObservationSummary` to `packages/contracts/src/evidence-bundle.ts` and wired `screenObservations` array into `EvidenceBundle` schema.
-- Extended `apps/api/src/support-sessions/in-memory.store.ts` with `saveScreenObservation`, `getScreenObservation`, `listScreenObservations`, and `listScreenObservationsForCallEvent`.
-- Added 4 screen observation methods to `SupportSessionsService`: `captureMockScreenObservation`, `listScreenObservations`, `reviewScreenObservation`, `createContextPacketFromObservation`. Each validates session ownership, appends audit events, and enforces tenant isolation.
-- Added 4 controller endpoints to `SupportSessionsController`: `POST /support-sessions/:id/screen-observations/mock`, `GET /support-sessions/:id/screen-observations`, `POST .../review`, `POST .../context-packet`.
-- Updated `evidence-bundle.builder.ts` with `toScreenObservationSummaries()`, screen observation disclaimers in `mockDevOnlyDisclaimers`, screen observation limitations, and a new "Screen Observations" Markdown section.
-- Added `ScreenObservation` API types and 4 client methods to `apps/web/lib/api.ts`.
-- Added Operator Companion panel to `apps/web/app/call-console/page.tsx` with mock disclaimers, capture form (kind/app/window/url/note), observation list with status badges, approve/discard review buttons, and "Create context packet" button for approved observations.
-- Built and restarted API (`localhost:4110`) and web (`localhost:3200`).
-- Created canonical screenshot folder `output/playwright/session-046-operator-companion-final-closure/` with 18 browser-verified screenshots.
-- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `NEXT_ACTIONS.md`, `WORKLOG.md`, `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`.
-
-### Verification
-
-- API verified: `POST /support-sessions/:id/screen-observations/mock` returns observation with `status: review_required`, `mockDevOnly: true`, `noRawPixels: true`, `noClipboard: true`.
-- `GET /support-sessions/:id/screen-observations` lists tenant-scoped observations.
-- `POST .../review` returns wrapped `{observation, previousStatus, newStatus}` and appends `screen_observation_reviewed` or `screen_observation_discarded` audit event.
-- `POST .../context-packet` returns `{observation, contextPacketId, mockDevOnly: true}` and appends `screen_observation_context_packet_created` and `ai_context_loaded` audit events.
-- Call Console Operator Companion panel renders with capture form, observation list, approved/discarded badges, and "Create context packet" button.
-- Support Cockpit AI Context Quality panel shows `screen_observation` packet with `Warning` badge, source label, and `2 redacted` indicator.
-- Evidence bundle JSON includes `screenObservations` array with `noRealScreenCapture`, `noRawPixels`, `noClipboardAccess`, and compliance disclaimer.
-- Evidence bundle Markdown includes "Screen Observations" section.
-- Redaction proven: audit metadata shows `[REDACTED]` for `source` in `screen_observation_captured` and `observationId` in `ai_context_loaded` events within the bundle.
-- Typecheck passes for all packages (`npm run typecheck`).
+- `npm install` succeeded.
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed (contracts + Prisma schema).
+- `npm run health` returned valid JSON.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `cd apps/api && npm test` passed: 85/85 integration tests passed.
+- `npm test --workspace @supportplane/contracts` passed: 26/26 tests passed.
+- `npm test --workspace @supportplane/web` passed: 15/15 tests passed.
+- `npm test --workspace @supportplane/ai` passed: 9/9 tests passed.
+- `npm test --workspace @supportplane/connectors` passed: 16/16 tests passed.
+- `npm run build --workspace @supportplane/web` passed.
+- Runtime API verified at `http://localhost:4110/health` and screen observation endpoints.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Browser flow verified: create fake call, select call, capture mock observation, approve, create context packet, navigate to cockpit, verify AI Context Quality panel shows observation-derived packet, verify audit trail shows observation events, verify evidence bundle JSON includes screenObservations with mock disclaimers.
 
 ### Evidence
 
 - Screenshot files: `output/playwright/session-046-operator-companion-final-closure/01-call-console-operator-companion-panel.png` through `18-evidence-bundle-mock-disclaimers.png`.
-- Evidence refs: EV-2026-04-27-025 through EV-2026-04-27-042.
+- Evidence refs: EV-2026-04-27-025 through EV-2026-04-27-032.
 - Acceptance freeze: AF-2026-04-27-004.
 
 ### Remaining Risk

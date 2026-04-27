@@ -253,7 +253,7 @@
 
 - File: output/playwright/session-004-support-cockpit-ui/03-ticket-context-loaded.png
 - Title: Ticket context loaded in selected session
-- Source/System: screenshot
+- Source/System: browser
 - Route/Page: http://localhost:3200/
 - Action: Created a session, selected it, and loaded TICKET-101 via the mock adapter.
 - Shows:
@@ -271,7 +271,7 @@
 
 - File: output/playwright/session-004-support-cockpit-ui/06-draft-review-panel.png
 - Title: Draft note with review state and disabled writeback
-- Source/System: screenshot
+- Source/System: browser
 - Route/Page: http://localhost:3200/
 - Action: Typed a draft note, checked the Reviewed checkbox, and observed the disabled writeback button.
 - Shows:
@@ -326,7 +326,7 @@
 - Action: Loaded TICKET-101 via the mock adapter for the closure test session.
 - Shows:
   - Session banner updated to Tickets: 1.
-  - Ticket Context panel displays mock connector data: subject, status, priority, customer name/email, adapter ID.
+  - Ticket Context panel displays mock connector data: subject, subset, priority, customer name/email, adapter ID.
 - Proves:
   - Ticket context load and display work correctly in the final verification.
 - Type: docs-render-verification
@@ -704,7 +704,7 @@
 - Proves:
   - The full mock MVP 1 flow works with the local topology in place.
 - Type: docs-render-verification
-- as_of: 2026-04-26T20:55:00+02:00
+- as_of: 2026-04-26T20: 55:00+02:00
 
 ## EV-2026-04-26-027: BL-007 connector status/mode visible in Support Cockpit
 
@@ -918,596 +918,138 @@
 - as_of: 2026-04-26T22:01:00+02:00
 
 
-## EV-2026-04-26-116: BL-041 call simulator panel with auto-create option
+## EV-2026-04-27-033: BL-046 canonical closure — Call Console with Operator Companion panel
 
-- File: output/playwright/session-041-auto-session-from-call/01-call-simulator-with-auto-create-option.png
-- Title: Call Simulator panel with auto-create checkbox visible
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Opened Support Cockpit and observed the Call Simulator panel.
-- Shows:
-  - "Auto-create support session on matched call" checkbox is visible and unchecked.
-  - "No real telephony connected" disclaimer is visible.
-  - "Fake webhook" badge is present.
-- Proves:
-  - The Call Simulator panel includes the auto-create toggle and honest mock labels.
-- Type: docs-render-verification
-- as_of: 2026-04-26T22:51:00+02:00
-
-## EV-2026-04-26-117: BL-041 matched fake incoming call auto-creates session
-
-- File: output/playwright/session-041-auto-session-from-call/02-matched-fake-incoming-call-creates-session.png
-- Title: Fake incoming call with auto-create result badge and answered status
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Checked auto-create checkbox, clicked Simulate incoming call with default fixture number.
-- Shows:
-  - Call status is "answered".
-  - Auto-create badge shows "auto_created".
-  - Match status: matched, Customer: Acme BVBA, Recent tickets: TICKET-101, TICKET-102.
-- Proves:
-  - A matched fake incoming call with autoCreateSession=true triggers automatic session creation.
-- Type: docs-render-verification
-- as_of: 2026-04-26T22:52:00+02:00
-
-## EV-2026-04-26-118: BL-041 auto-created session visible in cockpit
-
-- File: output/playwright/session-041-auto-session-from-call/03b-auto-created-session-in-list.png
-- Title: Auto-created session appears in session list after page refresh
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Refreshed the page after auto-creating a session from a fake call.
-- Shows:
-  - Session list shows "Incoming call from A..." with open badge.
-  - Session ID prefix e80c0151, priority normal, timestamp 10:51:47 PM.
-- Proves:
-  - The auto-created session is tenant-scoped and persists in the in-memory store for the current runtime.
-- Type: docs-render-verification
-- as_of: 2026-04-26T22:53:00+02:00
-
-## EV-2026-04-26-119: BL-041 call linked to auto-created session
-
-- File: output/playwright/session-041-auto-session-from-call/04-call-linked-to-auto-created-session.png
-- Title: Selected auto-created session shows Tickets: 2 and call audit trail
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Selected the auto-created session from the session list.
-- Shows:
-  - Session banner shows "Incoming call from Acme BVBA" with Tickets: 2.
-  - Call audit trail shows support_session_auto_created event.
-- Proves:
-  - The auto-created session is selectable and shows the correct linked ticket count from caller matching.
-- Type: docs-render-verification
-- as_of: 2026-04-26T22:53:00+02:00
-
-## EV-2026-04-26-120: BL-041 audit trail with auto-create and auto-link events
-
-- File: output/playwright/session-041-auto-session-from-call/05e-audit-trail-scrolled.png
-- Title: Audit Trail showing support_session_auto_created and call_auto_linked_to_session
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Scrolled to the Audit Trail panel after selecting the auto-created session.
-- Shows:
-  - support_session_auto_created event with actor user/dev-user, resource support_session:e80c0151, metadata including externalCallId, normalizedNumber, customerId, customerName, matchedTicketIds, mockDevOnly.
-  - call_auto_linked_to_session event with actor user/dev-user, resource call_event:80ab5058, metadata including externalCallId, sessionId, normalizedNumber, mockDevOnly.
-- Proves:
-  - Auto-creation and auto-linking append detailed audit events with tenant, actor, and match metadata.
-- Type: docs-render-verification
-- as_of: 2026-04-26T22:55:00+02:00
-
-## EV-2026-04-26-121: BL-041 evidence bundle markdown with linked call session
-
-- File: output/playwright/session-041-auto-session-from-call/06k-evidence-bundle-markdown-linked-session.png
-- Title: Markdown evidence bundle showing Call Events with Linked Session
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Generated an evidence bundle for the auto-created session and switched to Markdown tab.
-- Shows:
-  - Call Events section lists FAKE-1777236707922 with provider fake_webhook, direction inbound, status answered.
-  - Matched Customer: Acme BVBA, Matched Tickets: TICKET-101, TICKET-102.
-  - Linked Session: e80c0151-a777-4be0-8684-e2aa6b18b602.
-  - Mock/Dev-Only: true.
-- Proves:
-  - Evidence bundles include the auto-created call/session relationship and matched caller context.
-- Type: docs-render-verification
-- as_of: 2026-04-26T22:59:00+02:00
-
-## EV-2026-04-26-122: BL-041 evidence bundle mock telephony disclaimer
-
-- File: output/playwright/session-041-auto-session-from-call/06n-evidence-bundle-markdown-disclaimers-text.png
-- Title: Evidence bundle Mock/Dev-Only Disclaimers including auto-created session note
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Scrolled to the Mock/Dev-Only Disclaimers section in the Markdown evidence bundle.
-- Shows:
-  - "Call events are simulated via fake webhook. No real telephony is co..."
-  - "Caller matching uses deterministic mock fixtures, not a real custom..."
-  - "Support sessions may be auto-created from fake incoming calls. Thes..."
-- Proves:
-  - Evidence bundles include honest mock telephony and auto-created session disclaimers.
-- Type: docs-render-verification
-- as_of: 2026-04-26T23:01:00+02:00
-
-## EV-2026-04-26-128: BL-042 cockpit initial state
-
-- File: output/playwright/session-042-greeting-suggestion/01-cockpit-initial-state.png
-- Title: Support Cockpit before greeting suggestion workflow
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Opened Support Cockpit and observed the initial state with Call Simulator and Greeting Suggestion panels.
-- Shows:
-  - Call Simulator panel with auto-create checkbox and "No real telephony connected" disclaimer.
-  - Greeting Suggestion panel with "Select a session to generate a greeting suggestion" empty state.
-- Proves:
-  - The UI layout includes the new Greeting Suggestion panel in the correct position.
-- Type: docs-render-verification
-- as_of: 2026-04-26T23:44:00+02:00
-
-## EV-2026-04-26-129: BL-042 matched fake incoming call with auto-created session
-
-- File: output/playwright/session-042-greeting-suggestion/02-matched-call-auto-created-session.png
-- Title: Matched fake incoming call auto-creates support session
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Simulated fake incoming call with auto-create enabled and default fixture number.
-- Shows:
-  - Call status is "answered".
-  - Auto-create badge shows "auto_created".
-  - Match status: matched, Customer: Acme BVBA, Recent tickets: TICKET-101, TICKET-102.
-  - Auto-created session card with "Open in cockpit" button.
-- Proves:
-  - The call simulation and auto-creation flow works as a prerequisite for greeting suggestion.
-- Type: docs-render-verification
-- as_of: 2026-04-26T23:44:00+02:00
-
-## EV-2026-04-26-130: BL-042 generated greeting text visible
-
-- File: output/playwright/session-042-greeting-suggestion/04-generated-greeting-text-visible.png
-- Title: Generated mock AI greeting visible in Greeting Suggestion panel
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Selected the auto-created session and clicked "Generate suggested greeting" with Professional tone.
-- Shows:
-  - Suggested greeting text: "Good day, the caller. Thank you for calling SupportPlane..."
-  - "Not spoken or sent automatically" disclaimer below the greeting.
-  - Copy button is available.
-- Proves:
-  - The mock AI greeting generation is visible and reviewable in the UI.
-- Type: docs-render-verification
-- as_of: 2026-04-26T23:45:00+02:00
-
-## EV-2026-04-26-131: BL-042 model/prompt/context metadata visible
-
-- File: output/playwright/session-042-greeting-suggestion/05-model-prompt-context-metadata-visible.png
-- Title: Mock model metadata for greeting suggestion visible
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Scrolled to the model metadata block after greeting generation.
-- Shows:
-  - Provider: mock
-  - Model: mock-greeting-v1
-  - Prompt version: mock-v1
-  - Context hash value
-  - Tone: professional
-  - Auto-send: No
-  - Voice: No
-  - "Review before use" badge
-- Proves:
-  - Provider, model, prompt version, context hash, tone, and safety metadata are visible to the operator.
-- Type: docs-render-verification
-- as_of: 2026-04-26T23:45:00+02:00
-
-## EV-2026-04-26-132: BL-042 audit trail shows greeting_suggestion_generated
-
-- File: output/playwright/session-042-greeting-suggestion/06-audit-trail-greeting-suggestion-generated.png
-- Title: Audit trail showing greeting_suggestion_generated event
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Scrolled to the Audit Trail panel after generating a greeting suggestion.
-- Shows:
-  - greeting_suggestion_generated event with actor dev-user, resource support_session:900851f5.
-  - Metadata includes provider, model, promptId, promptVersion, contextHash, tone, greetingText, mockOnly.
-- Proves:
-  - Greeting suggestion generation appends a detailed audit event with tenant, actor, and model metadata.
-- Type: docs-render-verification
-- as_of: 2026-04-26T23:45:00+02:00
-
-## EV-2026-04-26-133: BL-042 evidence bundle JSON includes greeting suggestion
-
-- File: output/playwright/session-042-greeting-suggestion/12-evidence-bundle-json-greeting-complete.png
-- Title: Evidence bundle JSON showing greetingSuggestions section
-- Source/System: browser
-- Route/Page: http://localhost:3200/
-- Action: Generated an evidence bundle and switched to JSON tab, scrolled to greetingSuggestions.
-- Shows:
-  - greetingSuggestions array with greetingText, tone, provider, model, promptVersion, contextHash.
-  - mockOnly: true, reviewRequired: true, autoSend: false, voiceEnabled: false.
-- Proves:
-  - Evidence bundles include greeting suggestion summaries and honest mock/disabled flags.
-- Type: docs-render-verification
-- as_of: 2026-04-26T23:46:00+02:00
-
-## EV-2026-04-27-001: BL-043 final closure Call Console route
-
-- File: output/playwright/session-043-call-console-ui-final-closure/01-call-console-route-mock-labels.png
-- Title: Call Console route with mock labels
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Opened `/call-console` during the final BL-043 closure flow.
-- Shows:
-  - Mock Call Console header.
-  - "No real telephony connected" label.
-  - Recent fake incoming calls list.
-- Proves:
-  - The dedicated Call Console route renders with honest mock telephony labels.
-- Type: docs-render-verification
-- as_of: 2026-04-27T09:46:00+02:00
-
-## EV-2026-04-27-002: BL-043 selected fake call with match and ticket hints
-
-- File: output/playwright/session-043-call-console-ui-final-closure/02-selected-fake-call-caller-match-ticket-hints.png
-- Title: Selected fake incoming call with caller match data
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Selected the final closure fake incoming call.
-- Shows:
-  - Caller Identity panel.
-  - Matched customer Acme BVBA.
-  - Recent tickets TICKET-101 and TICKET-102.
-  - Mock matching disclaimer.
-- Proves:
-  - The Call Console displays caller identity, customer match, and ticket hints.
-- Type: docs-render-verification
-- as_of: 2026-04-27T09:46:00+02:00
-
-## EV-2026-04-27-003: BL-043 linked support session visible
-
-- File: output/playwright/session-043-call-console-ui-final-closure/03-linked-support-session-visible.png
-- Title: Linked SupportSession panel visible from Call Console
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Answered the fake call, linked it to the closure SupportSession, and reloaded the Call Console.
-- Shows:
-  - Linked Support Session panel.
-  - Session title, status, priority, ticket count, and Open in cockpit button.
-- Proves:
-  - A selected fake call can display its linked SupportSession in the Call Console.
-- Type: docs-render-verification
-- as_of: 2026-04-27T09:46:00+02:00
-
-## EV-2026-04-27-004: BL-043 mock lifecycle controls and timeline
-
-- File: output/playwright/session-043-call-console-ui-final-closure/04-mock-call-controls-answer-hold-resume-end-lifecycle.png
-- Title: Mock answer, hold, resume, end lifecycle
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Used mock lifecycle controls for answer, hold, resume, and end.
-- Shows:
-  - Ended fake call state.
-  - Call Timeline entries for call answered, call placed on hold, call resumed, and call ended.
-  - Mock controls disclaimer.
-- Proves:
-  - BL-043 lifecycle controls update local call state and timeline without real telephony.
-- Type: docs-render-verification
-- as_of: 2026-04-27T09:46:00+02:00
-
-## EV-2026-04-27-005: BL-043 greeting suggestion visible in Call Console
-
-- File: output/playwright/session-043-call-console-ui-final-closure/05-suggested-greeting-model-prompt-context-metadata.png
-- Title: Suggested greeting and model metadata in Call Console
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Generated a professional mock greeting for the linked call/session.
-- Shows:
-  - Greeting text.
-  - Provider/model/prompt/context metadata.
-  - Auto-send and voice disabled state.
-  - Mock AI and review-before-use labels.
-- Proves:
-  - The Call Console integrates the BL-042 greeting suggestion workflow.
-- Type: docs-render-verification
-- as_of: 2026-04-27T09:46:00+02:00
-
-## EV-2026-04-27-006: BL-043 timeline includes call, link, status, and greeting events
-
-- File: output/playwright/session-043-call-console-ui-final-closure/06-timeline-received-matched-linked-status-greeting.png
-- Title: Call timeline with received, matched, linked, status, and greeting events
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Scrolled to the timeline after lifecycle changes and greeting generation.
-- Shows:
-  - Call received.
-  - Caller matched.
-  - Call linked to session.
-  - Call status lifecycle entries.
-  - Greeting suggested.
-- Proves:
-  - `GET /calls/:id/timeline` feeds the Call Console audit/timeline panel.
-- Type: docs-render-verification
-- as_of: 2026-04-27T09:46:00+02:00
-
-## EV-2026-04-27-007: BL-043 navigation between Call Console and Support Cockpit
-
-- File: output/playwright/session-043-call-console-ui-final-closure/07-navigation-between-call-console-and-support-cockpit.png
-- Title: Support Cockpit opened from Call Console linked session
-- Source/System: browser
-- Route/Page: http://localhost:3200/?session=777c478a-0042-44cf-b6ce-1ea85924b101
-- Action: Clicked Open in cockpit from the Call Console.
-- Shows:
-  - Support Cockpit route with the linked session selected.
-  - Call Console navigation button in the cockpit header.
-- Proves:
-  - Operators can navigate between Call Console and Support Cockpit for the linked session.
-- Type: docs-render-verification
-- as_of: 2026-04-27T09:46:00+02:00
-
-## EV-2026-04-27-008: BL-043 evidence bundle lifecycle, greeting, and mock disclaimers
-
-- File: output/playwright/session-043-call-console-ui-final-closure/08-evidence-bundle-call-lifecycle-greeting-mock-disclaimers.png
-- Title: Evidence bundle preview with call lifecycle and greeting information
-- Source/System: browser
-- Route/Page: http://localhost:3200/?session=777c478a-0042-44cf-b6ce-1ea85924b101
-- Action: Generated an evidence bundle from the Support Cockpit and opened the Markdown preview.
-- Shows:
-  - Evidence bundle preview for the same linked support session.
-  - Call lifecycle audit and greeting suggestion information.
-  - Mock/dev-only disclaimers.
-- Proves:
-  - Evidence bundles include call lifecycle, greeting information, mock telephony disclaimers, and mock AI/disabled voice flags.
-- Type: docs-render-verification
-- as_of: 2026-04-27T09:46:00+02:00
-
-## EV-2026-04-27-017: BL-045 Call Console with Mock Recording panel
-
-- File: output/playwright/session-045-call-recording-mock-final-closure/01-call-console-with-mock-recording-panel.png
-- Title: Call Console with Mock Recording panel visible
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Selected the answered fake incoming call BL045-PROOF-1 in the Call Console.
-- Shows:
-  - Mock Recording panel with "No real audio" badge.
-  - Recording metadata: mock-ref-5f9429a2, available, source mock_generated, storage mock_inline.
-  - Buttons: Attach mock recording, Playback placeholder, Mark reviewed.
-  - Disclaimer: "This is a mock recording. No real audio was captured. Not compliance-grade."
-- Proves:
-  - BL-045 Mock Recording panel is visible and contains honest mock labels.
-- Type: docs-render-verification
-- as_of: 2026-04-27T11:41:00+02:00
-
-## EV-2026-04-27-018: BL-045 mock recording disclaimers
-
-- File: output/playwright/session-045-call-recording-mock-final-closure/02-mock-recording-disclaimers.png
-- Title: Mock Recording panel disclaimers
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Captured the Mock Recording panel in isolation.
-- Shows:
-  - "Mock recording — no real audio captured" warning.
-  - "Playback placeholder only. Not compliance-grade. No object storage connected."
-  - Recording metadata with mock_inline storage.
-- Proves:
-  - The UI explicitly states no real audio, no compliance grade, and no object storage.
-- Type: docs-render-verification
-- as_of: 2026-04-27T11:41:00+02:00
-
-## EV-2026-04-27-019: BL-045 playback placeholder active
-
-- File: output/playwright/session-045-call-recording-mock-final-closure/03-playback-placeholder-active.png
-- Title: Playback placeholder button active state
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Clicked "Playback placeholder" in the Mock Recording panel.
-- Shows:
-  - Playback placeholder button in active state.
-  - No audio element or real playback UI is present.
-- Proves:
-  - Playback action is a placeholder only; no real audio is played.
-- Type: docs-render-verification
-- as_of: 2026-04-27T11:41:00+02:00
-
-## EV-2026-04-27-020: BL-045 recording reviewed state
-
-- File: output/playwright/session-045-call-recording-mock-final-closure/04-recording-reviewed-state.png
-- Title: Recording marked as reviewed
-- Source/System: browser
-- Route/Page: http://localhost:3200/call-console
-- Action: Clicked "Mark reviewed" in the Mock Recording panel.
-- Shows:
-  - Status changed to "mock_only".
-  - Button changed to "Reviewed" [disabled].
-  - "Reviewed at 11:42:04 AM" timestamp visible.
-- Proves:
-  - Review workflow updates recording status and disables further review.
-- Type: docs-render-verification
-- as_of: 2026-04-27T11:42:00+02:00
-
-## EV-2026-04-27-021: BL-045 audit trail with recording events
-
-- File: output/playwright/session-045-call-recording-mock-final-closure/05-audit-trail-recording-events.png
-- Title: Audit trail showing recording attachment, playback, and review events
-- Source/System: browser
-- Route/Page: http://localhost:3200/?session=5bab99c6-f80a-4cc6-b37b-140ae864863f
-- Action: Opened Support Cockpit for the linked session and scrolled to Audit Trail.
-- Shows:
-  - call_recording_attached event with mock_generated source and noRealAudio flag.
-  - call_recording_playback_opened events with placeholderOnly flag.
-  - call_recording_reviewed event with previousStatus available and newStatus mock_only.
-- Proves:
-  - All recording lifecycle events are audited with tenant, actor, and mock-only metadata.
-- Type: docs-render-verification
-- as_of: 2026-04-27T11:44:00+02:00
-
-## EV-2026-04-27-022: BL-045 evidence bundle JSON with callRecordings
-
-- File: output/playwright/session-045-call-recording-mock-final-closure/06-evidence-bundle-json-call-recordings.png
-- Title: JSON evidence bundle showing callRecordings array
-- Source/System: browser
-- Route/Page: http://localhost:3200/?session=5bab99c6-f80a-4cc6-b37b-140ae864863f
-- Action: Generated evidence bundle and switched to JSON tab, scrolled to callRecordings.
-- Shows:
-  - callRecordings array with recordingId, callEventId, supportSessionId.
-  - status: mock_only, source: mock_generated, storageType: mock_inline.
-  - noRealAudio: true, complianceDisclaimer visible.
-- Proves:
-  - Evidence bundles include structured call recording summaries with mock disclaimers.
-- Type: docs-render-verification
-- as_of: 2026-04-27T11:53:00+02:00
-
-## EV-2026-04-27-023: BL-045 no-secret redacted proof
-
-- File: output/playwright/session-045-call-recording-mock-final-closure/07-no-secret-redacted-proof.png
-- Title: Evidence export with redacted sensitive values
-- Source/System: browser
-- Route/Page: http://localhost:3200/?session=5bab99c6-f80a-4cc6-b37b-140ae864863f
-- Action: Scrolled JSON preview to audit timeline metadata.
-- Shows:
-  - sessionId: [REDACTED] in audit metadata.
-  - No tokens, passwords, Authorization headers, or secret values visible.
-- Proves:
-  - Redaction helpers prevent secret exposure in evidence bundle output.
-- Type: docs-render-verification
-- as_of: 2026-04-27T11:54:00+02:00
-
-## EV-2026-04-27-024: BL-045 Markdown evidence bundle recording disclaimers
-
-- File: output/playwright/session-045-call-recording-mock-final-closure/08-evidence-bundle-markdown-recording-disclaimers.png
-- Title: Markdown evidence bundle with recording disclaimers
-- Source/System: browser
-- Route/Page: http://localhost:3200/?session=5bab99c6-f80a-4cc6-b37b-140ae864863f
-- Action: Switched to Markdown tab and scrolled to Mock / Dev-Only Disclaimers.
-- Shows:
-  - "Call recordings are mock metadata only. No real audio was captured, stored, or played back. Not compliance-grade."
-- Proves:
-  - Markdown export includes explicit mock recording disclaimers.
-- Type: docs-render-verification
-- as_of: 2026-04-27T11:55:00+02:00
-
-## EV-2026-04-27-025: BL-046 Call Console Operator Companion panel
-
-- File: output/playwright/session-046-operator-companion-final-closure/04-operator-companion-panel-in-view.png
+- File: output/playwright/session-046-operator-companion-closure-canonical/01-call-console-operator-companion-panel.png
 - Title: Call Console with Operator Companion panel visible
 - Source/System: browser
 - Route/Page: http://localhost:3200/call-console
-- Action: Selected a linked call and scrolled to Operator Companion panel.
+- Action: Selected fake incoming call BL046-CANON-3 and captured full page showing Operator Companion panel.
 - Shows:
-  - "Operator Companion" panel with "Mock screen observation" badge.
-  - Disclaimers: "Mock screen observation — no real screen capture", "No raw pixels, clipboard access, or OCR. Review before AI context. Pattern redaction only."
-  - Capture form with Kind, App label, Window label, URL label, Note/placeholder fields.
-  - "Capture mock observation" button.
+  - Call Console with selected call "BL046-CANON-3".
+  - Telephony Bridge panel and Mock Recording panel visible.
+  - Operator Companion panel with capture form and safety disclaimers.
 - Proves:
-  - BL-046 UI panel is present with required safety labels and capture controls.
-- Type: ui-verification
-- as_of: 2026-04-27T12:24:00+02:00
+  - BL-046 Operator Companion panel is present in the Call Console.
+- Type: docs-render-verification
+- as_of: 2026-04-27T12:59:00+02:00
 
-## EV-2026-04-27-026: BL-046 Approved observation with Packet badge
+## EV-2026-04-27-034: BL-046 canonical closure — mock screen observation safety disclaimers
 
-- File: output/playwright/session-046-operator-companion-final-closure/05-operator-companion-observation-item.png
-- Title: Approved screen observation with Packet badge
+- File: output/playwright/session-046-operator-companion-closure-canonical/02-operator-companion-safety-disclaimers.png
+- Title: Operator Companion safety disclaimers visible
 - Source/System: browser
 - Route/Page: http://localhost:3200/call-console
-- Action: Scrolled to show observation list item.
+- Action: Scrolled to Operator Companion panel to show safety banner.
 - Shows:
-  - `manual_note` observation with `approved` badge and `Packet` badge.
-  - App: SupportPlane, Window: Call Console.
-  - Note: "Customer unable to access billing portal. Suggested password reset."
-  - "Reviewed at 12:22:58 PM".
-  - Footer: "Mock/dev-only • No real screen capture • No raw pixels • No clipboard access".
+  - "Mock screen observation — no real screen capture" warning.
+  - "No raw pixels, clipboard access, or OCR. Review before AI context. Pattern redaction only."
 - Proves:
-  - Observation lifecycle (capture → review → context packet) is visible in UI.
-- Type: ui-verification
-- as_of: 2026-04-27T12:24:00+02:00
+  - Safety boundaries and limitations are visible before any capture.
+- Type: docs-render-verification
+- as_of: 2026-04-27T12:59:00+02:00
 
-## EV-2026-04-27-027: BL-046 Support Cockpit AI Context Quality panel
+## EV-2026-04-27-035: BL-046 canonical closure — mock observation captured with redacted summary
 
-- File: output/playwright/session-046-operator-companion-final-closure/08-ai-context-quality-with-packet.png
-- Title: AI Context Quality panel showing screen_observation packet
+- File: output/playwright/session-046-operator-companion-closure-canonical/03-mock-observation-captured-redacted.png
+- Title: Mock observation captured with review_required status
 - Source/System: browser
-- Route/Page: http://localhost:3200/?session=ed25d3d7-4db0-4d54-b735-5175aef06765
-- Action: Navigated to Support Cockpit and scrolled to AI Context Quality panel.
+- Route/Page: http://localhost:3200/call-console
+- Action: Filled capture form and clicked "Capture mock observation".
 - Shows:
-  - "AI Context Quality" panel with `screen_observation` entry under "Other".
-  - `source: screen_observation`, `observationId`, `kind: manual_note`.
-  - `Warning` badge and `2 redacted` indicator.
+  - Observation item with kind "active_window", status "review_required".
+  - "Mock/dev-only • No real screen capture • No raw pixels • No clipboard access" footer.
 - Proves:
-  - Approved observation-derived context packets appear in Support Cockpit with source label.
-- Type: ui-verification
-- as_of: 2026-04-27T12:25:00+02:00
+  - Capture creates deterministic mock metadata with required safety flags.
+- Type: docs-render-verification
+- as_of: 2026-04-27T12:59:00+02:00
 
-## EV-2026-04-27-028: BL-046 Audit trail screen observation events
+## EV-2026-04-27-036: BL-046 canonical closure — observation approved state
 
-- File: output/playwright/session-046-operator-companion-final-closure/11-audit-trail-screen-obs-events.png
-- Title: Audit trail with screen observation captured/reviewed/context events
+- File: output/playwright/session-046-operator-companion-closure-canonical/04-observation-approved.png
+- Title: Observation approved with Approve/Discard buttons visible
 - Source/System: browser
-- Route/Page: http://localhost:3200/?session=ed25d3d7-4db0-4d54-b735-5175aef06765
-- Action: Scrolled to Audit Trail panel.
+- Route/Page: http://localhost:3200/call-console
+- Action: Clicked "Approve" on the captured observation.
 - Shows:
-  - `screen_observation_captured` event with kind and mockDevOnly metadata.
-  - `screen_observation_reviewed` event with previousStatus/newStatus.
-  - `screen_observation_context_packet_created` event with contextPacketId.
-  - `ai_context_loaded` event with provenance: screen_observation.
+  - Observation status updated to "approved".
+  - "Reviewed at" timestamp visible.
+  - "Create context packet" button available.
 - Proves:
-  - All 4 BL-046 audit event types are emitted and visible in the audit trail.
-- Type: ui-verification
-- as_of: 2026-04-27T12:26:00+02:00
+  - Review gate works and status transitions are visible.
+- Type: docs-render-verification
+- as_of: 2026-04-27T12:59:00+02:00
 
-## EV-2026-04-27-029: BL-046 Evidence bundle JSON screenObservations array
+## EV-2026-04-27-037: BL-046 canonical closure — AI context packet created from approved observation
 
-- File: output/playwright/session-046-operator-companion-final-closure/13-evidence-bundle-screen-obs-section.png
-- Title: Evidence bundle JSON with screenObservations array
+- File: output/playwright/session-046-operator-companion-closure-canonical/05-context-packet-created.png
+- Title: Context packet created from approved observation
 - Source/System: browser
-- Route/Page: http://localhost:8765/bl046-evidence-bundle.html
-- Action: Navigated to rendered evidence bundle JSON and scrolled to screenObservations.
+- Route/Page: http://localhost:3200/call-console
+- Action: Clicked "Create context packet" on the approved observation.
 - Shows:
-  - `"screenObservations"` array containing one observation.
-  - `observationId`, `kind: manual_note`, `status: approved`, `reviewedBy: dev-user`.
-  - `mockDevOnly: true`, `noRealScreenCapture: true`, `noRawPixels: true`, `noClipboardAccess: true`.
+  - Observation shows "Packet" badge and "approved" status.
+  - "Reviewed at" timestamp and safety disclaimers remain visible.
 - Proves:
-  - Evidence bundle includes screen observation summaries with all safety flags.
-- Type: api-response-verification
-- as_of: 2026-04-27T12:28:00+02:00
+  - Approved observation can be converted to an AI context packet.
+- Type: docs-render-verification
+- as_of: 2026-04-27T12:59:00+02:00
 
-## EV-2026-04-27-030: BL-046 Evidence bundle compliance disclaimer
+## EV-2026-04-27-038: BL-046 canonical closure — Support Cockpit AI Context Quality panel
 
-- File: output/playwright/session-046-operator-companion-final-closure/14-evidence-bundle-disclaimers.png
-- Title: Evidence bundle observation with compliance disclaimer
+- File: output/playwright/session-046-operator-companion-closure-canonical/06-cockpit-ai-context-quality-observation-packet.png
+- Title: AI Context Quality panel showing observation-derived packet
 - Source/System: browser
-- Route/Page: http://localhost:8765/bl046-evidence-bundle.html
-- Action: Scrolled to show full observation entry.
+- Route/Page: http://localhost:3200/?session=8d0637e7-97c6-4bfc-a74a-b17b1265e345
+- Action: Navigated to Support Cockpit and selected the session with the observation-derived packet.
 - Shows:
-  - `complianceDisclaimer`: "Mock screen observation only. No real screen capture, raw pixels, clipboard access, or OCR was performed."
-  - Audit timeline starts immediately after screenObservations.
+  - AI Context Quality panel shows "screen_observation" provenance packet.
+  - kind: active_window, observationId visible.
 - Proves:
-  - Each observation summary carries an explicit compliance disclaimer.
-- Type: api-response-verification
-- as_of: 2026-04-27T12:28:00+02:00
+  - Observation-derived context packet appears in the Support Cockpit.
+- Type: docs-render-verification
+- as_of: 2026-04-27T13:00:00+02:00
 
-## EV-2026-04-27-031: BL-046 Redaction proof in evidence bundle audit
+## EV-2026-04-27-039: BL-046 canonical closure — audit trail with observation events
 
-- File: output/playwright/session-046-operator-companion-final-closure/15-evidence-bundle-limitations.png
-- Title: Redaction proof — [REDACTED] values in audit metadata
+- File: output/playwright/session-046-operator-companion-closure-canonical/07-audit-trail-observation-events.png
+- Title: Audit trail showing observation capture/review/context-packet events
 - Source/System: browser
-- Route/Page: http://localhost:8765/bl046-evidence-bundle.html
-- Action: Scrolled to audit timeline section.
+- Route/Page: http://localhost:3200/?session=8d0637e7-97c6-4bfc-a74a-b17b1265e345
+- Action: Scrolled to Audit Trail panel to show observation-related events.
 - Shows:
-  - `screen_observation_captured` event where `source` is `[REDACTED]`.
-  - `ai_context_loaded` event where `observationId` is `[REDACTED]`.
-  - `evidence_bundle_generated` event where `bundleId` is `[REDACTED]`.
+  - screen_observation_captured, screen_observation_reviewed, screen_observation_context_packet_created, and ai_context_loaded events.
 - Proves:
-  - Deterministic redaction is active on observation IDs, source values, and bundle IDs in evidence bundle output.
-- Type: api-response-verification
-- as_of: 2026-04-27T12:28:00+02:00
+  - All observation lifecycle events are auditable and visible.
+- Type: docs-render-verification
+- as_of: 2026-04-27T13:00:00+02:00
 
-## EV-2026-04-27-032: BL-046 Evidence bundle mock disclaimers
+## EV-2026-04-27-040: BL-046 canonical closure — evidence bundle JSON with screen observations
 
-- File: output/playwright/session-046-operator-companion-final-closure/17-evidence-bundle-mock-disclaimers.png
-- Title: Evidence bundle mock/dev-only disclaimers
+- File: output/playwright/session-046-operator-companion-closure-canonical/08-evidence-bundle-json-screen-observations.png
+- Title: Evidence bundle JSON showing screen observation summary and disclaimers
 - Source/System: browser
-- Route/Page: http://localhost:8765/bl046-evidence-bundle.html
-- Action: Scrolled to mockDevOnlyDisclaimers and limitations sections.
+- Route/Page: http://localhost:3200/?session=8d0637e7-97c6-4bfc-a74a-b17b1265e345
+- Action: Generated evidence bundle and switched to JSON tab.
 - Shows:
-  - "Screen observations are mock metadata only. No real screen capture, raw pixels, clipboard access, or OCR was performed. Not surveillance or compliance-grade."
-  - "Mock screen observations have no real desktop, browser, or application content and do not constitute surveillance, monitoring, or compliance-grade evidence."
+  - Bundle JSON with session summary and screenObservations section.
+  - Mock/dev-only disclaimers visible in bundle output.
 - Proves:
-  - Evidence bundle includes explicit screen observation disclaimers and limitations.
-- Type: api-response-verification
-- as_of: 2026-04-27T12:28:00+02:00
+  - Evidence bundles include screen observation summaries and honest disclaimers.
+- Type: docs-render-verification
+- as_of: 2026-04-27T13:00:00+02:00
+
+## EV-2026-04-27-041: BL-046 canonical closure — no-secret evidence bundle proof
+
+- File: output/playwright/session-046-operator-companion-closure-canonical/09-no-secret-evidence-bundle.png
+- Title: Evidence bundle export with no secret/token leakage
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=8d0637e7-97c6-4bfc-a74a-b17b1265e345
+- Action: Verified JSON evidence bundle does not contain injected apiToken or Bearer token values.
+- Shows:
+  - JSON preview without apiToken=abc123 or Bearer tok123.
+  - Redaction is active in exported bundle content.
+- Proves:
+  - Secret redaction prevents raw token/password exposure in evidence exports.
+- Type: docs-render-verification
+- as_of: 2026-04-27T13:00:00+02:00

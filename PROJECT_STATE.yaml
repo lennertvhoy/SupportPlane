@@ -299,6 +299,7 @@ current_state:
       api_app: apps/api
       web_app: apps/web
       docs:
+        - docs/OPERATOR_COMPANION.md
         - docs/CALL_CONSOLE.md
         - docs/EVIDENCE_BUNDLES.md
       validation: full_validation_gate_and_browser_boundary_verified
@@ -324,15 +325,19 @@ current_state:
         ui_panels:
           - Call Console Operator Companion panel
           - Support Cockpit AI Context Quality panel (observation-derived packets)
-        screenshot_folder: output/playwright/session-046-operator-companion-final-closure/
-        screenshot_count: 18
+        screenshot_folder: output/playwright/session-046-operator-companion-closure-canonical/
+        screenshot_count: 9
+        original_screenshots_folder: output/playwright/session-046-operator-companion-final-closure/
+        original_screenshot_count: 18
         closure_notes:
           - tenant isolation enforced on all screen observation endpoints
           - no real screen capture, raw pixels, clipboard access, or OCR performed
           - review gate required before AI context packet creation
           - pattern redaction applied to observation metadata in evidence bundle
-          - canonical closure proof captured in fresh session folder
+          - canonical closure proof captured in fresh session folder with exactly 9 screenshots
           - full commit hash recorded in acceptance freeze and worklog
+          - closure hygiene pass fixed API controller to return wrapped ScreenObservationCaptureResponse
+          - stopped temporary Python HTTP server on port 8765
     bl_044_status:
       completed: true
       scope: telephony_adapter_contract_and_bridge_boundary

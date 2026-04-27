@@ -169,7 +169,12 @@ export class SupportSessionsController {
     @Body() body: ScreenObservationCaptureRequest
   ) {
     const identity = getDevIdentity(req);
-    return this.service.captureMockScreenObservation(identity, id, body);
+    const observation = this.service.captureMockScreenObservation(identity, id, body);
+    return {
+      observation,
+      redactedSummary: observation.redactedSummary ?? '[REDACTED]',
+      mockDevOnly: true,
+    };
   }
 
   @Get(':id/screen-observations')
