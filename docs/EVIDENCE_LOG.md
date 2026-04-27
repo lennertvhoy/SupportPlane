@@ -1292,3 +1292,37 @@
   - call simulator with active fake incoming call (20)
 - Type: browser-runtime-verification
 - as_of: 2026-04-27T23:25:00+02:00
+
+## EV-2026-04-27-096 through EV-2026-04-27-112: BL-092 Durable Action/Outbox Workflow Foundation browser proof
+
+- Files: `output/playwright/session-092-durable-action-outbox-workflow-foundation/01-login-local-auth.png` through `17-viewer-readonly-outbox.png`
+- Source/System: visible Chromium via Playwright CLI against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - local login page (01)
+  - authenticated cockpit with user, tenant, role, API, store/auth mode (02)
+  - support session and ticket/customer/call context loaded (03-04)
+  - local-only support note draft and action draft creation (05-06)
+  - submit for review and forbidden operator approval proof (07-08)
+  - logout, admin re-login, and persisted state (09-10)
+  - admin approval, queueing, and mock delivery result (11-13)
+  - evidence bundle summary and JSON with action/outbox provenance and no-secret proof (14-15)
+  - logout and viewer read-only action/outbox controls (16-17)
+- Proves:
+  - Action/outbox workflow is visible in the cockpit and follows local-auth role boundaries.
+  - Mock delivery reports `realNetwork: false`, `writebackEnabled: false`, and `externalWriteAttempted: false`.
+  - Evidence bundle includes action/outbox provenance without exposing tokens, password hashes, raw media, or private credentials.
+- Type: browser-runtime-verification
+- as_of: 2026-04-27T23:59:00+02:00
+
+## EV-2026-04-28-001: BL-092 durable action/outbox verification script
+
+- File: scripts/verify_durable_action_outbox.sh
+- Source/System: shell script against local-auth API and web runtime
+- Action: Logged in as operator, admin, viewer, and alt-tenant operator; created support session and action; submitted for review; verified viewer/forged-header approval denial; approved, queued, and mock-delivered action; checked outbox attempts, audit events, timeline events, evidence bundle redaction, cross-tenant denial, and web root.
+- Result: pass
+- Proves:
+  - Durable action/outbox API lifecycle works after the database is recreated from committed migrations and seed data.
+  - Tenant scoping, RBAC, forged-header ignore in local mode, mock delivery safety flags, audit/timeline updates, and no-secret evidence checks are directly verified.
+- Type: api-behavior-verification
+- as_of: 2026-04-28T00:05:00+02:00

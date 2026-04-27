@@ -1,15 +1,12 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-28 00:00 CEST
+**Updated At:** 2026-04-28 00:08 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-- [BL-092] Durable action/outbox workflow foundation is in final validation and closure hygiene.
-  - Owner: coding agent
-  - Next action: finish validation gate, acceptance freeze, commit, and CTO-ready handoff.
-  - Exit criteria: clean worktree, full commit hash, screenshot folder/count, exact validation results, and no hidden manual database drift.
+- No active implementation item after BL-092 closure. Next action is CTO review to select the next backlog slice.
 
 ## Queue Rules
 

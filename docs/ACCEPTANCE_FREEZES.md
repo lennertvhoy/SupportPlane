@@ -721,5 +721,78 @@ and must be protected from quiet regression.
   - Cross-tenant access must return 404 for resources and 403 for permission denied.
 - Notes:
   - BL-091 closure was repaired on 2026-04-27 by verifying `internal_note_drafts` in `prisma/schema.prisma` and `prisma/migrations/20260427124815_init_persistence_foundation/migration.sql`; `npx prisma validate` and `npx prisma migrate status` passed against `localhost:5434`.
+  - During BL-092 validation, live local database drift on `internal_note_drafts` foreign keys was detected and cleared with `npx prisma migrate reset --force`; schema was recreated from committed migrations and seed data.
   - No real Zammad, telephony, AI provider, queue, object storage, SSO, MFA, or password reset implemented.
   - All new behavior is deterministic local/mock-only with visible UI warnings.
+
+---
+
+## AF-2026-04-28-010: BL-092 Durable Action/Outbox Workflow Foundation
+
+- ID: AF-2026-04-28-010
+- Backlog ID: BL-092
+- Milestone: Durable Action/Outbox Workflow Foundation
+- Scope: Tenant-scoped support action drafts, human review state, approval/rejection, durable local outbox queueing, mock delivery attempts, idempotency keys, retry state, connector provenance, audit events, case timeline integration, evidence-bundle action/outbox summaries, and cockpit Action Center UX.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- implementation_commit: 6819301fa5af04a6b02bbe6af532ae669e7a880a
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+  - Podman container `sp-postgres` on port 5434
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- routes:
+  - GET /support-sessions/:id/actions
+  - POST /support-sessions/:id/actions
+  - GET /actions/:id
+  - POST /actions/:id/submit-for-review
+  - POST /actions/:id/approve
+  - POST /actions/:id/reject
+  - POST /actions/:id/queue
+  - POST /actions/:id/mock-deliver
+  - POST /actions/:id/cancel
+  - GET /outbox
+  - GET /outbox/:id
+  - POST /outbox/:id/retry
+  - POST /outbox/:id/mock-deliver
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: true
+- database_reproducibility:
+  - `npx prisma migrate reset --force` recreated the schema from committed migrations.
+  - `npx prisma db seed` reseeded local demo tenants, users, adapters, customers, tickets, and connector installations.
+  - `npx prisma migrate status` reported database schema is up to date after reset.
+- evidence_refs:
+  - EV-2026-04-27-096 through EV-2026-04-27-112
+  - EV-2026-04-28-001
+- evidence_folder: output/playwright/session-092-durable-action-outbox-workflow-foundation/
+- screenshot_count: 17
+- validation_summary:
+  - `npm install` passed; npm reported 10 vulnerabilities (8 moderate, 2 high), with no dependency changes introduced in BL-092.
+  - `npm run lint`, `npm run typecheck --workspaces --if-present`, `npm run validate`, and `npm run health` passed.
+  - `npx prisma validate`, `npx prisma generate`, `npx prisma migrate status`, and `npx prisma db seed` passed.
+  - `scripts/verify_postgres_persistence.sh`, `scripts/verify_local_auth_rbac.sh`, `scripts/verify_ticket_context_connector.sh`, `scripts/verify_support_case_workflow.sh`, and `scripts/verify_durable_action_outbox.sh` passed.
+  - API tests: 112/112 pass.
+  - Contracts tests: 29/29 pass.
+  - Web tests: 15/15 pass.
+  - AI tests: 9/9 pass.
+  - Connectors build/test passed; connector tests: 16/16 pass.
+  - Web build passed with existing Next ESLint-plugin warning.
+  - State docs and bootstrap gate checks passed.
+- regression_guard:
+  - Viewer can inspect actions/outbox but cannot mutate.
+  - Operator/support_agent can create drafts and submit for review.
+  - Admin/owner can approve/reject/queue approved actions.
+  - Cross-tenant action/outbox access returns not found/denied server-side.
+  - Forged identity headers are ignored in local auth mode.
+  - Mock delivery must report `mode: "mock"`, `realNetwork: false`, `writebackEnabled: false`, and `externalWriteAttempted: false`.
+  - Evidence bundle action/outbox summaries must not expose connector tokens, password hashes, session tokens, raw env secrets, raw audio, raw screen pixels, or private credentials.
+- Known limitations:
+  - Durable action/outbox workflow is local PostgreSQL state and synchronous mock delivery only, not a production queue or worker.
+  - No failed/unavailable connector path was implemented beyond retry support for failed outbox records.
+  - Legacy BL-007 writeback route still exists but BL-092 workflow does not call it.
+- Explicit non-claims:
+  - No real production Zammad writeback, real email sending, real telephony/PBX integration, real AI provider calls, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.

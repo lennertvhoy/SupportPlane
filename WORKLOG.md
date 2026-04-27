@@ -1547,3 +1547,71 @@ End-to-end support case workflow unifying calls, customers, tickets, sessions, o
 - BL-091 database drift concern was repaired on 2026-04-27 by confirming `internal_note_drafts` is reproducible from committed Prisma schema/migration; hidden manual database drift remains unacceptable under AGENTS.md
 - No real Zammad, telephony, AI provider, queue, object storage, SSO, MFA, or password reset implemented
 - All new behavior is deterministic local/mock-only with visible UI warnings
+
+---
+
+## 2026-04-28 — BL-092: Durable Action/Outbox Workflow Foundation
+
+### Scope
+
+Durable local support action review, approval, outbox queueing, mock delivery, audit, timeline, and evidence-bundle provenance for local-only ticket-note actions.
+
+### What Changed
+
+- Added `SupportAction`, `ActionOutboxItem`, and `ActionOutboxAttempt` contracts, Prisma models, and migration `20260427234000_durable_action_outbox_workflow`.
+- Added store parity for `PrismaStore` and `InMemoryStore`.
+- Added `ActionsModule` with tenant-scoped local-auth routes for action create/list/get, submit, approve, reject, queue, mock deliver, cancel, outbox list/get/retry/mock-deliver.
+- Added RBAC so viewer can inspect only, operator/support_agent can create/submit/cancel and mock-deliver where permitted, and admin/owner can approve/reject/queue.
+- Added audit events and case timeline entries for action/outbox lifecycle.
+- Added evidence bundle `actionOutbox` summaries with `realNetwork: false`, `writebackEnabled: false`, and `externalWriteAttempted: false`.
+- Added cockpit `ActionOutboxPanel` with local/mock warnings, review controls, outbox status, attempt history, and forbidden-state proof.
+- Added `scripts/verify_durable_action_outbox.sh`.
+- Updated docs for action/outbox workflow, persistence, local development, evidence bundles, and support case workflow.
+
+### BL-091 Repair Gate
+
+- Verified `internal_note_drafts` exists in committed Prisma schema and migration.
+- Added AGENTS.md database drift rule in commit `067fb3c8d1699d1f97147fc8ff6759a8f2dbe00c`.
+- Detected live dev DB drift during `scripts/verify_postgres_persistence.sh` and repaired it with `npx prisma migrate reset --force`, then `npx prisma db seed`.
+- Reran `npx prisma migrate status`; result: database schema is up to date.
+
+### Verification
+
+- `npm install` — pass; 10 vulnerabilities reported by npm audit summary (8 moderate, 2 high), treated as pre-existing because no dependency changes were added.
+- `npm run lint` — pass after fixing unused action-service variables and hook suppression.
+- `npm run typecheck --workspaces --if-present` — pass.
+- `npm run validate` — pass.
+- `npm run health` — pass.
+- `npx prisma validate` — pass.
+- `npx prisma generate` — pass.
+- `npx prisma migrate status` — pass.
+- `npx prisma db seed` — pass.
+- `npx prisma migrate reset --force` — pass; recreated schema from four committed migrations.
+- `scripts/verify_postgres_persistence.sh` — pass after DB reset and API port cleanup.
+- `scripts/verify_local_auth_rbac.sh` — pass.
+- `scripts/verify_ticket_context_connector.sh` — pass after updating it to use local-auth login.
+- `scripts/verify_support_case_workflow.sh` — pass.
+- `scripts/verify_durable_action_outbox.sh` — pass.
+- `cd apps/api && npm test` — 112/112 pass.
+- `npm test --workspace @supportplane/contracts` — 29/29 pass.
+- `npm test --workspace @supportplane/web` — 15/15 pass.
+- `npm test --workspace @supportplane/ai` — 9/9 pass.
+- `npm run build --workspace @supportplane/connectors` — pass.
+- `npm test --workspace @supportplane/connectors` — 16/16 pass.
+- `npm run build --workspace @supportplane/web` — pass with existing Next ESLint-plugin warning.
+- `python3 scripts/check_state_docs.py` — pass.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` — pass.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` — pass.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-092-durable-action-outbox-workflow-foundation/`
+- Screenshot count: 17
+- Evidence ref: EV-2026-04-27-096 through EV-2026-04-27-112
+- Implementation commit: `6819301fa5af04a6b02bbe6af532ae669e7a880a`
+
+### Remaining Risk
+
+- Durable action/outbox workflow is synchronous local PostgreSQL state and mock delivery only; it is not a production queue or worker.
+- Legacy Zammad writeback route still exists from BL-007, but BL-092 does not use it and performs no real external writeback.
+- No real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment implemented.

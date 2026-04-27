@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-28T00:00:00+02:00
+  updated_at: 2026-04-28T00:08:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: pending_bl_092_final_commit
-    worktree_status: dirty_during_bl_092_validation
+    head: 6819301fa5af04a6b02bbe6af532ae669e7a880a
+    worktree_status: clean_after_bl_092_implementation_commit_pending_closure_docs
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -440,8 +440,8 @@ current_state:
       - BL-050 PostgreSQL persistence verified with restart-survival script
       - Infra containers verified via podman-compose with healthchecks
     bl_092_status:
-      completed: false
-      status: final_validation_in_progress
+      completed: true
+      status: complete_pending_cto_review
       scope: durable_action_outbox_workflow_foundation
       backlog_id: BL-092
       contracts_package: packages/contracts
@@ -476,11 +476,13 @@ current_state:
         - POST /outbox/:id/mock-deliver
       screenshot_folder: output/playwright/session-092-durable-action-outbox-workflow-foundation/
       screenshot_count: 17
+      validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
+      implementation_commit: 6819301fa5af04a6b02bbe6af532ae669e7a880a
       notes:
         - action/outbox delivery is local mock only with realNetwork=false and externalWriteAttempted=false
         - viewer can inspect but cannot mutate; operator can create/submit; admin can approve/reject/queue
         - API restart persistence proof passed against PostgreSQL local-auth runtime
-        - final validation and commit hash still pending
+        - local DB drift was cleared with npx prisma migrate reset --force and recreated from committed migrations plus seed
     bl_091_status:
       completed: true
       scope: support_case_workflow_foundation
