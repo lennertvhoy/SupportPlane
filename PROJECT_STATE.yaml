@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: pending_bl_091_final_commit
-    worktree_status: dirty_during_bl_091_closure
+    head: 1dba4bbe0b75bfb26112619e4b0b2b7af7426132
+    worktree_status: clean_after_bl_091_final_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -545,7 +545,7 @@ current_state:
     status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: pending_bl_091_final_commit
+    head: 1dba4bbe0b75bfb26112619e4b0b2b7af7426132
     process_or_container:
       - node process (NestJS) on port 4110
       - node process (Next.js) on port 3200

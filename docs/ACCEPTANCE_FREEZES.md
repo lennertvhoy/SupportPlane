@@ -679,7 +679,7 @@ and must be protected from quiet regression.
 - Scope: End-to-end support case workflow unifying calls, customers, tickets, sessions, observations, connector validation, support note drafts, and evidence bundles. New TicketsModule with GET /tickets and GET /tickets/:id (tenant-scoped, RBAC-protected). Connector installation PATCH/validate/test endpoints with honest mock-only behavior. CaseTimelinePanel showing unified session/call/ticket/link/observation/draft events. SupportNoteDraftPanel generating deterministic local-only mock drafts with visible warnings. Evidence bundle including supportNoteDrafts in JSON and Markdown. Viewer role restrictions enforced server-side.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
-- head: pending_final_commit
+- head: 1dba4bbe0b75bfb26112619e4b0b2b7af7426132
 - process_or_container:
   - node process (NestJS API via tsx) on port 4110
   - node process (Next.js dev) on port 3200
