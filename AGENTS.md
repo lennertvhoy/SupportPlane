@@ -1,7 +1,7 @@
 ---
 repo_mode: operating
 initialized_on: 2026-04-26
-last_updated: 2026-04-27
+last_updated: 2026-04-28
 ---
 
 # State Driven Development Template Contract
@@ -260,6 +260,15 @@ State-machine workflows must include proof that invalid transitions are impossib
 and that related UI data belongs to the selected item.
 Final handoff must explicitly call out any screenshot anomaly or stale-state
 artifact instead of presenting it as clean proof.
+
+### Closure repair rule (mandatory)
+
+A closure repair may not be called "closure-grade complete" unless it satisfies
+every requirement specified in the original closure prompt. Partial repairs,
+placeholder evidence, skipped screenshots, or incomplete validation gates
+remain incomplete regardless of how many iterations have passed. If a repair
+session does not finish the full closure scope, the handoff must state exactly
+what remains open and why.
 
 These rules are repo truth. Violations mean "not closure-grade."}}}}
 
