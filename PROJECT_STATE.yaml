@@ -285,11 +285,13 @@ current_state:
           - callRecordings
           - mock recording disclaimers
           - noRealAudio flags
-        screenshot_folder: output/playwright/bl045/
-        screenshot_count: 9
+        screenshot_folder: output/playwright/session-045-call-recording-mock-final-closure/
+        screenshot_count: 8
         closure_notes:
           - tenant isolation enforced on all recording endpoints
           - no real audio generated, captured, or played back
+          - canonical closure proof captured in fresh session folder
+          - full commit hash recorded in acceptance freeze and worklog
     bl_044_status:
       completed: true
       scope: telephony_adapter_contract_and_bridge_boundary

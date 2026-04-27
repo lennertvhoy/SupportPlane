@@ -6,8 +6,10 @@
 
 ## Active Work
 
-No active implementation item. BL-045 call recording mock foundation is complete.
-Do not start BL-046 or any new slice until a CTO handoff selects the next item.
+- [BL-046] Operator companion screen observations during active calls
+  - Owner: coding agent
+  - Next action: Implement screen observation contracts, redaction, API, UI, and browser verification
+  - Exit criteria: Canonical screenshots in `output/playwright/session-046-operator-companion/`, all validation commands pass, state docs updated, worktree clean
 
 ## Queue Rules
 

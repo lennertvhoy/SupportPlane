@@ -409,3 +409,49 @@ and must be protected from quiet regression.
   - Caller matching is fixture-based mock data, not a real CRM or directory lookup.
   - linked_to_existing is a reserved enum value, not yet implemented.
   - In-memory store means all data is lost on API restart.
+
+## AF-2026-04-27-003: Call recording mock foundation (BL-045)
+
+- ID: AF-2026-04-27-003
+- Milestone: Call recording attachment and playback mock foundation
+- Scope: Mock-only call recording contracts, in-memory recording storage, `POST /calls/:id/recordings/mock`, `GET /calls/:id/recordings`, `POST /calls/:id/recordings/:recordingId/review`, `POST /calls/:id/recordings/:recordingId/playback`, Call Console Mock Recording panel with attach/playback-placeholder/review UI, evidence bundle `callRecordings` summaries, and recording audit events.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: 2ff8061df7a0cda93806c4397ab0439fbb730909
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+- routes:
+  - /call-console
+  - /
+  - POST /calls/:id/recordings/mock
+  - GET /calls/:id/recordings
+  - POST /calls/:id/recordings/:recordingId/review
+  - POST /calls/:id/recordings/:recordingId/playback
+- rebuilt_in_slice: false
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-27-017
+  - EV-2026-04-27-018
+  - EV-2026-04-27-019
+  - EV-2026-04-27-020
+  - EV-2026-04-27-021
+  - EV-2026-04-27-022
+  - EV-2026-04-27-023
+  - EV-2026-04-27-024
+- evidence_folder: output/playwright/session-045-call-recording-mock-final-closure/
+- screenshot_count: 8
+- regression_guard:
+  - `/call-console` must keep the Mock Recording panel with honest mock labels.
+  - `POST /calls/:id/recordings/mock` must attach deterministic mock metadata with `noRealAudio: true` and `mockDevOnly: true`.
+  - `GET /calls/:id/recordings` must list tenant-scoped recordings for a call.
+  - `POST /calls/:id/recordings/:recordingId/review` must update status to `mock_only` and append `call_recording_reviewed` audit event.
+  - `POST /calls/:id/recordings/:recordingId/playback` must append `call_recording_playback_opened` audit event with `placeholderOnly: true`.
+  - Evidence bundles must include `callRecordings` summaries with mock disclaimers.
+  - Audit events must not include raw audio data, tokens, or secrets.
+- Notes:
+  - No real audio recording, playback, TTS, STT, transcription, object storage, or provider integration exists.
+  - The Markdown evidence bundle renderer does not yet include a dedicated "Call Recordings" section; recording data is present in JSON and via audit timeline entries in Markdown.

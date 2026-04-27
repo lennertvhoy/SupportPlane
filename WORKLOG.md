@@ -1029,3 +1029,42 @@ Use this file for dated session notes, verification summaries, and references to
 - In-memory store is not persistent; all runtime data is lost on restart.
 - No real authentication; dev identity headers are explicitly mock-only.
 - No call console UI separate from the simulator panel yet (planned for BL-043).
+
+## 2026-04-27 - BL-045 closure hygiene pass
+
+**Type:** closure_hygiene
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 2ff8061df7a0cda93806c4397ab0439fbb730909
+**Worktree:** clean before commit
+
+### What changed
+
+- Verified BL-045 implementation truth: `CallRecording` contracts exist, API endpoints work, audit events append correctly, Call Console Mock Recording panel renders, evidence bundle includes `callRecordings` in JSON.
+- Created canonical screenshot folder `output/playwright/session-045-call-recording-mock-final-closure/` with 8 fresh browser-verified screenshots.
+- Updated `PROJECT_STATE.yaml` to reference canonical folder and full commit hash.
+- Updated `docs/EVIDENCE_LOG.md` with 8 new evidence entries (EV-2026-04-27-017 through EV-2026-04-27-024).
+- Updated `docs/ACCEPTANCE_FREEZES.md` with AF-2026-04-27-003 for BL-045.
+- Noted known limitation: Markdown evidence bundle renderer lacks a dedicated "Call Recordings" section; recording data is present in JSON and audit timeline.
+
+### Verification
+
+- API verified: `POST /calls/:id/recordings/mock` returns mock metadata with `noRealAudio: true`.
+- `GET /calls/:id/recordings` lists tenant-scoped recordings.
+- `POST /calls/:id/recordings/:recordingId/review` updates status to `mock_only`.
+- `POST /calls/:id/recordings/:recordingId/playback` appends `call_recording_playback_opened` with `placeholderOnly: true`.
+- Support Cockpit Audit Trail shows `call_recording_attached`, `call_recording_playback_opened`, and `call_recording_reviewed` events.
+- Evidence bundle JSON includes `callRecordings` array with mock disclaimers.
+- Redaction proven: audit metadata shows `[REDACTED]` for session IDs in exported bundle.
+
+### Evidence
+
+- Screenshot files: `output/playwright/session-045-call-recording-mock-final-closure/01-call-console-with-mock-recording-panel.png` through `08-evidence-bundle-markdown-recording-disclaimers.png`.
+- Evidence refs: EV-2026-04-27-017 through EV-2026-04-27-024.
+- Acceptance freeze: AF-2026-04-27-003.
+
+### Remaining Risk
+
+- Markdown evidence bundle does not yet include a dedicated "Call Recordings" section.
+- No real audio recording, playback, TTS, STT, transcription, object storage, or provider integration exists.

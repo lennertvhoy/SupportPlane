@@ -7,7 +7,7 @@
 
 ## Snapshot
 
-- BL-045 complete: mock call recording attachment/list/review/playback endpoints, `CallRecording` contracts, recording audit events, evidence bundle `callRecordings` summaries, Call Console Mock Recording panel with attach/playback-placeholder/review UI, and browser-verified screenshots. No real audio, storage, TTS, STT, or provider integration exists.
+- BL-045 closure complete: mock call recording attachment/list/review/playback endpoints, `CallRecording` contracts, recording audit events, evidence bundle `callRecordings` summaries, Call Console Mock Recording panel with attach/playback-placeholder/review UI, and canonical 8-screenshot browser-verified closure proof in `output/playwright/session-045-call-recording-mock-final-closure/`. No real audio, storage, TTS, STT, or provider integration exists.
 - BL-044 complete: mock-only telephony adapter contracts, connector boundary, `/telephony` API endpoints, telephony audit events, Call Console Telephony Bridge panel, evidence bundle telephony summaries, and final 8-screenshot browser proof. No real PBX, provider, media, voice, TTS, STT, recording, transcription, or production telephony integration exists.
 - BL-043 closure complete: dedicated mock Call Console UI at `/call-console` with recent calls, caller match/ticket hints, linked SupportSession panel, mock answer/hold/resume/end lifecycle controls, greeting suggestion integration, timeline/audit panel, Support Cockpit navigation, evidence bundle lifecycle/greeting proof, and final 8-screenshot closure set.
 - BL-041 and BL-042 complete: automatic SupportSession creation from matched incoming calls and suggested greeting generation from call plus ticket context, both mock-only and browser verified.

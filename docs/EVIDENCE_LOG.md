@@ -1256,3 +1256,128 @@
   - Evidence bundles include call lifecycle, greeting information, mock telephony disclaimers, and mock AI/disabled voice flags.
 - Type: docs-render-verification
 - as_of: 2026-04-27T09:46:00+02:00
+
+## EV-2026-04-27-017: BL-045 Call Console with Mock Recording panel
+
+- File: output/playwright/session-045-call-recording-mock-final-closure/01-call-console-with-mock-recording-panel.png
+- Title: Call Console with Mock Recording panel visible
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Selected the answered fake incoming call BL045-PROOF-1 in the Call Console.
+- Shows:
+  - Mock Recording panel with "No real audio" badge.
+  - Recording metadata: mock-ref-5f9429a2, available, source mock_generated, storage mock_inline.
+  - Buttons: Attach mock recording, Playback placeholder, Mark reviewed.
+  - Disclaimer: "This is a mock recording. No real audio was captured. Not compliance-grade."
+- Proves:
+  - BL-045 Mock Recording panel is visible and contains honest mock labels.
+- Type: docs-render-verification
+- as_of: 2026-04-27T11:41:00+02:00
+
+## EV-2026-04-27-018: BL-045 mock recording disclaimers
+
+- File: output/playwright/session-045-call-recording-mock-final-closure/02-mock-recording-disclaimers.png
+- Title: Mock Recording panel disclaimers
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Captured the Mock Recording panel in isolation.
+- Shows:
+  - "Mock recording — no real audio captured" warning.
+  - "Playback placeholder only. Not compliance-grade. No object storage connected."
+  - Recording metadata with mock_inline storage.
+- Proves:
+  - The UI explicitly states no real audio, no compliance grade, and no object storage.
+- Type: docs-render-verification
+- as_of: 2026-04-27T11:41:00+02:00
+
+## EV-2026-04-27-019: BL-045 playback placeholder active
+
+- File: output/playwright/session-045-call-recording-mock-final-closure/03-playback-placeholder-active.png
+- Title: Playback placeholder button active state
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Clicked "Playback placeholder" in the Mock Recording panel.
+- Shows:
+  - Playback placeholder button in active state.
+  - No audio element or real playback UI is present.
+- Proves:
+  - Playback action is a placeholder only; no real audio is played.
+- Type: docs-render-verification
+- as_of: 2026-04-27T11:41:00+02:00
+
+## EV-2026-04-27-020: BL-045 recording reviewed state
+
+- File: output/playwright/session-045-call-recording-mock-final-closure/04-recording-reviewed-state.png
+- Title: Recording marked as reviewed
+- Source/System: browser
+- Route/Page: http://localhost:3200/call-console
+- Action: Clicked "Mark reviewed" in the Mock Recording panel.
+- Shows:
+  - Status changed to "mock_only".
+  - Button changed to "Reviewed" [disabled].
+  - "Reviewed at 11:42:04 AM" timestamp visible.
+- Proves:
+  - Review workflow updates recording status and disables further review.
+- Type: docs-render-verification
+- as_of: 2026-04-27T11:42:00+02:00
+
+## EV-2026-04-27-021: BL-045 audit trail with recording events
+
+- File: output/playwright/session-045-call-recording-mock-final-closure/05-audit-trail-recording-events.png
+- Title: Audit trail showing recording attachment, playback, and review events
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=5bab99c6-f80a-4cc6-b37b-140ae864863f
+- Action: Opened Support Cockpit for the linked session and scrolled to Audit Trail.
+- Shows:
+  - call_recording_attached event with mock_generated source and noRealAudio flag.
+  - call_recording_playback_opened events with placeholderOnly flag.
+  - call_recording_reviewed event with previousStatus available and newStatus mock_only.
+- Proves:
+  - All recording lifecycle events are audited with tenant, actor, and mock-only metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-27T11:44:00+02:00
+
+## EV-2026-04-27-022: BL-045 evidence bundle JSON with callRecordings
+
+- File: output/playwright/session-045-call-recording-mock-final-closure/06-evidence-bundle-json-call-recordings.png
+- Title: JSON evidence bundle showing callRecordings array
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=5bab99c6-f80a-4cc6-b37b-140ae864863f
+- Action: Generated evidence bundle and switched to JSON tab, scrolled to callRecordings.
+- Shows:
+  - callRecordings array with recordingId, callEventId, supportSessionId.
+  - status: mock_only, source: mock_generated, storageType: mock_inline.
+  - noRealAudio: true, complianceDisclaimer visible.
+- Proves:
+  - Evidence bundles include structured call recording summaries with mock disclaimers.
+- Type: docs-render-verification
+- as_of: 2026-04-27T11:53:00+02:00
+
+## EV-2026-04-27-023: BL-045 no-secret redacted proof
+
+- File: output/playwright/session-045-call-recording-mock-final-closure/07-no-secret-redacted-proof.png
+- Title: Evidence export with redacted sensitive values
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=5bab99c6-f80a-4cc6-b37b-140ae864863f
+- Action: Scrolled JSON preview to audit timeline metadata.
+- Shows:
+  - sessionId: [REDACTED] in audit metadata.
+  - No tokens, passwords, Authorization headers, or secret values visible.
+- Proves:
+  - Redaction helpers prevent secret exposure in evidence bundle output.
+- Type: docs-render-verification
+- as_of: 2026-04-27T11:54:00+02:00
+
+## EV-2026-04-27-024: BL-045 Markdown evidence bundle recording disclaimers
+
+- File: output/playwright/session-045-call-recording-mock-final-closure/08-evidence-bundle-markdown-recording-disclaimers.png
+- Title: Markdown evidence bundle with recording disclaimers
+- Source/System: browser
+- Route/Page: http://localhost:3200/?session=5bab99c6-f80a-4cc6-b37b-140ae864863f
+- Action: Switched to Markdown tab and scrolled to Mock / Dev-Only Disclaimers.
+- Shows:
+  - "Call recordings are mock metadata only. No real audio was captured, stored, or played back. Not compliance-grade."
+- Proves:
+  - Markdown export includes explicit mock recording disclaimers.
+- Type: docs-render-verification
+- as_of: 2026-04-27T11:55:00+02:00
