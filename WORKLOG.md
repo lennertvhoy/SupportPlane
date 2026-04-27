@@ -4,6 +4,59 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-28 - BL-092 Durable Action/Outbox Workflow Closure Repair
+
+**Type:** closure repair
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 5d0a9c5b8c7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Backend `apps/api/src/actions/actions.service.ts`: `listSessionActions` now suppresses outbox items until at least one action in the session reaches `queued`, `mock_delivered`, or `failed` state. Draft, `review_required`, and `approved` actions receive `outboxItems: []`.
+- Frontend `apps/web/components/ActionOutboxPanel.tsx`: `refresh()` now scopes attempt history to the latest action's specific outbox item by `supportActionId`, instead of blindly taking `outboxItems[0]`.
+- API tests `apps/api/test/api.test.ts`: added `action/outbox state-machine lifecycle prevents attempts before queue` test (test 13) verifying zero outbox items for draft, review_required, and approved states.
+- Verification script `scripts/verify_durable_action_outbox.sh`: expanded steps 5, 7, 10 to explicitly verify no outbox items at pre-queue stages; step 13 verifies attempt history scoping.
+- AGENTS.md: added "Screenshot and lifecycle contradiction rule" mandating that browser proof must not contain state-machine contradictions.
+- Deleted stale screenshot folder `output/playwright/session-092-durable-action-outbox-workflow-foundation/`; replaced with `output/playwright/session-092-durable-action-outbox-workflow-final-closure/` containing 7 screenshots.
+
+### Root cause
+
+Two independent bugs caused the contradiction:
+1. Backend returned all session outbox items regardless of action status, so a draft action could "see" outbox items from previously delivered actions in the same session.
+2. Frontend `refresh()` picked `res.outboxItems[0]` (first array item) and fetched its attempts, which could belong to an older delivered action.
+
+### Verification
+
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run lint` passed.
+- `cd apps/api && npm test` passed: 114/114 tests (12 suites).
+- `scripts/verify_durable_action_outbox.sh` passed against `http://localhost:4110` with `SUPPORTPLANE_STORE=postgres`.
+- `scripts/verify_local_auth_rbac.sh` passed.
+- `scripts/verify_ticket_context_connector.sh` passed.
+- `scripts/verify_support_case_workflow.sh` passed.
+- `scripts/verify_postgres_persistence.sh` passed.
+- API dev server `http://localhost:4110` and web dev server `http://localhost:3200` both confirmed running.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-092-durable-action-outbox-workflow-final-closure/`
+  - `01-draft-created-no-outbox.png`
+  - `02-review-required-no-outbox.png`
+  - `03-approval-denial-proof.png`
+  - `04-approved-no-outbox.png`
+  - `05-mock-delivered-with-attempts.png`
+  - `06-approved-second-action-no-outbox.png`
+  - `07-queued-outbox-appears.png`
+- Git commit: `5d0a9c5b8c7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c`
+
+### Remaining Risk
+
+- All behavior remains local/mock-only with visible UI warnings.
+- No real external integrations, queue workers, or production delivery exists.
+
 ## 2026-04-27 - BL-020 Ticket Context and Connector Safety Foundation
 
 **Type:** implementation

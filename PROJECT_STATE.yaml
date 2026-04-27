@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 6819301fa5af04a6b02bbe6af532ae669e7a880a
-    worktree_status: clean_after_bl_092_implementation_commit_pending_closure_docs
+    head: 5d0a9c5b8c7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c
+    worktree_status: clean_after_bl_092_closure_repair_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -441,7 +441,7 @@ current_state:
       - Infra containers verified via podman-compose with healthchecks
     bl_092_status:
       completed: true
-      status: complete_pending_cto_review
+      status: closure_complete_after_repair
       scope: durable_action_outbox_workflow_foundation
       backlog_id: BL-092
       contracts_package: packages/contracts
@@ -474,15 +474,22 @@ current_state:
         - GET /outbox/:id
         - POST /outbox/:id/retry
         - POST /outbox/:id/mock-deliver
-      screenshot_folder: output/playwright/session-092-durable-action-outbox-workflow-foundation/
-      screenshot_count: 17
+      screenshot_folder: output/playwright/session-092-durable-action-outbox-workflow-final-closure/
+      screenshot_count: 7
       validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
       implementation_commit: 6819301fa5af04a6b02bbe6af532ae669e7a880a
+      closure_repair_commit: 5d0a9c5b8c7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c
+      closure_repair_summary: >
+        Fixed lifecycle contradiction where UI showed mock_delivered attempt history
+        on draft/review_required actions. Two bugs: backend returned all session outbox
+        items regardless of action status; frontend picked outboxItems[0] for attempts.
       notes:
         - action/outbox delivery is local mock only with realNetwork=false and externalWriteAttempted=false
         - viewer can inspect but cannot mutate; operator can create/submit; admin can approve/reject/queue
         - API restart persistence proof passed against PostgreSQL local-auth runtime
         - local DB drift was cleared with npx prisma migrate reset --force and recreated from committed migrations plus seed
+        - backend now suppresses outbox items until queued/delivered/failed state
+        - frontend now scopes attempt history to latest action's outbox item by supportActionId
     bl_091_status:
       completed: true
       scope: support_case_workflow_foundation
