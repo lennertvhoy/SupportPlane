@@ -39,9 +39,9 @@ export class TelephonyService {
     private readonly callsService: CallsService
   ) {}
 
-  getStatus(identity: DevIdentity): TelephonyAdapterStatusShape {
+  async getStatus(identity: DevIdentity): Promise<TelephonyAdapterStatusShape> {
     const status = this.adapter.getStatus(identity.tenantId);
-    this.callsService.recordTelephonyAuditEvent(
+    await this.callsService.recordTelephonyAuditEvent(
       identity,
       undefined,
       AuditEventType.enum.telephony_adapter_tested,
@@ -59,9 +59,9 @@ export class TelephonyService {
     return status;
   }
 
-  test(identity: DevIdentity): TelephonyAdapterStatusShape {
+  async test(identity: DevIdentity): Promise<TelephonyAdapterStatusShape> {
     const status = TelephonyAdapterStatus.parse(this.adapter.test(identity.tenantId));
-    this.callsService.recordTelephonyAuditEvent(
+    await this.callsService.recordTelephonyAuditEvent(
       identity,
       undefined,
       AuditEventType.enum.telephony_adapter_tested,
@@ -79,11 +79,11 @@ export class TelephonyService {
     return status;
   }
 
-  receiveFakeProviderWebhook(
+  async receiveFakeProviderWebhook(
     identity: DevIdentity,
     body: FakeProviderWebhookBody,
     headers: Record<string, string | string[] | undefined>
-  ): { event: TelephonyWebhookEventShape; callEvent: unknown; mockDevOnly: boolean; receivedAt: string } {
+  ): Promise<{ event: TelephonyWebhookEventShape; callEvent: unknown; mockDevOnly: boolean; receivedAt: string }> {
     const lifecycle = TelephonyWebhookLifecycleEventType.safeParse(
       body.eventType ?? 'incoming_call'
     );
@@ -119,13 +119,13 @@ export class TelephonyService {
       id: randomUUID(),
       now,
     });
-    const { callEvent, receivedAt } = this.callsService.createFromTelephonyWebhook(
+    const { callEvent, receivedAt } = await this.callsService.createFromTelephonyWebhook(
       identity,
       event,
       mapped
     );
 
-    this.callsService.recordTelephonyAuditEvent(
+    await this.callsService.recordTelephonyAuditEvent(
       identity,
       callEvent.sessionId,
       AuditEventType.enum.telephony_webhook_received,
@@ -142,7 +142,7 @@ export class TelephonyService {
         mockDevOnly: true,
       }
     );
-    this.callsService.recordTelephonyAuditEvent(
+    await this.callsService.recordTelephonyAuditEvent(
       identity,
       callEvent.sessionId,
       AuditEventType.enum.telephony_webhook_verified,
@@ -163,12 +163,12 @@ export class TelephonyService {
     return { event, callEvent, mockDevOnly: true, receivedAt };
   }
 
-  controlCall(
+  async controlCall(
     identity: DevIdentity,
     callId: string,
     body: { action: string; reason?: string; target?: string }
-  ): TelephonyCallControlResultShape {
-    const call = this.callsService.getCall(identity, callId);
+  ): Promise<TelephonyCallControlResultShape> {
+    const call = await this.callsService.getCall(identity, callId);
     const action = TelephonyCallControlAction.safeParse(body.action);
     if (!action.success) {
       throw new BadRequestException(
@@ -190,7 +190,7 @@ export class TelephonyService {
       mockDevOnly: true,
     });
 
-    this.callsService.recordTelephonyAuditEvent(
+    await this.callsService.recordTelephonyAuditEvent(
       identity,
       call.sessionId,
       AuditEventType.enum.telephony_call_control_requested,
@@ -210,7 +210,7 @@ export class TelephonyService {
 
     const adapterResult = this.adapter.handleControlIntent(intent, call);
     if (!adapterResult.success || !adapterResult.resultingStatus) {
-      this.callsService.recordTelephonyAuditEvent(
+      await this.callsService.recordTelephonyAuditEvent(
         identity,
         call.sessionId,
         AuditEventType.enum.telephony_call_control_failed,
@@ -232,7 +232,7 @@ export class TelephonyService {
     }
 
     try {
-      const transition = this.callsService.updateCallStatus(identity, callId, {
+      const transition = await this.callsService.updateCallStatus(identity, callId, {
         status: adapterResult.resultingStatus,
         reason: body.reason ?? `Telephony bridge intent: ${intent.action}`,
       });
@@ -241,7 +241,7 @@ export class TelephonyService {
         callEvent: transition.callEvent,
         resultingStatus: transition.newStatus as CallStatus,
       };
-      this.callsService.recordTelephonyAuditEvent(
+      await this.callsService.recordTelephonyAuditEvent(
         identity,
         transition.callEvent.sessionId,
         AuditEventType.enum.telephony_call_control_succeeded,
@@ -261,7 +261,7 @@ export class TelephonyService {
       return result;
     } catch (error) {
       const sanitized = sanitizeTelephonyError(error);
-      this.callsService.recordTelephonyAuditEvent(
+      await this.callsService.recordTelephonyAuditEvent(
         identity,
         call.sessionId,
         AuditEventType.enum.telephony_call_control_failed,

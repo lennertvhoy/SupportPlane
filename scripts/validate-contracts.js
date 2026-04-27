@@ -192,7 +192,7 @@ assertValid('EvidenceBundle', EvidenceBundle, {
   mockDevOnlyDisclaimers: ['Mock disclaimer'],
   limitations: ['Limitation 1'],
   sourceProvenance: {
-    storeType: 'in-memory',
+    storeType: 'memory',
     persistenceClaimed: false,
     generatedByService: 'supportplane-api',
     schemaVersion: '1.0.0-mvp',
@@ -228,7 +228,7 @@ assertValid('EvidenceBundleExportResponse', EvidenceBundleExportResponse, {
     mockDevOnlyDisclaimers: ['Mock disclaimer'],
     limitations: ['Limitation 1'],
     sourceProvenance: {
-      storeType: 'in-memory',
+      storeType: 'memory',
       persistenceClaimed: false,
       generatedByService: 'supportplane-api',
       schemaVersion: '1.0.0-mvp',

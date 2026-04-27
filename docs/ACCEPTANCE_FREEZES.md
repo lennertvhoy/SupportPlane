@@ -559,3 +559,26 @@ and must be protected from quiet regression.
   - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
   - No real database persistence; all data is in-memory and lost on API restart.
   - The earlier partial screenshot folder `output/playwright/session-047-049-screen-context-hardening/` is superseded by this final closure folder.
+
+
+---
+
+## AF-2026-04-27-006: BL-050 PostgreSQL Persistence Foundation
+
+- Date: 2026-04-27
+- Commit: `f28adfc`
+- Scope: PostgreSQL persistence foundation with PrismaStore and runtime store switching
+- Frozen behaviors:
+  - `SUPPORTPLANE_STORE=postgres` selects PrismaStore; default or `memory` selects InMemoryStore.
+  - PrismaStore uses Prisma v7.8.0 with `@prisma/adapter-pg` and `pg` Pool adapter.
+  - All store methods are async and tenant-scoped.
+  - Evidence bundle `sourceProvenance.storeType` reports `"memory"` or `"postgres"`.
+  - Evidence bundle `sourceProvenance.persistenceClaimed` is `true` when `storeType === "postgres"`.
+  - `scripts/verify_postgres_persistence.sh` must pass all 3 phases (create, restart-survive, bundle-store-type).
+- Verification script: scripts/verify_postgres_persistence.sh
+- Evidence ref: EV-2026-04-27-052
+- Notes:
+  - Canonical dev seed: `npx prisma db seed` (prisma/seed.ts with PrismaPg adapter).
+  - Standalone script seeds via raw SQL for isolated verification.
+  - PostgreSQL container must be running (sp-postgres on localhost:5434).
+  - All previous in-memory behavior remains unchanged when `SUPPORTPLANE_STORE` is unset or `memory`.

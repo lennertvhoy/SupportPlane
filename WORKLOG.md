@@ -1321,3 +1321,71 @@ Use this file for dated session notes, verification summaries, and references to
 - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
 - No real database persistence; all data is in-memory and lost on API restart.
 - No post-BL-049 backlog work was started.
+
+
+---
+
+## Session 2026-04-27 — BL-050 PostgreSQL Persistence Foundation
+
+### Scope
+
+Implement PostgreSQL persistence foundation for SupportPlane API, enabling runtime switching between in-memory and PostgreSQL backends.
+
+### Changes
+
+- **Prisma schema extension** (`prisma/schema.prisma`):
+  - Added `CallEvent`, `CallRecording`, `ScreenObservation`, `ScreenObservationSharingState` models
+  - All models include tenant indexes (`@@index([tenantId])`) and proper relations
+  - JSON fields for flexible metadata/payload/redactionLog
+- **Migration created/applied**: `prisma/migrations/20260427124815_init_persistence_foundation/migration.sql`
+- **Prisma client generated**: Installed `@prisma/client` v7.8.0 and `@prisma/adapter-pg` with `pg` Pool adapter
+- **PrismaStore** (`apps/api/src/store/prisma.store.ts`):
+  - Full PostgreSQL-backed store implementing `Store` interface
+  - Wraps PrismaClient with `PrismaPg` adapter for v7.8.0 compatibility
+  - All CRUD methods: sessions, ticket references, context packets, audit events, drafts, call events, recordings, screen observations, sharing states
+  - JSON serialization helpers for Prisma Json fields
+  - Tenant scoping enforced on all queries
+- **Store abstraction** (`apps/api/src/store/store.interface.ts`, `apps/api/src/store/store.module.ts`):
+  - Extracted `Store` interface with async signatures
+  - `StoreModule` selects `PrismaStore` when `SUPPORTPLANE_STORE=postgres`, defaults to `InMemoryStore`
+- **Service async migration**:
+  - `SupportSessionsService`, `CallsService`, `TelephonyService` methods converted from sync to async
+  - All controller methods updated with `await`
+  - ~20 internal call sites updated
+- **Evidence bundle schema** (`packages/contracts/src/evidence-bundle.ts`, `apps/api/src/evidence-bundle/evidence-bundle.builder.ts`):
+  - `storeType` changed to `"memory" | "postgres"`
+  - `persistenceClaimed` changed to `boolean`
+- **Verification script** (`scripts/verify_postgres_persistence.sh`):
+  - Phase 1: Create session and call in PostgreSQL mode
+  - Phase 2: Restart API, verify data survives restart
+  - Phase 3: Verify evidence bundle reports `storeType: postgres`
+
+### Verification
+
+- `npm run build --workspace @supportplane/api` passed after Prisma v7.8.0 adapter fix
+- `npm test --workspace @supportplane/api` passed: 102/102 integration tests pass
+- `npm test --workspace @supportplane/contracts` passed: 26/26 tests pass
+- `npm test --workspace @supportplane/web` passed: 15/15 tests pass
+- `npm test --workspace @supportplane/ai` passed: 9/9 tests pass
+- `npm test --workspace @supportplane/connectors` passed: 16/16 tests pass
+- `scripts/verify_postgres_persistence.sh` passed all 3 phases:
+  - PASS: Session survived restart
+  - PASS: Call event survived restart
+  - PASS: Evidence bundle reports postgres store type
+- Runtime API verified at `http://localhost:4110/health` in both memory and postgres modes
+
+### Evidence
+
+- Verification script output confirming restart survival
+- Evidence ref: EV-2026-04-27-052 (PrismaStore restart survival)
+
+### Remaining Risk
+
+- No tenant/user seeding flow yet; dev tenant must be inserted manually for PostgreSQL mode
+- No queue consumers or real object storage usage yet; NATS and MinIO containers available for future slices
+- No real external integrations exist yet
+- No authentication layer exists yet (dev-only mock identity headers)
+- Mock AI draft and greeting generation are deterministic and dev-only; no real AI provider is connected
+- No real telephony or PBX integration exists
+- No real audio recording, playback, or storage exists
+- No real screen capture, raw pixels, clipboard access, OCR, or desktop monitoring exists

@@ -28,6 +28,10 @@ model Tenant {
   screenObservations  ScreenObservation[]
   policyDecisions     PolicyDecision[]
   auditEvents         AuditEvent[]
+  callEvents          CallEvent[]
+  callRecordings      CallRecording[]
+  internalNoteDrafts  InternalNoteDraft[]
+  sharingStates       SharingState[]
 
   @@index([slug])
   @@index([status])
@@ -66,7 +70,6 @@ model User {
   assignedSessions  SupportSession[]   @relation("AssignedUser")
   auditEvents       AuditEvent[]       @relation("ActorUser")
   policyDecisions   PolicyDecision[]
-  screenObservations ScreenObservation[]
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -85,6 +88,7 @@ model SupportSession {
   linkedTicketIds      String[] @default([])
   aiContextPacketIds   String[] @default([])
   screenObservationIds String[] @default([])
+  callEventIds         String[] @default([])
   auditEventIds        String[] @default([])
   startedAt            DateTime @default(now())
   endedAt              DateTime?
@@ -97,6 +101,10 @@ model SupportSession {
   screenObservations ScreenObservation[]
   policyDecisions   PolicyDecision[]
   auditEvents       AuditEvent[]
+  callEvents        CallEvent[]
+  callRecordings    CallRecording[]
+  internalNoteDrafts InternalNoteDraft[]
+  sharingStates     SharingState[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -175,27 +183,58 @@ model AIContextPacket {
 }
 
 model ScreenObservation {
-  id                      String   @id @default(cuid())
-  tenantId                String
-  sessionId               String
-  observationType         String
-  metadata                Json
-  operatorCompanionId     String?
-  operatorUserId          String?
-  privacyConsentGiven     Boolean  @default(false)
-  rawImageStored          Boolean  @default(false)
-  rawImageRetentionSeconds Int?
-  createdAt               DateTime @default(now())
+  id                   String   @id @default(cuid())
+  tenantId             String
+  sessionId            String
+  callEventId          String?
+  source               String
+  kind                 String
+  status               String   @default("review_required")
+  rawInputPlaceholder  String?
+  redactedSummary      String?
+  appLabel             String?
+  windowLabel          String?
+  urlLabel             String?
+  sharingState         String   @default("inactive")
+  rawImageRetention    String   @default("disabled")
+  redactionStatus      String   @default("not_needed")
+  safetyFlags          Json     @default("{}")
+  noRawPixels          Boolean  @default(true)
+  noClipboard          Boolean  @default(true)
+  noOcr                Boolean  @default(true)
+  noCredentialCapture  Boolean  @default(true)
+  mockDevOnly          Boolean  @default(true)
+  reviewedAt           DateTime?
+  reviewedBy           String?
+  contextPacketId      String?
+  createdAt            DateTime @default(now())
 
-  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user   User?          @relation(fields: [operatorUserId], references: [id], onDelete: SetNull)
+  tenant  Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   session SupportSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([tenantId, sessionId])
-  @@index([observationType])
+  @@index([kind])
   @@index([createdAt])
   @@map("screen_observations")
+}
+
+model SharingState {
+  id        String   @id @default(cuid())
+  tenantId  String
+  sessionId String
+  state     String   @default("inactive")
+  mockDevOnly Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant  Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  session SupportSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, sessionId])
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@map("sharing_states")
 }
 
 model PolicyDecision {
@@ -251,4 +290,86 @@ model AuditEvent {
   @@index([resourceType, resourceId])
   @@index([createdAt])
   @@map("audit_events")
+}
+
+model CallEvent {
+  id            String   @id @default(cuid())
+  tenantId      String
+  sessionId     String?
+  provider      String
+  source        String
+  externalCallId String
+  direction     String
+  status        String
+  caller        Json     @default("{}")
+  callerMatch   Json?
+  startedAt     DateTime @default(now())
+  endedAt       DateTime?
+  answeredAt    DateTime?
+  metadata      Json     @default("{}")
+  mockDevOnly   Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant  Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  session SupportSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  recordings CallRecording[]
+
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@index([externalCallId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("call_events")
+}
+
+model CallRecording {
+  id                  String   @id @default(cuid())
+  tenantId            String
+  callEventId         String
+  supportSessionId    String?
+  source              String
+  status              String
+  durationSeconds     Int?
+  mockMediaUrl        String?
+  placeholderReference String?
+  storageType         String
+  checksumHash        String?
+  reviewedAt          DateTime?
+  reviewedBy          String?
+  updatedAt           DateTime?
+  mockDevOnly         Boolean  @default(true)
+  complianceDisclaimer String?
+  noRealAudio         Boolean  @default(true)
+  createdAt           DateTime @default(now())
+
+  tenant  Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  call    CallEvent       @relation(fields: [callEventId], references: [id], onDelete: Cascade)
+  session SupportSession? @relation(fields: [supportSessionId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, callEventId])
+  @@index([supportSessionId])
+  @@index([createdAt])
+  @@map("call_recordings")
+}
+
+model InternalNoteDraft {
+  id               String   @id @default(cuid())
+  tenantId         String
+  sessionId        String
+  externalTicketId String
+  subject          String?
+  body             String
+  reviewed         Boolean  @default(false)
+  reviewerId       String?
+  createdAt        DateTime @default(now())
+
+  tenant  Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  session SupportSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@index([externalTicketId])
+  @@map("internal_note_drafts")
 }

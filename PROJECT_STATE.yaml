@@ -169,7 +169,7 @@ current_state:
         audit_events:
           - evidence_bundle_generated
           - evidence_bundle_exported
-        store_type: in-memory
+        store_type: postgres_or_memory
     bl_009_status:
       completed: true
       scope: fake_incoming_call_webhook_and_caller_matching
@@ -190,7 +190,7 @@ current_state:
           - call_event_received
           - caller_matched
           - call_linked_to_session
-        store_type: in-memory
+        store_type: postgres_or_memory
         mock_telephony: true
         honest_labels: true
     bl_041_status:
@@ -209,7 +209,7 @@ current_state:
           - caller_matched
           - support_session_auto_created
           - call_auto_linked_to_session
-        store_type: in-memory
+        store_type: postgres_or_memory
         mock_telephony: true
         honest_labels: true
         closure_notes:
@@ -230,7 +230,7 @@ current_state:
           - POST /support-sessions/:id/greeting-suggestion
         audit_events:
           - greeting_suggestion_generated
-        store_type: in-memory
+        store_type: postgres_or_memory
         mock_telephony: true
         mock_ai: true
         honest_labels: true
@@ -254,7 +254,7 @@ current_state:
           - greeting_suggestion_generated
           - evidence_bundle_generated
           - evidence_bundle_exported
-        store_type: in-memory
+        store_type: postgres_or_memory
         mock_telephony: true
         mock_ai: true
         real_integrations: false
@@ -316,12 +316,12 @@ current_state:
           - screen_observation_sharing_started
           - screen_observation_sharing_paused
           - screen_observation_sharing_stopped
-        store_type: in-memory
+        store_type: postgres_or_memory
         ui_panels:
           - Call Console Operator Companion sharing indicator badge
         screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
         closure_notes:
-          - sharing state is per-session, per-tenant, stored in-memory
+          - sharing state is per-session, per-tenant, stored in postgres or memory depending on SUPPORTPLANE_STORE
           - invalid transitions rejected with 400 Bad Request
           - visible indicator badge updates immediately in UI
     bl_048_status:
@@ -351,7 +351,7 @@ current_state:
           - active_window_metadata_captured
           - manual_screenshot_metadata_attached
           - structured_screen_observation_uploaded
-        store_type: in-memory
+        store_type: postgres_or_memory
         ui_panels:
           - Call Console Active Window Metadata form
           - Call Console Manual Screenshot Metadata form
@@ -393,7 +393,7 @@ current_state:
           - screenObservations.safetyFlags
         audit_events:
           - screen_observation_redaction_applied
-        store_type: in-memory
+        store_type: postgres_or_memory
         screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
         closure_notes:
           - redaction applied before storage; secrets never enter the store
@@ -446,37 +446,16 @@ current_state:
       contracts_package: packages/contracts
       api_app: apps/api
       web_app: apps/web
-      docs:
-        - docs/OPERATOR_COMPANION.md
-        - docs/CALL_CONSOLE.md
-        - docs/EVIDENCE_BUNDLES.md
       validation: full_validation_gate_and_browser_boundary_verified
       runtime:
-        api_endpoints:
-          - GET /support-sessions/:id/screen-observations/sharing-state
-          - POST /support-sessions/:id/screen-observations/sharing-state
-          - POST /support-sessions/:id/screen-observations/active-window/mock
-          - POST /support-sessions/:id/screen-observations/manual-screenshot
-          - POST /support-sessions/:id/screen-observations/structured-upload
+        api_endpoints: [GET/POST /support-sessions/:id/screen-observations/sharing-state, POST /active-window/mock, POST /manual-screenshot, POST /structured-upload]
         storage_type: in-memory
         real_screen_capture: false
         real_clipboard: false
         real_ocr: false
         raw_image_retention: disabled
-        audit_events:
-          - screen_observation_sharing_started
-          - screen_observation_sharing_paused
-          - screen_observation_sharing_stopped
-          - active_window_metadata_captured
-          - manual_screenshot_metadata_attached
-          - structured_screen_observation_uploaded
-          - screen_observation_redaction_applied
-        evidence_bundle_includes:
-          - screenObservations with sharingState, rawImageRetention, redactionStatus, safetyFlags
-          - mock screen observation disclaimers
-        ui_panels:
-          - Call Console Operator Companion panel with sharing indicator
-          - Support Cockpit AI Context Quality panel with redaction status
+        audit_events: [screen_observation_sharing_started, screen_observation_sharing_paused, screen_observation_sharing_stopped, active_window_metadata_captured, manual_screenshot_metadata_attached, structured_screen_observation_uploaded, screen_observation_redaction_applied]
+        ui_panels: [Call Console Operator Companion, Support Cockpit AI Context Quality]
         screenshot_folder: output/playwright/session-047-049-screen-context-hardening-final-closure/
         screenshot_count: 10
         closure_notes:
@@ -484,6 +463,29 @@ current_state:
           - all 3 capture types verified
           - evidence bundle JSON verified to include new structured fields
           - no real screen capture, raw pixels, clipboard access, or OCR performed
+    bl_050_status:
+      completed: true
+      scope: postgres_persistence_foundation_prisma_store_runtime_switching
+      contracts_package: packages/contracts
+      api_app: apps/api
+      prisma_schema: prisma/schema.prisma
+      migration: prisma/migrations/20260427124815_init_persistence_foundation/
+      validation: full_test_gate_and_restart_survival_verified
+      runtime:
+        store_modes: [memory, postgres]
+        store_module: apps/api/src/store/store.module.ts
+        adapter: PrismaPg with pg Pool for Prisma v7.8.0
+        verification_script: scripts/verify_postgres_persistence.sh
+        restart_survival_verified: true
+        test_results: {api: 102/102, contracts: 26/26, web: 15/15, ai: 9/9, connectors: 16/16}
+        persistence_models: [SupportSession, CallEvent, CallRecording, ScreenObservation, ScreenObservationSharingState, TicketReference, AIContextPacket, AuditEvent, InternalNoteDraft]
+        closure_notes:
+          - Prisma schema extended with all MVP persistence models
+          - Migration applied against PostgreSQL container (sp-postgres)
+          - PrismaStore implements full CRUD with async tenant-scoped operations
+          - All service methods converted from sync to async
+          - Evidence bundle schema updated with storeType and persistenceClaimed
+          - Restart survival verified: data persists across API restart in postgres mode
     bl_044_status:
       completed: true
       scope: telephony_adapter_contract_and_bridge_boundary
@@ -505,37 +507,17 @@ current_state:
         provider_type: mock
         adapter_mode: mock
         webhook_verification: not_required
-        capabilities:
-          inbound_calls: true
-          answer: true
-          hold: true
-          resume: true
-          end: true
-          transfer: false
-          recording: false
-          transcription: false
-        audit_events:
-          - telephony_adapter_tested
-          - telephony_webhook_received
-          - telephony_webhook_verified
-          - telephony_call_control_requested
-          - telephony_call_control_succeeded
-          - telephony_call_control_failed
-        evidence_bundle_includes: telephonyBridgeEvents
-        store_type: in-memory
+        capabilities: {inbound_calls: true, answer: true, hold: true, resume: true, end: true, transfer: false, recording: false, transcription: false}
+        audit_events: [telephony_adapter_tested, telephony_webhook_received, telephony_webhook_verified, telephony_call_control_requested, telephony_call_control_succeeded, telephony_call_control_failed]
+        store_type: postgres_or_memory
         mock_telephony: true
         real_provider_calls: false
         real_media_or_voice: false
-        evidence_bundle_includes:
-          - callEvents
-          - call_status_changed auditTimeline entries
-          - greetingSuggestions
-          - mock telephony disclaimers
-          - mock AI / disabled voice and auto-send flags
+        evidence_bundle_includes: [callEvents, call_status_changed auditTimeline, greetingSuggestions, mock telephony disclaimers, mock AI flags]
         screenshot_folder: output/playwright/session-043-call-console-ui-final-closure/
         screenshot_count: 8
         closure_notes:
-          - final closure supersedes earlier partial folder output/playwright/session-043-call-console-ui/
+          - final closure supersedes earlier partial folder
           - call resume timeline now displays call_resumed instead of a second call_answered
           - Call Console greeting generation now remains visible after timeline refresh
     truth_summary: >
@@ -563,7 +545,7 @@ current_state:
     status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: bl_047_048_049_screen_context_hardening_complete
+    head: bl_050_postgres_persistence_foundation_complete
     process_or_container:
       - node process (NestJS) on port 4110
       - node process (Next.js) on port 3200
@@ -573,11 +555,12 @@ current_state:
     rebuilt_in_current_slice: true
     duplicate_runtimes_checked: true
     notes:
-      - NestJS API is running and verified via integration tests (101/101 pass) and curl
+      - NestJS API is running and verified via integration tests (102/102 pass) and curl
       - Next.js web app is running and verified via browser screenshots (10 canonical)
       - BL-043 closure verified in Chromium with 8 screenshots
       - BL-046 closure verified in Chromium with 9 screenshots
       - BL-047/048/049 closure verified in Chromium with 10 screenshots
+      - BL-050 PostgreSQL persistence verified with restart-survival script (scripts/verify_postgres_persistence.sh)
       - baseline health script exists at scripts/health.js and returns scaffold identity
       - runtime identity proof was collected for API endpoints and UI panels
       - BL-006 local topology verification script exists at scripts/check_local_topology.sh
@@ -678,7 +661,7 @@ current_state:
       - repository still contains template fixtures in some apps
       - AGENTS template language still includes some generic workflow framing
       - apps/web and apps/worker are scaffold placeholders without frameworks installed yet
-      - apps/api has NestJS runtime but uses in-memory store, not PostgreSQL
+      - apps/api supports both in-memory and PostgreSQL stores via SUPPORTPLANE_STORE env var; PrismaStore uses Prisma v7.8.0 with pg adapter
       - packages/ai contains only deterministic mock provider behavior, not real provider integrations
 
   target_architecture:

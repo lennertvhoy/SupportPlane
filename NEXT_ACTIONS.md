@@ -1,14 +1,16 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-27 13:51 CEST
+**Updated At:** 2026-04-27 15:24 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-- [BL-047/048/049] Screen Context Hardening Wave — CLOSED
-  - Final closure proof: `output/playwright/session-047-049-screen-context-hardening-final-closure/` (10 canonical screenshots)
-  - Scope: sharing-state lifecycle, active-window metadata, manual screenshot metadata, structured upload, enhanced redaction, no-secret/no-raw-image evidence
+- [BL-050] PostgreSQL Persistence Foundation — CLOSED
+  - Prisma schema extended with all MVP models, migration applied, PrismaStore implemented
+  - Runtime store switching via `SUPPORTPLANE_STORE=postgres`
+  - Restart-survival verification passed: `scripts/verify_postgres_persistence.sh`
+  - All tests pass: API 102/102, Contracts 26/26, Web 15/15, AI 9/9, Connectors 16/16
   - Next: CTO review to choose next backlog slice
 
 ## Queue Rules

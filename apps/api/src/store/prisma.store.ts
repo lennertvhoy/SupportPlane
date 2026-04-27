@@ -1,0 +1,795 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
+
+function json<T>(value: T): Prisma.InputJsonValue {
+  return value as unknown as Prisma.InputJsonValue;
+}
+import type {
+  SupportSession as SupportSessionShape,
+  TicketReference as TicketReferenceShape,
+  AIContextPacket as AIContextPacketShape,
+  AuditEvent as AuditEventShape,
+  InternalNoteDraft as InternalNoteDraftShape,
+  CallEvent as CallEventShape,
+  CallRecording as CallRecordingShape,
+  ScreenObservation as ScreenObservationShape,
+} from '@supportplane/contracts';
+import type { Store, SharingStateShape } from './store.interface.js';
+
+function toISO(value: Date | null | undefined): string | undefined {
+  if (!value) return undefined;
+  return value instanceof Date ? value.toISOString() : String(value);
+}
+
+function dateOrNow(value: string | Date | undefined): Date {
+  if (!value) return new Date();
+  if (value instanceof Date) return value;
+  return new Date(value);
+}
+
+function createPrismaClient(): PrismaClient {
+  const databaseUrl = process.env['DATABASE_URL'];
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL environment variable is required for PrismaStore');
+  }
+  const pool = new Pool({ connectionString: databaseUrl });
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter });
+}
+
+@Injectable()
+export class PrismaStore implements Store {
+  private readonly prisma = createPrismaClient();
+
+  // SupportSession
+  async saveSession(session: SupportSessionShape): Promise<void> {
+    let assignedUserId = session.assignedUserId ?? null;
+    if (assignedUserId) {
+      const user = await this.prisma.user.findUnique({ where: { id: assignedUserId } });
+      if (!user) assignedUserId = null;
+    }
+    await this.prisma.supportSession.upsert({
+      where: { id: session.id },
+      create: {
+        id: session.id,
+        tenantId: session.tenantId,
+        status: session.status,
+        priority: session.priority,
+        title: session.title,
+        description: session.description,
+        assignedUserId: assignedUserId,
+        linkedTicketIds: session.linkedTicketIds,
+        aiContextPacketIds: session.aiContextPacketIds,
+        screenObservationIds: session.screenObservationIds,
+        callEventIds: session.callEventIds,
+        auditEventIds: session.auditEventIds,
+        startedAt: dateOrNow(session.startedAt),
+        endedAt: session.endedAt ? new Date(session.endedAt) : null,
+        createdAt: dateOrNow(session.createdAt),
+        updatedAt: dateOrNow(session.updatedAt),
+      },
+      update: {
+        status: session.status,
+        priority: session.priority,
+        title: session.title,
+        description: session.description,
+        assignedUserId: assignedUserId,
+        linkedTicketIds: session.linkedTicketIds,
+        aiContextPacketIds: session.aiContextPacketIds,
+        screenObservationIds: session.screenObservationIds,
+        callEventIds: session.callEventIds,
+        auditEventIds: session.auditEventIds,
+        startedAt: dateOrNow(session.startedAt),
+        endedAt: session.endedAt ? new Date(session.endedAt) : null,
+        updatedAt: dateOrNow(session.updatedAt),
+      },
+    });
+  }
+
+  async getSession(tenantId: string, id: string): Promise<SupportSessionShape | undefined> {
+    const row = await this.prisma.supportSession.findFirst({
+      where: { id, tenantId },
+    });
+    if (!row) return undefined;
+    return this.mapSession(row);
+  }
+
+  async listSessions(tenantId: string): Promise<SupportSessionShape[]> {
+    const rows = await this.prisma.supportSession.findMany({
+      where: { tenantId },
+      orderBy: { updatedAt: 'desc' },
+    });
+    return rows.map((r) => this.mapSession(r));
+  }
+
+  private mapSession(row: {
+    id: string;
+    tenantId: string;
+    status: string;
+    priority: string;
+    title: string;
+    description: string | null;
+    assignedUserId: string | null;
+    linkedTicketIds: string[];
+    aiContextPacketIds: string[];
+    screenObservationIds: string[];
+    callEventIds: string[];
+    auditEventIds: string[];
+    startedAt: Date;
+    endedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): SupportSessionShape {
+    return {
+      id: row.id as SupportSessionShape['id'],
+      tenantId: row.tenantId as SupportSessionShape['tenantId'],
+      status: row.status as SupportSessionShape['status'],
+      priority: row.priority as SupportSessionShape['priority'],
+      title: row.title,
+      description: row.description ?? undefined,
+      assignedUserId: row.assignedUserId ?? undefined,
+      linkedTicketIds: row.linkedTicketIds,
+      aiContextPacketIds: row.aiContextPacketIds,
+      screenObservationIds: row.screenObservationIds,
+      callEventIds: row.callEventIds,
+      auditEventIds: row.auditEventIds,
+      startedAt: toISO(row.startedAt)!,
+      endedAt: toISO(row.endedAt),
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
+  }
+
+  // TicketReference
+  async saveTicketReference(sessionId: string, ticket: TicketReferenceShape): Promise<void> {
+    await this.prisma.ticketReference.upsert({
+      where: { id: ticket.id },
+      create: {
+        id: ticket.id,
+        tenantId: ticket.tenantId,
+        adapterId: ticket.adapterId,
+        externalTicketId: ticket.externalTicketId,
+        subject: ticket.subject,
+        status: ticket.status,
+        priority: ticket.priority,
+        customerEmail: ticket.customerEmail,
+        customerName: ticket.customerName,
+        rawData: ticket.rawData ? json(ticket.rawData) : undefined,
+        lastSyncedAt: dateOrNow(ticket.lastSyncedAt),
+        createdAt: dateOrNow(ticket.createdAt),
+        updatedAt: dateOrNow(ticket.updatedAt),
+      },
+      update: {
+        adapterId: ticket.adapterId,
+        externalTicketId: ticket.externalTicketId,
+        subject: ticket.subject,
+        status: ticket.status,
+        priority: ticket.priority,
+        customerEmail: ticket.customerEmail,
+        customerName: ticket.customerName,
+        rawData: ticket.rawData ? json(ticket.rawData) : undefined,
+        lastSyncedAt: dateOrNow(ticket.lastSyncedAt),
+        updatedAt: dateOrNow(ticket.updatedAt),
+      },
+    });
+  }
+
+  async getTicketReferences(tenantId: string, _sessionId: string): Promise<TicketReferenceShape[]> {
+    // Original in-memory used sessionId as a composite key for a map of arrays.
+    // For PostgreSQL we query by tenant since session linkage is via linkedTicketIds on the session.
+    // To preserve semantics, we look up the session to get its linkedTicketIds, then fetch those tickets.
+    const session = await this.prisma.supportSession.findFirst({
+      where: { id: _sessionId, tenantId },
+      select: { linkedTicketIds: true },
+    });
+    if (!session || session.linkedTicketIds.length === 0) return [];
+    const rows = await this.prisma.ticketReference.findMany({
+      where: { tenantId, id: { in: session.linkedTicketIds } },
+    });
+    return rows.map((r) => this.mapTicketReference(r));
+  }
+
+  private mapTicketReference(row: {
+    id: string;
+    tenantId: string;
+    adapterId: string;
+    externalTicketId: string;
+    subject: string;
+    status: string;
+    priority: string;
+    customerEmail: string | null;
+    customerName: string | null;
+    rawData: unknown;
+    lastSyncedAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
+  }): TicketReferenceShape {
+    return {
+      id: row.id as TicketReferenceShape['id'],
+      tenantId: row.tenantId as TicketReferenceShape['tenantId'],
+      adapterId: row.adapterId as TicketReferenceShape['adapterId'],
+      externalTicketId: row.externalTicketId,
+      subject: row.subject,
+      status: row.status as TicketReferenceShape['status'],
+      priority: row.priority as TicketReferenceShape['priority'],
+      customerEmail: row.customerEmail ?? undefined,
+      customerName: row.customerName ?? undefined,
+      rawData: row.rawData as Record<string, unknown> | undefined,
+      lastSyncedAt: toISO(row.lastSyncedAt)!,
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
+  }
+
+  // AIContextPacket
+  async saveContextPacket(packet: AIContextPacketShape): Promise<void> {
+    await this.prisma.aIContextPacket.create({
+      data: {
+        id: packet.id,
+        tenantId: packet.tenantId,
+        sessionId: packet.sessionId,
+        provenance: packet.provenance,
+        sourceTicketIds: packet.sourceTicketIds,
+        sourceAdapterId: packet.sourceAdapterId,
+        payload: packet.payload,
+        redactionLog: json(packet.redactionLog),
+        contextHash: packet.contextHash,
+        modelPolicySnapshotId: packet.modelPolicySnapshotId,
+        createdAt: dateOrNow(packet.createdAt),
+      },
+    });
+  }
+
+  async getContextPackets(tenantId: string, sessionId: string): Promise<AIContextPacketShape[]> {
+    const rows = await this.prisma.aIContextPacket.findMany({
+      where: { tenantId, sessionId },
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map((r) => this.mapContextPacket(r));
+  }
+
+  private mapContextPacket(row: {
+    id: string;
+    tenantId: string;
+    sessionId: string;
+    provenance: string;
+    sourceTicketIds: string[];
+    sourceAdapterId: string | null;
+    payload: unknown;
+    redactionLog: unknown;
+    contextHash: string | null;
+    modelPolicySnapshotId: string | null;
+    createdAt: Date;
+  }): AIContextPacketShape {
+    return {
+      id: row.id as AIContextPacketShape['id'],
+      tenantId: row.tenantId as AIContextPacketShape['tenantId'],
+      sessionId: row.sessionId,
+      provenance: row.provenance as AIContextPacketShape['provenance'],
+      sourceTicketIds: row.sourceTicketIds,
+      sourceAdapterId: row.sourceAdapterId ?? undefined,
+      payload: row.payload as Record<string, unknown>,
+      redactionLog: (row.redactionLog as unknown as AIContextPacketShape['redactionLog']) ?? [],
+      contextHash: row.contextHash ?? undefined,
+      modelPolicySnapshotId: row.modelPolicySnapshotId ?? undefined,
+      createdAt: toISO(row.createdAt)!,
+    };
+  }
+
+  // AuditEvent
+  async saveAuditEvent(event: AuditEventShape): Promise<void> {
+    await this.prisma.auditEvent.create({
+      data: {
+        id: event.id,
+        tenantId: event.tenantId,
+        sessionId: event.sessionId,
+        eventType: event.eventType,
+        actorType: event.actorType,
+        actorId: event.actorId,
+        action: event.action,
+        resourceType: event.resourceType,
+        resourceId: event.resourceId,
+        metadata: json(event.metadata),
+        hashChainPrevious: event.hashChainPrevious,
+        integrityHash: event.integrityHash,
+        createdAt: dateOrNow(event.createdAt),
+      },
+    });
+  }
+
+  async getAuditEvents(tenantId: string, sessionId: string): Promise<AuditEventShape[]> {
+    const rows = await this.prisma.auditEvent.findMany({
+      where: { tenantId, sessionId },
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map((r) => this.mapAuditEvent(r));
+  }
+
+  async getAllAuditEvents(tenantId: string): Promise<AuditEventShape[]> {
+    const rows = await this.prisma.auditEvent.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map((r) => this.mapAuditEvent(r));
+  }
+
+  private mapAuditEvent(row: {
+    id: string;
+    tenantId: string;
+    sessionId: string | null;
+    eventType: string;
+    actorType: string;
+    actorId: string;
+    action: string;
+    resourceType: string;
+    resourceId: string;
+    metadata: unknown;
+    hashChainPrevious: string | null;
+    integrityHash: string | null;
+    createdAt: Date;
+  }): AuditEventShape {
+    return {
+      id: row.id as AuditEventShape['id'],
+      tenantId: row.tenantId as AuditEventShape['tenantId'],
+      sessionId: row.sessionId ?? undefined,
+      eventType: row.eventType as AuditEventShape['eventType'],
+      actorType: row.actorType as AuditEventShape['actorType'],
+      actorId: row.actorId,
+      action: row.action,
+      resourceType: row.resourceType,
+      resourceId: row.resourceId,
+      metadata: row.metadata as Record<string, unknown>,
+      hashChainPrevious: row.hashChainPrevious ?? undefined,
+      integrityHash: row.integrityHash ?? undefined,
+      createdAt: toISO(row.createdAt)!,
+    };
+  }
+
+  // InternalNoteDraft
+  async saveInternalNoteDraft(draft: InternalNoteDraftShape): Promise<void> {
+    await this.prisma.internalNoteDraft.upsert({
+      where: { id: draft.id },
+      create: {
+        id: draft.id,
+        tenantId: draft.tenantId,
+        sessionId: draft.sessionId,
+        externalTicketId: draft.externalTicketId,
+        subject: draft.subject,
+        body: draft.body,
+        reviewed: draft.reviewed,
+        reviewerId: draft.reviewerId,
+        createdAt: dateOrNow(draft.createdAt),
+      },
+      update: {
+        externalTicketId: draft.externalTicketId,
+        subject: draft.subject,
+        body: draft.body,
+        reviewed: draft.reviewed,
+        reviewerId: draft.reviewerId,
+      },
+    });
+  }
+
+  async getInternalNoteDraft(tenantId: string, draftId: string): Promise<InternalNoteDraftShape | undefined> {
+    const row = await this.prisma.internalNoteDraft.findFirst({
+      where: { id: draftId, tenantId },
+    });
+    if (!row) return undefined;
+    return this.mapInternalNoteDraft(row);
+  }
+
+  async listInternalNoteDrafts(tenantId: string, sessionId: string): Promise<InternalNoteDraftShape[]> {
+    const rows = await this.prisma.internalNoteDraft.findMany({
+      where: { tenantId, sessionId },
+      orderBy: { createdAt: 'asc' },
+    });
+    return rows.map((r) => this.mapInternalNoteDraft(r));
+  }
+
+  private mapInternalNoteDraft(row: {
+    id: string;
+    tenantId: string;
+    sessionId: string;
+    externalTicketId: string;
+    subject: string | null;
+    body: string;
+    reviewed: boolean;
+    reviewerId: string | null;
+    createdAt: Date;
+  }): InternalNoteDraftShape {
+    return {
+      id: row.id as InternalNoteDraftShape['id'],
+      tenantId: row.tenantId as InternalNoteDraftShape['tenantId'],
+      sessionId: row.sessionId,
+      externalTicketId: row.externalTicketId,
+      subject: row.subject ?? undefined,
+      body: row.body,
+      reviewed: row.reviewed,
+      reviewerId: row.reviewerId ?? undefined,
+      createdAt: toISO(row.createdAt)!,
+    };
+  }
+
+  // CallEvent
+  async saveCallEvent(event: CallEventShape): Promise<void> {
+    await this.prisma.callEvent.upsert({
+      where: { id: event.id },
+      create: {
+        id: event.id,
+        tenantId: event.tenantId,
+        sessionId: event.sessionId,
+        provider: event.provider,
+        source: event.source,
+        externalCallId: event.externalCallId,
+        direction: event.direction,
+        status: event.status,
+        caller: json(event.caller),
+        callerMatch: event.callerMatch ? json(event.callerMatch) : undefined,
+        startedAt: dateOrNow(event.startedAt),
+        endedAt: event.endedAt ? new Date(event.endedAt) : null,
+        answeredAt: event.answeredAt ? new Date(event.answeredAt) : null,
+        metadata: json(event.metadata),
+        mockDevOnly: event.mockDevOnly,
+        createdAt: dateOrNow(event.createdAt),
+        updatedAt: dateOrNow(event.updatedAt),
+      },
+      update: {
+        sessionId: event.sessionId,
+        provider: event.provider,
+        source: event.source,
+        externalCallId: event.externalCallId,
+        direction: event.direction,
+        status: event.status,
+        caller: json(event.caller),
+        callerMatch: event.callerMatch ? json(event.callerMatch) : undefined,
+        startedAt: dateOrNow(event.startedAt),
+        endedAt: event.endedAt ? new Date(event.endedAt) : null,
+        answeredAt: event.answeredAt ? new Date(event.answeredAt) : null,
+        metadata: json(event.metadata),
+        mockDevOnly: event.mockDevOnly,
+        updatedAt: dateOrNow(event.updatedAt),
+      },
+    });
+  }
+
+  async getCallEvent(tenantId: string, id: string): Promise<CallEventShape | undefined> {
+    const row = await this.prisma.callEvent.findFirst({
+      where: { id, tenantId },
+    });
+    if (!row) return undefined;
+    return this.mapCallEvent(row);
+  }
+
+  async listCallEvents(tenantId: string): Promise<CallEventShape[]> {
+    const rows = await this.prisma.callEvent.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.mapCallEvent(r));
+  }
+
+  async listCallEventsForSession(tenantId: string, sessionId: string): Promise<CallEventShape[]> {
+    const rows = await this.prisma.callEvent.findMany({
+      where: { tenantId, sessionId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.mapCallEvent(r));
+  }
+
+  private mapCallEvent(row: {
+    id: string;
+    tenantId: string;
+    sessionId: string | null;
+    provider: string;
+    source: string;
+    externalCallId: string;
+    direction: string;
+    status: string;
+    caller: unknown;
+    callerMatch: unknown;
+    startedAt: Date;
+    endedAt: Date | null;
+    answeredAt: Date | null;
+    metadata: unknown;
+    mockDevOnly: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  }): CallEventShape {
+    return {
+      id: row.id as CallEventShape['id'],
+      tenantId: row.tenantId as CallEventShape['tenantId'],
+      sessionId: row.sessionId ?? undefined,
+      provider: row.provider,
+      source: row.source,
+      externalCallId: row.externalCallId,
+      direction: row.direction as CallEventShape['direction'],
+      status: row.status as CallEventShape['status'],
+      caller: row.caller as CallEventShape['caller'],
+      callerMatch: row.callerMatch as CallEventShape['callerMatch'] | undefined,
+      startedAt: toISO(row.startedAt)!,
+      endedAt: toISO(row.endedAt),
+      answeredAt: toISO(row.answeredAt),
+      metadata: row.metadata as Record<string, unknown>,
+      mockDevOnly: row.mockDevOnly,
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
+  }
+
+  // CallRecording
+  async saveCallRecording(recording: CallRecordingShape): Promise<void> {
+    await this.prisma.callRecording.upsert({
+      where: { id: recording.id },
+      create: {
+        id: recording.id,
+        tenantId: recording.tenantId,
+        callEventId: recording.callEventId,
+        supportSessionId: recording.supportSessionId,
+        source: recording.source,
+        status: recording.status,
+        durationSeconds: recording.durationSeconds ?? null,
+        mockMediaUrl: recording.mockMediaUrl ?? null,
+        placeholderReference: recording.placeholderReference ?? null,
+        storageType: recording.storageType,
+        checksumHash: recording.checksumHash ?? null,
+        reviewedAt: recording.reviewedAt ? new Date(recording.reviewedAt) : null,
+        reviewedBy: recording.reviewedBy ?? null,
+        updatedAt: recording.updatedAt ? new Date(recording.updatedAt) : null,
+        mockDevOnly: recording.mockDevOnly,
+        complianceDisclaimer: recording.complianceDisclaimer ?? null,
+        noRealAudio: recording.noRealAudio,
+        createdAt: dateOrNow(recording.createdAt),
+      },
+      update: {
+        callEventId: recording.callEventId,
+        supportSessionId: recording.supportSessionId,
+        source: recording.source,
+        status: recording.status,
+        durationSeconds: recording.durationSeconds ?? null,
+        mockMediaUrl: recording.mockMediaUrl ?? null,
+        placeholderReference: recording.placeholderReference ?? null,
+        storageType: recording.storageType,
+        checksumHash: recording.checksumHash ?? null,
+        reviewedAt: recording.reviewedAt ? new Date(recording.reviewedAt) : null,
+        reviewedBy: recording.reviewedBy ?? null,
+        updatedAt: recording.updatedAt ? new Date(recording.updatedAt) : null,
+        mockDevOnly: recording.mockDevOnly,
+        complianceDisclaimer: recording.complianceDisclaimer ?? null,
+        noRealAudio: recording.noRealAudio,
+      },
+    });
+  }
+
+  async getCallRecording(tenantId: string, id: string): Promise<CallRecordingShape | undefined> {
+    const row = await this.prisma.callRecording.findFirst({
+      where: { id, tenantId },
+    });
+    if (!row) return undefined;
+    return this.mapCallRecording(row);
+  }
+
+  async listCallRecordings(tenantId: string, callEventId: string): Promise<CallRecordingShape[]> {
+    const rows = await this.prisma.callRecording.findMany({
+      where: { tenantId, callEventId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.mapCallRecording(r));
+  }
+
+  private mapCallRecording(row: {
+    id: string;
+    tenantId: string;
+    callEventId: string;
+    supportSessionId: string | null;
+    source: string;
+    status: string;
+    durationSeconds: number | null;
+    mockMediaUrl: string | null;
+    placeholderReference: string | null;
+    storageType: string;
+    checksumHash: string | null;
+    reviewedAt: Date | null;
+    reviewedBy: string | null;
+    updatedAt: Date | null;
+    mockDevOnly: boolean;
+    complianceDisclaimer: string | null;
+    noRealAudio: boolean;
+    createdAt: Date;
+  }): CallRecordingShape {
+    return {
+      id: row.id as CallRecordingShape['id'],
+      tenantId: row.tenantId as CallRecordingShape['tenantId'],
+      callEventId: row.callEventId,
+      supportSessionId: row.supportSessionId ?? undefined,
+      source: row.source as CallRecordingShape['source'],
+      status: row.status as CallRecordingShape['status'],
+      durationSeconds: row.durationSeconds ?? undefined,
+      mockMediaUrl: row.mockMediaUrl ?? undefined,
+      placeholderReference: row.placeholderReference ?? undefined,
+      storageType: row.storageType as CallRecordingShape['storageType'],
+      checksumHash: row.checksumHash ?? undefined,
+      reviewedAt: toISO(row.reviewedAt),
+      reviewedBy: row.reviewedBy ?? undefined,
+      updatedAt: toISO(row.updatedAt),
+      mockDevOnly: row.mockDevOnly,
+      complianceDisclaimer: row.complianceDisclaimer ?? undefined,
+      noRealAudio: row.noRealAudio,
+      createdAt: toISO(row.createdAt)!,
+    };
+  }
+
+  // ScreenObservation
+  async saveScreenObservation(observation: ScreenObservationShape): Promise<void> {
+    await this.prisma.screenObservation.upsert({
+      where: { id: observation.id },
+      create: {
+        id: observation.id,
+        tenantId: observation.tenantId,
+        sessionId: observation.sessionId,
+        callEventId: observation.callEventId ?? null,
+        source: observation.source,
+        kind: observation.kind,
+        status: observation.status,
+        rawInputPlaceholder: observation.rawInputPlaceholder ?? null,
+        redactedSummary: observation.redactedSummary ?? null,
+        appLabel: observation.appLabel ?? null,
+        windowLabel: observation.windowLabel ?? null,
+        urlLabel: observation.urlLabel ?? null,
+        sharingState: observation.sharingState,
+        rawImageRetention: observation.rawImageRetention,
+        redactionStatus: observation.redactionStatus,
+        safetyFlags: json(observation.safetyFlags),
+        noRawPixels: observation.noRawPixels,
+        noClipboard: observation.noClipboard,
+        noOcr: observation.noOcr,
+        noCredentialCapture: observation.noCredentialCapture,
+        mockDevOnly: observation.mockDevOnly,
+        reviewedAt: observation.reviewedAt ? new Date(observation.reviewedAt) : null,
+        reviewedBy: observation.reviewedBy ?? null,
+        contextPacketId: observation.contextPacketId ?? null,
+        createdAt: dateOrNow(observation.createdAt),
+      },
+      update: {
+        sessionId: observation.sessionId,
+        callEventId: observation.callEventId ?? null,
+        source: observation.source,
+        kind: observation.kind,
+        status: observation.status,
+        rawInputPlaceholder: observation.rawInputPlaceholder ?? null,
+        redactedSummary: observation.redactedSummary ?? null,
+        appLabel: observation.appLabel ?? null,
+        windowLabel: observation.windowLabel ?? null,
+        urlLabel: observation.urlLabel ?? null,
+        sharingState: observation.sharingState,
+        rawImageRetention: observation.rawImageRetention,
+        redactionStatus: observation.redactionStatus,
+        safetyFlags: json(observation.safetyFlags),
+        noRawPixels: observation.noRawPixels,
+        noClipboard: observation.noClipboard,
+        noOcr: observation.noOcr,
+        noCredentialCapture: observation.noCredentialCapture,
+        mockDevOnly: observation.mockDevOnly,
+        reviewedAt: observation.reviewedAt ? new Date(observation.reviewedAt) : null,
+        reviewedBy: observation.reviewedBy ?? null,
+        contextPacketId: observation.contextPacketId ?? null,
+      },
+    });
+  }
+
+  async getScreenObservation(tenantId: string, id: string): Promise<ScreenObservationShape | undefined> {
+    const row = await this.prisma.screenObservation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!row) return undefined;
+    return this.mapScreenObservation(row);
+  }
+
+  async listScreenObservations(tenantId: string, sessionId: string): Promise<ScreenObservationShape[]> {
+    const rows = await this.prisma.screenObservation.findMany({
+      where: { tenantId, sessionId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.mapScreenObservation(r));
+  }
+
+  async listScreenObservationsForCallEvent(tenantId: string, callEventId: string): Promise<ScreenObservationShape[]> {
+    const rows = await this.prisma.screenObservation.findMany({
+      where: { tenantId, callEventId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.mapScreenObservation(r));
+  }
+
+  private mapScreenObservation(row: {
+    id: string;
+    tenantId: string;
+    sessionId: string;
+    callEventId: string | null;
+    source: string;
+    kind: string;
+    status: string;
+    rawInputPlaceholder: string | null;
+    redactedSummary: string | null;
+    appLabel: string | null;
+    windowLabel: string | null;
+    urlLabel: string | null;
+    sharingState: string;
+    rawImageRetention: string;
+    redactionStatus: string;
+    safetyFlags: unknown;
+    noRawPixels: boolean;
+    noClipboard: boolean;
+    noOcr: boolean;
+    noCredentialCapture: boolean;
+    mockDevOnly: boolean;
+    reviewedAt: Date | null;
+    reviewedBy: string | null;
+    contextPacketId: string | null;
+    createdAt: Date;
+  }): ScreenObservationShape {
+    return {
+      id: row.id as ScreenObservationShape['id'],
+      tenantId: row.tenantId as ScreenObservationShape['tenantId'],
+      sessionId: row.sessionId,
+      callEventId: row.callEventId ?? undefined,
+      source: row.source as ScreenObservationShape['source'],
+      kind: row.kind as ScreenObservationShape['kind'],
+      status: row.status as ScreenObservationShape['status'],
+      rawInputPlaceholder: row.rawInputPlaceholder ?? undefined,
+      redactedSummary: row.redactedSummary ?? undefined,
+      appLabel: row.appLabel ?? undefined,
+      windowLabel: row.windowLabel ?? undefined,
+      urlLabel: row.urlLabel ?? undefined,
+      sharingState: row.sharingState as ScreenObservationShape['sharingState'],
+      rawImageRetention: row.rawImageRetention as ScreenObservationShape['rawImageRetention'],
+      redactionStatus: row.redactionStatus as ScreenObservationShape['redactionStatus'],
+      safetyFlags: row.safetyFlags as ScreenObservationShape['safetyFlags'],
+      noRawPixels: row.noRawPixels,
+      noClipboard: row.noClipboard,
+      noOcr: row.noOcr,
+      noCredentialCapture: row.noCredentialCapture,
+      mockDevOnly: row.mockDevOnly,
+      createdAt: toISO(row.createdAt)!,
+      reviewedAt: toISO(row.reviewedAt),
+      reviewedBy: row.reviewedBy ?? undefined,
+      contextPacketId: row.contextPacketId ?? undefined,
+    };
+  }
+
+  // SharingState
+  async getSharingState(tenantId: string, sessionId: string): Promise<SharingStateShape | undefined> {
+    const row = await this.prisma.sharingState.findUnique({
+      where: { tenantId_sessionId: { tenantId, sessionId } },
+    });
+    if (!row) return undefined;
+    return {
+      tenantId: row.tenantId,
+      sessionId: row.sessionId,
+      state: row.state as SharingStateShape['state'],
+      mockDevOnly: row.mockDevOnly,
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
+  }
+
+  async saveSharingState(state: SharingStateShape): Promise<void> {
+    await this.prisma.sharingState.upsert({
+      where: { tenantId_sessionId: { tenantId: state.tenantId, sessionId: state.sessionId } },
+      create: {
+        tenantId: state.tenantId,
+        sessionId: state.sessionId,
+        state: state.state,
+        mockDevOnly: state.mockDevOnly,
+        createdAt: dateOrNow(state.createdAt),
+        updatedAt: dateOrNow(state.updatedAt),
+      },
+      update: {
+        state: state.state,
+        mockDevOnly: state.mockDevOnly,
+        updatedAt: dateOrNow(state.updatedAt),
+      },
+    });
+  }
+}

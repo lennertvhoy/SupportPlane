@@ -8,17 +8,9 @@ import type {
   CallRecording as CallRecordingShape,
   ScreenObservation as ScreenObservationShape,
 } from '@supportplane/contracts';
+import type { Store, SharingStateShape } from '../store/store.interface.js';
 
-export interface SharingStateShape {
-  tenantId: string;
-  sessionId: string;
-  state: 'inactive' | 'active' | 'paused';
-  mockDevOnly: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export class InMemoryStore {
+export class InMemoryStore implements Store {
   private sessions = new Map<string, SupportSessionShape>();
   private ticketReferences = new Map<string, TicketReferenceShape[]>();
   private contextPackets = new Map<string, AIContextPacketShape[]>();

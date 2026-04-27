@@ -74,9 +74,9 @@ export class CallsController {
   }
 
   @Get(':id/timeline')
-  getTimeline(@Req() req: Request, @Param('id') id: string) {
+  async getTimeline(@Req() req: Request, @Param('id') id: string) {
     const identity = getDevIdentity(req);
-    const { timelineItems, generatedAt } = this.service.getCallTimeline(identity, id);
+    const { timelineItems, generatedAt } = await this.service.getCallTimeline(identity, id);
     return { callEventId: id, timelineItems, generatedAt, mockDevOnly: true };
   }
 

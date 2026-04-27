@@ -30,16 +30,17 @@ import {
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import { InMemoryStore } from '../support-sessions/in-memory.store.js';
+import type { Store } from '../store/store.interface.js';
 import { type DevIdentity } from '../common/dev-identity.middleware.js';
 
 @Injectable()
 export class CallsService {
   constructor(
     @Inject(InMemoryStore)
-    private readonly store: InMemoryStore
+    private readonly store: Store
   ) {}
 
-  createFakeIncomingCall(
+  async createFakeIncomingCall(
     identity: DevIdentity,
     dto: {
       externalCallId: string;
@@ -49,7 +50,7 @@ export class CallsService {
       preferredSessionTitle?: string;
       preferredPriority?: string;
     }
-  ): { callEvent: CallEventShape; autoCreateResult: AutoCreateSessionResult; createdSession?: SupportSessionShape } {
+  ): Promise<{ callEvent: CallEventShape; autoCreateResult: AutoCreateSessionResult; createdSession?: SupportSessionShape }> {
     const normalized = normalizePhoneNumber(dto.rawCallerNumber);
     const callerMatch = matchCallerByPhone(normalized);
     const now = new Date().toISOString();
@@ -80,9 +81,9 @@ export class CallsService {
       updatedAt: now,
     });
 
-    this.store.saveCallEvent(callEvent);
+    await this.store.saveCallEvent(callEvent);
 
-    this.appendAuditEvent(identity, undefined, AuditEventType.enum.call_event_received, 'call_event', callEvent.id, {
+    await this.appendAuditEvent(identity, undefined, AuditEventType.enum.call_event_received, 'call_event', callEvent.id, {
       externalCallId: callEvent.externalCallId,
       provider: callEvent.provider,
       normalizedNumber: normalized.normalized,
@@ -90,7 +91,7 @@ export class CallsService {
     });
 
     if (callerMatch.status === 'matched') {
-      this.appendAuditEvent(identity, undefined, AuditEventType.enum.caller_matched, 'call_event', callEvent.id, {
+      await this.appendAuditEvent(identity, undefined, AuditEventType.enum.caller_matched, 'call_event', callEvent.id, {
         externalCallId: callEvent.externalCallId,
         normalizedNumber: normalized.normalized,
         matchStatus: callerMatch.status,
@@ -147,7 +148,7 @@ export class CallsService {
           updatedAt: now,
         };
 
-        this.store.saveSession(session);
+        await this.store.saveSession(session);
         createdSession = session;
 
         // Link call to session
@@ -158,11 +159,11 @@ export class CallsService {
           answeredAt: now,
           updatedAt: now,
         };
-        this.store.saveCallEvent(updatedCall);
+        await this.store.saveCallEvent(updatedCall);
 
         autoCreateResult = AutoCreateSessionResult.enum.auto_created;
 
-        this.appendAuditEvent(
+        await this.appendAuditEvent(
           identity,
           session.id,
           AuditEventType.enum.support_session_auto_created,
@@ -178,7 +179,7 @@ export class CallsService {
           }
         );
 
-        this.appendAuditEvent(
+        await this.appendAuditEvent(
           identity,
           session.id,
           AuditEventType.enum.call_auto_linked_to_session,
@@ -200,11 +201,11 @@ export class CallsService {
     return { callEvent, autoCreateResult, createdSession };
   }
 
-  createFromTelephonyWebhook(
+  async createFromTelephonyWebhook(
     identity: DevIdentity,
     webhookEvent: TelephonyWebhookEventShape,
     mappedCall: CallEventShape
-  ): { callEvent: CallEventShape; receivedAt: string } {
+  ) {
     const normalized = normalizePhoneNumber(
       webhookEvent.rawCallerNumber ?? mappedCall.caller.rawNumber
     );
@@ -229,9 +230,9 @@ export class CallsService {
       updatedAt: now,
     });
 
-    this.store.saveCallEvent(callEvent);
+    await this.store.saveCallEvent(callEvent);
 
-    this.appendAuditEvent(identity, undefined, AuditEventType.enum.call_event_received, 'call_event', callEvent.id, {
+    await this.appendAuditEvent(identity, undefined, AuditEventType.enum.call_event_received, 'call_event', callEvent.id, {
       externalCallId: callEvent.externalCallId,
       provider: callEvent.provider,
       normalizedNumber: callEvent.caller.normalizedNumber,
@@ -241,7 +242,7 @@ export class CallsService {
     });
 
     if (callerMatch.status === 'matched') {
-      this.appendAuditEvent(identity, undefined, AuditEventType.enum.caller_matched, 'call_event', callEvent.id, {
+      await this.appendAuditEvent(identity, undefined, AuditEventType.enum.caller_matched, 'call_event', callEvent.id, {
         externalCallId: callEvent.externalCallId,
         normalizedNumber: callEvent.caller.normalizedNumber,
         matchStatus: callerMatch.status,
@@ -256,26 +257,26 @@ export class CallsService {
     return { callEvent, receivedAt: now };
   }
 
-  listRecentCalls(identity: DevIdentity): CallEventShape[] {
-    return this.store.listCallEvents(identity.tenantId);
+  async listRecentCalls(identity: DevIdentity): Promise<CallEventShape[]>{
+    return await this.store.listCallEvents(identity.tenantId);
   }
 
-  getCall(identity: DevIdentity, id: string): CallEventShape {
-    const call = this.store.getCallEvent(identity.tenantId, id);
+  async getCall(identity: DevIdentity, id: string): Promise<CallEventShape>{
+    const call = await this.store.getCallEvent(identity.tenantId, id);
     if (!call) {
       throw new NotFoundException(`Call event ${id} not found`);
     }
     return call;
   }
 
-  linkCallToSession(
+  async linkCallToSession(
     identity: DevIdentity,
     callId: string,
     dto: { sessionId: string }
-  ): { callEvent: CallEventShape; linkedAt: string } {
-    const call = this.getCall(identity, callId);
+  ): Promise<{ callEvent: CallEventShape; linkedAt: string }> {
+    const call = await this.getCall(identity, callId);
 
-    const session = this.store.getSession(identity.tenantId, dto.sessionId);
+    const session = await this.store.getSession(identity.tenantId, dto.sessionId);
     if (!session) {
       throw new NotFoundException(`Support session ${dto.sessionId} not found`);
     }
@@ -288,16 +289,16 @@ export class CallsService {
       updatedAt: new Date().toISOString(),
     };
 
-    this.store.saveCallEvent(updated);
+    await this.store.saveCallEvent(updated);
 
     const updatedSession = {
       ...session,
       callEventIds: Array.from(new Set([...session.callEventIds, callId])),
       updatedAt: new Date().toISOString(),
     };
-    this.store.saveSession(updatedSession);
+    await this.store.saveSession(updatedSession);
 
-    this.appendAuditEvent(identity, dto.sessionId, AuditEventType.enum.call_linked_to_session, 'call_event', callId, {
+    await this.appendAuditEvent(identity, dto.sessionId, AuditEventType.enum.call_linked_to_session, 'call_event', callId, {
       externalCallId: call.externalCallId,
       sessionId: dto.sessionId,
       normalizedNumber: call.caller.normalizedNumber,
@@ -318,12 +319,12 @@ export class CallsService {
     ];
   }
 
-  updateCallStatus(
+  async updateCallStatus(
     identity: DevIdentity,
     callId: string,
     dto: { status: string; reason?: string }
-  ): { callEvent: CallEventShape; previousStatus: string; newStatus: string; changedAt: string } {
-    const call = this.getCall(identity, callId);
+  ): Promise<{ callEvent: CallEventShape; previousStatus: string; newStatus: string; changedAt: string }> {
+    const call = await this.getCall(identity, callId);
     const previousStatus = call.status;
     const newStatus = dto.status;
 
@@ -352,9 +353,9 @@ export class CallsService {
       ...(newStatus === CallStatus.enum.missed ? { endedAt: now } : {}),
     };
 
-    this.store.saveCallEvent(updated);
+    await this.store.saveCallEvent(updated);
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       call.sessionId ?? undefined,
       AuditEventType.enum.call_status_changed,
@@ -373,15 +374,15 @@ export class CallsService {
     return { callEvent: updated, previousStatus, newStatus, changedAt: now };
   }
 
-  recordTelephonyAuditEvent(
+  async recordTelephonyAuditEvent(
     identity: DevIdentity,
     sessionId: string | undefined,
     eventType: AuditEventType,
     resourceId: string,
     metadata: TelephonyAuditMetadataShape
-  ): void {
+  ): Promise<void> {
     const safeMetadata = TelephonyAuditMetadata.parse(metadata);
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       eventType,
@@ -391,12 +392,12 @@ export class CallsService {
     );
   }
 
-  attachMockRecording(
+  async attachMockRecording(
     identity: DevIdentity,
     callId: string,
     dto: { source?: string; durationSeconds?: number }
-  ): { recording: CallRecordingShape; attachedAt: string } {
-    const call = this.getCall(identity, callId);
+  ): Promise<{ recording: CallRecordingShape; attachedAt: string }> {
+    const call = await this.getCall(identity, callId);
     const now = new Date().toISOString();
 
     const recording: CallRecordingShape = CallRecording.parse({
@@ -417,9 +418,9 @@ export class CallsService {
       noRealAudio: true,
     });
 
-    this.store.saveCallRecording(recording);
+    await this.store.saveCallRecording(recording);
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       call.sessionId ?? undefined,
       AuditEventType.enum.call_recording_attached,
@@ -441,18 +442,18 @@ export class CallsService {
     return { recording, attachedAt: now };
   }
 
-  listCallRecordings(identity: DevIdentity, callId: string): CallRecordingShape[] {
-    this.getCall(identity, callId);
-    return this.store.listCallRecordings(identity.tenantId, callId);
+  async listCallRecordings(identity: DevIdentity, callId: string): Promise<CallRecordingShape[]>{
+    await this.getCall(identity, callId);
+    return await this.store.listCallRecordings(identity.tenantId, callId);
   }
 
-  reviewCallRecording(
+  async reviewCallRecording(
     identity: DevIdentity,
     callId: string,
     recordingId: string
-  ): { recording: CallRecordingShape; reviewedAt: string } {
-    this.getCall(identity, callId);
-    const recording = this.store.getCallRecording(identity.tenantId, recordingId);
+  ) {
+    await this.getCall(identity, callId);
+    const recording = await this.store.getCallRecording(identity.tenantId, recordingId);
     if (!recording || recording.callEventId !== callId) {
       throw new NotFoundException(`Recording ${recordingId} not found for call ${callId}`);
     }
@@ -466,9 +467,9 @@ export class CallsService {
       updatedAt: now,
     };
 
-    this.store.saveCallRecording(updated);
+    await this.store.saveCallRecording(updated);
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       recording.supportSessionId ?? undefined,
       AuditEventType.enum.call_recording_reviewed,
@@ -489,20 +490,20 @@ export class CallsService {
     return { recording: updated, reviewedAt: now };
   }
 
-  recordPlaybackOpened(
+  async recordPlaybackOpened(
     identity: DevIdentity,
     callId: string,
     recordingId: string
-  ): { playbackState: Record<string, unknown>; recordedAt: string } {
-    this.getCall(identity, callId);
-    const recording = this.store.getCallRecording(identity.tenantId, recordingId);
+  ) {
+    await this.getCall(identity, callId);
+    const recording = await this.store.getCallRecording(identity.tenantId, recordingId);
     if (!recording || recording.callEventId !== callId) {
       throw new NotFoundException(`Recording ${recordingId} not found for call ${callId}`);
     }
 
     const now = new Date().toISOString();
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       recording.supportSessionId ?? undefined,
       AuditEventType.enum.call_recording_playback_opened,
@@ -536,9 +537,9 @@ export class CallsService {
     };
   }
 
-  getCallTimeline(identity: DevIdentity, callId: string): { timelineItems: CallTimelineItemShape[]; generatedAt: string } {
-    const call = this.getCall(identity, callId);
-    const allAuditEvents = this.store.getAllAuditEvents(identity.tenantId);
+  async getCallTimeline(identity: DevIdentity, callId: string) {
+    const call = await this.getCall(identity, callId);
+    const allAuditEvents = await this.store.getAllAuditEvents(identity.tenantId);
     const relatedAuditEvents = allAuditEvents.filter(
       (e) =>
         e.resourceId === callId ||
@@ -753,14 +754,14 @@ export class CallsService {
     return { timelineItems: items, generatedAt: new Date().toISOString() };
   }
 
-  private appendAuditEvent(
+  private async appendAuditEvent(
     identity: DevIdentity,
     sessionId: string | undefined,
     eventType: AuditEventType,
     resourceType: string,
     resourceId: string,
     metadata: Record<string, unknown> = {}
-  ): void {
+  ): Promise<void> {
     const now = new Date().toISOString();
     const event = {
       id: randomUUID() as AuditEventId,
@@ -782,6 +783,6 @@ export class CallsService {
       }),
       createdAt: now,
     };
-    this.store.saveAuditEvent(event);
+    await this.store.saveAuditEvent(event);
   }
 }

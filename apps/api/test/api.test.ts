@@ -497,7 +497,7 @@ describe('Evidence bundle endpoints', () => {
     assert.ok(res.body.bundle.bundleId);
     assert.ok(Array.isArray(res.body.bundle.mockDevOnlyDisclaimers));
     assert.ok(Array.isArray(res.body.bundle.limitations));
-    assert.strictEqual(res.body.bundle.sourceProvenance.storeType, 'in-memory');
+    assert.strictEqual(res.body.bundle.sourceProvenance.storeType, 'memory');
     assert.strictEqual(res.body.bundle.sourceProvenance.persistenceClaimed, false);
   });
 

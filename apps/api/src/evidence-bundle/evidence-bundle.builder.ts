@@ -39,6 +39,7 @@ export interface BuildEvidenceBundleInput {
   callRecordings?: CallRecording[];
   screenObservations?: ScreenObservation[];
   connectorMode?: string;
+  storeType?: 'memory' | 'postgres';
 }
 
 function toSessionSummary(session: SupportSession): EvidenceBundleSessionSummary {
@@ -306,8 +307,8 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Mock screen observations have no real desktop, browser, or application content and do not constitute surveillance, monitoring, or compliance-grade evidence.',
     ],
     sourceProvenance: {
-      storeType: 'in-memory',
-      persistenceClaimed: false,
+      storeType: input.storeType ?? 'memory',
+      persistenceClaimed: input.storeType === 'postgres',
       generatedByService: 'supportplane-api-evidence-bundle-builder',
       schemaVersion: '1.0.0-mvp',
     },

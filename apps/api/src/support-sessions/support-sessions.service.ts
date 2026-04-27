@@ -1,6 +1,7 @@
 import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { InMemoryStore } from './in-memory.store.js';
+import type { Store } from '../store/store.interface.js';
 import {
   SupportSessionStatus,
   SupportSessionPriority,
@@ -26,7 +27,6 @@ import {
   type TicketingAdapterId,
   type InternalNoteDraft as InternalNoteDraftShape,
   type TicketReference as TicketReferenceShape,
-  type EvidenceBundle,
   type ScreenObservation as ScreenObservationShape,
   type ScreenObservationId,
 
@@ -64,17 +64,17 @@ export class SupportSessionsService {
     @Inject(ConnectorsService)
     private readonly connectorsService: ConnectorsService,
     @Inject(InMemoryStore)
-    private readonly store: InMemoryStore
+    private readonly store: Store
   ) {}
 
   private getAdapter(): TicketingAdapterDriver {
     return this.connectorsService.getZammadAdapter() ?? this.fallbackAdapter;
   }
 
-  createSession(
+  async createSession(
     identity: DevIdentity,
     dto: { title: string; description?: string; priority?: string }
-  ): SupportSessionShape {
+  ): Promise<SupportSessionShape> {
     const now = new Date().toISOString();
     const id = randomUUID();
     const priority = dto.priority
@@ -99,8 +99,8 @@ export class SupportSessionsService {
       updatedAt: now,
     };
 
-    this.store.saveSession(session);
-    this.appendAuditEvent(
+    await this.store.saveSession(session);
+    await this.appendAuditEvent(
       identity,
       session.id,
       AuditEventType.enum.session_created,
@@ -111,8 +111,8 @@ export class SupportSessionsService {
     return session;
   }
 
-  getSession(identity: DevIdentity, id: string): SupportSessionShape {
-    const session = this.store.getSession(identity.tenantId, id);
+  async getSession(identity: DevIdentity, id: string): Promise<SupportSessionShape>{
+    const session = await this.store.getSession(identity.tenantId, id);
     if (!session) {
       throw new NotFoundException(`Support session ${id} not found`);
     }
@@ -128,7 +128,7 @@ export class SupportSessionsService {
     contextPacket: AIContextPacketShape;
     session: SupportSessionShape;
   }> {
-    const session = this.getSession(identity, sessionId);
+    const session = await this.getSession(identity, sessionId);
     const adapter = this.getAdapter();
     const mode = this.connectorsService.getMode();
 
@@ -143,8 +143,8 @@ export class SupportSessionsService {
       callEventIds: session.callEventIds,
       updatedAt: new Date().toISOString(),
     };
-    this.store.saveSession(linkedSession);
-    this.store.saveTicketReference(linkedSession.id, ticket as TicketReferenceShape);
+    await this.store.saveSession(linkedSession);
+    await this.store.saveTicketReference(linkedSession.id, ticket as TicketReferenceShape);
 
     const packet: AIContextPacketShape = {
       id: randomUUID() as AIContextPacketId,
@@ -164,7 +164,7 @@ export class SupportSessionsService {
       redactionLog: [],
       createdAt: new Date().toISOString(),
     };
-    this.store.saveContextPacket(packet);
+    await this.store.saveContextPacket(packet);
     const updatedSession: SupportSessionShape = {
       ...linkedSession,
       aiContextPacketIds: Array.from(
@@ -173,9 +173,9 @@ export class SupportSessionsService {
       callEventIds: linkedSession.callEventIds,
       updatedAt: new Date().toISOString(),
     };
-    this.store.saveSession(updatedSession);
+    await this.store.saveSession(updatedSession);
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.ticket_linked,
@@ -183,7 +183,7 @@ export class SupportSessionsService {
       (ticket as { id: string }).id,
       { externalTicketId, connectorMode: mode, connectorType: adapter.adapterType }
     );
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.ai_context_loaded,
@@ -191,7 +191,7 @@ export class SupportSessionsService {
       packet.id,
       { provenance: packet.provenance, connectorMode: mode }
     );
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.zammad_ticket_loaded,
@@ -211,12 +211,12 @@ export class SupportSessionsService {
       modelSelection?: { provider?: string; model?: string };
     }
   ): Promise<GenerateDraftResponseShape> {
-    const session = this.getSession(identity, sessionId);
-    const contextPackets = this.store.getContextPackets(
+    const session = await this.getSession(identity, sessionId);
+    const contextPackets = await this.store.getContextPackets(
       identity.tenantId,
       sessionId
     );
-    const ticketReferences = this.store.getTicketReferences(
+    const ticketReferences = await this.store.getTicketReferences(
       identity.tenantId,
       sessionId
     );
@@ -236,7 +236,7 @@ export class SupportSessionsService {
       })
     );
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.ai_draft_generated,
@@ -264,7 +264,7 @@ export class SupportSessionsService {
       modelSelection?: { provider?: string; model?: string };
     }
   ): Promise<GreetingSuggestionResponseShape> {
-    const session = this.getSession(identity, sessionId);
+    const session = await this.getSession(identity, sessionId);
     const tone = dto.tone
       ? GreetingSuggestionTone.parse(dto.tone)
       : GreetingSuggestionTone.enum.professional;
@@ -274,10 +274,10 @@ export class SupportSessionsService {
 
     let callEvent = undefined;
     if (dto.callEventId) {
-      callEvent = this.store.getCallEvent(identity.tenantId, dto.callEventId);
+      callEvent = await this.store.getCallEvent(identity.tenantId, dto.callEventId);
     }
 
-    const ticketReferences = this.store.getTicketReferences(
+    const ticketReferences = await this.store.getTicketReferences(
       identity.tenantId,
       sessionId
     );
@@ -298,7 +298,7 @@ export class SupportSessionsService {
       })
     );
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.greeting_suggestion_generated,
@@ -320,12 +320,12 @@ export class SupportSessionsService {
     return response;
   }
 
-  createInternalNoteDraft(
+  async createInternalNoteDraft(
     identity: DevIdentity,
     sessionId: string,
     dto: { externalTicketId: string; body: string; subject?: string }
-  ): InternalNoteDraftShape {
-    this.getSession(identity, sessionId);
+  ): Promise<InternalNoteDraftShape> {
+    await this.getSession(identity, sessionId);
     const mode = this.connectorsService.getMode();
 
     const draft: InternalNoteDraftShape = {
@@ -339,9 +339,9 @@ export class SupportSessionsService {
       createdAt: new Date().toISOString(),
     };
 
-    this.store.saveInternalNoteDraft(draft);
+    await this.store.saveInternalNoteDraft(draft);
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.internal_note_drafted,
@@ -362,16 +362,16 @@ export class SupportSessionsService {
     sessionId: string,
     dto: { draftId: string; externalTicketId: string; body: string }
   ): Promise<unknown> {
-    this.getSession(identity, sessionId);
+    await this.getSession(identity, sessionId);
     const adapter = this.getAdapter();
     const mode = this.connectorsService.getMode();
 
-    const draft = this.store.getInternalNoteDraft(identity.tenantId, dto.draftId);
+    const draft = await this.store.getInternalNoteDraft(identity.tenantId, dto.draftId);
     if (!draft) {
       throw new NotFoundException(`Draft ${dto.draftId} not found`);
     }
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.internal_note_writeback_attempted,
@@ -388,7 +388,7 @@ export class SupportSessionsService {
     const typedResult = result as { success: boolean; externalArticleId?: string; error?: { code: string; message: string } };
 
     if (typedResult.success) {
-      this.appendAuditEvent(
+      await this.appendAuditEvent(
         identity,
         sessionId,
         AuditEventType.enum.internal_note_writeback_succeeded,
@@ -402,7 +402,7 @@ export class SupportSessionsService {
         }
       );
     } else {
-      this.appendAuditEvent(
+      await this.appendAuditEvent(
         identity,
         sessionId,
         AuditEventType.enum.internal_note_writeback_failed,
@@ -435,12 +435,12 @@ export class SupportSessionsService {
     });
   }
 
-  createContextPacket(
+  async createContextPacket(
     identity: DevIdentity,
     sessionId: string,
     dto: { provenance: string; payload: Record<string, unknown> }
-  ): AIContextPacketShape {
-    const session = this.getSession(identity, sessionId);
+  ): Promise<AIContextPacketShape> {
+    const session = await this.getSession(identity, sessionId);
     const provenance = AIContextProvenance.parse(dto.provenance);
     const packet: AIContextPacketShape = {
       id: randomUUID() as AIContextPacketId,
@@ -452,15 +452,15 @@ export class SupportSessionsService {
       redactionLog: [],
       createdAt: new Date().toISOString(),
     };
-    this.store.saveContextPacket(packet);
-    this.store.saveSession({
+    await this.store.saveContextPacket(packet);
+    await this.store.saveSession({
       ...session,
       aiContextPacketIds: Array.from(
         new Set([...session.aiContextPacketIds, packet.id])
       ),
       updatedAt: new Date().toISOString(),
     });
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.ai_context_loaded,
@@ -471,27 +471,27 @@ export class SupportSessionsService {
     return packet;
   }
 
-  getContextPackets(
+  async getContextPackets(
     identity: DevIdentity,
     sessionId: string
-  ): AIContextPacketShape[] {
-    this.getSession(identity, sessionId);
-    return this.store.getContextPackets(identity.tenantId, sessionId);
+  ): Promise<AIContextPacketShape[]>{
+    await this.getSession(identity, sessionId);
+    return await this.store.getContextPackets(identity.tenantId, sessionId);
   }
 
-  getAuditEvents(
+  async getAuditEvents(
     identity: DevIdentity,
     sessionId: string
-  ): AuditEventShape[] {
-    this.getSession(identity, sessionId);
-    return this.store.getAuditEvents(identity.tenantId, sessionId);
+  ): Promise<AuditEventShape[]>{
+    await this.getSession(identity, sessionId);
+    return await this.store.getAuditEvents(identity.tenantId, sessionId);
   }
 
-  listSessions(identity: DevIdentity): SupportSessionShape[] {
-    return this.store.listSessions(identity.tenantId);
+  async listSessions(identity: DevIdentity): Promise<SupportSessionShape[]>{
+    return await this.store.listSessions(identity.tenantId);
   }
 
-  captureMockScreenObservation(
+  async captureMockScreenObservation(
     identity: DevIdentity,
     sessionId: string,
     dto: {
@@ -502,11 +502,11 @@ export class SupportSessionsService {
       windowLabel?: string;
       urlLabel?: string;
     }
-  ): ScreenObservationShape {
-    const session = this.getSession(identity, sessionId);
+  ): Promise<ScreenObservationShape> {
+    const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
-    const sharingState = this.store.getSharingState(identity.tenantId, sessionId);
+    const sharingState = await this.store.getSharingState(identity.tenantId, sessionId);
     const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
 
     const observation: ScreenObservationShape = {
@@ -542,14 +542,14 @@ export class SupportSessionsService {
       createdAt: now,
     };
 
-    this.store.saveScreenObservation(observation);
-    this.store.saveSession({
+    await this.store.saveScreenObservation(observation);
+    await this.store.saveSession({
       ...session,
       screenObservationIds: Array.from(new Set([...session.screenObservationIds, observation.id])),
       updatedAt: now,
     });
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.screen_observation_captured,
@@ -570,7 +570,7 @@ export class SupportSessionsService {
     return observation;
   }
 
-  captureActiveWindowMockMetadata(
+  async captureActiveWindowMockMetadata(
     identity: DevIdentity,
     sessionId: string,
     dto: {
@@ -580,11 +580,11 @@ export class SupportSessionsService {
       urlLabel?: string;
       rawInputPlaceholder?: string;
     }
-  ): { observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean } {
-    const session = this.getSession(identity, sessionId);
+  ): Promise<{ observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean }> {
+    const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
-    const sharingState = this.store.getSharingState(identity.tenantId, sessionId);
+    const sharingState = await this.store.getSharingState(identity.tenantId, sessionId);
     const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
 
     const observation: ScreenObservationShape = {
@@ -620,14 +620,14 @@ export class SupportSessionsService {
       createdAt: now,
     };
 
-    this.store.saveScreenObservation(observation);
-    this.store.saveSession({
+    await this.store.saveScreenObservation(observation);
+    await this.store.saveSession({
       ...session,
       screenObservationIds: Array.from(new Set([...session.screenObservationIds, observation.id])),
       updatedAt: now,
     });
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.active_window_metadata_captured,
@@ -648,7 +648,7 @@ export class SupportSessionsService {
     return { observation, redactedSummary, mockDevOnly: true };
   }
 
-  attachManualScreenshotMetadata(
+  async attachManualScreenshotMetadata(
     identity: DevIdentity,
     sessionId: string,
     dto: {
@@ -659,8 +659,8 @@ export class SupportSessionsService {
       rawInputPlaceholder?: string;
       fileNameHint?: string;
     }
-  ): { observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; rawImageRetention: 'disabled' } {
-    const session = this.getSession(identity, sessionId);
+  ): Promise<{ observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; rawImageRetention: 'disabled' }> {
+    const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
     const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
@@ -698,14 +698,14 @@ export class SupportSessionsService {
       createdAt: now,
     };
 
-    this.store.saveScreenObservation(observation);
-    this.store.saveSession({
+    await this.store.saveScreenObservation(observation);
+    await this.store.saveSession({
       ...session,
       screenObservationIds: Array.from(new Set([...session.screenObservationIds, observation.id])),
       updatedAt: now,
     });
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.manual_screenshot_metadata_attached,
@@ -727,7 +727,7 @@ export class SupportSessionsService {
     return { observation, redactedSummary, mockDevOnly: true, rawImageRetention: 'disabled' };
   }
 
-  uploadStructuredScreenObservation(
+  async uploadStructuredScreenObservation(
     identity: DevIdentity,
     sessionId: string,
     dto: {
@@ -738,8 +738,8 @@ export class SupportSessionsService {
       urlLabel?: string;
       rawInputPlaceholder?: string;
     }
-  ): { observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; redactionStatus: ScreenObservationShape['redactionStatus'] } {
-    const session = this.getSession(identity, sessionId);
+  ): Promise<{ observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; redactionStatus: ScreenObservationShape['redactionStatus'] }> {
+    const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
     const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
@@ -777,14 +777,14 @@ export class SupportSessionsService {
       createdAt: now,
     };
 
-    this.store.saveScreenObservation(observation);
-    this.store.saveSession({
+    await this.store.saveScreenObservation(observation);
+    await this.store.saveSession({
       ...session,
       screenObservationIds: Array.from(new Set([...session.screenObservationIds, observation.id])),
       updatedAt: now,
     });
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.structured_screen_observation_uploaded,
@@ -805,12 +805,12 @@ export class SupportSessionsService {
     return { observation, redactedSummary, mockDevOnly: true, redactionStatus };
   }
 
-  getSharingState(
+  async getSharingState(
     identity: DevIdentity,
     sessionId: string
-  ): { sessionId: string; state: ScreenObservationShape['sharingState']; mockDevOnly: boolean } {
-    this.getSession(identity, sessionId);
-    const sharingState = this.store.getSharingState(identity.tenantId, sessionId);
+  ) {
+    await this.getSession(identity, sessionId);
+    const sharingState = await this.store.getSharingState(identity.tenantId, sessionId);
     return {
       sessionId,
       state: sharingState?.state ?? ScreenObservationSharingState.enum.inactive,
@@ -818,14 +818,14 @@ export class SupportSessionsService {
     };
   }
 
-  updateSharingState(
+  async updateSharingState(
     identity: DevIdentity,
     sessionId: string,
     dto: { state: string }
-  ): { sessionId: string; state: ScreenObservationShape['sharingState']; previousState: ScreenObservationShape['sharingState'] | undefined; mockDevOnly: boolean } {
-    this.getSession(identity, sessionId);
+  ): Promise<{ sessionId: string; state: ScreenObservationShape['sharingState']; previousState: ScreenObservationShape['sharingState'] | undefined; mockDevOnly: boolean }> {
+    await this.getSession(identity, sessionId);
     const newState = ScreenObservationSharingState.parse(dto.state);
-    const existing = this.store.getSharingState(identity.tenantId, sessionId);
+    const existing = await this.store.getSharingState(identity.tenantId, sessionId);
     const previousState = existing?.state;
 
     if (previousState === newState) {
@@ -846,7 +846,7 @@ export class SupportSessionsService {
     }
 
     const now = new Date().toISOString();
-    this.store.saveSharingState({
+    await this.store.saveSharingState({
       tenantId: identity.tenantId,
       sessionId,
       state: newState,
@@ -861,7 +861,7 @@ export class SupportSessionsService {
       inactive: AuditEventType.enum.screen_observation_sharing_stopped,
     };
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       eventTypeMap[newState],
@@ -877,22 +877,22 @@ export class SupportSessionsService {
     return { sessionId, state: newState, previousState: previousState ?? ScreenObservationSharingState.enum.inactive, mockDevOnly: true };
   }
 
-  listScreenObservations(
+  async listScreenObservations(
     identity: DevIdentity,
     sessionId: string
-  ): ScreenObservationShape[] {
-    this.getSession(identity, sessionId);
-    return this.store.listScreenObservations(identity.tenantId, sessionId);
+  ): Promise<ScreenObservationShape[]>{
+    await this.getSession(identity, sessionId);
+    return await this.store.listScreenObservations(identity.tenantId, sessionId);
   }
 
-  reviewScreenObservation(
+  async reviewScreenObservation(
     identity: DevIdentity,
     sessionId: string,
     observationId: string,
     dto: { status: 'approved' | 'discarded' }
-  ): { observation: ScreenObservationShape; previousStatus: string; newStatus: string } {
-    this.getSession(identity, sessionId);
-    const observation = this.store.getScreenObservation(identity.tenantId, observationId);
+  ): Promise<{ observation: ScreenObservationShape; previousStatus: string; newStatus: string }> {
+    await this.getSession(identity, sessionId);
+    const observation = await this.store.getScreenObservation(identity.tenantId, observationId);
     if (!observation) {
       throw new NotFoundException(`Screen observation ${observationId} not found`);
     }
@@ -909,9 +909,9 @@ export class SupportSessionsService {
       reviewedBy: identity.userId,
     };
 
-    this.store.saveScreenObservation(updated);
+    await this.store.saveScreenObservation(updated);
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       dto.status === 'approved'
@@ -930,14 +930,14 @@ export class SupportSessionsService {
     return { observation: updated, previousStatus, newStatus: dto.status };
   }
 
-  createContextPacketFromObservation(
+  async createContextPacketFromObservation(
     identity: DevIdentity,
     sessionId: string,
     observationId: string,
     dto?: { provenance?: string }
-  ): { observation: ScreenObservationShape; contextPacketId: string; mockDevOnly: boolean } {
-    const session = this.getSession(identity, sessionId);
-    const observation = this.store.getScreenObservation(identity.tenantId, observationId);
+  ): Promise<{ observation: ScreenObservationShape; contextPacketId: string; mockDevOnly: boolean }> {
+    const session = await this.getSession(identity, sessionId);
+    const observation = await this.store.getScreenObservation(identity.tenantId, observationId);
     if (!observation) {
       throw new NotFoundException(`Screen observation ${observationId} not found`);
     }
@@ -973,8 +973,8 @@ export class SupportSessionsService {
       createdAt: new Date().toISOString(),
     };
 
-    this.store.saveContextPacket(packet);
-    this.store.saveSession({
+    await this.store.saveContextPacket(packet);
+    await this.store.saveSession({
       ...session,
       aiContextPacketIds: Array.from(new Set([...session.aiContextPacketIds, packet.id])),
       updatedAt: new Date().toISOString(),
@@ -984,9 +984,9 @@ export class SupportSessionsService {
       ...observation,
       contextPacketId: packet.id,
     };
-    this.store.saveScreenObservation(updatedObservation);
+    await this.store.saveScreenObservation(updatedObservation);
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.screen_observation_context_packet_created,
@@ -999,7 +999,7 @@ export class SupportSessionsService {
       }
     );
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.ai_context_loaded,
@@ -1011,23 +1011,25 @@ export class SupportSessionsService {
     return { observation: updatedObservation, contextPacketId: packet.id, mockDevOnly: true };
   }
 
-  generateEvidenceBundle(
+  async generateEvidenceBundle(
     identity: DevIdentity,
     sessionId: string,
     format: EvidenceBundleFormat
-  ): { bundle: EvidenceBundle; markdown?: string } {
-    const session = this.getSession(identity, sessionId);
-    const tickets = this.store.getTicketReferences(identity.tenantId, sessionId);
-    const contextPackets = this.store.getContextPackets(identity.tenantId, sessionId);
-    const callEvents = this.store.listCallEventsForSession(identity.tenantId, sessionId);
-    const callRecordings = callEvents.flatMap((call) =>
-      this.store.listCallRecordings(identity.tenantId, call.id)
+  ) {
+    const session = await this.getSession(identity, sessionId);
+    const tickets = await this.store.getTicketReferences(identity.tenantId, sessionId);
+    const contextPackets = await this.store.getContextPackets(identity.tenantId, sessionId);
+    const callEvents = await this.store.listCallEventsForSession(identity.tenantId, sessionId);
+    const callRecordingsNested = await Promise.all(
+      callEvents.map((call) => this.store.listCallRecordings(identity.tenantId, call.id))
     );
-    const screenObservations = this.store.listScreenObservations(identity.tenantId, sessionId);
-    const sessionAuditEvents = this.store.getAuditEvents(identity.tenantId, sessionId);
+    const callRecordings = callRecordingsNested.flat();
+    const screenObservations = await this.store.listScreenObservations(identity.tenantId, sessionId);
+    const sessionAuditEvents = await this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEventIds = new Set<string>(callEvents.map((call) => call.id));
     const externalCallIds = new Set(callEvents.map((call) => call.externalCallId));
-    const callAuditEvents = this.store.getAllAuditEvents(identity.tenantId).filter((event) => {
+    const allAuditEvents = await this.store.getAllAuditEvents(identity.tenantId);
+    const callAuditEvents = allAuditEvents.filter((event) => {
       if (event.sessionId === sessionId) return false;
       return (
         event.eventType === AuditEventType.enum.telephony_adapter_tested ||
@@ -1039,6 +1041,7 @@ export class SupportSessionsService {
       a.createdAt.localeCompare(b.createdAt)
     );
 
+    const storeType = process.env['SUPPORTPLANE_STORE'] ?? 'memory';
     const bundle = buildEvidenceBundle({
       tenantId: identity.tenantId as TenantId,
       sessionId: session.id as SupportSessionId,
@@ -1052,9 +1055,10 @@ export class SupportSessionsService {
       callRecordings,
       screenObservations,
       connectorMode: this.connectorsService.getMode(),
+      storeType: storeType === 'postgres' ? 'postgres' : 'memory',
     });
 
-    this.appendAuditEvent(
+    await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.evidence_bundle_generated,
@@ -1064,7 +1068,7 @@ export class SupportSessionsService {
     );
 
     if (format === EvidenceBundleFormat.enum.markdown) {
-      this.appendAuditEvent(
+      await this.appendAuditEvent(
         identity,
         sessionId,
         AuditEventType.enum.evidence_bundle_exported,
@@ -1073,7 +1077,7 @@ export class SupportSessionsService {
         { format: 'markdown', bundleId: bundle.bundleId }
       );
     } else {
-      this.appendAuditEvent(
+      await this.appendAuditEvent(
         identity,
         sessionId,
         AuditEventType.enum.evidence_bundle_exported,
@@ -1089,14 +1093,14 @@ export class SupportSessionsService {
     };
   }
 
-  private appendAuditEvent(
+  private async appendAuditEvent(
     identity: DevIdentity,
     sessionId: string,
     eventType: AuditEventType,
     resourceType: string,
     resourceId: string,
     metadata: Record<string, unknown> = {}
-  ): void {
+  ): Promise<void> {
     const now = new Date().toISOString();
     const event: AuditEventShape = {
       id: randomUUID() as AuditEventId,
@@ -1118,6 +1122,6 @@ export class SupportSessionsService {
       }),
       createdAt: now,
     };
-    this.store.saveAuditEvent(event);
+    await this.store.saveAuditEvent(event);
   }
 }

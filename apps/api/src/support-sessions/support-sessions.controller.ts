@@ -154,26 +154,26 @@ export class SupportSessionsController {
   }
 
   @Get(':id/evidence-bundle.md')
-  getEvidenceBundleMarkdown(
+  async getEvidenceBundleMarkdown(
     @Req() req: Request,
     @Res() res: Response,
     @Param('id') id: string
   ) {
     const identity = getDevIdentity(req);
-    const result = this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.markdown);
+    const result = await this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.markdown);
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
     res.send(result.markdown);
     return;
   }
 
   @Post(':id/screen-observations/mock')
-  captureMockScreenObservation(
+  async captureMockScreenObservation(
     @Req() req: Request,
     @Param('id') id: string,
     @Body() body: ScreenObservationCaptureRequest
   ) {
     const identity = getDevIdentity(req);
-    const observation = this.service.captureMockScreenObservation(identity, id, body);
+    const observation = await this.service.captureMockScreenObservation(identity, id, body);
     return {
       observation,
       redactedSummary: observation.redactedSummary ?? '[REDACTED]',

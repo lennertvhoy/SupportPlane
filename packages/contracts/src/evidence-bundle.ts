@@ -214,8 +214,8 @@ export const EvidenceBundle = z.object({
   mockDevOnlyDisclaimers: z.array(z.string()),
   limitations: z.array(z.string()),
   sourceProvenance: z.object({
-    storeType: z.literal('in-memory'),
-    persistenceClaimed: z.literal(false),
+    storeType: z.enum(['memory', 'postgres']),
+    persistenceClaimed: z.boolean(),
     generatedByService: z.string(),
     schemaVersion: z.string(),
   }),

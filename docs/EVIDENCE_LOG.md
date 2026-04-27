@@ -1212,3 +1212,21 @@
   - Redaction layer successfully prevents secret and path exposure in bundle output and UI.
 - Type: docs-render-verification
 - as_of: 2026-04-27T14:29:00+02:00
+
+
+## EV-2026-04-27-052: BL-050 PostgreSQL persistence restart survival
+
+- File: scripts/verify_postgres_persistence.sh
+- Title: PostgreSQL persistence restart survival verification
+- Source/System: shell script
+- Action: Start API with SUPPORTPLANE_STORE=postgres, create session and call, stop API, restart API, verify data survives.
+- Shows:
+  - Session created in Phase 1 is retrievable after restart in Phase 2.
+  - Call event created in Phase 1 is retrievable after restart in Phase 2.
+  - Evidence bundle reports `storeType: postgres` and `persistenceClaimed: true`.
+- Proves:
+  - PrismaStore correctly persists data to PostgreSQL.
+  - Data survives API process restart.
+  - Store switching works at runtime via env var.
+- Type: api-behavior-verification
+- as_of: 2026-04-27T15:24:00+02:00
