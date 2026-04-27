@@ -5,14 +5,15 @@ import { ConnectorsModule } from './connectors/connectors.module.js';
 import { CallsModule } from './calls/calls.module.js';
 import { TelephonyModule } from './telephony/telephony.module.js';
 import { StoreModule } from './store/store.module.js';
-import { DevIdentityMiddleware } from './common/dev-identity.middleware.js';
+import { AuthModule } from './auth/auth.module.js';
+import { CurrentIdentityMiddleware } from './auth/current-identity.middleware.js';
 
 @Module({
-  imports: [StoreModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule],
+  imports: [StoreModule, AuthModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(DevIdentityMiddleware).forRoutes('support-sessions', 'connectors', 'calls', 'telephony');
+    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'support-sessions', 'connectors', 'calls', 'telephony');
   }
 }

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-27T13:51:00+02:00
+  updated_at: 2026-04-27T17:45:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 8c4619164972f61f1c1b60151cdca3b9ae79d61d
-    worktree_status: dirty_pending_final_commit
+    head: b4b42fbe701d7c6b2165f84e69302cfbcff34b03
+    worktree_status: clean_after_bl_018_final_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -566,6 +566,35 @@ current_state:
       - BL-006 local topology verification script exists at scripts/check_local_topology.sh
       - Infra containers (Postgres, NATS, MinIO) verified via podman-compose with healthchecks
       - Host-run API and Web verified against running infra with HTTP and browser checks
+    bl_018_status:
+      completed: true
+      scope: local_auth_rbac_tenant_boundary_foundation
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      prisma_schema: prisma/schema.prisma
+      migration: prisma/migrations/20260427152000_local_auth_rbac/
+      docs:
+        - docs/AUTHORIZATION.md
+        - docs/LOCAL_DEVELOPMENT.md
+        - docs/PERSISTENCE.md
+      runtime:
+        store_mode: postgres
+        auth_modes: [dev, local]
+        local_auth: PostgreSQL-backed local users, password hashes, sessions, roles, permissions
+        seed_users:
+          - admin@supportplane.local / dev-tenant / admin
+          - operator@supportplane.local / dev-tenant / operator
+          - viewer@supportplane.local / dev-tenant / viewer
+          - admin@alt.supportplane.local / alt-tenant / admin
+          - operator@alt.supportplane.local / alt-tenant / operator
+        verification_script: scripts/verify_local_auth_rbac.sh
+        screenshot_folder: output/playwright/session-018-auth-rbac-tenant-boundary-foundation/
+        screenshot_count: 13
+        limitations:
+          - local MVP auth only; no SSO/OAuth/SAML/OIDC
+          - no production password policy/MFA/rate limiting/password reset
+          - audit integrity is not production immutable
 
   environment:
     status: observed

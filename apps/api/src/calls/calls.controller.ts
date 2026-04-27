@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import type { Request } from 'express';
 import { CallsService } from './calls.service.js';
-import { getDevIdentity } from '../common/dev-identity.middleware.js';
+import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { CallStatus } from '@supportplane/contracts';
 
 @Controller('calls')
@@ -32,19 +32,19 @@ export class CallsController {
       preferredPriority?: string;
     }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.createFakeIncomingCall(identity, body);
   }
 
   @Get('recent')
   listRecent(@Req() req: Request) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.listRecentCalls(identity);
   }
 
   @Get(':id')
   getOne(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.getCall(identity, id);
   }
 
@@ -54,7 +54,7 @@ export class CallsController {
     @Param('id') id: string,
     @Body() body: { sessionId: string }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.linkCallToSession(identity, id, body);
   }
 
@@ -65,7 +65,7 @@ export class CallsController {
     @Param('id') id: string,
     @Body() body: { status: string; reason?: string }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     const parsed = CallStatus.safeParse(body.status);
     if (!parsed.success) {
       return { statusCode: 400, error: 'Bad Request', message: `Invalid call status: ${body.status}. Allowed: ${CallStatus.options.join(', ')}` };
@@ -75,7 +75,7 @@ export class CallsController {
 
   @Get(':id/timeline')
   async getTimeline(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     const { timelineItems, generatedAt } = await this.service.getCallTimeline(identity, id);
     return { callEventId: id, timelineItems, generatedAt, mockDevOnly: true };
   }
@@ -86,13 +86,13 @@ export class CallsController {
     @Param('id') id: string,
     @Body() body: { source?: string; durationSeconds?: number }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.attachMockRecording(identity, id, body);
   }
 
   @Get(':id/recordings')
   listRecordings(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.listCallRecordings(identity, id);
   }
 
@@ -102,7 +102,7 @@ export class CallsController {
     @Param('id') id: string,
     @Param('recordingId') recordingId: string
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.reviewCallRecording(identity, id, recordingId);
   }
 
@@ -112,7 +112,7 @@ export class CallsController {
     @Param('id') id: string,
     @Param('recordingId') recordingId: string
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.recordPlaybackOpened(identity, id, recordingId);
   }
 }

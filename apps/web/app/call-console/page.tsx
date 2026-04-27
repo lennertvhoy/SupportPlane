@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { Panel } from '@/components/Panel';
 import { Badge } from '@/components/Badge';
+import { AuthGate, IdentityPill } from '@/components/AuthGate';
 import {
   api,
   type CallEvent,
@@ -46,10 +47,11 @@ import {
   type TelephonyCallControlResult,
   type CallRecording,
   type ScreenObservation,
+  type AuthIdentity,
   ApiClientError,
 } from '@/lib/api';
 
-export default function CallConsolePage() {
+function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logout: () => Promise<void> }) {
   const router = useRouter();
   const [calls, setCalls] = useState<CallEvent[]>([]);
   const [selectedCall, setSelectedCall] = useState<CallEvent | undefined>(undefined);
@@ -547,6 +549,7 @@ export default function CallConsolePage() {
             <AlertTriangle size={10} />
             No real telephony connected
           </span>
+          <IdentityPill identity={identity} logout={logout} />
           <button
             onClick={() => router.push('/')}
             className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
@@ -1692,4 +1695,8 @@ export default function CallConsolePage() {
       </div>
     </div>
   );
+}
+
+export default function CallConsolePage() {
+  return <AuthGate>{(identity, logout) => <CallConsoleContent identity={identity} logout={logout} />}</AuthGate>;
 }

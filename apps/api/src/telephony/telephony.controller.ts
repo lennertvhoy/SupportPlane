@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Headers, HttpCode, Inject, Param, Post, Req } from '@nestjs/common';
 import type { Request } from 'express';
-import { getDevIdentity } from '../common/dev-identity.middleware.js';
+import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { TelephonyService, type FakeProviderWebhookBody } from './telephony.service.js';
 
 @Controller('telephony')
@@ -12,12 +12,12 @@ export class TelephonyController {
 
   @Get('status')
   getStatus(@Req() req: Request) {
-    return this.service.getStatus(getDevIdentity(req));
+    return this.service.getStatus(getCurrentIdentity(req));
   }
 
   @Post('test')
   test(@Req() req: Request) {
-    return this.service.test(getDevIdentity(req));
+    return this.service.test(getCurrentIdentity(req));
   }
 
   @Post('webhooks/fake-provider')
@@ -26,7 +26,7 @@ export class TelephonyController {
     @Headers() headers: Record<string, string | string[] | undefined>,
     @Body() body: FakeProviderWebhookBody
   ) {
-    return this.service.receiveFakeProviderWebhook(getDevIdentity(req), body, headers);
+    return this.service.receiveFakeProviderWebhook(getCurrentIdentity(req), body, headers);
   }
 
   @Post('calls/:id/control')
@@ -36,6 +36,6 @@ export class TelephonyController {
     @Param('id') id: string,
     @Body() body: { action: string; reason?: string; target?: string }
   ) {
-    return this.service.controlCall(getDevIdentity(req), id, body);
+    return this.service.controlCall(getCurrentIdentity(req), id, body);
   }
 }

@@ -9,6 +9,19 @@ export interface DevIdentity {
   userRole?: string;
 }
 
+export interface AuthIdentity {
+  tenantId: string;
+  tenantName?: string;
+  tenantSlug?: string;
+  userId: string;
+  userEmail?: string;
+  userName?: string;
+  userRole?: string;
+  roles: string[];
+  permissions: string[];
+  authMode: 'dev' | 'local';
+}
+
 const DEFAULT_IDENTITY: DevIdentity = {
   tenantId: 'dev-tenant',
   userId: 'dev-user',
@@ -617,6 +630,7 @@ async function apiFetch<T>(
   const res = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   if (!res.ok) {
@@ -642,6 +656,18 @@ async function apiFetch<T>(
 }
 
 export const api = {
+  login: (body: { email: string; password: string; tenantSlug?: string }) =>
+    apiFetch<{ identity: AuthIdentity; expiresAt: string; authMode: 'local' }>(
+      '/auth/local/login',
+      { method: 'POST', body: JSON.stringify(body) }
+    ),
+
+  logout: () =>
+    apiFetch<{ loggedOut: boolean }>('/auth/logout', { method: 'POST' }),
+
+  me: () =>
+    apiFetch<{ identity: AuthIdentity; authMode: 'dev' | 'local' }>('/auth/me', { method: 'GET' }),
+
   // Sessions
   listSessions: (identity?: DevIdentity) =>
     apiFetch<SupportSession[]>('/support-sessions', { method: 'GET' }, identity),
@@ -1046,7 +1072,7 @@ export const api = {
     if ((identity ?? DEFAULT_IDENTITY).userRole) {
       headers.set('x-user-role', (identity ?? DEFAULT_IDENTITY).userRole!);
     }
-    const res = await fetch(url, { method: 'GET', headers });
+    const res = await fetch(url, { method: 'GET', headers, credentials: 'include' });
     if (!res.ok) {
       let body: ApiError | null = null;
       try {

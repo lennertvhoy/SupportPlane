@@ -31,7 +31,8 @@ import {
 import { computeIntegrityHash } from '@supportplane/audit';
 import { InMemoryStore } from '../support-sessions/in-memory.store.js';
 import type { Store } from '../store/store.interface.js';
-import { type DevIdentity } from '../common/dev-identity.middleware.js';
+import { type DevIdentity } from '../auth/auth.types.js';
+import { requirePermission } from '../auth/rbac.js';
 
 @Injectable()
 export class CallsService {
@@ -51,6 +52,7 @@ export class CallsService {
       preferredPriority?: string;
     }
   ): Promise<{ callEvent: CallEventShape; autoCreateResult: AutoCreateSessionResult; createdSession?: SupportSessionShape }> {
+    requirePermission(identity, 'call:write');
     const normalized = normalizePhoneNumber(dto.rawCallerNumber);
     const callerMatch = matchCallerByPhone(normalized);
     const now = new Date().toISOString();
@@ -206,6 +208,7 @@ export class CallsService {
     webhookEvent: TelephonyWebhookEventShape,
     mappedCall: CallEventShape
   ) {
+    requirePermission(identity, 'call:write');
     const normalized = normalizePhoneNumber(
       webhookEvent.rawCallerNumber ?? mappedCall.caller.rawNumber
     );
@@ -258,10 +261,12 @@ export class CallsService {
   }
 
   async listRecentCalls(identity: DevIdentity): Promise<CallEventShape[]>{
+    requirePermission(identity, 'call:read');
     return await this.store.listCallEvents(identity.tenantId);
   }
 
   async getCall(identity: DevIdentity, id: string): Promise<CallEventShape>{
+    requirePermission(identity, 'call:read');
     const call = await this.store.getCallEvent(identity.tenantId, id);
     if (!call) {
       throw new NotFoundException(`Call event ${id} not found`);
@@ -274,6 +279,7 @@ export class CallsService {
     callId: string,
     dto: { sessionId: string }
   ): Promise<{ callEvent: CallEventShape; linkedAt: string }> {
+    requirePermission(identity, 'call:write');
     const call = await this.getCall(identity, callId);
 
     const session = await this.store.getSession(identity.tenantId, dto.sessionId);
@@ -324,6 +330,7 @@ export class CallsService {
     callId: string,
     dto: { status: string; reason?: string }
   ): Promise<{ callEvent: CallEventShape; previousStatus: string; newStatus: string; changedAt: string }> {
+    requirePermission(identity, 'call:write');
     const call = await this.getCall(identity, callId);
     const previousStatus = call.status;
     const newStatus = dto.status;
@@ -381,6 +388,7 @@ export class CallsService {
     resourceId: string,
     metadata: TelephonyAuditMetadataShape
   ): Promise<void> {
+    requirePermission(identity, 'telephony:control');
     const safeMetadata = TelephonyAuditMetadata.parse(metadata);
     await this.appendAuditEvent(
       identity,
@@ -397,6 +405,7 @@ export class CallsService {
     callId: string,
     dto: { source?: string; durationSeconds?: number }
   ): Promise<{ recording: CallRecordingShape; attachedAt: string }> {
+    requirePermission(identity, 'recording:write');
     const call = await this.getCall(identity, callId);
     const now = new Date().toISOString();
 
@@ -443,6 +452,7 @@ export class CallsService {
   }
 
   async listCallRecordings(identity: DevIdentity, callId: string): Promise<CallRecordingShape[]>{
+    requirePermission(identity, 'recording:read');
     await this.getCall(identity, callId);
     return await this.store.listCallRecordings(identity.tenantId, callId);
   }
@@ -452,6 +462,7 @@ export class CallsService {
     callId: string,
     recordingId: string
   ) {
+    requirePermission(identity, 'recording:write');
     await this.getCall(identity, callId);
     const recording = await this.store.getCallRecording(identity.tenantId, recordingId);
     if (!recording || recording.callEventId !== callId) {
@@ -495,6 +506,7 @@ export class CallsService {
     callId: string,
     recordingId: string
   ) {
+    requirePermission(identity, 'recording:read');
     await this.getCall(identity, callId);
     const recording = await this.store.getCallRecording(identity.tenantId, recordingId);
     if (!recording || recording.callEventId !== callId) {
@@ -538,6 +550,7 @@ export class CallsService {
   }
 
   async getCallTimeline(identity: DevIdentity, callId: string) {
+    requirePermission(identity, 'call:read');
     const call = await this.getCall(identity, callId);
     const allAuditEvents = await this.store.getAllAuditEvents(identity.tenantId);
     const relatedAuditEvents = allAuditEvents.filter(

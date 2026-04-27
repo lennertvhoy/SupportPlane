@@ -1,8 +1,8 @@
 # Local Development Runbook
 
 **Product:** SupportPlane  
-**Scope:** BL-006 local Podman/Docker-compatible development topology  
-**Last updated:** 2026-04-26
+**Scope:** Local Podman/Docker-compatible development topology and local auth
+**Last updated:** 2026-04-27
 
 ## Prerequisites
 
@@ -79,7 +79,17 @@ cd apps/api
 npm run dev
 ```
 
-The API listens on `http://localhost:4110` by default.
+For PostgreSQL/local-auth MVP mode:
+
+```bash
+API_PORT=4110 \
+SUPPORTPLANE_STORE=postgres \
+SUPPORTPLANE_AUTH_MODE=local \
+DATABASE_URL="postgresql://supportplane:supportplane_dev@localhost:5434/supportplane?schema=public" \
+npm run dev
+```
+
+The API listens on `http://localhost:4110`.
 
 ### 4. Start Web (host)
 
@@ -133,12 +143,40 @@ podman compose -f infra/docker-compose/compose.yaml down -v
 ## Known limitations
 
 - **Persistence mode:** The API supports both `memory` (default) and `postgres` stores via `SUPPORTPLANE_STORE` env var. PostgreSQL persistence requires `SUPPORTPLANE_STORE=postgres` and `DATABASE_URL` pointing to the local PostgreSQL container (default port 5434). Run `npx prisma migrate deploy` and `npx prisma db seed` before first use in postgres mode.
-- **No real authentication:** Dev-only mock identity headers (`x-tenant-id`, `x-user-id`, `x-user-role`) are used.
+- **Auth mode:** `SUPPORTPLANE_AUTH_MODE=local` requires seeded local login/session behavior. `SUPPORTPLANE_AUTH_MODE=dev` preserves old dev-only mock identity headers for tests and legacy dev flows.
+- **No production authentication:** Local auth is not SSO/OAuth/SAML/OIDC and has no MFA, password reset, rate limiting, or production password policy claims.
 - **No real AI provider:** The AI gateway uses deterministic mock output.
 - **No real ticketing integration:** `MockTicketingAdapter` returns fixture data.
 - **Zammad connector is mock-only by default:** Set `ZAMMAD_CONNECTOR_MODE=zammad`, `ZAMMAD_BASE_URL`, and `ZAMMAD_API_TOKEN` to enable real integration. See `docs/ZAMMAD_CONNECTOR.md`.
 - **No worker runtime:** The worker container is a placeholder that sleeps; no background job processing exists yet.
 - **No production deployment claims:** This topology is for local development only.
+
+## Local auth seed users
+
+Run:
+
+```bash
+npx prisma migrate deploy
+npx prisma db seed
+```
+
+Seeded local-only password:
+
+```text
+supportplane-demo
+```
+
+Seeded users:
+
+| Tenant slug | Email | Role |
+|-------------|-------|------|
+| `dev-tenant` | `admin@supportplane.local` | `admin` |
+| `dev-tenant` | `operator@supportplane.local` | `operator` |
+| `dev-tenant` | `viewer@supportplane.local` | `viewer` |
+| `alt-tenant` | `admin@alt.supportplane.local` | `admin` |
+| `alt-tenant` | `operator@alt.supportplane.local` | `operator` |
+
+Use `scripts/verify_local_auth_rbac.sh` with API running in local auth mode to verify login/logout, RBAC denial, tenant-boundary denial, forged-header resistance, and no auth secret leakage in evidence output.
 
 ## Docker vs Podman notes
 

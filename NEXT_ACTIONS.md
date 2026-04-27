@@ -1,17 +1,12 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-27 15:24 CEST
+**Updated At:** 2026-04-27 18:10 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-- [BL-050] PostgreSQL Persistence Foundation — CLOSED
-  - Prisma schema extended with all MVP models, migration applied, PrismaStore implemented
-  - Runtime store switching via `SUPPORTPLANE_STORE=postgres`
-  - Restart-survival verification passed: `scripts/verify_postgres_persistence.sh`
-  - All tests pass: API 102/102, Contracts 26/26, Web 15/15, AI 9/9, Connectors 16/16
-  - Next: CTO review to choose next backlog slice
+- No active implementation item after BL-018 closure. Next action is CTO review to select the next backlog slice.
 
 ## Queue Rules
 

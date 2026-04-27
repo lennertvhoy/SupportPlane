@@ -4,6 +4,50 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-27 - BL-018 Local auth, RBAC, and tenant boundary foundation
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Added PostgreSQL-backed local auth schema fields and migration: `User.passwordHash` and `LocalAuthSession`.
+- Seed now creates `dev-tenant` and `alt-tenant` with admin/operator/viewer-style demo identities and local-only password hashes.
+- Added `SUPPORTPLANE_AUTH_MODE=dev|local`; local mode requires login/session cookies and ignores arbitrary identity headers.
+- Added auth endpoints: `POST /auth/local/login`, `GET /auth/me`, `POST /auth/logout`, and `GET /auth/audit-events`.
+- Added RBAC checks across support sessions, calls, recordings, telephony, connector status, observations, context packets, audit reads, and evidence bundles.
+- Added local login/logout UX, visible authenticated user/tenant/role indicator, and viewer read-only affordance.
+- Added `scripts/verify_local_auth_rbac.sh`.
+- Added/updated auth, persistence, local development, evidence, state, and acceptance docs.
+
+### Verification
+
+- `cd apps/api && npm test` passed: 102/102 tests.
+- `npm run lint`, `npm run typecheck --workspaces --if-present`, `npm run validate`, and `npm run health` passed.
+- `npx prisma validate`, `npx prisma generate`, `npx prisma migrate status`, and `npx prisma db seed` passed.
+- `scripts/verify_postgres_persistence.sh` passed after stopping the local-auth API that occupied port 4110.
+- `scripts/verify_local_auth_rbac.sh` passed against `http://localhost:4110` with `SUPPORTPLANE_STORE=postgres` and `SUPPORTPLANE_AUTH_MODE=local`.
+- API, contracts, web, AI, and connectors tests/builds passed.
+- State documentation and bootstrap-gate checks passed.
+- Browser proof captured 13 screenshots in `output/playwright/session-018-auth-rbac-tenant-boundary-foundation/`.
+- Browser proof covered login, logout, operator/admin/viewer identity display, viewer RBAC denial, cross-tenant denial, tenant audit events, evidence bundle auth-secret checks, and post-API-restart re-login.
+
+### Evidence
+
+- Evidence refs: EV-2026-04-27-051 through EV-2026-04-27-063.
+- Screenshot folder: `output/playwright/session-018-auth-rbac-tenant-boundary-foundation/`.
+- Acceptance freeze: AF-2026-04-27-007.
+
+### Remaining Risk
+
+- Local auth is MVP-only and not production auth.
+- No SSO/OAuth/SAML/OIDC, MFA, rate limiting, password reset, production password policy, or compliance-grade audit immutability exists.
+- No real telephony, AI provider, Zammad call, queue-backed workflow, object storage, raw screenshot storage, raw audio/media storage, production deployment, or compliance claim was implemented.
+
 ## 2026-04-27 - BL-046 closure hygiene pass
 
 **Type:** closure_hygiene

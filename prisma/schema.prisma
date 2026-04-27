@@ -28,6 +28,7 @@ model Tenant {
   screenObservations  ScreenObservation[]
   policyDecisions     PolicyDecision[]
   auditEvents         AuditEvent[]
+  localAuthSessions   LocalAuthSession[]
   callEvents          CallEvent[]
   callRecordings      CallRecording[]
   internalNoteDrafts  InternalNoteDraft[]
@@ -61,6 +62,7 @@ model User {
   email      String
   name       String
   status     String    @default("active")
+  passwordHash String?
   lastLoginAt DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -70,11 +72,31 @@ model User {
   assignedSessions  SupportSession[]   @relation("AssignedUser")
   auditEvents       AuditEvent[]       @relation("ActorUser")
   policyDecisions   PolicyDecision[]
+  localAuthSessions LocalAuthSession[]
 
   @@unique([tenantId, email])
+  @@unique([tenantId, id])
   @@index([tenantId])
   @@index([status])
   @@map("users")
+}
+
+model LocalAuthSession {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [tenantId, userId], references: [tenantId, id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("local_auth_sessions")
 }
 
 model SupportSession {

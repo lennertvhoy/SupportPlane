@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { SupportSessionsService } from './support-sessions.service.js';
-import { getDevIdentity } from '../common/dev-identity.middleware.js';
+import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { EvidenceBundleFormat } from '@supportplane/contracts';
 import type {
   ScreenObservationCaptureRequest,
@@ -31,7 +31,7 @@ export class SupportSessionsController {
 
   @Get()
   list(@Req() req: Request) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.listSessions(identity);
   }
 
@@ -40,13 +40,13 @@ export class SupportSessionsController {
     @Req() req: Request,
     @Body() body: { title: string; description?: string; priority?: string }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.createSession(identity, body);
   }
 
   @Get(':id')
   findOne(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.getSession(identity, id);
   }
 
@@ -56,7 +56,7 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: { externalTicketId: string }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.loadTicketContext(identity, id, body.externalTicketId);
   }
 
@@ -66,7 +66,7 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: { externalTicketId: string }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.loadTicketContext(identity, id, body.externalTicketId);
   }
 
@@ -76,7 +76,7 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: { externalTicketId: string; body: string; subject?: string }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.createInternalNoteDraft(identity, id, body);
   }
 
@@ -86,7 +86,7 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: { draftId: string; externalTicketId: string; body: string }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.writebackInternalNote(identity, id, body);
   }
 
@@ -96,13 +96,13 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: { provenance: string; payload: Record<string, unknown> }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.createContextPacket(identity, id, body);
   }
 
   @Get(':id/context-packets')
   getContextPackets(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.getContextPackets(identity, id);
   }
 
@@ -116,7 +116,7 @@ export class SupportSessionsController {
       modelSelection?: { provider?: string; model?: string };
     }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.generateDraftSuggestion(identity, id, body);
   }
 
@@ -131,25 +131,25 @@ export class SupportSessionsController {
       modelSelection?: { provider?: string; model?: string };
     }
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.generateGreetingSuggestion(identity, id, body);
   }
 
   @Get(':id/audit-events')
   getAuditEvents(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.getAuditEvents(identity, id);
   }
 
   @Get(':id/evidence-bundle')
   getEvidenceBundle(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.json);
   }
 
   @Get(':id/evidence-bundle.json')
   getEvidenceBundleJson(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.json);
   }
 
@@ -159,7 +159,7 @@ export class SupportSessionsController {
     @Res() res: Response,
     @Param('id') id: string
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     const result = await this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.markdown);
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
     res.send(result.markdown);
@@ -172,7 +172,7 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: ScreenObservationCaptureRequest
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     const observation = await this.service.captureMockScreenObservation(identity, id, body);
     return {
       observation,
@@ -187,7 +187,7 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: ActiveWindowMetadataCaptureRequest
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.captureActiveWindowMockMetadata(identity, id, body);
   }
 
@@ -197,7 +197,7 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: ManualScreenshotMetadataRequest
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.attachManualScreenshotMetadata(identity, id, body);
   }
 
@@ -207,13 +207,13 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: StructuredScreenObservationUploadRequest
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.uploadStructuredScreenObservation(identity, id, body);
   }
 
   @Get(':id/screen-observations/sharing-state')
   getSharingState(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.getSharingState(identity, id);
   }
 
@@ -223,13 +223,13 @@ export class SupportSessionsController {
     @Param('id') id: string,
     @Body() body: ScreenObservationSharingStateRequest
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.updateSharingState(identity, id, body);
   }
 
   @Get(':id/screen-observations')
   listScreenObservations(@Req() req: Request, @Param('id') id: string) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.listScreenObservations(identity, id);
   }
 
@@ -240,7 +240,7 @@ export class SupportSessionsController {
     @Param('observationId') observationId: string,
     @Body() body: ScreenObservationReviewRequest
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.reviewScreenObservation(identity, id, observationId, body);
   }
 
@@ -251,7 +251,7 @@ export class SupportSessionsController {
     @Param('observationId') observationId: string,
     @Body() body: ScreenObservationContextPacketRequest
   ) {
-    const identity = getDevIdentity(req);
+    const identity = getCurrentIdentity(req);
     return this.service.createContextPacketFromObservation(identity, id, observationId, body);
   }
 }

@@ -183,6 +183,48 @@ and must be protected from quiet regression.
 - Tie the accepted state to repo truth, runtime truth, and evidence truth.
 - If a later report conflicts with the freeze, prove runtime identity before drawing conclusions from git history.
 
+## AF-2026-04-27-007: Local auth, RBAC, and tenant boundary foundation (BL-018)
+
+- ID: AF-2026-04-27-007
+- Milestone: Local auth, RBAC, and tenant boundary foundation
+- Scope: PostgreSQL-backed local login/logout, seeded demo tenants/users/roles, local session cookie, current actor/tenant resolution, server-side RBAC checks, tenant-boundary denial proof, visible user/tenant/role shell indicator, viewer/operator/admin browser proof, and local auth/RBAC verification script.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded_in_final_handoff
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+  - Podman container `sp-postgres` on port 5434
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- routes:
+  - /
+  - /call-console
+  - POST /auth/local/login
+  - GET /auth/me
+  - POST /auth/logout
+  - GET /auth/audit-events
+  - /support-sessions/*
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-27-051 through EV-2026-04-27-063
+- evidence_folder: output/playwright/session-018-auth-rbac-tenant-boundary-foundation/
+- screenshot_count: 13
+- regression_guard:
+  - Local auth mode must not trust arbitrary `x-tenant-id`, `x-user-id`, or `x-user-role` headers.
+  - Missing/invalid local auth must return 401.
+  - Valid auth with insufficient role must return 403.
+  - Cross-tenant session access must be denied server-side.
+  - Viewer role must remain visibly restricted and server-side denied for create/operator work.
+  - Evidence bundle and auth responses must not expose passwords, password hashes, session tokens, token hashes, raw media, or private credentials.
+- Notes:
+  - This is local MVP auth only, not production authentication, SSO/OAuth/SAML/OIDC, MFA, compliance-grade audit immutability, or production deployment.
+
 ## AF-2026-04-27-002: Telephony adapter boundary (BL-044)
 
 - ID: AF-2026-04-27-002

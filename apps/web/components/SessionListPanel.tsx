@@ -13,6 +13,7 @@ export function SessionListPanel({
   error,
   onSelect,
   onCreate,
+  canCreate = true,
 }: {
   sessions: SupportSession[];
   selectedId?: string;
@@ -20,6 +21,7 @@ export function SessionListPanel({
   error: string | null;
   onSelect: (session: SupportSession) => void;
   onCreate: (title: string, description?: string) => void;
+  canCreate?: boolean;
 }) {
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
@@ -31,7 +33,9 @@ export function SessionListPanel({
       headerRight={
         <button
           onClick={() => setShowForm((s) => !s)}
-          className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-xs font-medium text-white hover:bg-accent-dark"
+          disabled={!canCreate}
+          title={canCreate ? 'Create session' : 'Viewer role cannot create sessions'}
+          className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-xs font-medium text-white hover:bg-accent-dark disabled:cursor-not-allowed disabled:bg-cockpit-700 disabled:text-cockpit-400"
         >
           <Plus size={14} />
           New
@@ -73,6 +77,12 @@ export function SessionListPanel({
               Cancel
             </button>
           </div>
+        </div>
+      )}
+
+      {!canCreate && (
+        <div className="mb-2 rounded border border-amber-700/40 bg-amber-900/20 px-3 py-2 text-xs text-amber-200">
+          Viewer role can inspect sessions but cannot create operator work.
         </div>
       )}
 

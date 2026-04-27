@@ -11,9 +11,10 @@ import { ConnectorPanel } from '@/components/ConnectorPanel';
 import { EvidenceBundlePanel } from '@/components/EvidenceBundlePanel';
 import { CallSimulatorPanel } from '@/components/CallSimulatorPanel';
 import { GreetingSuggestionPanel } from '@/components/GreetingSuggestionPanel';
-import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, type GreetingSuggestionResponse, ApiClientError } from '@/lib/api';
+import { AuthGate, IdentityPill } from '@/components/AuthGate';
+import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, type GreetingSuggestionResponse, type AuthIdentity, ApiClientError } from '@/lib/api';
 
-export default function CockpitPage() {
+function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: () => Promise<void> }) {
   const [sessions, setSessions] = useState<SupportSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<SupportSession | undefined>(undefined);
   const [ticket, setTicket] = useState<TicketReference | undefined>(undefined);
@@ -316,6 +317,7 @@ export default function CockpitPage() {
               {connectorStatus.mode === 'mock' ? 'Mock' : 'Zammad'} mode
             </span>
           )}
+          <IdentityPill identity={identity} logout={logout} />
           <button
             onClick={() => window.location.href = '/call-console'}
             className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
@@ -337,6 +339,7 @@ export default function CockpitPage() {
             error={sessionsError}
             onSelect={handleSelectSession}
             onCreate={handleCreateSession}
+            canCreate={identity.permissions.includes('*') || identity.permissions.includes('support_session:create')}
           />
         </aside>
 
@@ -421,4 +424,8 @@ export default function CockpitPage() {
       </div>
     </div>
   );
+}
+
+export default function CockpitPage() {
+  return <AuthGate>{(identity, logout) => <CockpitContent identity={identity} logout={logout} />}</AuthGate>;
 }

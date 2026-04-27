@@ -2,6 +2,25 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-27-051 through EV-2026-04-27-063: BL-018 local auth/RBAC/tenant boundary browser proof
+
+- Files: `output/playwright/session-018-auth-rbac-tenant-boundary-foundation/01-login-page-local-auth.png` through `13-after-api-restart-relogin-scoped-data.png`
+- Source/System: visible Chromium via Playwright CLI against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - local login page
+  - authenticated operator/admin/viewer identity with tenant and role
+  - operator cockpit and Call Console under local identity
+  - operator observation creation/review allowed
+  - viewer role create action disabled and direct server-side create attempt denied with 403
+  - second tenant denied access to first tenant session with 404
+  - tenant audit event proof for login/logout/access-control/session/observation events
+  - evidence bundle proof with no password/session-token/hash leakage
+  - logout returning to login
+  - API restart followed by successful re-login and tenant-scoped data visibility
+- Type: browser-runtime-verification
+- as_of: 2026-04-27T17:42:00+02:00
+
 ## EV-2026-04-27-009: BL-044 Call Console Telephony Bridge panel
 
 - File: output/playwright/session-044-telephony-adapter-boundary/01-call-console-telephony-bridge-panel.png

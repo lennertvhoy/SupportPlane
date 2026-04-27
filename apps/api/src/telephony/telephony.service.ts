@@ -18,7 +18,8 @@ import {
   type TelephonyAdapter,
 } from '@supportplane/connectors';
 import { CallsService } from '../calls/calls.service.js';
-import { type DevIdentity } from '../common/dev-identity.middleware.js';
+import { type DevIdentity } from '../auth/auth.types.js';
+import { requirePermission } from '../auth/rbac.js';
 
 export interface FakeProviderWebhookBody {
   sourceEventId?: string;
@@ -40,6 +41,7 @@ export class TelephonyService {
   ) {}
 
   async getStatus(identity: DevIdentity): Promise<TelephonyAdapterStatusShape> {
+    requirePermission(identity, 'telephony:read');
     const status = this.adapter.getStatus(identity.tenantId);
     await this.callsService.recordTelephonyAuditEvent(
       identity,
@@ -60,6 +62,7 @@ export class TelephonyService {
   }
 
   async test(identity: DevIdentity): Promise<TelephonyAdapterStatusShape> {
+    requirePermission(identity, 'telephony:read');
     const status = TelephonyAdapterStatus.parse(this.adapter.test(identity.tenantId));
     await this.callsService.recordTelephonyAuditEvent(
       identity,
@@ -84,6 +87,7 @@ export class TelephonyService {
     body: FakeProviderWebhookBody,
     headers: Record<string, string | string[] | undefined>
   ): Promise<{ event: TelephonyWebhookEventShape; callEvent: unknown; mockDevOnly: boolean; receivedAt: string }> {
+    requirePermission(identity, 'telephony:webhook');
     const lifecycle = TelephonyWebhookLifecycleEventType.safeParse(
       body.eventType ?? 'incoming_call'
     );
@@ -168,6 +172,7 @@ export class TelephonyService {
     callId: string,
     body: { action: string; reason?: string; target?: string }
   ): Promise<TelephonyCallControlResultShape> {
+    requirePermission(identity, 'telephony:control');
     const call = await this.callsService.getCall(identity, callId);
     const action = TelephonyCallControlAction.safeParse(body.action);
     if (!action.success) {

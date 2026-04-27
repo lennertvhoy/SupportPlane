@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { InMemoryStore } from './in-memory.store.js';
 import type { Store } from '../store/store.interface.js';
@@ -44,7 +44,8 @@ import {
   GreetingSuggestionResponse,
   type GreetingSuggestionResponse as GreetingSuggestionResponseShape,
 } from '@supportplane/ai';
-import { type DevIdentity } from '../common/dev-identity.middleware.js';
+import { type DevIdentity } from '../auth/auth.types.js';
+import { requirePermission } from '../auth/rbac.js';
 import { ConnectorsService } from '../connectors/connectors.service.js';
 import {
   buildEvidenceBundle,
@@ -75,6 +76,7 @@ export class SupportSessionsService {
     identity: DevIdentity,
     dto: { title: string; description?: string; priority?: string }
   ): Promise<SupportSessionShape> {
+    requirePermission(identity, 'support_session:create');
     const now = new Date().toISOString();
     const id = randomUUID();
     const priority = dto.priority
@@ -112,8 +114,10 @@ export class SupportSessionsService {
   }
 
   async getSession(identity: DevIdentity, id: string): Promise<SupportSessionShape>{
+    requirePermission(identity, 'support_session:read');
     const session = await this.store.getSession(identity.tenantId, id);
     if (!session) {
+      await this.recordTenantBoundaryDenial(identity, 'support_session', id);
       throw new NotFoundException(`Support session ${id} not found`);
     }
     return session;
@@ -128,6 +132,7 @@ export class SupportSessionsService {
     contextPacket: AIContextPacketShape;
     session: SupportSessionShape;
   }> {
+    requirePermission(identity, 'ticket_context:load');
     const session = await this.getSession(identity, sessionId);
     const adapter = this.getAdapter();
     const mode = this.connectorsService.getMode();
@@ -211,6 +216,7 @@ export class SupportSessionsService {
       modelSelection?: { provider?: string; model?: string };
     }
   ): Promise<GenerateDraftResponseShape> {
+    requirePermission(identity, 'ai:generate');
     const session = await this.getSession(identity, sessionId);
     const contextPackets = await this.store.getContextPackets(
       identity.tenantId,
@@ -275,6 +281,13 @@ export class SupportSessionsService {
     let callEvent = undefined;
     if (dto.callEventId) {
       callEvent = await this.store.getCallEvent(identity.tenantId, dto.callEventId);
+      if (!callEvent) {
+        await this.recordTenantBoundaryDenial(identity, 'call_event', dto.callEventId);
+        throw new NotFoundException(`Call event ${dto.callEventId} not found`);
+      }
+      if (callEvent.sessionId && callEvent.sessionId !== sessionId) {
+        throw new ForbiddenException(`Call event ${dto.callEventId} is not linked to session ${sessionId}`);
+      }
     }
 
     const ticketReferences = await this.store.getTicketReferences(
@@ -325,6 +338,7 @@ export class SupportSessionsService {
     sessionId: string,
     dto: { externalTicketId: string; body: string; subject?: string }
   ): Promise<InternalNoteDraftShape> {
+    requirePermission(identity, 'ticket:write');
     await this.getSession(identity, sessionId);
     const mode = this.connectorsService.getMode();
 
@@ -362,6 +376,7 @@ export class SupportSessionsService {
     sessionId: string,
     dto: { draftId: string; externalTicketId: string; body: string }
   ): Promise<unknown> {
+    requirePermission(identity, 'ticket:write');
     await this.getSession(identity, sessionId);
     const adapter = this.getAdapter();
     const mode = this.connectorsService.getMode();
@@ -440,6 +455,7 @@ export class SupportSessionsService {
     sessionId: string,
     dto: { provenance: string; payload: Record<string, unknown> }
   ): Promise<AIContextPacketShape> {
+    requirePermission(identity, 'context_packet:create');
     const session = await this.getSession(identity, sessionId);
     const provenance = AIContextProvenance.parse(dto.provenance);
     const packet: AIContextPacketShape = {
@@ -475,6 +491,7 @@ export class SupportSessionsService {
     identity: DevIdentity,
     sessionId: string
   ): Promise<AIContextPacketShape[]>{
+    requirePermission(identity, 'support_session:read');
     await this.getSession(identity, sessionId);
     return await this.store.getContextPackets(identity.tenantId, sessionId);
   }
@@ -483,11 +500,13 @@ export class SupportSessionsService {
     identity: DevIdentity,
     sessionId: string
   ): Promise<AuditEventShape[]>{
+    requirePermission(identity, 'audit:read');
     await this.getSession(identity, sessionId);
     return await this.store.getAuditEvents(identity.tenantId, sessionId);
   }
 
   async listSessions(identity: DevIdentity): Promise<SupportSessionShape[]>{
+    requirePermission(identity, 'support_session:read');
     return await this.store.listSessions(identity.tenantId);
   }
 
@@ -503,6 +522,7 @@ export class SupportSessionsService {
       urlLabel?: string;
     }
   ): Promise<ScreenObservationShape> {
+    requirePermission(identity, 'screen_observation:create');
     const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
@@ -581,6 +601,7 @@ export class SupportSessionsService {
       rawInputPlaceholder?: string;
     }
   ): Promise<{ observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean }> {
+    requirePermission(identity, 'screen_observation:create');
     const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
@@ -660,6 +681,7 @@ export class SupportSessionsService {
       fileNameHint?: string;
     }
   ): Promise<{ observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; rawImageRetention: 'disabled' }> {
+    requirePermission(identity, 'screen_observation:create');
     const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
@@ -739,6 +761,7 @@ export class SupportSessionsService {
       rawInputPlaceholder?: string;
     }
   ): Promise<{ observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; redactionStatus: ScreenObservationShape['redactionStatus'] }> {
+    requirePermission(identity, 'screen_observation:create');
     const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
@@ -809,6 +832,7 @@ export class SupportSessionsService {
     identity: DevIdentity,
     sessionId: string
   ) {
+    requirePermission(identity, 'support_session:read');
     await this.getSession(identity, sessionId);
     const sharingState = await this.store.getSharingState(identity.tenantId, sessionId);
     return {
@@ -823,6 +847,7 @@ export class SupportSessionsService {
     sessionId: string,
     dto: { state: string }
   ): Promise<{ sessionId: string; state: ScreenObservationShape['sharingState']; previousState: ScreenObservationShape['sharingState'] | undefined; mockDevOnly: boolean }> {
+    requirePermission(identity, 'screen_observation:create');
     await this.getSession(identity, sessionId);
     const newState = ScreenObservationSharingState.parse(dto.state);
     const existing = await this.store.getSharingState(identity.tenantId, sessionId);
@@ -881,6 +906,7 @@ export class SupportSessionsService {
     identity: DevIdentity,
     sessionId: string
   ): Promise<ScreenObservationShape[]>{
+    requirePermission(identity, 'support_session:read');
     await this.getSession(identity, sessionId);
     return await this.store.listScreenObservations(identity.tenantId, sessionId);
   }
@@ -891,6 +917,7 @@ export class SupportSessionsService {
     observationId: string,
     dto: { status: 'approved' | 'discarded' }
   ): Promise<{ observation: ScreenObservationShape; previousStatus: string; newStatus: string }> {
+    requirePermission(identity, 'screen_observation:review');
     await this.getSession(identity, sessionId);
     const observation = await this.store.getScreenObservation(identity.tenantId, observationId);
     if (!observation) {
@@ -936,6 +963,8 @@ export class SupportSessionsService {
     observationId: string,
     dto?: { provenance?: string }
   ): Promise<{ observation: ScreenObservationShape; contextPacketId: string; mockDevOnly: boolean }> {
+    requirePermission(identity, 'screen_observation:review');
+    requirePermission(identity, 'context_packet:create');
     const session = await this.getSession(identity, sessionId);
     const observation = await this.store.getScreenObservation(identity.tenantId, observationId);
     if (!observation) {
@@ -963,7 +992,7 @@ export class SupportSessionsService {
         windowLabel: observation.windowLabel,
         urlLabel: observation.urlLabel,
         redactedSummary: observation.redactedSummary,
-        rawInputPlaceholder: observation.rawInputPlaceholder,
+        rawInputPlaceholder: observation.redactedSummary ?? '[REDACTED]',
         mockDevOnly: true,
       },
       redactionLog: [
@@ -1016,6 +1045,7 @@ export class SupportSessionsService {
     sessionId: string,
     format: EvidenceBundleFormat
   ) {
+    requirePermission(identity, 'evidence_bundle:read');
     const session = await this.getSession(identity, sessionId);
     const tickets = await this.store.getTicketReferences(identity.tenantId, sessionId);
     const contextPackets = await this.store.getContextPackets(identity.tenantId, sessionId);
@@ -1115,6 +1145,31 @@ export class SupportSessionsService {
       metadata,
       integrityHash: computeIntegrityHash({
         eventType,
+        actorId: identity.userId,
+        resourceId,
+        metadata,
+        now,
+      }),
+      createdAt: now,
+    };
+    await this.store.saveAuditEvent(event);
+  }
+
+  private async recordTenantBoundaryDenial(identity: DevIdentity, resourceType: string, resourceId: string): Promise<void> {
+    const now = new Date().toISOString();
+    const metadata = { reason: 'not_found_in_actor_tenant', authMode: identity.authMode };
+    const event: AuditEventShape = {
+      id: randomUUID() as AuditEventId,
+      tenantId: identity.tenantId as TenantId,
+      eventType: AuditEventType.enum.tenant_boundary_denied,
+      actorType: AuditActorType.enum.user,
+      actorId: identity.userId,
+      action: AuditEventType.enum.tenant_boundary_denied,
+      resourceType,
+      resourceId,
+      metadata,
+      integrityHash: computeIntegrityHash({
+        eventType: AuditEventType.enum.tenant_boundary_denied,
         actorId: identity.userId,
         resourceId,
         metadata,
