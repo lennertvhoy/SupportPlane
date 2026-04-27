@@ -12,7 +12,6 @@ export function ConnectorPanel() {
   const [installations, setInstallations] = useState<ConnectorInstallation[]>([]);
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [installationsLoading, setInstallationsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function fetchStatus() {
@@ -29,7 +28,6 @@ export function ConnectorPanel() {
       setError(err instanceof ApiClientError ? err.message : 'Failed to load connector status');
     } finally {
       setLoading(false);
-      setInstallationsLoading(false);
     }
   }
 

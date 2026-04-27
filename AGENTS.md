@@ -226,7 +226,20 @@ Unacceptable shortcuts:
 - "Tests pass" or "validated" without listing the exact commands
 - dirty worktree, unchanged HEAD after claimed work, missing commit, missing browser proof, incomplete validation reporting, or unexplained contradictions
 
-These rules are repo truth. Violations mean "not closure-grade."}}
+### Stubbed route and incomplete feature rule (mandatory)
+
+A backlog item may not be called "complete" if any newly introduced route, UI action, script, or contract is stubbed, fake-successing, or untested unless:
+- it returns an explicit honest unavailable response such as `501 Not Implemented`,
+- it is hidden from normal UI flows,
+- it is documented as out of scope,
+- tests prove the honest unavailable behavior,
+- and the final handoff lists it under remaining limitations.
+
+Final handoffs must include full commit hashes, not short hashes.
+"Implementation complete" is forbidden when core acceptance behavior remains partial.
+Incomplete validation-gate reporting means not closure-grade even when code appears to work.
+
+These rules are repo truth. Violations mean "not closure-grade."}}}}
 
 Use `prompts/FINAL_HANDOFF_TEMPLATE.md` when you need a canonical handoff shape.
 Use `prompts/RUNTIME_IDENTITY_CHECKLIST.md` before UI acceptance or regression forensics.

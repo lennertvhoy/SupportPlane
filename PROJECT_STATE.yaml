@@ -555,17 +555,10 @@ current_state:
     rebuilt_in_current_slice: true
     duplicate_runtimes_checked: true
     notes:
-      - NestJS API is running and verified via integration tests (102/102 pass) and curl
-      - Next.js web app is running and verified via browser screenshots (10 canonical)
-      - BL-043 closure verified in Chromium with 8 screenshots
-      - BL-046 closure verified in Chromium with 9 screenshots
-      - BL-047/048/049 closure verified in Chromium with 10 screenshots
-      - BL-050 PostgreSQL persistence verified with restart-survival script (scripts/verify_postgres_persistence.sh)
-      - baseline health script exists at scripts/health.js and returns scaffold identity
-      - runtime identity proof was collected for API endpoints and UI panels
-      - BL-006 local topology verification script exists at scripts/check_local_topology.sh
-      - Infra containers (Postgres, NATS, MinIO) verified via podman-compose with healthchecks
-      - Host-run API and Web verified against running infra with HTTP and browser checks
+      - NestJS API verified via integration tests and curl
+      - Next.js web app verified via browser screenshots
+      - BL-050 PostgreSQL persistence verified with restart-survival script
+      - Infra containers verified via podman-compose with healthchecks
     bl_020_status:
       completed: true
       scope: ticket_context_connector_safety_foundation
@@ -655,16 +648,9 @@ current_state:
   repository_structure:
     status: observed
     current_top_level_entries:
-      - .github
-      - .git
-      - .gitignore
-      - .prettierrc
       - AGENTS.md
       - BACKLOG.md
-      - LICENSE
       - NEXT_ACTIONS.md
-      - PROJECT_ADAPTER.yaml
-      - PROJECT_DNA.yaml
       - PROJECT_STATE.yaml
       - README.md
       - STATUS.md
@@ -672,13 +658,9 @@ current_state:
       - docs
       - fixtures
       - infra
-      - node_modules
-      - package.json
-      - package-lock.json
-      - prompts
       - scripts
-      - security_best_practices_report.md
-      - tsconfig.json
+      - apps
+      - packages
     current_entrypoints:
       - scripts/init_template.py
       - scripts/check_state_docs.py
@@ -917,9 +899,6 @@ current_state:
       - EV-2026-04-26-003
       - EV-2026-04-26-004
       - EV-2026-04-26-005
-      - EV-2026-04-26-006
-      - EV-2026-04-26-007
-      - EV-2026-04-26-008
 
   documentation:
     status: observed
@@ -936,4 +915,3 @@ current_state:
       - WORKLOG.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
-      - prompts/OPERATING_LOOP_START_PROMPT.md

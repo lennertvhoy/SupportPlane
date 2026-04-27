@@ -20,6 +20,10 @@ interface TicketingAdapter {
 }
 ```
 
+## ConnectorInstallation
+
+BL-020 adds persistent `ConnectorInstallation` records with tenant-scoped storage, safety flags, and validation state. See `docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md` for details.
+
 ## Integration Order
 
 1. Mock connector for deterministic tests and demos.
@@ -36,3 +40,5 @@ interface TicketingAdapter {
 - All external reads and writes emit audit events.
 - Writebacks require explicit user action or policy-approved automation.
 - External system outages must degrade the AI Context Quality display rather than silently hiding missing context.
+- Connector installation safety flags are visible in the UI and evidence bundle.
+- Secret redaction applies to all connector config and safety flag fields before API responses and evidence export.

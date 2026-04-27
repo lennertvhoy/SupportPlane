@@ -459,6 +459,102 @@ describe('Zammad connector endpoints', () => {
   });
 });
 
+describe('Customer and connector installation endpoints (BL-020)', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('GET /customers requires tenant identity', async () => {
+    const res = await supertest(server)
+      .get('/customers')
+      .expect(400);
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('GET /customers returns empty list for in-memory test store', async () => {
+    const res = await supertest(server)
+      .get('/customers')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .expect(200);
+    assert.ok(Array.isArray(res.body.customers));
+    assert.strictEqual(res.body.customers.length, 0);
+  });
+
+  it('GET /customers/:id returns 404 for unknown customer', async () => {
+    await supertest(server)
+      .get('/customers/unknown-id')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .expect(404);
+  });
+
+  it('GET /connector-installations requires tenant identity', async () => {
+    const res = await supertest(server)
+      .get('/connector-installations')
+      .expect(400);
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('GET /connector-installations returns empty list for in-memory test store', async () => {
+    const res = await supertest(server)
+      .get('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .expect(200);
+    assert.ok(Array.isArray(res.body.installations));
+    assert.strictEqual(res.body.installations.length, 0);
+  });
+
+  it('GET /connector-installations/:id returns 404 for unknown installation', async () => {
+    await supertest(server)
+      .get('/connector-installations/unknown-id')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .expect(404);
+  });
+
+  it('customer endpoints enforce tenant isolation', async () => {
+    await supertest(server)
+      .get('/customers')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .expect(200);
+  });
+
+  it('connector installation endpoints enforce tenant isolation', async () => {
+    await supertest(server)
+      .get('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .expect(200);
+  });
+
+  it('no secrets exposed in connector installation responses', async () => {
+    const res = await supertest(server)
+      .get('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'operator')
+      .expect(200);
+    const bodyStr = JSON.stringify(res.body);
+    assert.ok(!bodyStr.includes('apiToken'), 'apiToken must not be exposed');
+    assert.ok(!bodyStr.includes('secret'), 'secret must not be exposed');
+    assert.ok(!bodyStr.includes('token='), 'token must not be exposed');
+  });
+});
+
 describe('Evidence bundle endpoints', () => {
   let app: INestApplication;
   let server: ReturnType<INestApplication['getHttpServer']>;
