@@ -1,7 +1,7 @@
 # Call Console
 
 **Product:** SupportPlane  
-**Scope:** BL-043 Call Console UI, extended by BL-044 Telephony Bridge boundary and BL-046 Operator Companion  
+**Scope:** BL-043 Call Console UI, extended by BL-044 Telephony Bridge boundary, BL-046 Operator Companion, and BL-047/048/049 Screen Context Hardening Wave  
 **Last updated:** 2026-04-27
 
 ## Purpose
@@ -69,7 +69,12 @@ The `on_hold` to `answered` transition is displayed in the timeline as
 | `/telephony/test` | POST | Run deterministic mock bridge test |
 | `/telephony/webhooks/fake-provider` | POST | Accept fake provider event and map to CallEvent |
 | `/telephony/calls/:id/control` | POST | Apply mock telephony control intent to local state |
-| `/support-sessions/:id/screen-observations/mock` | POST | Capture mock screen observation |
+| `/support-sessions/:id/screen-observations/mock` | POST | Capture legacy mock screen observation |
+| `/support-sessions/:id/screen-observations/active-window/mock` | POST | Capture deterministic active-window metadata |
+| `/support-sessions/:id/screen-observations/manual-screenshot` | POST | Attach manual screenshot metadata |
+| `/support-sessions/:id/screen-observations/structured-upload` | POST | Upload structured observation |
+| `/support-sessions/:id/screen-observations/sharing-state` | GET | Read current sharing state |
+| `/support-sessions/:id/screen-observations/sharing-state` | POST | Transition sharing state |
 | `/support-sessions/:id/screen-observations` | GET | List observations for a session |
 | `/support-sessions/:id/screen-observations/:observationId/review` | POST | Approve or discard an observation |
 | `/support-sessions/:id/screen-observations/:observationId/context-packet` | POST | Create AI context packet from approved observation |
@@ -98,6 +103,13 @@ The Call Console and underlying call flow use these audit events:
 - `telephony_call_control_failed`
 - `greeting_suggestion_generated`
 - `screen_observation_captured`
+- `screen_observation_sharing_started`
+- `screen_observation_sharing_paused`
+- `screen_observation_sharing_stopped`
+- `active_window_metadata_captured`
+- `manual_screenshot_metadata_attached`
+- `structured_screen_observation_uploaded`
+- `screen_observation_redaction_applied`
 - `screen_observation_reviewed`
 - `screen_observation_discarded`
 - `screen_observation_context_packet_created`
@@ -126,14 +138,20 @@ local mock state only".
 ## Operator Companion panel
 
 BL-046 adds an **Operator Companion** panel to the Call Console when a call is
-linked to a support session. It shows:
+linked to a support session. BL-047/048/049 harden it with explicit sharing state,
+new capture types, and enhanced redaction. It shows:
 
 - mock screen observation safety disclaimers
-- capture form with `kind`, `appLabel`, `windowLabel`, `urlLabel`, and note placeholder
+- **visible sharing indicator** badge (`Sharing: inactive/active/paused`)
+- **Start/Pause/Resume/Stop** sharing controls
+- **Active Window Metadata** capture form (`appLabel`, `windowLabel`, `urlLabel`, note)
+- **Manual Screenshot Metadata** capture form (file name, app, window, note; retention=`disabled`)
+- **Structured Upload** capture form (any `kind`, note)
+- **Legacy Mock Observation** capture form (original `kind`, `appLabel`, `windowLabel`, `urlLabel`, note)
 - captured observation list with status badges (`review_required`, `approved`, `discarded`)
 - **Approve** and **Discard** review buttons
 - **Create context packet** button for approved observations
-- honest mock labels: "Mock screen observation", "No real screen capture", "No raw pixels", "No clipboard access", "No OCR"
+- honest mock labels: "Mock screen observation", "No real screen capture", "No raw pixels", "No clipboard access", "No OCR", "Raw image retention disabled", "Pattern/placeholder redaction only"
 
 Required honest labels are preserved. See `docs/OPERATOR_COMPANION.md` for the
 full feature documentation, API details, and future safe desktop/browser companion
@@ -180,6 +198,10 @@ The BL-044 telephony adapter boundary browser proof is in:
 The BL-046 Operator Companion canonical browser proof is in:
 
 `output/playwright/session-046-operator-companion-closure-canonical/`
+
+The BL-047/048/049 Screen Context Hardening Wave canonical browser proof is in:
+
+`output/playwright/session-047-049-screen-context-hardening/`
 
 ## Known limitations
 

@@ -9,6 +9,15 @@ import type {
   ScreenObservation as ScreenObservationShape,
 } from '@supportplane/contracts';
 
+export interface SharingStateShape {
+  tenantId: string;
+  sessionId: string;
+  state: 'inactive' | 'active' | 'paused';
+  mockDevOnly: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export class InMemoryStore {
   private sessions = new Map<string, SupportSessionShape>();
   private ticketReferences = new Map<string, TicketReferenceShape[]>();
@@ -18,6 +27,7 @@ export class InMemoryStore {
   private callEvents = new Map<string, CallEventShape>();
   private callRecordings = new Map<string, CallRecordingShape>();
   private screenObservations = new Map<string, ScreenObservationShape>();
+  private sharingStates = new Map<string, SharingStateShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -142,5 +152,13 @@ export class InMemoryStore {
     return Array.from(this.screenObservations.values())
       .filter((o) => o.tenantId === tenantId && o.callEventId === callEventId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  getSharingState(tenantId: string, sessionId: string): SharingStateShape | undefined {
+    return this.sharingStates.get(`${tenantId}:${sessionId}`);
+  }
+
+  saveSharingState(state: SharingStateShape): void {
+    this.sharingStates.set(`${state.tenantId}:${state.sessionId}`, state);
   }
 }

@@ -25,8 +25,9 @@ export function AiContextPanel({
   const ticketPackets = packets.filter((p) => p.provenance === 'ticket');
   const customerPackets = packets.filter((p) => p.provenance === 'customer');
   const manualPackets = packets.filter((p) => p.provenance === 'manual');
+  const screenObservationPackets = packets.filter((p) => p.provenance === 'screen_observation');
   const otherPackets = packets.filter(
-    (p) => !['ticket', 'customer', 'manual'].includes(p.provenance)
+    (p) => !['ticket', 'customer', 'manual', 'screen_observation'].includes(p.provenance)
   );
 
   const hasTicketContext = ticketPackets.length > 0;
@@ -125,6 +126,7 @@ export function AiContextPanel({
               <PacketGroup title="Ticket" packets={ticketPackets} />
               <PacketGroup title="Customer" packets={customerPackets} />
               <PacketGroup title="Manual" packets={manualPackets} />
+              <PacketGroup title="Screen Observation" packets={screenObservationPackets} />
               <PacketGroup title="Other" packets={otherPackets} />
             </div>
           )}
@@ -163,13 +165,19 @@ function PacketGroup({
               </div>
               <PacketState packet={p} />
             </div>
+            {p.provenance === 'screen_observation' && (
+              <ScreenObservationPacketDetails packet={p} />
+            )}
             <div className="mt-1 text-xs text-cockpit-400">
-              {Object.entries(p.payload).slice(0, 3).map(([k, v]) => (
+              {Object.entries(p.payload)
+                .filter(([k]) => !['mockDevOnly', 'source', 'observationId', 'redactedSummary', 'rawInputPlaceholder', 'redactionStatus', 'rawImageRetention', 'safetyFlags'].includes(k))
+                .slice(0, 3)
+                .map(([k, v]) => (
                 <div key={k} className="truncate">
                   {k}: {String(v)}
                 </div>
               ))}
-              {Object.keys(p.payload).length > 3 && (
+              {Object.keys(p.payload).filter(([k]) => !['mockDevOnly', 'source', 'observationId', 'redactedSummary', 'rawInputPlaceholder', 'redactionStatus', 'rawImageRetention', 'safetyFlags'].includes(k)).length > 3 && (
                 <div className="text-cockpit-500">
                   +{Object.keys(p.payload).length - 3} more fields
                 </div>
@@ -191,6 +199,57 @@ function PacketGroup({
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function ScreenObservationPacketDetails({ packet }: { packet: AIContextPacket }) {
+  const payload = packet.payload as Record<string, unknown>;
+  const redactionStatus = payload.redactionStatus as string | undefined;
+  const safetyFlags = payload.safetyFlags as Record<string, boolean> | undefined;
+  const rawImageRetention = payload.rawImageRetention as string | undefined;
+
+  return (
+    <div className="mt-1 space-y-1">
+      <div className="flex flex-wrap gap-1">
+        {!!payload.kind && (
+          <span className="rounded border border-cockpit-700 bg-cockpit-900 px-1.5 py-0.5 text-[10px] text-cockpit-300">
+            kind: {String(payload.kind)}
+          </span>
+        )}
+        {redactionStatus && (
+          <span className={`rounded border px-1.5 py-0.5 text-[10px] ${redactionStatus === 'placeholder_redacted' ? 'border-amber-700/40 bg-amber-900/20 text-amber-300' : 'border-cockpit-700 bg-cockpit-900 text-cockpit-300'}`}>
+            redaction: {redactionStatus}
+          </span>
+        )}
+        {rawImageRetention && (
+          <span className="rounded border border-cockpit-700 bg-cockpit-900 px-1.5 py-0.5 text-[10px] text-cockpit-300">
+            retention: {rawImageRetention}
+          </span>
+        )}
+      </div>
+      {safetyFlags && (
+        <div className="flex flex-wrap gap-1 text-[10px]">
+          {safetyFlags.noRawPixels && (
+            <span className="text-cockpit-500">no raw pixels</span>
+          )}
+          {safetyFlags.noClipboardAccess && (
+            <span className="text-cockpit-500">no clipboard</span>
+          )}
+          {safetyFlags.noOcr && (
+            <span className="text-cockpit-500">no OCR</span>
+          )}
+          {safetyFlags.rawImageStored === false && (
+            <span className="text-cockpit-500">raw image not stored</span>
+          )}
+        </div>
+      )}
+      {redactionStatus === 'placeholder_redacted' && (
+        <div className="flex items-center gap-1 text-[10px] text-amber-400">
+          <AlertTriangle size={10} />
+          Warning: placeholder-only redaction
+        </div>
+      )}
     </div>
   );
 }

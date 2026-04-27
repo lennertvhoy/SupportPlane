@@ -1,7 +1,7 @@
 # Evidence Bundles
 
 **Product:** SupportPlane  
-**Scope:** BL-008 Evidence bundle skeleton and exportable JSON/Markdown MVP, extended through BL-044 telephony bridge evidence  
+**Scope:** BL-008 Evidence bundle skeleton and exportable JSON/Markdown MVP, extended through BL-044 telephony bridge evidence and BL-047/048/049 screen observation hardening  
 **Last updated:** 2026-04-27
 
 ## Purpose
@@ -131,6 +131,9 @@ The bundle builder is structured so that real persistence or object storage can 
     `telephonyBridgeEvents`, `telephony_webhook_received`,
     `telephony_webhook_verified`, `telephony_call_control_requested`, and
     mock/no-real-telephony disclaimers where those events are present
+12. For BL-047/048/049 Screen Context Hardening evidence, verify the bundle includes
+    `screenObservations` with `sharingState`, `rawImageRetention`, `redactionStatus`,
+    `safetyFlags`, and mock screen observation disclaimers
 
 ## API endpoints
 

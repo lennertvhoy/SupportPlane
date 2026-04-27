@@ -16,6 +16,10 @@ import type {
   ScreenObservationCaptureRequest,
   ScreenObservationReviewRequest,
   ScreenObservationContextPacketRequest,
+  ActiveWindowMetadataCaptureRequest,
+  ManualScreenshotMetadataRequest,
+  StructuredScreenObservationUploadRequest,
+  ScreenObservationSharingStateRequest,
 } from '@supportplane/contracts';
 
 @Controller('support-sessions')
@@ -175,6 +179,52 @@ export class SupportSessionsController {
       redactedSummary: observation.redactedSummary ?? '[REDACTED]',
       mockDevOnly: true,
     };
+  }
+
+  @Post(':id/screen-observations/active-window/mock')
+  captureActiveWindowMockMetadata(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: ActiveWindowMetadataCaptureRequest
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.captureActiveWindowMockMetadata(identity, id, body);
+  }
+
+  @Post(':id/screen-observations/manual-screenshot')
+  attachManualScreenshotMetadata(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: ManualScreenshotMetadataRequest
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.attachManualScreenshotMetadata(identity, id, body);
+  }
+
+  @Post(':id/screen-observations/structured-upload')
+  uploadStructuredScreenObservation(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: StructuredScreenObservationUploadRequest
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.uploadStructuredScreenObservation(identity, id, body);
+  }
+
+  @Get(':id/screen-observations/sharing-state')
+  getSharingState(@Req() req: Request, @Param('id') id: string) {
+    const identity = getDevIdentity(req);
+    return this.service.getSharingState(identity, id);
+  }
+
+  @Post(':id/screen-observations/sharing-state')
+  updateSharingState(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: ScreenObservationSharingStateRequest
+  ) {
+    const identity = getDevIdentity(req);
+    return this.service.updateSharingState(identity, id, body);
   }
 
   @Get(':id/screen-observations')

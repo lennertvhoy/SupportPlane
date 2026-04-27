@@ -178,7 +178,7 @@ function toScreenObservationSummaries(observations: ScreenObservation[] | undefi
     if (o.appLabel) parts.push(`App: ${o.appLabel}`);
     if (o.windowLabel) parts.push(`Window: ${o.windowLabel}`);
     if (o.urlLabel) parts.push(`URL: ${o.urlLabel}`);
-    if (o.rawInputPlaceholder) parts.push(`Note: ${o.rawInputPlaceholder.substring(0, 200)}`);
+    if (o.rawInputPlaceholder) parts.push(`Note: ${redactString(o.rawInputPlaceholder).substring(0, 200)}`);
     const description = parts.join(' | ') || `[${o.kind}]`;
     return {
       observationId: o.id,
@@ -196,6 +196,10 @@ function toScreenObservationSummaries(observations: ScreenObservation[] | undefi
       noRawPixels: o.noRawPixels,
       noClipboardAccess: o.noClipboard,
       complianceDisclaimer: 'Mock screen observation only. No real screen capture, raw pixels, clipboard access, or OCR was performed.',
+      sharingState: o.sharingState,
+      rawImageRetention: o.rawImageRetention,
+      redactionStatus: o.redactionStatus,
+      safetyFlags: o.safetyFlags as Record<string, unknown> | undefined,
     };
   });
 }

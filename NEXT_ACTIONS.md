@@ -1,15 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-27 13:00 CEST
+**Updated At:** 2026-04-27 13:51 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-- [BL-046] Operator companion screen observations during active calls — CLOSED
-  - Closure proof: `output/playwright/session-046-operator-companion-closure-canonical/` (9 canonical screenshots)
-  - Superseded earlier partial screenshot folder
-  - Next: CTO review to choose next backlog slice (BL-047 / BL-048 / BL-049)
+- [BL-047/048/049] Screen Context Hardening Wave — CLOSED
+  - Closure proof: `output/playwright/session-047-049-screen-context-hardening/` (10 canonical screenshots)
+  - Scope: sharing-state lifecycle, active-window metadata, manual screenshot metadata, structured upload, enhanced redaction
+  - Next: CTO review to choose next backlog slice
 
 ## Queue Rules
 

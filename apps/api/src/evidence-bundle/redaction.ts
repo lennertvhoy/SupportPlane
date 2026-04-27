@@ -83,6 +83,17 @@ export function redactSecrets<T extends Record<string, unknown>>(obj: T): T {
 }
 
 /**
+ * Redact a placeholder string and report the redaction status.
+ */
+export function redactPlaceholder(input: string | undefined): { redacted: string; redactionStatus: 'not_needed' | 'placeholder_redacted' | 'pattern_redacted' | 'blocked' } {
+  if (!input) return { redacted: '', redactionStatus: 'not_needed' };
+  const redacted = redactString(input);
+  const hasPatterns = redacted.includes('[REDACTED]');
+  const status: 'not_needed' | 'placeholder_redacted' | 'pattern_redacted' | 'blocked' = hasPatterns ? 'pattern_redacted' : input.length > 0 ? 'placeholder_redacted' : 'not_needed';
+  return { redacted, redactionStatus: status };
+}
+
+/**
  * String-based redaction for Markdown or serialized output.
  */
 export function redactString(input: string): string {
@@ -97,5 +108,8 @@ export function redactString(input: string): string {
   out = out.replace(/([A-Z_]*SECRET[A-Z_]*\s*=\s*).+/g, '$1[REDACTED]');
   out = out.replace(/([A-Z_]*TOKEN[A-Z_]*\s*=\s*).+/g, '$1[REDACTED]');
   out = out.replace(/([A-Z_]*PASSWORD[A-Z_]*\s*=\s*).+/g, '$1[REDACTED]');
+  out = out.replace(/(apiToken\s*=\s*).+/gi, '$1[REDACTED]');
+  out = out.replace(/(password\s*=\s*).+/gi, '$1[REDACTED]');
+  out = out.replace(/(?<![A-Za-z0-9_\-./+=])[A-Za-z0-9_\-./+=]{20,}(?![A-Za-z0-9_\-./+=])/g, '[REDACTED]');
   return out;
 }

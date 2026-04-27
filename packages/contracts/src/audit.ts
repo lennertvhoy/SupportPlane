@@ -63,6 +63,14 @@ export const AuditEventType = z.enum([
   'screen_observation_reviewed',
   'screen_observation_discarded',
   'screen_observation_context_packet_created',
+  // BL-047/048/049 Screen Context Hardening Wave
+  'screen_observation_sharing_started',
+  'screen_observation_sharing_paused',
+  'screen_observation_sharing_stopped',
+  'active_window_metadata_captured',
+  'manual_screenshot_metadata_attached',
+  'structured_screen_observation_uploaded',
+  'screen_observation_redaction_applied',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

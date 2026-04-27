@@ -1963,3 +1963,341 @@ describe('Call recording endpoints', () => {
     assert.ok(!bodyStr.includes('sha256-mock-'), 'checksum hash placeholder should not leak in bundle');
   });
 });
+
+
+describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('POST /support-sessions/:id/screen-observations/active-window/mock captures metadata', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Active window test' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/active-window/mock`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ appLabel: 'VS Code:', windowLabel: 'server.ts', rawInputPlaceholder: 'apiToken=abc123' })
+      .expect(201);
+
+    assert.strictEqual(res.body.observation.kind, 'active_window');
+    assert.strictEqual(res.body.observation.source, 'mock_operator_companion');
+    assert.strictEqual(res.body.observation.sharingState, 'inactive');
+    assert.strictEqual(res.body.observation.rawImageRetention, 'disabled');
+    assert.strictEqual(res.body.observation.redactionStatus, 'pattern_redacted');
+    assert.strictEqual(res.body.mockDevOnly, true);
+    assert.ok(res.body.redactedSummary.includes('[REDACTED]'));
+    assert.strictEqual(res.body.observation.safetyFlags.noRawPixels, true);
+    assert.strictEqual(res.body.observation.safetyFlags.rawImageStored, false);
+  });
+
+  it('POST /support-sessions/:id/screen-observations/manual-screenshot attaches metadata without raw image', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Manual screenshot test' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/manual-screenshot`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ appLabel: 'Chrome', windowLabel: 'Dashboard', rawInputPlaceholder: 'password=hunter2' })
+      .expect(201);
+
+    assert.strictEqual(res.body.observation.kind, 'screenshot_metadata');
+    assert.strictEqual(res.body.observation.source, 'manual_screenshot_metadata');
+    assert.strictEqual(res.body.observation.sharingState, 'active');
+    assert.strictEqual(res.body.observation.rawImageRetention, 'disabled');
+    assert.strictEqual(res.body.observation.redactionStatus, 'pattern_redacted');
+    assert.strictEqual(res.body.mockDevOnly, true);
+    assert.strictEqual(res.body.rawImageRetention, 'disabled');
+    assert.ok(res.body.redactedSummary.includes('[REDACTED]'));
+    assert.strictEqual(res.body.observation.safetyFlags.rawImageStored, false);
+  });
+
+  it('POST /support-sessions/:id/screen-observations/structured-upload accepts any kind', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Structured upload test' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/structured-upload`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ kind: 'url', urlLabel: 'https://example.com', rawInputPlaceholder: 'Authorization: Bearer abc' })
+      .expect(201);
+
+    assert.strictEqual(res.body.observation.kind, 'url');
+    assert.strictEqual(res.body.observation.source, 'structured_upload');
+    assert.strictEqual(res.body.observation.sharingState, 'active');
+    assert.strictEqual(res.body.observation.rawImageRetention, 'disabled');
+    assert.strictEqual(res.body.observation.redactionStatus, 'pattern_redacted');
+    assert.strictEqual(res.body.mockDevOnly, true);
+    assert.ok(res.body.redactedSummary.includes('[REDACTED]'));
+  });
+
+  it('sharing state transitions work and append audit events', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Sharing state test' })
+      .expect(201);
+
+    const getRes = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/screen-observations/sharing-state`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.strictEqual(getRes.body.state, 'inactive');
+    assert.strictEqual(getRes.body.mockDevOnly, true);
+
+    const startRes = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/sharing-state`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ state: 'active' })
+      .expect(201);
+
+    assert.strictEqual(startRes.body.state, 'active');
+    assert.strictEqual(startRes.body.previousState, 'inactive');
+
+    const pauseRes = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/sharing-state`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ state: 'paused' })
+      .expect(201);
+
+    assert.strictEqual(pauseRes.body.state, 'paused');
+    assert.strictEqual(pauseRes.body.previousState, 'active');
+
+    const stopRes = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/sharing-state`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ state: 'inactive' })
+      .expect(201);
+
+    assert.strictEqual(stopRes.body.state, 'inactive');
+    assert.strictEqual(stopRes.body.previousState, 'paused');
+
+    const audit = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/audit-events`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(audit.body.find((e: { eventType: string }) => e.eventType === 'screen_observation_sharing_started'));
+    assert.ok(audit.body.find((e: { eventType: string }) => e.eventType === 'screen_observation_sharing_paused'));
+    assert.ok(audit.body.find((e: { eventType: string }) => e.eventType === 'screen_observation_sharing_stopped'));
+  });
+
+  it('sharing state rejects invalid transitions', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Invalid transition test' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/sharing-state`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ state: 'inactive' })
+      .expect(400);
+
+    assert.ok(res.body.message.includes('Invalid sharing state transition'));
+  });
+
+  it('screen observation endpoints reject missing tenant identity', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Identity rejection test' })
+      .expect(201);
+
+    const activeWindowRes = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/active-window/mock`)
+      .send({})
+      .expect(400);
+    assert.ok(activeWindowRes.body.error.includes('x-tenant-id'));
+
+    const manualRes = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/manual-screenshot`)
+      .send({})
+      .expect(400);
+    assert.ok(manualRes.body.error.includes('x-tenant-id'));
+
+    const structuredRes = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/structured-upload`)
+      .send({ kind: 'url' })
+      .expect(400);
+    assert.ok(structuredRes.body.error.includes('x-tenant-id'));
+
+    const sharingGetRes = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/screen-observations/sharing-state`)
+      .expect(400);
+    assert.ok(sharingGetRes.body.error.includes('x-tenant-id'));
+
+    const sharingPostRes = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/sharing-state`)
+      .send({ state: 'active' })
+      .expect(400);
+    assert.ok(sharingPostRes.body.error.includes('x-tenant-id'));
+  });
+
+  it('screen observation endpoints reject cross-tenant session access', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Cross-tenant test' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/active-window/mock`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .send({})
+      .expect(404);
+
+    await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/manual-screenshot`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .send({})
+      .expect(404);
+
+    await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/structured-upload`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .send({ kind: 'url' })
+      .expect(404);
+
+    await supertest(server)
+      .get(`/support-sessions/${session.body.id}/screen-observations/sharing-state`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .expect(404);
+
+    await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/sharing-state`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .send({ state: 'active' })
+      .expect(404);
+  });
+
+  it('evidence bundle includes new observation summaries with sharing state, redaction status, safety flags', async () => {
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Evidence observation test' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/support-sessions/${session.body.id}/screen-observations/structured-upload`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ kind: 'application', appLabel: 'Terminal', rawInputPlaceholder: 'ZAMMAD_API_TOKEN=secretvalue' })
+      .expect(201);
+
+    const bundle = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(Array.isArray(bundle.body.bundle.screenObservations));
+    assert.strictEqual(bundle.body.bundle.screenObservations.length, 1);
+    const obs = bundle.body.bundle.screenObservations[0];
+    assert.strictEqual(obs.sharingState, 'active');
+    assert.strictEqual(obs.rawImageRetention, 'disabled');
+    assert.strictEqual(obs.redactionStatus, 'pattern_redacted');
+    assert.ok(obs.safetyFlags);
+    assert.strictEqual(obs.safetyFlags.mockDevOnly, true);
+    assert.strictEqual(obs.safetyFlags.rawImageStored, false);
+    assert.ok(!JSON.stringify(bundle.body).includes('secretvalue'));
+  });
+});
+
+describe('Redaction unit tests', () => {
+  it('redactString removes Authorization Bearer tokens', async () => {
+    const { redactString } = await import('../src/evidence-bundle/redaction.js');
+    const input = 'Authorization: Bearer abc123';
+    const result = redactString(input);
+    assert.ok(result.includes('[REDACTED]'));
+    assert.ok(!result.includes('abc123'));
+  });
+
+  it('redactString removes apiToken values', async () => {
+    const { redactString } = await import('../src/evidence-bundle/redaction.js');
+    const input = 'apiToken=abc123';
+    const result = redactString(input);
+    assert.strictEqual(result, 'apiToken=[REDACTED]');
+  });
+
+  it('redactString removes password values', async () => {
+    const { redactString } = await import('../src/evidence-bundle/redaction.js');
+    const input = 'password=hunter2';
+    const result = redactString(input);
+    assert.strictEqual(result, 'password=[REDACTED]');
+  });
+
+  it('redactString removes ZAMMAD_API_TOKEN values', async () => {
+    const { redactString } = await import('../src/evidence-bundle/redaction.js');
+    const input = 'ZAMMAD_API_TOKEN=secretvalue';
+    const result = redactString(input);
+    assert.strictEqual(result, 'ZAMMAD_API_TOKEN=[REDACTED]');
+  });
+
+  it('redactString removes long secret-looking strings', async () => {
+    const { redactString } = await import('../src/evidence-bundle/redaction.js');
+    const input = 'token=abcdefghijklmnopqrstuvwxyz123456';
+    const result = redactString(input);
+    assert.ok(result.includes('[REDACTED]'));
+    assert.ok(!result.includes('abcdefghijklmnopqrstuvwxyz123456'));
+  });
+
+  it('redactPlaceholder returns not_needed for empty input', async () => {
+    const { redactPlaceholder } = await import('../src/evidence-bundle/redaction.js');
+    const result = redactPlaceholder(undefined);
+    assert.strictEqual(result.redacted, '');
+    assert.strictEqual(result.redactionStatus, 'not_needed');
+  });
+
+  it('redactPlaceholder returns pattern_redacted when secrets found', async () => {
+    const { redactPlaceholder } = await import('../src/evidence-bundle/redaction.js');
+    const result = redactPlaceholder('password=secret123');
+    assert.ok(result.redacted.includes('[REDACTED]'));
+    assert.strictEqual(result.redactionStatus, 'pattern_redacted');
+  });
+
+  it('redactPlaceholder returns placeholder_redacted for clean input', async () => {
+    const { redactPlaceholder } = await import('../src/evidence-bundle/redaction.js');
+    const result = redactPlaceholder('hello world');
+    assert.strictEqual(result.redacted, 'hello world');
+    assert.strictEqual(result.redactionStatus, 'placeholder_redacted');
+  });
+});

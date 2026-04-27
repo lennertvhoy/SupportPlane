@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-27T12:28:00+02:00
+  updated_at: 2026-04-27T13:51:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: recorded_in_final_handoff
-    worktree_status: clean_after_final_commit
+    head: bl_047_048_049_screen_context_hardening_complete
+    worktree_status: dirty_pending_final_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -292,6 +292,113 @@ current_state:
           - no real audio generated, captured, or played back
           - canonical closure proof captured in fresh session folder
           - full commit hash recorded in acceptance freeze and worklog
+    bl_047_status:
+      completed: true
+      scope: explicit_sharing_state_storage_and_visible_sharing_indicator
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      docs:
+        - docs/OPERATOR_COMPANION.md
+        - docs/CALL_CONSOLE.md
+      validation: api_tests_web_tests_browser_verified
+      runtime:
+        api_endpoints:
+          - GET /support-sessions/:id/screen-observations/sharing-state
+          - POST /support-sessions/:id/screen-observations/sharing-state
+        sharing_state_transitions:
+          - inactive → active
+          - active → paused
+          - active → inactive (stop)
+          - paused → active (resume)
+          - paused → inactive (stop)
+        audit_events:
+          - screen_observation_sharing_started
+          - screen_observation_sharing_paused
+          - screen_observation_sharing_stopped
+        store_type: in-memory
+        ui_panels:
+          - Call Console Operator Companion sharing indicator badge
+        screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
+        closure_notes:
+          - sharing state is per-session, per-tenant, stored in-memory
+          - invalid transitions rejected with 400 Bad Request
+          - visible indicator badge updates immediately in UI
+    bl_048_status:
+      completed: true
+      scope: deterministic_active_window_metadata_and_manual_screenshot_metadata_capture
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      docs:
+        - docs/OPERATOR_COMPANION.md
+        - docs/CALL_CONSOLE.md
+      validation: api_tests_web_tests_browser_verified
+      runtime:
+        api_endpoints:
+          - POST /support-sessions/:id/screen-observations/active-window/mock
+          - POST /support-sessions/:id/screen-observations/manual-screenshot
+          - POST /support-sessions/:id/screen-observations/structured-upload
+        observation_kinds:
+          - active_window
+          - screenshot_metadata
+        sources:
+          - mock_operator_companion
+          - manual_screenshot_metadata
+          - structured_upload
+        raw_image_retention: disabled
+        audit_events:
+          - active_window_metadata_captured
+          - manual_screenshot_metadata_attached
+          - structured_screen_observation_uploaded
+        store_type: in-memory
+        ui_panels:
+          - Call Console Active Window Metadata form
+          - Call Console Manual Screenshot Metadata form
+          - Call Console Structured Upload form
+        screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
+        closure_notes:
+          - no raw pixels stored; all capture is metadata-only
+          - manual screenshot captures file name hint, app label, window label, note
+          - structured upload accepts any kind with explicit source
+    bl_049_status:
+      completed: true
+      scope: enhanced_redaction_and_structured_observation_fields_in_evidence_bundle
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      docs:
+        - docs/OPERATOR_COMPANION.md
+        - docs/EVIDENCE_BUNDLES.md
+      validation: api_tests_contract_tests_browser_verified
+      runtime:
+        redaction_helpers:
+          - redactPlaceholder
+          - redactString
+        redaction_patterns:
+          - Authorization: Bearer ...
+          - apiToken=...
+          - password=...
+          - ZAMMAD_API_TOKEN=...
+          - long token-like strings (>20 chars)
+        new_contract_fields:
+          - sharingState
+          - rawImageRetention
+          - redactionStatus
+          - safetyFlags
+        evidence_bundle_includes:
+          - screenObservations.sharingState
+          - screenObservations.rawImageRetention
+          - screenObservations.redactionStatus
+          - screenObservations.safetyFlags
+        audit_events:
+          - screen_observation_redaction_applied
+        store_type: in-memory
+        screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
+        closure_notes:
+          - redaction applied before storage; secrets never enter the store
+          - evidence bundle JSON includes all new structured fields
+          - Markdown bundle includes safety flags as readable bullets
     bl_046_status:
       completed: true
       scope: operator_companion_screen_observations_during_active_calls
@@ -337,6 +444,51 @@ current_state:
           - full commit hash recorded in acceptance freeze and worklog
           - closure hygiene pass fixed API controller to return wrapped ScreenObservationCaptureResponse
           - stopped temporary Python HTTP server on port 8765
+    bl_047_048_049_status:
+      completed: true
+      scope: screen_context_hardening_wave_sharing_state_active_window_screenshot_metadata_structured_upload_redaction
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      docs:
+        - docs/OPERATOR_COMPANION.md
+        - docs/CALL_CONSOLE.md
+        - docs/EVIDENCE_BUNDLES.md
+      validation: full_validation_gate_and_browser_boundary_verified
+      runtime:
+        api_endpoints:
+          - GET /support-sessions/:id/screen-observations/sharing-state
+          - POST /support-sessions/:id/screen-observations/sharing-state
+          - POST /support-sessions/:id/screen-observations/active-window/mock
+          - POST /support-sessions/:id/screen-observations/manual-screenshot
+          - POST /support-sessions/:id/screen-observations/structured-upload
+        storage_type: in-memory
+        real_screen_capture: false
+        real_clipboard: false
+        real_ocr: false
+        raw_image_retention: disabled
+        audit_events:
+          - screen_observation_sharing_started
+          - screen_observation_sharing_paused
+          - screen_observation_sharing_stopped
+          - active_window_metadata_captured
+          - manual_screenshot_metadata_attached
+          - structured_screen_observation_uploaded
+          - screen_observation_redaction_applied
+        evidence_bundle_includes:
+          - screenObservations with sharingState, rawImageRetention, redactionStatus, safetyFlags
+          - mock screen observation disclaimers
+        ui_panels:
+          - Call Console Operator Companion panel with sharing indicator
+          - Support Cockpit AI Context Quality panel with redaction status
+        screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
+        screenshot_count: 10
+        closure_notes:
+          - sharing state lifecycle fully verified via browser automation
+          - all 3 capture types (active_window, screenshot_metadata, structured_upload) verified
+          - evidence bundle JSON verified to include new structured fields
+          - redaction patterns expanded for apiToken=, password=, long secret-like strings
+          - no real screen capture, raw pixels, clipboard access, or OCR performed
     bl_044_status:
       completed: true
       scope: telephony_adapter_contract_and_bridge_boundary
@@ -416,7 +568,7 @@ current_state:
     status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: recorded_in_final_handoff
+    head: bl_047_048_049_screen_context_hardening_complete
     process_or_container:
       - node process (NestJS) on port 4110
       - node process (Next.js) on port 3200
@@ -426,9 +578,11 @@ current_state:
     rebuilt_in_current_slice: true
     duplicate_runtimes_checked: true
     notes:
-      - NestJS API is running and verified via integration tests and curl
-      - Next.js web app is running and verified via browser screenshots
-      - BL-043 closure verified in Chromium with 8 screenshots in output/playwright/session-043-call-console-ui-final-closure/
+      - NestJS API is running and verified via integration tests (101/101 pass) and curl
+      - Next.js web app is running and verified via browser screenshots (10 canonical)
+      - BL-043 closure verified in Chromium with 8 screenshots
+      - BL-046 closure verified in Chromium with 9 screenshots
+      - BL-047/048/049 closure verified in Chromium with 10 screenshots
       - baseline health script exists at scripts/health.js and returns scaffold identity
       - runtime identity proof was collected for API endpoints and UI panels
       - BL-006 local topology verification script exists at scripts/check_local_topology.sh

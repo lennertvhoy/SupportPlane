@@ -129,6 +129,10 @@ export const EvidenceBundleScreenObservationSummary = z.object({
   noRawPixels: z.boolean(),
   noClipboardAccess: z.boolean(),
   complianceDisclaimer: z.string().optional(),
+  sharingState: z.string().optional(),
+  rawImageRetention: z.string().optional(),
+  redactionStatus: z.string().optional(),
+  safetyFlags: z.record(z.unknown()).optional(),
 });
 export type EvidenceBundleScreenObservationSummary = z.infer<typeof EvidenceBundleScreenObservationSummary>;
 

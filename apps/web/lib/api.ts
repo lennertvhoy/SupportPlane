@@ -390,6 +390,18 @@ export interface ScreenObservation {
   appLabel?: string;
   windowLabel?: string;
   urlLabel?: string;
+  sharingState?: string;
+  rawImageRetention?: string;
+  redactionStatus?: string;
+  safetyFlags?: {
+    mockDevOnly: boolean;
+    noRealScreenCapture: boolean;
+    noRawPixels: boolean;
+    noClipboardAccess: boolean;
+    noOcr: boolean;
+    noCredentialCapture: boolean;
+    rawImageStored: boolean;
+  };
   noRawPixels: boolean;
   noClipboard: boolean;
   noOcr: boolean;
@@ -924,6 +936,73 @@ export const api = {
   ) =>
     apiFetch<ScreenObservationCaptureResponse>(
       `/support-sessions/${sessionId}/screen-observations/mock`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  captureActiveWindowMockMetadata: (
+    sessionId: string,
+    body: {
+      callEventId?: string;
+      appLabel?: string;
+      windowLabel?: string;
+      urlLabel?: string;
+      rawInputPlaceholder?: string;
+    },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<ScreenObservationCaptureResponse>(
+      `/support-sessions/${sessionId}/screen-observations/active-window/mock`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  attachManualScreenshotMetadata: (
+    sessionId: string,
+    body: {
+      callEventId?: string;
+      appLabel?: string;
+      windowLabel?: string;
+      urlLabel?: string;
+      rawInputPlaceholder?: string;
+      fileNameHint?: string;
+    },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<ScreenObservationCaptureResponse & { rawImageRetention: 'disabled' }>(
+      `/support-sessions/${sessionId}/screen-observations/manual-screenshot`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  uploadStructuredScreenObservation: (
+    sessionId: string,
+    body: {
+      callEventId?: string;
+      kind: string;
+      appLabel?: string;
+      windowLabel?: string;
+      urlLabel?: string;
+      rawInputPlaceholder?: string;
+    },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<ScreenObservationCaptureResponse & { redactionStatus: string }>(
+      `/support-sessions/${sessionId}/screen-observations/structured-upload`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity
+    ),
+
+  getSharingState: (sessionId: string, identity?: DevIdentity) =>
+    apiFetch<{ sessionId: string; state: string; mockDevOnly: boolean }>(
+      `/support-sessions/${sessionId}/screen-observations/sharing-state`,
+      { method: 'GET' },
+      identity
+    ),
+
+  updateSharingState: (sessionId: string, body: { state: string }, identity?: DevIdentity) =>
+    apiFetch<{ sessionId: string; state: string; previousState?: string; mockDevOnly: boolean }>(
+      `/support-sessions/${sessionId}/screen-observations/sharing-state`,
       { method: 'POST', body: JSON.stringify(body) },
       identity
     ),

@@ -28,6 +28,11 @@ import {
   ThumbsUp,
   Trash2,
   Send,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  Upload,
+  Camera,
 } from 'lucide-react';
 import { Panel } from '@/components/Panel';
 import { Badge } from '@/components/Badge';
@@ -71,6 +76,29 @@ export default function CallConsolePage() {
   const [observationApp, setObservationApp] = useState('');
   const [observationWindow, setObservationWindow] = useState('');
   const [observationUrl, setObservationUrl] = useState('');
+
+  // Sharing state
+  const [sharingState, setSharingState] = useState<'inactive' | 'active' | 'paused'>('inactive');
+  const [sharingLoading, setSharingLoading] = useState(false);
+
+  // Active window metadata form
+  const [activeWindowApp, setActiveWindowApp] = useState('');
+  const [activeWindowLabel, setActiveWindowLabel] = useState('');
+  const [activeWindowUrl, setActiveWindowUrl] = useState('');
+  const [activeWindowNote, setActiveWindowNote] = useState('');
+
+  // Manual screenshot metadata form
+  const [screenshotFileName, setScreenshotFileName] = useState('');
+  const [screenshotApp, setScreenshotApp] = useState('');
+  const [screenshotWindow, setScreenshotWindow] = useState('');
+  const [screenshotNote, setScreenshotNote] = useState('');
+
+  // Structured upload form
+  const [structuredKind, setStructuredKind] = useState<string>('manual_note');
+  const [structuredApp, setStructuredApp] = useState('');
+  const [structuredWindow, setStructuredWindow] = useState('');
+  const [structuredUrl, setStructuredUrl] = useState('');
+  const [structuredNote, setStructuredNote] = useState('');
 
   const fetchCalls = useCallback(async () => {
     setCallsLoading(true);
@@ -131,6 +159,17 @@ export default function CallConsolePage() {
       setObservations([]);
     } finally {
       setObservationsLoading(false);
+    }
+
+    // Load sharing state for linked session
+    setSharingState('inactive');
+    try {
+      if (call.sessionId) {
+        const ss = await api.getSharingState(call.sessionId);
+        setSharingState(ss.state as 'inactive' | 'active' | 'paused');
+      }
+    } catch {
+      setSharingState('inactive');
     }
   }, []);
 
@@ -353,6 +392,86 @@ export default function CallConsolePage() {
       setObservationsLoading(false);
     }
   }, [linkedSession]);
+
+  const handleUpdateSharingState = useCallback(async (newState: 'inactive' | 'active' | 'paused') => {
+    if (!linkedSession) return;
+    setSharingLoading(true);
+    try {
+      const response = await api.updateSharingState(linkedSession.id, { state: newState });
+      setSharingState(response.state as 'inactive' | 'active' | 'paused');
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to update sharing state');
+    } finally {
+      setSharingLoading(false);
+    }
+  }, [linkedSession]);
+
+  const handleCaptureActiveWindow = useCallback(async () => {
+    if (!linkedSession) return;
+    setObservationsLoading(true);
+    try {
+      const response = await api.captureActiveWindowMockMetadata(linkedSession.id, {
+        callEventId: selectedCall?.id,
+        appLabel: activeWindowApp || undefined,
+        windowLabel: activeWindowLabel || undefined,
+        urlLabel: activeWindowUrl || undefined,
+        rawInputPlaceholder: activeWindowNote || undefined,
+      });
+      setObservations((prev) => [response.observation, ...prev]);
+      setActiveWindowApp('');
+      setActiveWindowLabel('');
+      setActiveWindowUrl('');
+      setActiveWindowNote('');
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to capture active window metadata');
+    } finally {
+      setObservationsLoading(false);
+    }
+  }, [linkedSession, selectedCall, activeWindowApp, activeWindowLabel, activeWindowUrl, activeWindowNote]);
+
+  const handleAttachScreenshotMetadata = useCallback(async () => {
+    if (!linkedSession) return;
+    setObservationsLoading(true);
+    try {
+      const response = await api.attachManualScreenshotMetadata(linkedSession.id, {
+        callEventId: selectedCall?.id,
+        appLabel: screenshotApp || undefined,
+        windowLabel: screenshotWindow || undefined,
+        rawInputPlaceholder: screenshotNote || undefined,
+        fileNameHint: screenshotFileName || undefined,
+      });
+      setObservations((prev) => [response.observation, ...prev]);
+      setScreenshotFileName('');
+      setScreenshotApp('');
+      setScreenshotWindow('');
+      setScreenshotNote('');
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to attach screenshot metadata');
+    } finally {
+      setObservationsLoading(false);
+    }
+  }, [linkedSession, selectedCall, screenshotFileName, screenshotApp, screenshotWindow, screenshotNote]);
+
+  const handleStructuredUpload = useCallback(async () => {
+    if (!linkedSession) return;
+    setObservationsLoading(true);
+    try {
+      const response = await api.uploadStructuredScreenObservation(linkedSession.id, {
+        callEventId: selectedCall?.id,
+        kind: structuredKind,
+        appLabel: structuredApp || undefined,
+        windowLabel: structuredWindow || undefined,
+        urlLabel: structuredUrl || undefined,
+        rawInputPlaceholder: structuredNote || undefined,
+      });
+      setObservations((prev) => [response.observation, ...prev]);
+      setStructuredNote('');
+    } catch (err) {
+      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to upload structured observation');
+    } finally {
+      setObservationsLoading(false);
+    }
+  }, [linkedSession, selectedCall, structuredKind, structuredApp, structuredWindow, structuredUrl, structuredNote]);
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -902,73 +1021,358 @@ export default function CallConsolePage() {
                       </div>
                     ) : (
                       <>
-                        <div className="grid gap-2 sm:grid-cols-2">
-                          <div className="space-y-1">
-                            <label className="block text-[10px] font-medium text-cockpit-400">Kind</label>
-                            <select
-                              value={observationKind}
-                              onChange={(e) => setObservationKind(e.target.value)}
-                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 focus:border-accent focus:outline-none"
-                            >
-                              <option value="active_window">Active window</option>
-                              <option value="application">Application</option>
-                              <option value="url">URL</option>
-                              <option value="manual_note">Manual note</option>
-                              <option value="redacted_context">Redacted context</option>
-                            </select>
+                        {/* Sharing indicator */}
+                        <div className="flex items-center justify-between rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
+                          <div className="flex items-center gap-2">
+                            {sharingState === 'active' ? (
+                              <>
+                                <ShieldCheck size={14} className="text-emerald-400" />
+                                <span className="text-xs font-medium text-emerald-300">Sharing: active — Visible sharing indicator</span>
+                              </>
+                            ) : sharingState === 'paused' ? (
+                              <>
+                                <ShieldAlert size={14} className="text-amber-400" />
+                                <span className="text-xs font-medium text-amber-300">Sharing: paused</span>
+                              </>
+                            ) : (
+                              <>
+                                <Shield size={14} className="text-cockpit-500" />
+                                <span className="text-xs font-medium text-cockpit-400">Sharing: inactive</span>
+                              </>
+                            )}
                           </div>
-                          <div className="space-y-1">
-                            <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
-                            <input
-                              type="text"
-                              value={observationApp}
-                              onChange={(e) => setObservationApp(e.target.value)}
-                              placeholder="e.g. Zammad"
-                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
-                            <input
-                              type="text"
-                              value={observationWindow}
-                              onChange={(e) => setObservationWindow(e.target.value)}
-                              placeholder="e.g. Ticket #12345"
-                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="block text-[10px] font-medium text-cockpit-400">URL label</label>
-                            <input
-                              type="text"
-                              value={observationUrl}
-                              onChange={(e) => setObservationUrl(e.target.value)}
-                              placeholder="e.g. https://help.example.com/ticket/123"
-                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
-                            />
-                          </div>
-                          <div className="space-y-1 sm:col-span-2">
-                            <label className="block text-[10px] font-medium text-cockpit-400">Note / placeholder</label>
-                            <textarea
-                              value={observationNote}
-                              onChange={(e) => setObservationNote(e.target.value)}
-                              placeholder="Enter mock observation text..."
-                              rows={2}
-                              className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
-                            />
+                          <div className="flex flex-wrap gap-1">
+                            {sharingState === 'inactive' && (
+                              <button
+                                onClick={() => handleUpdateSharingState('active')}
+                                disabled={sharingLoading}
+                                className="inline-flex items-center gap-1 rounded border border-emerald-600 bg-emerald-900/30 px-2 py-0.5 text-[10px] text-emerald-200 hover:bg-emerald-900/50 disabled:opacity-50"
+                              >
+                                {sharingLoading && <Loader2 size={10} className="animate-spin" />}
+                                Start mock sharing
+                              </button>
+                            )}
+                            {sharingState === 'active' && (
+                              <>
+                                <button
+                                  onClick={() => handleUpdateSharingState('paused')}
+                                  disabled={sharingLoading}
+                                  className="inline-flex items-center gap-1 rounded border border-amber-600 bg-amber-900/30 px-2 py-0.5 text-[10px] text-amber-200 hover:bg-amber-900/50 disabled:opacity-50"
+                                >
+                                  Pause
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateSharingState('inactive')}
+                                  disabled={sharingLoading}
+                                  className="inline-flex items-center gap-1 rounded border border-red-600 bg-red-900/30 px-2 py-0.5 text-[10px] text-red-200 hover:bg-red-900/50 disabled:opacity-50"
+                                >
+                                  Stop
+                                </button>
+                              </>
+                            )}
+                            {sharingState === 'paused' && (
+                              <>
+                                <button
+                                  onClick={() => handleUpdateSharingState('active')}
+                                  disabled={sharingLoading}
+                                  className="inline-flex items-center gap-1 rounded border border-emerald-600 bg-emerald-900/30 px-2 py-0.5 text-[10px] text-emerald-200 hover:bg-emerald-900/50 disabled:opacity-50"
+                                >
+                                  Resume
+                                </button>
+                                <button
+                                  onClick={() => handleUpdateSharingState('inactive')}
+                                  disabled={sharingLoading}
+                                  className="inline-flex items-center gap-1 rounded border border-red-600 bg-red-900/30 px-2 py-0.5 text-[10px] text-red-200 hover:bg-red-900/50 disabled:opacity-50"
+                                >
+                                  Stop
+                                </button>
+                              </>
+                            )}
                           </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2">
-                          <button
-                            onClick={handleCaptureObservation}
-                            disabled={observationsLoading}
-                            className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
-                          >
-                            {observationsLoading && <Loader2 size={10} className="animate-spin" />}
-                            <Monitor size={10} />
-                            Capture mock observation
-                          </button>
+                        {/* Safety labels */}
+                        <div className="flex flex-wrap gap-1">
+                          {[
+                            'Visible sharing indicator',
+                            'Mock observation only',
+                            'No real screen capture',
+                            'No raw pixels stored',
+                            'No clipboard access',
+                            'No OCR',
+                            'Raw image retention disabled',
+                            'Pattern/placeholder redaction only',
+                            'Review before AI context',
+                          ].map((label) => (
+                            <span key={label} className="inline-flex items-center gap-1 rounded border border-cockpit-700 bg-cockpit-900/40 px-2 py-0.5 text-[10px] text-cockpit-400">
+                              <Shield size={8} />
+                              {label}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Active Window Metadata */}
+                        <div className="rounded border border-cockpit-700 bg-cockpit-900/20 p-2">
+                          <div className="mb-2 text-xs font-semibold text-cockpit-200">Active Window Metadata</div>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
+                              <input
+                                type="text"
+                                value={activeWindowApp}
+                                onChange={(e) => setActiveWindowApp(e.target.value)}
+                                placeholder="e.g. Zammad"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
+                              <input
+                                type="text"
+                                value={activeWindowLabel}
+                                onChange={(e) => setActiveWindowLabel(e.target.value)}
+                                placeholder="e.g. Ticket #101"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">URL label</label>
+                              <input
+                                type="text"
+                                value={activeWindowUrl}
+                                onChange={(e) => setActiveWindowUrl(e.target.value)}
+                                placeholder="e.g. https://help.example.com"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1 sm:col-span-2">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Note</label>
+                              <textarea
+                                value={activeWindowNote}
+                                onChange={(e) => setActiveWindowNote(e.target.value)}
+                                placeholder="Enter active window note..."
+                                rows={2}
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                          <div className="mt-2">
+                            <button
+                              onClick={handleCaptureActiveWindow}
+                              disabled={observationsLoading}
+                              className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+                            >
+                              {observationsLoading && <Loader2 size={10} className="animate-spin" />}
+                              <Monitor size={10} />
+                              Capture active window metadata
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Manual Screenshot Metadata */}
+                        <div className="rounded border border-cockpit-700 bg-cockpit-900/20 p-2">
+                          <div className="mb-2 flex items-center justify-between">
+                            <span className="text-xs font-semibold text-cockpit-200">Manual Screenshot Metadata</span>
+                            <Badge variant="danger" className="text-[10px]">Raw image retention disabled</Badge>
+                          </div>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">File name hint</label>
+                              <input
+                                type="text"
+                                value={screenshotFileName}
+                                onChange={(e) => setScreenshotFileName(e.target.value)}
+                                placeholder="e.g. screenshot-001.png"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
+                              <input
+                                type="text"
+                                value={screenshotApp}
+                                onChange={(e) => setScreenshotApp(e.target.value)}
+                                placeholder="e.g. Zammad"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
+                              <input
+                                type="text"
+                                value={screenshotWindow}
+                                onChange={(e) => setScreenshotWindow(e.target.value)}
+                                placeholder="e.g. Ticket #101"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1 sm:col-span-2">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Note</label>
+                              <textarea
+                                value={screenshotNote}
+                                onChange={(e) => setScreenshotNote(e.target.value)}
+                                placeholder="Enter screenshot metadata note..."
+                                rows={2}
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                          <div className="mt-2">
+                            <button
+                              onClick={handleAttachScreenshotMetadata}
+                              disabled={observationsLoading}
+                              className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+                            >
+                              {observationsLoading && <Loader2 size={10} className="animate-spin" />}
+                              <Camera size={10} />
+                              Attach screenshot metadata
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Structured Upload */}
+                        <div className="rounded border border-cockpit-700 bg-cockpit-900/20 p-2">
+                          <div className="mb-2 text-xs font-semibold text-cockpit-200">Structured Upload</div>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Kind</label>
+                              <select
+                                value={structuredKind}
+                                onChange={(e) => setStructuredKind(e.target.value)}
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 focus:border-accent focus:outline-none"
+                              >
+                                <option value="active_window">Active window</option>
+                                <option value="application">Application</option>
+                                <option value="url">URL</option>
+                                <option value="manual_note">Manual note</option>
+                                <option value="screenshot_metadata">Screenshot metadata</option>
+                                <option value="redacted_context">Redacted context</option>
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
+                              <input
+                                type="text"
+                                value={structuredApp}
+                                onChange={(e) => setStructuredApp(e.target.value)}
+                                placeholder="e.g. Zammad"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
+                              <input
+                                type="text"
+                                value={structuredWindow}
+                                onChange={(e) => setStructuredWindow(e.target.value)}
+                                placeholder="e.g. Ticket #101"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">URL label</label>
+                              <input
+                                type="text"
+                                value={structuredUrl}
+                                onChange={(e) => setStructuredUrl(e.target.value)}
+                                placeholder="e.g. https://help.example.com"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1 sm:col-span-2">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Note</label>
+                              <textarea
+                                value={structuredNote}
+                                onChange={(e) => setStructuredNote(e.target.value)}
+                                placeholder="Enter structured observation text..."
+                                rows={2}
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                          <div className="mt-2">
+                            <button
+                              onClick={handleStructuredUpload}
+                              disabled={observationsLoading}
+                              className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+                            >
+                              {observationsLoading && <Loader2 size={10} className="animate-spin" />}
+                              <Upload size={10} />
+                              Upload structured observation
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Legacy mock observation capture */}
+                        <div className="rounded border border-cockpit-700 bg-cockpit-900/20 p-2">
+                          <div className="mb-2 text-xs font-semibold text-cockpit-200">Legacy Mock Observation</div>
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Kind</label>
+                              <select
+                                value={observationKind}
+                                onChange={(e) => setObservationKind(e.target.value)}
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 focus:border-accent focus:outline-none"
+                              >
+                                <option value="active_window">Active window</option>
+                                <option value="application">Application</option>
+                                <option value="url">URL</option>
+                                <option value="manual_note">Manual note</option>
+                                <option value="redacted_context">Redacted context</option>
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
+                              <input
+                                type="text"
+                                value={observationApp}
+                                onChange={(e) => setObservationApp(e.target.value)}
+                                placeholder="e.g. Zammad"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
+                              <input
+                                type="text"
+                                value={observationWindow}
+                                onChange={(e) => setObservationWindow(e.target.value)}
+                                placeholder="e.g. Ticket #12345"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <label className="block text-[10px] font-medium text-cockpit-400">URL label</label>
+                              <input
+                                type="text"
+                                value={observationUrl}
+                                onChange={(e) => setObservationUrl(e.target.value)}
+                                placeholder="e.g. https://help.example.com/ticket/123"
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                            <div className="space-y-1 sm:col-span-2">
+                              <label className="block text-[10px] font-medium text-cockpit-400">Note / placeholder</label>
+                              <textarea
+                                value={observationNote}
+                                onChange={(e) => setObservationNote(e.target.value)}
+                                placeholder="Enter mock observation text..."
+                                rows={2}
+                                className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:border-accent focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                          <div className="mt-2">
+                            <button
+                              onClick={handleCaptureObservation}
+                              disabled={observationsLoading}
+                              className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
+                            >
+                              {observationsLoading && <Loader2 size={10} className="animate-spin" />}
+                              <Monitor size={10} />
+                              Capture mock observation
+                            </button>
+                          </div>
                         </div>
 
                         {observationsLoading && observations.length === 0 && (
@@ -988,11 +1392,14 @@ export default function CallConsolePage() {
                           {observations.map((obs) => (
                             <div key={obs.id} className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                               <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5">
+                                <div className="flex flex-wrap items-center gap-1.5">
                                   <Monitor size={12} className="text-cockpit-400" />
                                   <span className="text-xs font-medium text-cockpit-200">
                                     {obs.kind}
                                   </span>
+                                  <Badge variant="muted" className="text-[10px]">
+                                    {obs.source}
+                                  </Badge>
                                   <Badge
                                     variant={
                                       obs.status === 'approved'
@@ -1007,6 +1414,11 @@ export default function CallConsolePage() {
                                   >
                                     {obs.status}
                                   </Badge>
+                                  {obs.redactionStatus && (
+                                    <Badge variant="info" className="text-[10px]">
+                                      {obs.redactionStatus}
+                                    </Badge>
+                                  )}
                                   {obs.contextPacketId && (
                                     <Badge variant="info" className="text-[10px]">
                                       <FileText size={8} className="mr-0.5" />
@@ -1042,6 +1454,18 @@ export default function CallConsolePage() {
                                   <>
                                     <span>Note</span>
                                     <span className="text-cockpit-200">{obs.rawInputPlaceholder.substring(0, 120)}{obs.rawInputPlaceholder.length > 120 ? '...' : ''}</span>
+                                  </>
+                                )}
+                                {obs.sharingState && (
+                                  <>
+                                    <span>Sharing</span>
+                                    <span className="text-cockpit-200">{obs.sharingState}</span>
+                                  </>
+                                )}
+                                {obs.rawImageRetention && (
+                                  <>
+                                    <span>Retention</span>
+                                    <span className="text-cockpit-200">{obs.rawImageRetention}</span>
                                   </>
                                 )}
                               </div>
@@ -1085,8 +1509,20 @@ export default function CallConsolePage() {
                                 </div>
                               )}
 
-                              <div className="mt-1 text-[10px] text-cockpit-500">
-                                Mock/dev-only • No real screen capture • No raw pixels • No clipboard access
+                              <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-cockpit-500">
+                                <span>Mock/dev-only</span>
+                                <span>•</span>
+                                <span>No real screen capture</span>
+                                <span>•</span>
+                                <span>No raw pixels</span>
+                                <span>•</span>
+                                <span>No clipboard access</span>
+                                {obs.safetyFlags?.rawImageStored === false && (
+                                  <>
+                                    <span>•</span>
+                                    <span>Raw image not stored</span>
+                                  </>
+                                )}
                               </div>
                             </div>
                           ))}

@@ -1167,3 +1167,89 @@ Use this file for dated session notes, verification summaries, and references to
 
 - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
 - No real database persistence; all data is in-memory and lost on API restart.
+
+## 2026-04-27 — BL-047/048/049 Screen Context Hardening Wave
+
+### Scope
+
+- BL-047: Explicit sharing-state storage and visible sharing indicator
+- BL-048: Deterministic active-window metadata capture + manual screenshot metadata
+- BL-049: Structured observation upload + enhanced redaction
+
+### What changed
+
+**Backend (subagent agent-951ab0w2):**
+- Added `SharingStateShape` to in-memory store with `sharingStates` Map keyed by `${tenantId}:${sessionId}`
+- Extended `ScreenObservation` contract with `sharingState`, `rawImageRetention`, `redactionStatus`, `safetyFlags`
+- Added new `ScreenObservationSource` values: `manual_screenshot_metadata`, `structured_upload`
+- Added new `ScreenObservationKind` values: `screenshot_metadata`, `redacted_context`
+- Added `redactPlaceholder()` helper in `evidence-bundle/redaction.ts` with expanded patterns for `apiToken=`, `password=`, long secret-like strings
+- Added 5 new API endpoints:
+  - `POST /:id/screen-observations/active-window/mock`
+  - `POST /:id/screen-observations/manual-screenshot`
+  - `POST /:id/screen-observations/structured-upload`
+  - `GET /:id/screen-observations/sharing-state`
+  - `POST /:id/screen-observations/sharing-state`
+- Updated `SupportSessionsService` with capture, sharing state transitions, and redaction methods
+- Updated `evidence-bundle.builder.ts` `toScreenObservationSummaries()` to include new fields
+- Added new audit event types:
+  - `screen_observation_sharing_started`, `screen_observation_sharing_paused`, `screen_observation_sharing_stopped`
+  - `active_window_metadata_captured`, `manual_screenshot_metadata_attached`
+  - `structured_screen_observation_uploaded`, `screen_observation_redaction_applied`
+- All 101 API tests pass
+
+**Frontend:**
+- Updated Call Console `page.tsx` Operator Companion panel with:
+  - Visible sharing indicator badge (inactive/active/paused)
+  - Start/Pause/Resume/Stop sharing controls
+  - Active Window Metadata capture form
+  - Manual Screenshot Metadata capture form
+  - Structured Upload capture form
+  - Legacy Mock Observation capture form
+  - Observation cards showing `sharingState`, `rawImageRetention`, `redactionStatus`, safety flags
+- Updated `AiContextPanel.tsx` to show Screen Observation packets with `kind`, `redactionStatus`, safety flags, and Warning badge for placeholder-redacted content
+- Updated `lib/api.ts` with new endpoint types
+- All 15 web tests pass
+
+**Contract tests:** 26/26 pass
+
+### Verification
+
+- `npm run lint` passed with 0 errors.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `cd apps/api && npm test` passed: 101/101 tests pass.
+- `cd apps/web && npm test` passed: 15/15 tests pass.
+- `npm test --workspace @supportplane/contracts` passed: 26/26 tests pass.
+- Runtime API verified at `http://localhost:4110/health`.
+- Runtime web verified at `http://localhost:3200/` with Playwright browser automation.
+- Browser flow verified:
+  1. Call Console → Operator Companion → Sharing: inactive → Start mock sharing → Sharing: active
+  2. Capture active window metadata (Zammad / Ticket #101) → observation card with Approve/Discard
+  3. Approve → Create context packet
+  4. Attach manual screenshot metadata → second observation card
+  5. Navigate to Support Cockpit → AI Context Quality panel shows Screen Observation packet with `kind: active_window`, `2 redacted`, Warning badge
+  6. Audit Trail shows all new event types: `screen_observation_sharing_started`, `active_window_metadata_captured`, `screen_observation_reviewed`, `screen_observation_context_packet_created`, `ai_context_loaded`, `manual_screenshot_metadata_attached`
+  7. Evidence Bundle generated → JSON includes `screenObservations` with `sharingState: active`, `rawImageRetention: disabled`, `redactionStatus: not_needed`, full `safetyFlags`
+  8. Pause sharing → Sharing: paused
+  9. Stop sharing → Sharing: inactive
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-047-049-screen-context-hardening/`
+- 10 canonical screenshots:
+  - `01-operator-companion-inactive.png`
+  - `02-sharing-active.png`
+  - `03-active-window-captured.png`
+  - `04-full-operator-companion.png`
+  - `05-ai-context-quality-panel.png`
+  - `06-audit-trail-new-events.png`
+  - `07-evidence-bundle-generated.png`
+  - `08-evidence-bundle-json.png`
+  - `09-sharing-paused.png`
+  - `10-sharing-stopped.png`
+
+### Remaining Risk
+
+- No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
+- No real database persistence; all data including sharing states is in-memory and lost on API restart.
+- Pattern-based redaction is not cryptographically guaranteed.

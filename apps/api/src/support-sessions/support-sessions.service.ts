@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, BadRequestException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { InMemoryStore } from './in-memory.store.js';
 import {
@@ -13,6 +13,9 @@ import {
   GreetingSuggestionTone,
   ScreenObservationSource,
   ScreenObservationStatus,
+  ScreenObservationSharingState,
+  ScreenObservationRawImageRetention,
+
   type SupportSession as SupportSessionShape,
   type AIContextPacket as AIContextPacketShape,
   type AuditEvent as AuditEventShape,
@@ -47,6 +50,7 @@ import {
   buildEvidenceBundle,
   bundleToMarkdown,
 } from '../evidence-bundle/evidence-bundle.builder.js';
+import { redactPlaceholder } from '../evidence-bundle/redaction.js';
 
 @Injectable()
 export class SupportSessionsService {
@@ -502,6 +506,8 @@ export class SupportSessionsService {
     const session = this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
+    const sharingState = this.store.getSharingState(identity.tenantId, sessionId);
+    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
 
     const observation: ScreenObservationShape = {
       id: id as ScreenObservationId,
@@ -512,9 +518,22 @@ export class SupportSessionsService {
       kind: dto.kind as ScreenObservationShape['kind'],
       status: ScreenObservationStatus.enum.review_required,
       rawInputPlaceholder: dto.rawInputPlaceholder,
+      redactedSummary,
+      redactionStatus,
       appLabel: dto.appLabel,
       windowLabel: dto.windowLabel,
       urlLabel: dto.urlLabel,
+      sharingState: sharingState?.state ?? ScreenObservationSharingState.enum.inactive,
+      rawImageRetention: ScreenObservationRawImageRetention.enum.disabled,
+      safetyFlags: {
+        mockDevOnly: true,
+        noRealScreenCapture: true,
+        noRawPixels: true,
+        noClipboardAccess: true,
+        noOcr: true,
+        noCredentialCapture: true,
+        rawImageStored: false,
+      },
       noRawPixels: true,
       noClipboard: true,
       noOcr: true,
@@ -543,10 +562,319 @@ export class SupportSessionsService {
         mockDevOnly: true,
         noRawPixels: true,
         noClipboard: true,
+        sharingState: observation.sharingState,
+        redactionStatus: observation.redactionStatus,
       }
     );
 
     return observation;
+  }
+
+  captureActiveWindowMockMetadata(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: {
+      callEventId?: string;
+      appLabel?: string;
+      windowLabel?: string;
+      urlLabel?: string;
+      rawInputPlaceholder?: string;
+    }
+  ): { observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean } {
+    const session = this.getSession(identity, sessionId);
+    const now = new Date().toISOString();
+    const id = randomUUID();
+    const sharingState = this.store.getSharingState(identity.tenantId, sessionId);
+    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
+
+    const observation: ScreenObservationShape = {
+      id: id as ScreenObservationId,
+      tenantId: identity.tenantId as TenantId,
+      sessionId: session.id,
+      callEventId: dto.callEventId,
+      source: ScreenObservationSource.enum.mock_operator_companion,
+      kind: 'active_window' as ScreenObservationShape['kind'],
+      status: ScreenObservationStatus.enum.review_required,
+      rawInputPlaceholder: dto.rawInputPlaceholder,
+      redactedSummary,
+      redactionStatus,
+      appLabel: dto.appLabel,
+      windowLabel: dto.windowLabel,
+      urlLabel: dto.urlLabel,
+      sharingState: sharingState?.state ?? ScreenObservationSharingState.enum.inactive,
+      rawImageRetention: ScreenObservationRawImageRetention.enum.disabled,
+      safetyFlags: {
+        mockDevOnly: true,
+        noRealScreenCapture: true,
+        noRawPixels: true,
+        noClipboardAccess: true,
+        noOcr: true,
+        noCredentialCapture: true,
+        rawImageStored: false,
+      },
+      noRawPixels: true,
+      noClipboard: true,
+      noOcr: true,
+      noCredentialCapture: true,
+      mockDevOnly: true,
+      createdAt: now,
+    };
+
+    this.store.saveScreenObservation(observation);
+    this.store.saveSession({
+      ...session,
+      screenObservationIds: Array.from(new Set([...session.screenObservationIds, observation.id])),
+      updatedAt: now,
+    });
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.active_window_metadata_captured,
+      'screen_observation',
+      observation.id,
+      {
+        kind: observation.kind,
+        source: observation.source,
+        callEventId: observation.callEventId,
+        mockDevOnly: true,
+        noRawPixels: true,
+        noClipboard: true,
+        sharingState: observation.sharingState,
+        redactionStatus: observation.redactionStatus,
+      }
+    );
+
+    return { observation, redactedSummary, mockDevOnly: true };
+  }
+
+  attachManualScreenshotMetadata(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: {
+      callEventId?: string;
+      appLabel?: string;
+      windowLabel?: string;
+      urlLabel?: string;
+      rawInputPlaceholder?: string;
+      fileNameHint?: string;
+    }
+  ): { observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; rawImageRetention: 'disabled' } {
+    const session = this.getSession(identity, sessionId);
+    const now = new Date().toISOString();
+    const id = randomUUID();
+    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
+
+    const observation: ScreenObservationShape = {
+      id: id as ScreenObservationId,
+      tenantId: identity.tenantId as TenantId,
+      sessionId: session.id,
+      callEventId: dto.callEventId,
+      source: ScreenObservationSource.enum.manual_screenshot_metadata,
+      kind: 'screenshot_metadata' as ScreenObservationShape['kind'],
+      status: ScreenObservationStatus.enum.review_required,
+      rawInputPlaceholder: dto.rawInputPlaceholder,
+      redactedSummary,
+      redactionStatus,
+      appLabel: dto.appLabel,
+      windowLabel: dto.windowLabel,
+      urlLabel: dto.urlLabel,
+      sharingState: ScreenObservationSharingState.enum.active,
+      rawImageRetention: ScreenObservationRawImageRetention.enum.disabled,
+      safetyFlags: {
+        mockDevOnly: true,
+        noRealScreenCapture: true,
+        noRawPixels: true,
+        noClipboardAccess: true,
+        noOcr: true,
+        noCredentialCapture: true,
+        rawImageStored: false,
+      },
+      noRawPixels: true,
+      noClipboard: true,
+      noOcr: true,
+      noCredentialCapture: true,
+      mockDevOnly: true,
+      createdAt: now,
+    };
+
+    this.store.saveScreenObservation(observation);
+    this.store.saveSession({
+      ...session,
+      screenObservationIds: Array.from(new Set([...session.screenObservationIds, observation.id])),
+      updatedAt: now,
+    });
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.manual_screenshot_metadata_attached,
+      'screen_observation',
+      observation.id,
+      {
+        kind: observation.kind,
+        source: observation.source,
+        callEventId: observation.callEventId,
+        mockDevOnly: true,
+        noRawPixels: true,
+        noClipboard: true,
+        sharingState: observation.sharingState,
+        redactionStatus: observation.redactionStatus,
+        fileNameHint: dto.fileNameHint,
+      }
+    );
+
+    return { observation, redactedSummary, mockDevOnly: true, rawImageRetention: 'disabled' };
+  }
+
+  uploadStructuredScreenObservation(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: {
+      callEventId?: string;
+      kind: string;
+      appLabel?: string;
+      windowLabel?: string;
+      urlLabel?: string;
+      rawInputPlaceholder?: string;
+    }
+  ): { observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; redactionStatus: ScreenObservationShape['redactionStatus'] } {
+    const session = this.getSession(identity, sessionId);
+    const now = new Date().toISOString();
+    const id = randomUUID();
+    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
+
+    const observation: ScreenObservationShape = {
+      id: id as ScreenObservationId,
+      tenantId: identity.tenantId as TenantId,
+      sessionId: session.id,
+      callEventId: dto.callEventId,
+      source: ScreenObservationSource.enum.structured_upload,
+      kind: dto.kind as ScreenObservationShape['kind'],
+      status: ScreenObservationStatus.enum.review_required,
+      rawInputPlaceholder: dto.rawInputPlaceholder,
+      redactedSummary,
+      redactionStatus,
+      appLabel: dto.appLabel,
+      windowLabel: dto.windowLabel,
+      urlLabel: dto.urlLabel,
+      sharingState: ScreenObservationSharingState.enum.active,
+      rawImageRetention: ScreenObservationRawImageRetention.enum.disabled,
+      safetyFlags: {
+        mockDevOnly: true,
+        noRealScreenCapture: true,
+        noRawPixels: true,
+        noClipboardAccess: true,
+        noOcr: true,
+        noCredentialCapture: true,
+        rawImageStored: false,
+      },
+      noRawPixels: true,
+      noClipboard: true,
+      noOcr: true,
+      noCredentialCapture: true,
+      mockDevOnly: true,
+      createdAt: now,
+    };
+
+    this.store.saveScreenObservation(observation);
+    this.store.saveSession({
+      ...session,
+      screenObservationIds: Array.from(new Set([...session.screenObservationIds, observation.id])),
+      updatedAt: now,
+    });
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.structured_screen_observation_uploaded,
+      'screen_observation',
+      observation.id,
+      {
+        kind: observation.kind,
+        source: observation.source,
+        callEventId: observation.callEventId,
+        mockDevOnly: true,
+        noRawPixels: true,
+        noClipboard: true,
+        sharingState: observation.sharingState,
+        redactionStatus: observation.redactionStatus,
+      }
+    );
+
+    return { observation, redactedSummary, mockDevOnly: true, redactionStatus };
+  }
+
+  getSharingState(
+    identity: DevIdentity,
+    sessionId: string
+  ): { sessionId: string; state: ScreenObservationShape['sharingState']; mockDevOnly: boolean } {
+    this.getSession(identity, sessionId);
+    const sharingState = this.store.getSharingState(identity.tenantId, sessionId);
+    return {
+      sessionId,
+      state: sharingState?.state ?? ScreenObservationSharingState.enum.inactive,
+      mockDevOnly: true,
+    };
+  }
+
+  updateSharingState(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: { state: string }
+  ): { sessionId: string; state: ScreenObservationShape['sharingState']; previousState: ScreenObservationShape['sharingState'] | undefined; mockDevOnly: boolean } {
+    this.getSession(identity, sessionId);
+    const newState = ScreenObservationSharingState.parse(dto.state);
+    const existing = this.store.getSharingState(identity.tenantId, sessionId);
+    const previousState = existing?.state;
+
+    if (previousState === newState) {
+      throw new BadRequestException(`Sharing state is already '${newState}'`);
+    }
+
+    const allowedTransitions: Record<string, string[]> = {
+      inactive: ['active'],
+      active: ['paused', 'inactive'],
+      paused: ['active', 'inactive'],
+    };
+
+    const allowed = allowedTransitions[previousState ?? 'inactive'] ?? [];
+    if (!allowed.includes(newState)) {
+      throw new BadRequestException(
+        `Invalid sharing state transition from '${previousState ?? 'inactive'}' to '${newState}'. Allowed: ${allowed.join(', ')}`
+      );
+    }
+
+    const now = new Date().toISOString();
+    this.store.saveSharingState({
+      tenantId: identity.tenantId,
+      sessionId,
+      state: newState,
+      mockDevOnly: true,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    });
+
+    const eventTypeMap: Record<string, AuditEventType> = {
+      active: AuditEventType.enum.screen_observation_sharing_started,
+      paused: AuditEventType.enum.screen_observation_sharing_paused,
+      inactive: AuditEventType.enum.screen_observation_sharing_stopped,
+    };
+
+    this.appendAuditEvent(
+      identity,
+      sessionId,
+      eventTypeMap[newState],
+      'support_session',
+      sessionId,
+      {
+        previousState: previousState ?? 'inactive',
+        newState,
+        mockDevOnly: true,
+      }
+    );
+
+    return { sessionId, state: newState, previousState: previousState ?? ScreenObservationSharingState.enum.inactive, mockDevOnly: true };
   }
 
   listScreenObservations(
