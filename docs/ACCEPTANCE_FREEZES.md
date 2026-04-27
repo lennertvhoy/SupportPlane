@@ -566,7 +566,7 @@ and must be protected from quiet regression.
 ## AF-2026-04-27-006: BL-050 PostgreSQL Persistence Foundation
 
 - Date: 2026-04-27
-- Commit: `f28adfc`
+- Commit: `9f5b582`
 - Scope: PostgreSQL persistence foundation with PrismaStore and runtime store switching
 - Frozen behaviors:
   - `SUPPORTPLANE_STORE=postgres` selects PrismaStore; default or `memory` selects InMemoryStore.
