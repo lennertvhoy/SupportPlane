@@ -1134,7 +1134,7 @@ Use this file for dated session notes, verification summaries, and references to
 - Added `listScreenObservations`, `captureMockScreenObservation`, `reviewScreenObservation`, `createContextPacketFromObservation` to web API client.
 - Updated Support Cockpit AI Context Quality panel to display observation-derived packets with `screen_observation` provenance.
 - Added API integration tests and web client tests for screen observation endpoints.
-- Captured 18 browser screenshots in `output/playwright/session-046-operator-companion-final-closure/`.
+- Captured 18 browser screenshots in a temporary folder (later superseded by canonical 9-screenshot closure set).
 - Updated state and evidence docs for BL-046.
 
 ### Verification
@@ -1159,7 +1159,7 @@ Use this file for dated session notes, verification summaries, and references to
 
 ### Evidence
 
-- Screenshot files: `output/playwright/session-046-operator-companion-final-closure/01-call-console-operator-companion-panel.png` through `18-evidence-bundle-mock-disclaimers.png`.
+- Screenshot files: `output/playwright/session-046-operator-companion-closure-canonical/01-call-console-operator-companion-panel.png` through `09-no-secret-evidence-bundle.png`.
 - Evidence refs: EV-2026-04-27-025 through EV-2026-04-27-032.
 - Acceptance freeze: AF-2026-04-27-004.
 

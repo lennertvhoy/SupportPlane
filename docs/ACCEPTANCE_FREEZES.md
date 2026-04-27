@@ -493,7 +493,6 @@ and must be protected from quiet regression.
   - EV-2026-04-27-041
 - evidence_folder: output/playwright/session-046-operator-companion-closure-canonical/
 - screenshot_count: 9
-- original_18_screenshots: output/playwright/session-046-operator-companion-final-closure/ (kept as reference)
 - regression_guard:
   - `/call-console` must keep the Operator Companion panel with honest mock labels.
   - `POST /support-sessions/:id/screen-observations/mock` must return observation with `mockDevOnly: true`, `noRawPixels: true`, `noClipboard: true`, `status: review_required`.

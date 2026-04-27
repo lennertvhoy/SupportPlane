@@ -327,8 +327,7 @@ current_state:
           - Support Cockpit AI Context Quality panel (observation-derived packets)
         screenshot_folder: output/playwright/session-046-operator-companion-closure-canonical/
         screenshot_count: 9
-        original_screenshots_folder: output/playwright/session-046-operator-companion-final-closure/
-        original_screenshot_count: 18
+        superseded_screenshots_removed: true
         closure_notes:
           - tenant isolation enforced on all screen observation endpoints
           - no real screen capture, raw pixels, clipboard access, or OCR performed
