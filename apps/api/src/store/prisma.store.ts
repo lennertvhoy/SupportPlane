@@ -15,6 +15,8 @@ import type {
   CallEvent as CallEventShape,
   CallRecording as CallRecordingShape,
   ScreenObservation as ScreenObservationShape,
+  CustomerReference as CustomerReferenceShape,
+  ConnectorInstallation as ConnectorInstallationShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from './store.interface.js';
 
@@ -791,5 +793,162 @@ export class PrismaStore implements Store {
         updatedAt: dateOrNow(state.updatedAt),
       },
     });
+  }
+
+  // CustomerReference
+  async saveCustomerReference(customer: CustomerReferenceShape): Promise<void> {
+    await this.prisma.customerReference.upsert({
+      where: { id: customer.id },
+      create: {
+        id: customer.id,
+        tenantId: customer.tenantId,
+        adapterId: customer.adapterId,
+        externalCustomerId: customer.externalCustomerId,
+        name: customer.name ?? null,
+        email: customer.email ?? null,
+        phone: customer.phone ?? null,
+        company: customer.company ?? null,
+        rawData: customer.rawData ? json(customer.rawData) : undefined,
+        lastSyncedAt: dateOrNow(customer.lastSyncedAt),
+        createdAt: dateOrNow(customer.createdAt),
+        updatedAt: dateOrNow(customer.updatedAt),
+      },
+      update: {
+        adapterId: customer.adapterId,
+        externalCustomerId: customer.externalCustomerId,
+        name: customer.name ?? null,
+        email: customer.email ?? null,
+        phone: customer.phone ?? null,
+        company: customer.company ?? null,
+        rawData: customer.rawData ? json(customer.rawData) : undefined,
+        lastSyncedAt: dateOrNow(customer.lastSyncedAt),
+        updatedAt: dateOrNow(customer.updatedAt),
+      },
+    });
+  }
+
+  async getCustomerReference(tenantId: string, id: string): Promise<CustomerReferenceShape | undefined> {
+    const row = await this.prisma.customerReference.findFirst({
+      where: { id, tenantId },
+    });
+    if (!row) return undefined;
+    return this.mapCustomerReference(row);
+  }
+
+  async listCustomerReferences(tenantId: string, options?: { email?: string; phone?: string; adapterId?: string }): Promise<CustomerReferenceShape[]> {
+    const where: Prisma.CustomerReferenceWhereInput = { tenantId };
+    if (options?.email) where.email = { equals: options.email, mode: 'insensitive' };
+    if (options?.phone) where.phone = options.phone;
+    if (options?.adapterId) where.adapterId = options.adapterId;
+    const rows = await this.prisma.customerReference.findMany({ where, orderBy: { updatedAt: 'desc' } });
+    return rows.map((r) => this.mapCustomerReference(r));
+  }
+
+  private mapCustomerReference(row: {
+    id: string;
+    tenantId: string;
+    adapterId: string;
+    externalCustomerId: string;
+    name: string | null;
+    email: string | null;
+    phone: string | null;
+    company: string | null;
+    rawData: unknown;
+    lastSyncedAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
+  }): CustomerReferenceShape {
+    return {
+      id: row.id as CustomerReferenceShape['id'],
+      tenantId: row.tenantId as CustomerReferenceShape['tenantId'],
+      adapterId: row.adapterId as CustomerReferenceShape['adapterId'],
+      externalCustomerId: row.externalCustomerId,
+      name: row.name ?? undefined,
+      email: row.email ?? undefined,
+      phone: row.phone ?? undefined,
+      company: row.company ?? undefined,
+      rawData: row.rawData as Record<string, unknown> | undefined,
+      lastSyncedAt: toISO(row.lastSyncedAt)!,
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
+  }
+
+  // ConnectorInstallation
+  async saveConnectorInstallation(installation: ConnectorInstallationShape): Promise<void> {
+    await this.prisma.connectorInstallation.upsert({
+      where: { id: installation.id },
+      create: {
+        id: installation.id,
+        tenantId: installation.tenantId,
+        name: installation.name,
+        adapterType: installation.adapterType,
+        config: json(installation.config),
+        secretReferenceIds: installation.secretReferenceIds,
+        status: installation.status,
+        safetyFlags: json(installation.safetyFlags),
+        lastVerifiedAt: installation.lastVerifiedAt ? new Date(installation.lastVerifiedAt) : null,
+        lastError: installation.lastError ?? null,
+        createdAt: dateOrNow(installation.createdAt),
+        updatedAt: dateOrNow(installation.updatedAt),
+      },
+      update: {
+        name: installation.name,
+        adapterType: installation.adapterType,
+        config: json(installation.config),
+        secretReferenceIds: installation.secretReferenceIds,
+        status: installation.status,
+        safetyFlags: json(installation.safetyFlags),
+        lastVerifiedAt: installation.lastVerifiedAt ? new Date(installation.lastVerifiedAt) : null,
+        lastError: installation.lastError ?? null,
+        updatedAt: dateOrNow(installation.updatedAt),
+      },
+    });
+  }
+
+  async getConnectorInstallation(tenantId: string, id: string): Promise<ConnectorInstallationShape | undefined> {
+    const row = await this.prisma.connectorInstallation.findFirst({
+      where: { id, tenantId },
+    });
+    if (!row) return undefined;
+    return this.mapConnectorInstallation(row);
+  }
+
+  async listConnectorInstallations(tenantId: string): Promise<ConnectorInstallationShape[]> {
+    const rows = await this.prisma.connectorInstallation.findMany({
+      where: { tenantId },
+      orderBy: { updatedAt: 'desc' },
+    });
+    return rows.map((r) => this.mapConnectorInstallation(r));
+  }
+
+  private mapConnectorInstallation(row: {
+    id: string;
+    tenantId: string;
+    name: string;
+    adapterType: string;
+    config: unknown;
+    secretReferenceIds: string[];
+    status: string;
+    safetyFlags: unknown;
+    lastVerifiedAt: Date | null;
+    lastError: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): ConnectorInstallationShape {
+    return {
+      id: row.id as ConnectorInstallationShape['id'],
+      tenantId: row.tenantId as ConnectorInstallationShape['tenantId'],
+      name: row.name,
+      adapterType: row.adapterType,
+      config: row.config as Record<string, unknown>,
+      secretReferenceIds: row.secretReferenceIds,
+      status: row.status as ConnectorInstallationShape['status'],
+      safetyFlags: row.safetyFlags as Record<string, unknown>,
+      lastVerifiedAt: toISO(row.lastVerifiedAt),
+      lastError: row.lastError ?? undefined,
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
   }
 }

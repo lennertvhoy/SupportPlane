@@ -23,7 +23,10 @@ model Tenant {
   roles               Role[]
   supportSessions     SupportSession[]
   ticketingAdapters   TicketingAdapter[]
+  customerReferences  CustomerReference[]
   ticketReferences    TicketReference[]
+  ticketSummaries     TicketSummary[]
+  connectorInstallations ConnectorInstallation[]
   aiContextPackets    AIContextPacket[]
   screenObservations  ScreenObservation[]
   policyDecisions     PolicyDecision[]
@@ -127,6 +130,7 @@ model SupportSession {
   callRecordings    CallRecording[]
   internalNoteDrafts InternalNoteDraft[]
   sharingStates     SharingState[]
+  ticketSummaries   TicketSummary[]
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -149,11 +153,37 @@ model TicketingAdapter {
   updatedAt          DateTime @updatedAt
 
   tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customerReferences CustomerReference[]
   ticketReferences TicketReference[]
 
   @@index([tenantId])
   @@index([tenantId, status])
   @@map("ticketing_adapters")
+}
+
+model CustomerReference {
+  id                String   @id @default(cuid())
+  tenantId          String
+  adapterId         String
+  externalCustomerId String
+  name              String?
+  email             String?
+  phone             String?
+  company           String?
+  rawData           Json?
+  lastSyncedAt      DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant           Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  adapter          TicketingAdapter @relation(fields: [adapterId], references: [id], onDelete: Cascade)
+  ticketReferences TicketReference[]
+
+  @@unique([tenantId, adapterId, externalCustomerId])
+  @@index([tenantId])
+  @@index([tenantId, email])
+  @@index([tenantId, phone])
+  @@map("customer_references")
 }
 
 model TicketReference {
@@ -164,6 +194,7 @@ model TicketReference {
   subject          String
   status           String   @default("unknown")
   priority         String   @default("normal")
+  customerId       String?
   customerEmail    String?
   customerName     String?
   rawData          Json?
@@ -171,14 +202,64 @@ model TicketReference {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  tenant  Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  adapter TicketingAdapter @relation(fields: [adapterId], references: [id], onDelete: Cascade)
+  tenant   Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  adapter  TicketingAdapter  @relation(fields: [adapterId], references: [id], onDelete: Cascade)
+  customer CustomerReference? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  ticketSummaries TicketSummary[]
 
   @@unique([tenantId, adapterId, externalTicketId])
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([externalTicketId])
+  @@index([customerId])
   @@map("ticket_references")
+}
+
+model TicketSummary {
+  id                String   @id @default(cuid())
+  tenantId          String
+  ticketReferenceId String
+  sessionId         String?
+  generatedBy       String?
+  summaryText       String?
+  keyPoints         String[] @default([])
+  sentiment         String?
+  source            String
+  redactionLog      Json     @default("[]")
+  mockDevOnly       Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  ticketReference TicketReference @relation(fields: [ticketReferenceId], references: [id], onDelete: Cascade)
+  session         SupportSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, ticketReferenceId])
+  @@index([tenantId, sessionId])
+  @@map("ticket_summaries")
+}
+
+model ConnectorInstallation {
+  id                String   @id @default(cuid())
+  tenantId          String
+  name              String
+  adapterType       String
+  config            Json     @default("{}")
+  secretReferenceIds String[] @default([])
+  status            String   @default("inactive")
+  safetyFlags       Json     @default("{}")
+  lastVerifiedAt    DateTime?
+  lastError         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("connector_installations")
 }
 
 model AIContextPacket {

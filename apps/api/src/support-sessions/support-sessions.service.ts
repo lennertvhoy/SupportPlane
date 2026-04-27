@@ -496,6 +496,79 @@ export class SupportSessionsService {
     return await this.store.getContextPackets(identity.tenantId, sessionId);
   }
 
+  async linkTicketToSession(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: { ticketReferenceId: string }
+  ): Promise<SupportSessionShape> {
+    requirePermission(identity, 'ticket:link');
+    const session = await this.getSession(identity, sessionId);
+    const tickets = await this.store.getTicketReferences(identity.tenantId, sessionId);
+    const ticket = tickets.find((t) => t.id === dto.ticketReferenceId);
+    if (!ticket) {
+      throw new NotFoundException(`Ticket reference ${dto.ticketReferenceId} not found in tenant`);
+    }
+    const updated: SupportSessionShape = {
+      ...session,
+      linkedTicketIds: Array.from(new Set([...session.linkedTicketIds, dto.ticketReferenceId])),
+      updatedAt: new Date().toISOString(),
+    };
+    await this.store.saveSession(updated);
+    await this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.ticket_linked_to_session,
+      'support_session',
+      sessionId,
+      { ticketReferenceId: dto.ticketReferenceId, externalTicketId: ticket.externalTicketId }
+    );
+    return updated;
+  }
+
+  async unlinkTicketFromSession(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: { ticketReferenceId: string }
+  ): Promise<SupportSessionShape> {
+    requirePermission(identity, 'ticket:unlink');
+    const session = await this.getSession(identity, sessionId);
+    if (!session.linkedTicketIds.includes(dto.ticketReferenceId)) {
+      throw new NotFoundException(`Ticket reference ${dto.ticketReferenceId} is not linked to session ${sessionId}`);
+    }
+    const updated: SupportSessionShape = {
+      ...session,
+      linkedTicketIds: session.linkedTicketIds.filter((id) => id !== dto.ticketReferenceId),
+      updatedAt: new Date().toISOString(),
+    };
+    await this.store.saveSession(updated);
+    await this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.ticket_unlinked_from_session,
+      'support_session',
+      sessionId,
+      { ticketReferenceId: dto.ticketReferenceId }
+    );
+    return updated;
+  }
+
+  async getCustomerReferencesForSession(
+    identity: DevIdentity,
+    sessionId: string
+  ): Promise<{ customers: unknown[] }> {
+    requirePermission(identity, 'customer:read');
+    await this.getSession(identity, sessionId);
+    const tickets = await this.store.getTicketReferences(identity.tenantId, sessionId);
+    const customerIds = Array.from(new Set(tickets.map((t) => t.customerId).filter(Boolean)));
+    const customers = [];
+    for (const customerId of customerIds) {
+      if (!customerId) continue;
+      const customer = await this.store.getCustomerReference(identity.tenantId, customerId);
+      if (customer) customers.push(customer);
+    }
+    return { customers };
+  }
+
   async getAuditEvents(
     identity: DevIdentity,
     sessionId: string
@@ -1055,6 +1128,9 @@ export class SupportSessionsService {
     );
     const callRecordings = callRecordingsNested.flat();
     const screenObservations = await this.store.listScreenObservations(identity.tenantId, sessionId);
+    const customerRefsResult = await this.getCustomerReferencesForSession(identity, sessionId);
+    const customerReferences = customerRefsResult.customers as unknown as import('@supportplane/contracts').CustomerReference[];
+    const connectorInstallations = await this.store.listConnectorInstallations(identity.tenantId);
     const sessionAuditEvents = await this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEventIds = new Set<string>(callEvents.map((call) => call.id));
     const externalCallIds = new Set(callEvents.map((call) => call.externalCallId));
@@ -1084,6 +1160,8 @@ export class SupportSessionsService {
       callEvents,
       callRecordings,
       screenObservations,
+      customerReferences,
+      connectorInstallations,
       connectorMode: this.connectorsService.getMode(),
       storeType: storeType === 'postgres' ? 'postgres' : 'memory',
     });

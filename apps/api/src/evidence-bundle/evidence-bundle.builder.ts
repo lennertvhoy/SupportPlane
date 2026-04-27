@@ -18,11 +18,13 @@ import type {
   EvidenceBundleGreetingSuggestionSummary,
   EvidenceBundleCallRecordingSummary,
   EvidenceBundleScreenObservationSummary,
+  EvidenceBundleCustomerSummary,
   TenantId,
   SupportSessionId,
   EvidenceBundleId,
   CallRecording,
   ScreenObservation,
+  CustomerReference,
 } from '@supportplane/contracts';
 import { redactSecrets, redactString } from './redaction.js';
 
@@ -38,6 +40,8 @@ export interface BuildEvidenceBundleInput {
   callEvents?: CallEvent[];
   callRecordings?: CallRecording[];
   screenObservations?: ScreenObservation[];
+  customerReferences?: CustomerReference[];
+  connectorInstallations?: import('@supportplane/contracts').ConnectorInstallation[];
   connectorMode?: string;
   storeType?: 'memory' | 'postgres';
 }
@@ -65,10 +69,40 @@ function toTicketSummaries(tickets: TicketReference[]): EvidenceBundleTicketSumm
     subject: t.subject,
     status: t.status,
     priority: t.priority,
+    customerId: t.customerId,
     customerName: t.customerName,
     customerEmail: t.customerEmail,
     adapterId: t.adapterId,
     lastSyncedAt: t.lastSyncedAt,
+  }));
+}
+
+function toCustomerSummaries(customers: CustomerReference[] | undefined): EvidenceBundleCustomerSummary[] {
+  if (!customers) return [];
+  return customers.map((c) => ({
+    id: c.id,
+    externalCustomerId: c.externalCustomerId,
+    name: c.name,
+    email: c.email,
+    phone: c.phone,
+    company: c.company,
+    adapterId: c.adapterId,
+    lastSyncedAt: c.lastSyncedAt,
+  }));
+}
+
+function toConnectorInstallationSummaries(
+  installations: import('@supportplane/contracts').ConnectorInstallation[] | undefined
+): import('@supportplane/contracts').EvidenceBundleConnectorInstallationSummary[] {
+  if (!installations) return [];
+  return installations.map((i) => ({
+    id: i.id,
+    name: i.name,
+    adapterType: i.adapterType,
+    status: i.status,
+    safetyFlags: redactSecrets(i.safetyFlags as Record<string, unknown> ?? {}),
+    lastVerifiedAt: i.lastVerifiedAt,
+    lastError: i.lastError ? redactString(i.lastError) : undefined,
   }));
 }
 
@@ -280,6 +314,8 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     callEvents: toCallEventSummaries(input.callEvents),
     callRecordings: toCallRecordingSummaries(input.callRecordings),
     screenObservations: toScreenObservationSummaries(input.screenObservations),
+    customerReferences: toCustomerSummaries(input.customerReferences),
+    connectorInstallations: toConnectorInstallationSummaries(input.connectorInstallations),
     greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
     mockDevOnlyDisclaimers: [

@@ -11,6 +11,7 @@ import { ConnectorPanel } from '@/components/ConnectorPanel';
 import { EvidenceBundlePanel } from '@/components/EvidenceBundlePanel';
 import { CallSimulatorPanel } from '@/components/CallSimulatorPanel';
 import { GreetingSuggestionPanel } from '@/components/GreetingSuggestionPanel';
+import { CustomerReferencePanel } from '@/components/CustomerReferencePanel';
 import { AuthGate, IdentityPill } from '@/components/AuthGate';
 import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, type GreetingSuggestionResponse, type AuthIdentity, ApiClientError } from '@/lib/api';
 
@@ -374,6 +375,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               auditEvents={auditEvents}
             />
             <ConnectorPanel />
+            <CustomerReferencePanel />
             <EvidenceBundlePanel
               sessionId={selectedSession?.id}
               bundle={evidenceBundle}

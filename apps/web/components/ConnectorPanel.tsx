@@ -1,28 +1,35 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Plug, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Loader2, AlertCircle, Plug, CheckCircle, XCircle, RefreshCw, Shield, Settings } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
-import { api, type ConnectorStatus, type ConnectorTestResult, ApiClientError } from '@/lib/api';
+import { api, type ConnectorStatus, type ConnectorTestResult, type ConnectorInstallation, ApiClientError } from '@/lib/api';
 
 export function ConnectorPanel() {
   const [status, setStatus] = useState<ConnectorStatus | undefined>(undefined);
   const [testResult, setTestResult] = useState<ConnectorTestResult | undefined>(undefined);
+  const [installations, setInstallations] = useState<ConnectorInstallation[]>([]);
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
+  const [installationsLoading, setInstallationsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function fetchStatus() {
     setLoading(true);
     setError(null);
     try {
-      const s = await api.getConnectorStatus();
+      const [s, inst] = await Promise.all([
+        api.getConnectorStatus(),
+        api.listConnectorInstallations(),
+      ]);
       setStatus(s);
+      setInstallations(inst);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to load connector status');
     } finally {
       setLoading(false);
+      setInstallationsLoading(false);
     }
   }
 
@@ -147,6 +154,57 @@ export function ConnectorPanel() {
             )}
           </div>
         )}
+
+        {/* Connector Installations */}
+        <div className="border-t border-cockpit-700 pt-3">
+          <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-cockpit-300">
+            <Settings size={12} />
+            Installations
+          </div>
+
+          {installations.length === 0 && !loading && (
+            <div className="text-[10px] text-cockpit-500">No connector installations configured.</div>
+          )}
+
+          <div className="space-y-2">
+            {installations.map((inst) => (
+              <div
+                key={inst.id}
+                className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-cockpit-100">{inst.name}</span>
+                  <Badge
+                    variant={
+                      inst.status === 'active'
+                        ? 'success'
+                        : inst.status === 'error'
+                        ? 'danger'
+                        : 'warning'
+                    }
+                    className="text-[10px]"
+                  >
+                    {inst.status}
+                  </Badge>
+                </div>
+                <div className="mt-1 text-[10px] text-cockpit-400">
+                  Type: <span className="text-cockpit-200">{inst.adapterType}</span>
+                </div>
+                {Object.keys(inst.safetyFlags).length > 0 && (
+                  <div className="mt-1 flex items-center gap-1 text-[10px] text-cockpit-500">
+                    <Shield size={10} className="text-accent" />
+                    Safety: {Object.entries(inst.safetyFlags)
+                      .map(([k, v]) => `${k}=${String(v)}`)
+                      .join(', ')}
+                  </div>
+                )}
+                {inst.lastError && (
+                  <div className="mt-1 text-[10px] text-danger">{inst.lastError}</div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </Panel>
   );

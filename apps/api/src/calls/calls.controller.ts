@@ -58,6 +58,26 @@ export class CallsController {
     return this.service.linkCallToSession(identity, id, body);
   }
 
+  @Post(':id/link-ticket')
+  linkTicket(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { ticketReferenceId: string }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.service.linkTicketToCall(identity, id, body);
+  }
+
+  @Post(':id/unlink-ticket')
+  unlinkTicket(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { ticketReferenceId: string }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.service.unlinkTicketFromCall(identity, id, body);
+  }
+
   @Post(':id/status')
   @HttpCode(200)
   updateStatus(

@@ -50,6 +50,32 @@ export class SupportSessionsController {
     return this.service.getSession(identity, id);
   }
 
+  @Post(':id/link-ticket')
+  linkTicket(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { ticketReferenceId: string }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.service.linkTicketToSession(identity, id, body);
+  }
+
+  @Post(':id/unlink-ticket')
+  unlinkTicket(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { ticketReferenceId: string }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.service.unlinkTicketFromSession(identity, id, body);
+  }
+
+  @Get(':id/customer-references')
+  getCustomerReferences(@Req() req: Request, @Param('id') id: string) {
+    const identity = getCurrentIdentity(req);
+    return this.service.getCustomerReferencesForSession(identity, id);
+  }
+
   @Post(':id/ticket-context')
   async loadTicketContext(
     @Req() req: Request,

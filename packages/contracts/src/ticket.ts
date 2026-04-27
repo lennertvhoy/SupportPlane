@@ -79,6 +79,7 @@ export const TicketReference = z.object({
   subject: z.string().min(1).max(1024),
   status: TicketStatus,
   priority: TicketPriority.default('normal'),
+  customerId: EntityId.optional(),
   customerEmail: z.string().email().max(320).optional(),
   customerName: z.string().max(512).optional(),
   rawData: z.record(JsonValue).optional(),

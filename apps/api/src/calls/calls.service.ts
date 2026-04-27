@@ -549,6 +549,70 @@ export class CallsService {
     };
   }
 
+  async linkTicketToCall(
+    identity: DevIdentity,
+    callId: string,
+    dto: { ticketReferenceId: string }
+  ): Promise<{ callEvent: CallEventShape; linkedAt: string }> {
+    requirePermission(identity, 'ticket:link');
+    const call = await this.getCall(identity, callId);
+    const tickets = await this.store.getTicketReferences(identity.tenantId, call.sessionId ?? '');
+    const ticket = tickets.find((t) => t.id === dto.ticketReferenceId);
+    if (!ticket) {
+      throw new NotFoundException(`Ticket reference ${dto.ticketReferenceId} not found`);
+    }
+    const linkedTicketIds = (call.metadata.linkedTicketIds as string[] | undefined) ?? [];
+    const updated: CallEventShape = {
+      ...call,
+      metadata: {
+        ...call.metadata,
+        linkedTicketIds: Array.from(new Set([...linkedTicketIds, dto.ticketReferenceId])),
+      },
+      updatedAt: new Date().toISOString(),
+    };
+    await this.store.saveCallEvent(updated);
+    await this.appendAuditEvent(
+      identity,
+      call.sessionId ?? undefined,
+      AuditEventType.enum.ticket_linked_to_call,
+      'call_event',
+      callId,
+      { ticketReferenceId: dto.ticketReferenceId, externalTicketId: ticket.externalTicketId }
+    );
+    return { callEvent: updated, linkedAt: updated.updatedAt };
+  }
+
+  async unlinkTicketFromCall(
+    identity: DevIdentity,
+    callId: string,
+    dto: { ticketReferenceId: string }
+  ): Promise<{ callEvent: CallEventShape; unlinkedAt: string }> {
+    requirePermission(identity, 'ticket:unlink');
+    const call = await this.getCall(identity, callId);
+    const linkedTicketIds = (call.metadata.linkedTicketIds as string[] | undefined) ?? [];
+    if (!linkedTicketIds.includes(dto.ticketReferenceId)) {
+      throw new NotFoundException(`Ticket reference ${dto.ticketReferenceId} is not linked to call ${callId}`);
+    }
+    const updated: CallEventShape = {
+      ...call,
+      metadata: {
+        ...call.metadata,
+        linkedTicketIds: linkedTicketIds.filter((id) => id !== dto.ticketReferenceId),
+      },
+      updatedAt: new Date().toISOString(),
+    };
+    await this.store.saveCallEvent(updated);
+    await this.appendAuditEvent(
+      identity,
+      call.sessionId ?? undefined,
+      AuditEventType.enum.ticket_unlinked_from_call,
+      'call_event',
+      callId,
+      { ticketReferenceId: dto.ticketReferenceId }
+    );
+    return { callEvent: updated, unlinkedAt: updated.updatedAt };
+  }
+
   async getCallTimeline(identity: DevIdentity, callId: string) {
     requirePermission(identity, 'call:read');
     const call = await this.getCall(identity, callId);

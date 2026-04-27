@@ -7,6 +7,8 @@ import type {
   CallEvent as CallEventShape,
   CallRecording as CallRecordingShape,
   ScreenObservation as ScreenObservationShape,
+  CustomerReference as CustomerReferenceShape,
+  ConnectorInstallation as ConnectorInstallationShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from '../store/store.interface.js';
 
@@ -20,6 +22,8 @@ export class InMemoryStore implements Store {
   private callRecordings = new Map<string, CallRecordingShape>();
   private screenObservations = new Map<string, ScreenObservationShape>();
   private sharingStates = new Map<string, SharingStateShape>();
+  private customerReferences = new Map<string, CustomerReferenceShape>();
+  private connectorInstallations = new Map<string, ConnectorInstallationShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -152,5 +156,39 @@ export class InMemoryStore implements Store {
 
   saveSharingState(state: SharingStateShape): void {
     this.sharingStates.set(`${state.tenantId}:${state.sessionId}`, state);
+  }
+
+  saveCustomerReference(customer: CustomerReferenceShape): void {
+    this.customerReferences.set(`${customer.tenantId}:${customer.id}`, customer);
+  }
+
+  getCustomerReference(tenantId: string, id: string): CustomerReferenceShape | undefined {
+    return this.customerReferences.get(`${tenantId}:${id}`);
+  }
+
+  listCustomerReferences(tenantId: string, options?: { email?: string; phone?: string; adapterId?: string }): CustomerReferenceShape[] {
+    let results = Array.from(this.customerReferences.values()).filter((c) => c.tenantId === tenantId);
+    if (options?.email) {
+      results = results.filter((c) => c.email?.toLowerCase() === options.email!.toLowerCase());
+    }
+    if (options?.phone) {
+      results = results.filter((c) => c.phone === options.phone);
+    }
+    if (options?.adapterId) {
+      results = results.filter((c) => c.adapterId === options.adapterId);
+    }
+    return results;
+  }
+
+  saveConnectorInstallation(installation: ConnectorInstallationShape): void {
+    this.connectorInstallations.set(`${installation.tenantId}:${installation.id}`, installation);
+  }
+
+  getConnectorInstallation(tenantId: string, id: string): ConnectorInstallationShape | undefined {
+    return this.connectorInstallations.get(`${tenantId}:${id}`);
+  }
+
+  listConnectorInstallations(tenantId: string): ConnectorInstallationShape[] {
+    return Array.from(this.connectorInstallations.values()).filter((i) => i.tenantId === tenantId);
   }
 }

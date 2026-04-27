@@ -22,12 +22,36 @@ export const EvidenceBundleSessionSummary = z.object({
 });
 export type EvidenceBundleSessionSummary = z.infer<typeof EvidenceBundleSessionSummary>;
 
+export const EvidenceBundleCustomerSummary = z.object({
+  id: EntityId,
+  externalCustomerId: z.string(),
+  name: z.string().optional(),
+  email: z.string().optional(),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  adapterId: z.string(),
+  lastSyncedAt: Timestamp.optional(),
+});
+export type EvidenceBundleCustomerSummary = z.infer<typeof EvidenceBundleCustomerSummary>;
+
+export const EvidenceBundleConnectorInstallationSummary = z.object({
+  id: EntityId,
+  name: z.string(),
+  adapterType: z.string(),
+  status: z.string(),
+  safetyFlags: z.record(JsonValue),
+  lastVerifiedAt: Timestamp.optional(),
+  lastError: z.string().optional(),
+});
+export type EvidenceBundleConnectorInstallationSummary = z.infer<typeof EvidenceBundleConnectorInstallationSummary>;
+
 export const EvidenceBundleTicketSummary = z.object({
   id: EntityId,
   externalTicketId: z.string(),
   subject: z.string(),
   status: z.string(),
   priority: z.string(),
+  customerId: z.string().optional(),
   customerName: z.string().optional(),
   customerEmail: z.string().optional(),
   adapterId: z.string(),
@@ -210,6 +234,8 @@ export const EvidenceBundle = z.object({
   greetingSuggestions: z.array(EvidenceBundleGreetingSuggestionSummary).default([]),
   callRecordings: z.array(EvidenceBundleCallRecordingSummary).default([]),
   screenObservations: z.array(EvidenceBundleScreenObservationSummary).default([]),
+  customerReferences: z.array(EvidenceBundleCustomerSummary).default([]),
+  connectorInstallations: z.array(EvidenceBundleConnectorInstallationSummary).default([]),
   auditTimeline: z.array(EvidenceBundleAuditSummary),
   mockDevOnlyDisclaimers: z.array(z.string()),
   limitations: z.array(z.string()),

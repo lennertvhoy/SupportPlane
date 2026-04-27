@@ -153,7 +153,118 @@ async function main() {
     update: {},
   });
 
-  console.log('Seeded local demo tenants, roles, users, and adapters');
+  // Seed demo customer references
+  const customers = [
+    {
+      id: 'customer-acme-001',
+      tenantId: 'dev-tenant',
+      adapterId: 'zammad-adapter-001',
+      externalCustomerId: 'CUST-ACME-001',
+      name: 'Acme BVBA',
+      email: 'support@acme.example',
+      phone: '+32 3 555 01 01',
+      company: 'Acme BVBA',
+    },
+    {
+      id: 'customer-globex-001',
+      tenantId: 'alt-tenant',
+      adapterId: 'mock-adapter-alt-001',
+      externalCustomerId: 'CUST-GLOBEX-001',
+      name: 'Globex Corp',
+      email: 'it@globex.example',
+      phone: '+32 2 555 02 02',
+      company: 'Globex Corporation',
+    },
+  ];
+
+  for (const customer of customers) {
+    await prisma.customerReference.upsert({
+      where: { id: customer.id },
+      create: customer,
+      update: customer,
+    });
+  }
+
+  // Seed demo ticket references linked to customers
+  const tickets = [
+    {
+      id: 'ticket-101-ref',
+      tenantId: 'dev-tenant',
+      adapterId: 'zammad-adapter-001',
+      externalTicketId: 'TICKET-101',
+      subject: 'VPN not connecting for remote user',
+      status: 'open',
+      priority: 'normal',
+      customerId: 'customer-acme-001',
+      customerEmail: 'support@acme.example',
+      customerName: 'Acme BVBA',
+    },
+    {
+      id: 'ticket-102-ref',
+      tenantId: 'dev-tenant',
+      adapterId: 'zammad-adapter-001',
+      externalTicketId: 'TICKET-102',
+      subject: 'Printer offline on floor 3',
+      status: 'pending',
+      priority: 'low',
+      customerId: 'customer-acme-001',
+      customerEmail: 'support@acme.example',
+      customerName: 'Acme BVBA',
+    },
+  ];
+
+  for (const ticket of tickets) {
+    await prisma.ticketReference.upsert({
+      where: {
+        tenantId_adapterId_externalTicketId: {
+          tenantId: ticket.tenantId,
+          adapterId: ticket.adapterId,
+          externalTicketId: ticket.externalTicketId,
+        },
+      },
+      create: ticket,
+      update: {
+        subject: ticket.subject,
+        status: ticket.status,
+        priority: ticket.priority,
+        customerId: ticket.customerId,
+        customerEmail: ticket.customerEmail,
+        customerName: ticket.customerName,
+      },
+    });
+  }
+
+  // Seed demo connector installations
+  const installations = [
+    {
+      id: 'conn-inst-dev-001',
+      tenantId: 'dev-tenant',
+      name: 'Local Zammad Mock',
+      adapterType: 'zammad',
+      config: { mode: 'mock', baseUrl: 'http://localhost:3000' },
+      status: 'active',
+      safetyFlags: { validateBeforeWrite: true, maxRetries: 3, allowRealCalls: false },
+    },
+    {
+      id: 'conn-inst-alt-001',
+      tenantId: 'alt-tenant',
+      name: 'Alt Tenant Mock Connector',
+      adapterType: 'mock',
+      config: { mode: 'mock' },
+      status: 'active',
+      safetyFlags: { validateBeforeWrite: true, allowRealCalls: false },
+    },
+  ];
+
+  for (const inst of installations) {
+    await prisma.connectorInstallation.upsert({
+      where: { id: inst.id },
+      create: inst,
+      update: inst,
+    });
+  }
+
+  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, and connector installations');
 }
 
 main()

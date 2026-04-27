@@ -7,6 +7,8 @@ import type {
   CallEvent as CallEventShape,
   CallRecording as CallRecordingShape,
   ScreenObservation as ScreenObservationShape,
+  CustomerReference as CustomerReferenceShape,
+  ConnectorInstallation as ConnectorInstallationShape,
 } from '@supportplane/contracts';
 
 export interface SharingStateShape {
@@ -62,4 +64,14 @@ export interface Store {
   // SharingState
   getSharingState(tenantId: string, sessionId: string): Promise<SharingStateShape | undefined> | SharingStateShape | undefined;
   saveSharingState(state: SharingStateShape): Promise<void> | void;
+
+  // CustomerReference
+  saveCustomerReference(customer: CustomerReferenceShape): Promise<void> | void;
+  getCustomerReference(tenantId: string, id: string): Promise<CustomerReferenceShape | undefined> | CustomerReferenceShape | undefined;
+  listCustomerReferences(tenantId: string, options?: { email?: string; phone?: string; adapterId?: string }): Promise<CustomerReferenceShape[]> | CustomerReferenceShape[];
+
+  // ConnectorInstallation
+  saveConnectorInstallation(installation: ConnectorInstallationShape): Promise<void> | void;
+  getConnectorInstallation(tenantId: string, id: string): Promise<ConnectorInstallationShape | undefined> | ConnectorInstallationShape | undefined;
+  listConnectorInstallations(tenantId: string): Promise<ConnectorInstallationShape[]> | ConnectorInstallationShape[];
 }

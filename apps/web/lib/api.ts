@@ -87,8 +87,9 @@ export interface TicketReference {
   subject: string;
   status: string;
   priority: string;
-  customerEmail: string;
-  customerName: string;
+  customerId?: string;
+  customerEmail?: string;
+  customerName?: string;
   rawData: Record<string, unknown>;
   lastSyncedAt: string;
   createdAt: string;
@@ -184,6 +185,36 @@ export interface ConnectorStatus {
   connected: boolean;
   lastError?: string;
   metadata: Record<string, unknown>;
+}
+
+export interface CustomerReference {
+  id: string;
+  tenantId: string;
+  adapterId: string;
+  externalCustomerId: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  rawData?: Record<string, unknown>;
+  lastSyncedAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConnectorInstallation {
+  id: string;
+  tenantId: string;
+  name: string;
+  adapterType: string;
+  config: Record<string, unknown>;
+  secretReferenceIds: string[];
+  status: 'active' | 'inactive' | 'error';
+  safetyFlags: Record<string, unknown>;
+  lastVerifiedAt?: string;
+  lastError?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ConnectorTestResult {
@@ -540,6 +571,27 @@ export interface EvidenceBundleAuditSummary {
   createdAt: string;
 }
 
+export interface EvidenceBundleCustomerReferenceSummary {
+  id: string;
+  externalCustomerId: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  company?: string;
+  adapterId: string;
+  lastSyncedAt?: string;
+}
+
+export interface EvidenceBundleConnectorInstallationSummary {
+  id: string;
+  name: string;
+  adapterType: string;
+  status: string;
+  safetyFlags: Record<string, unknown>;
+  lastVerifiedAt?: string;
+  lastError?: string;
+}
+
 export interface EvidenceBundle {
   bundleId: string;
   tenantId: string;
@@ -588,6 +640,8 @@ export interface EvidenceBundle {
     mockDevOnly: boolean;
     startedAt: string;
   }>;
+  customerReferences: EvidenceBundleCustomerReferenceSummary[];
+  connectorInstallations: EvidenceBundleConnectorInstallationSummary[];
   sourceProvenance: {
     storeType: string;
     persistenceClaimed: boolean;
@@ -848,6 +902,20 @@ export const api = {
       { method: 'POST', body: JSON.stringify(body) },
       identity
     ),
+
+  // Customers
+  listCustomers: (identity?: DevIdentity) =>
+    apiFetch<{ customers: CustomerReference[] }>('/customers', { method: 'GET' }, identity).then(r => r.customers),
+
+  getCustomer: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ customer: CustomerReference }>(`/customers/${id}`, { method: 'GET' }, identity).then(r => r.customer),
+
+  // Connector installations
+  listConnectorInstallations: (identity?: DevIdentity) =>
+    apiFetch<{ installations: ConnectorInstallation[] }>('/connector-installations', { method: 'GET' }, identity).then(r => r.installations),
+
+  getConnectorInstallation: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ installation: ConnectorInstallation }>(`/connector-installations/${id}`, { method: 'GET' }, identity).then(r => r.installation),
 
   // Evidence bundle
   getEvidenceBundle: (sessionId: string, identity?: DevIdentity) =>

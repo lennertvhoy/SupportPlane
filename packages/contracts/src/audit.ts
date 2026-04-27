@@ -74,6 +74,20 @@ export const AuditEventType = z.enum([
   'manual_screenshot_metadata_attached',
   'structured_screen_observation_uploaded',
   'screen_observation_redaction_applied',
+  // BL-020 Ticket Context and Connector Safety Foundation
+  'customer_lookup',
+  'customer_created',
+  'ticket_context_lookup',
+  'ticket_context_lookup_failed',
+  'ticket_linked_to_session',
+  'ticket_unlinked_from_session',
+  'ticket_linked_to_call',
+  'ticket_unlinked_from_call',
+  'connector_installation_created',
+  'connector_installation_updated',
+  'connector_config_validated',
+  'connector_config_validation_failed',
+  'connector_safety_blocked',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;
