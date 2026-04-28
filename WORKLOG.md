@@ -2174,3 +2174,83 @@ CTO-identified closure blockers from prior handoff:
 ### Next Recommended Action
 
 - Review BACKLOG.md for next slice. Candidate: BL-096 (connector installation config editor with JSON schema validation) or BL-097 (connector credential reference / secret broker foundation).
+
+
+---
+
+## 2026-04-28 — BL-097 Credential Reference Foundation Closure
+
+### Commits
+
+- `b6b42ce571edbccb742eaff447338afb622aa8a3` — BL-097: Connector Credential Reference / Secret Broker Foundation
+
+### Worktree
+
+```
+## main...origin/main
+ M STATUS.md
+ M NEXT_ACTIONS.md
+ M BACKLOG.md
+ M WORKLOG.md
+ M docs/EVIDENCE_LOG.md
+ M docs/ACCEPTANCE_FREEZES.md
+ M PROJECT_STATE.yaml
+```
+(clean after commit)
+
+### What Changed
+
+- **Prisma schema:** Added `ConnectorCredentialReference` model with `id`, `tenantId`, `connectorType`, `displayName`, `description`, `status`, `secretKind`, `secretRef`, `lastValidatedAt`, `createdAt`, `updatedAt`, `createdByUserId`, `updatedByUserId`. Added indexes on `tenantId` and `[tenantId, connectorType]`. Added relation to `Tenant`.
+- **Migration:** Created `prisma/migrations/20260428160000_bl097_credential_reference_foundation/migration.sql`.
+- **Contracts:** Created `packages/contracts/src/connector-credential-reference.ts` with Zod schemas for `ConnectorCredentialReference`, `ConnectorCredentialReferenceCreateRequest`, `ConnectorCredentialReferenceUpdateRequest`, and `EvidenceBundleCredentialReferenceSummary`. Exported from index.
+- **Evidence bundle:** Added `toCredentialReferenceSummaries()` in builder with `linked` boolean derived from installations. Added `credentialReferences` field to `EvidenceBundle` contract. Added Connector Installations and Credential References sections to markdown output.
+- **Audit events:** Added `credential_reference_created`, `credential_reference_updated`, `credential_reference_linked`, `credential_reference_unlinked` to `AuditEventType`.
+- **Store layer:** Added `saveCredentialReference`, `getCredentialReference`, `listCredentialReferences` to `Store` interface, `InMemoryStore`, and `PrismaStore` with full mapping functions.
+- **API module:** Created `CredentialReferencesController` with `POST /`, `GET /`, `GET /:id`, `PATCH /:id`. Created `CredentialReferencesService` with RBAC enforcement and server-side redaction (all responses show `secretRef: '[REDACTED]'`). Created `CredentialReferencesModule`.
+- **Connector linking:** Added `POST /connector-installations/:id/link-credential` and `POST /:id/unlink-credential` to `ConnectorInstallationsController` and `ConnectorInstallationsService`, with audit events.
+- **RBAC:** Added `credential_reference:read` (viewer/admin/operator/owner) and `credential_reference:write` (admin/operator/owner) to `ROLE_PERMISSIONS`.
+- **App module:** Registered `CredentialReferencesModule` and added `credential-references` route to `CurrentIdentityMiddleware`.
+- **Web API client:** Added `ConnectorCredentialReference` type and methods (`listCredentialReferences`, `getCredentialReference`, `createCredentialReference`, `updateCredentialReference`, `linkCredentialReference`, `unlinkCredentialReference`) to `apps/web/lib/api.ts`.
+- **Web UI:** Updated `ConnectorPanel.tsx` to show credential references per installation with status badges, link/unlink dropdown for admin, and read-only state for viewers.
+- **Seed data:** Added 3 demo credential references (`cred-ref-dev-001`, `cred-ref-dev-002`, `cred-ref-alt-001`) with `secretRef: 'local-dev-placeholder'`. Linked `cred-ref-dev-001` to `conn-inst-dev-001`.
+- **Tests:** Added 13 new credential reference tests to `apps/api/test/api.test.ts` covering create, read, update, redaction, RBAC denial, link, unlink.
+- **Screenshot script:** Created `scripts/bl097_screenshots.js`.
+
+### Verification
+
+- `npx tsc --noEmit -p apps/api/tsconfig.json` passed (0 errors).
+- `npx tsc --noEmit -p apps/web/tsconfig.json` passed (0 errors).
+- `npx prisma generate` passed.
+- `npx prisma migrate deploy` applied migration `20260428160000_bl097_credential_reference_foundation`.
+- `npx prisma db seed` passed (seeded credential references and link).
+- `cd apps/api && npm test` passed: 134/134 tests (13 suites).
+- `npm test --workspace @supportplane/contracts` passed: 29/29 tests.
+- `npm test --workspace @supportplane/web` passed: 15/15 tests.
+- `npm test --workspace @supportplane/connectors` passed: 16/16 tests.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- API runtime verified: `curl http://localhost:4110/credential-references` returns redacted list.
+- Web runtime verified: `curl http://localhost:3200/` returns HTTP 200.
+
+### Evidence Inventory
+
+- Screenshot folder: `output/playwright/session-097-credential-reference-foundation-canonical/`
+- Screenshot count: 6 (all unique, 0 duplicates)
+  - 01-admin-connector-panel-with-credential-refs.png: Admin view showing expanded connector installation with linked credential reference "Dev Zammad API Token (Placeholder)" active
+  - 02-admin-credential-ref-selector.png: Admin view scrolled to Credential References section showing link dropdown
+  - 03-viewer-readonly-credential-refs.png: Viewer view showing same credential reference with "View-only. Admin role required to modify installation settings."
+  - 04-api-credential-refs-list-redacted.png: API JSON showing credential references list with `secretRef: "[REDACTED]"`
+  - 05-api-credential-ref-single-redacted.png: API JSON for single credential reference with `secretRef: "[REDACTED]"`
+  - 06-api-evidence-bundle-credential-refs.png: Evidence bundle JSON showing `credentialReferences` array with metadata only (no secrets)
+- Evidence refs: EV-2026-04-28-058 through EV-2026-04-28-063
+
+### Risks and Limitations
+
+- `secretRef` values are local-dev opaque placeholders (`local-dev-opaque-placeholder-NOT-A-REAL-SECRET`). No real production credential broker, Vault/KMS, or encrypted secret storage exists.
+- No secret reference resolution at connector runtime; the global `/connectors/zammad/*` singleton remains env-driven and separate from per-tenant credential references.
+- Real writeback readiness requires future network path validation, tenant admin configuration, and production credential management.
+- Credential reference validation (`lastValidatedAt`) is stored but not actively verified against real endpoints.
+
+### Next Recommended Action
+
+- Review BACKLOG.md for next slice. Candidates: BL-096 (connector installation config editor with JSON schema validation), BL-098 (connector runtime wiring to credential references), or governance/compliance backlog items.

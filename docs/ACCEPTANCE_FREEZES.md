@@ -1013,3 +1013,52 @@ and must be protected from quiet regression.
   - The global `/connectors/zammad/*` singleton remains separate from per-tenant DB-backed `ConnectorInstallation`.
 - explicit_non_claims:
   - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
+
+
+---
+
+## AF-2026-04-28-014 — BL-097 Credential Reference Foundation
+
+- backlog_id: BL-097
+- status: accepted
+- accepted_at: 2026-04-28T17:30:00+02:00
+- accepted_by: coding-agent
+- commit: b6b42ce571edbccb742eaff447338afb622aa8a3
+- evidence_refs:
+  - EV-2026-04-28-058
+  - EV-2026-04-28-059
+  - EV-2026-04-28-060
+  - EV-2026-04-28-061
+  - EV-2026-04-28-062
+  - EV-2026-04-28-063
+- evidence_folder: output/playwright/session-097-credential-reference-foundation-canonical/
+- screenshot_count: 6
+- validation_summary:
+  - `npx tsc --noEmit -p apps/api/tsconfig.json` passed (0 errors).
+  - `npx tsc --noEmit -p apps/web/tsconfig.json` passed (0 errors).
+  - `npx prisma generate` passed.
+  - `npx prisma migrate deploy` applied migration `20260428160000_bl097_credential_reference_foundation`.
+  - `npx prisma db seed` passed.
+  - `cd apps/api && npm test` passed: 134/134 tests (13 suites).
+  - `npm test --workspace @supportplane/contracts` passed: 29/29 tests.
+  - `npm test --workspace @supportplane/web` passed: 15/15 tests.
+  - `npm test --workspace @supportplane/connectors` passed: 16/16 tests.
+  - `python3 scripts/check_state_docs.py` passed.
+  - `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+  - API runtime verified via curl with dev headers.
+  - Web runtime verified via curl HTTP 200.
+- regression_guard:
+  - `ConnectorCredentialReference` Prisma model must keep all fields including `secretRef`.
+  - `GET /credential-references` and `GET /credential-references/:id` must always return `secretRef: "[REDACTED]"`.
+  - `POST /credential-references` must require `credential_reference:write` permission.
+  - `POST /connector-installations/:id/link-credential` and `/unlink-credential` must require `connector_installation:write`.
+  - Viewer role must be denied write operations with 403.
+  - Evidence bundle JSON must include `credentialReferences` array with metadata only (no `secretRef`).
+  - `ConnectorPanel.tsx` must show credential references per installation with status badges and link/unlink controls for admin.
+- known_limitations:
+  - `secretRef` values are local-dev opaque placeholders only. No production credential broker, Vault/KMS, or encrypted secret storage exists.
+  - No secret reference resolution at connector runtime; global connector singleton remains env-driven.
+  - Credential reference validation is stored but not actively verified against real endpoints.
+- explicit_non_claims:
+  - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
+  - No real secret broker, credential vault, or encrypted secret storage was implemented.

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-28T14:40:00+02:00
+  updated_at: 2026-04-28T17:30:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,7 +42,7 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 93afe787847964b666e502d083b0dbc63cc79d86
+    head: b6b42ce571edbccb742eaff447338afb622aa8a3
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
@@ -67,7 +67,7 @@ current_state:
     type: governed_ai_support_cockpit
     lifecycle_stage: mvp_foundation
     foundation_history:
-      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094]
+      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094, BL-095, BL-097]
       summary: >
         Early slices established contracts/schema, mock-first API, cockpit UI,
         mock AI gateway, local Podman-compatible topology, Zammad connector
@@ -385,7 +385,7 @@ current_state:
     status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: 26cf3154905b9223238fe65136744c5c0ce96386
+    head: b6b42ce571edbccb742eaff447338afb622aa8a3
     process_or_container:
       - node process (NestJS) on port 4110
       - node process (Next.js) on port 3200
@@ -531,7 +531,7 @@ current_state:
           - Added scripts/bl095_screenshots.js with hard max-20 cap and duplicate detection
           - Updated docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md with current endpoint truth and credential handling note
           - Ran full validation gate with exact command results
-      final_closure_commit: ff83fdf8d530d549fd7a24c6820f07251f0aaeb5
+      final_closure_commit: d42b226fbef59eb078675a1b001b17a9038d12d2
       notes:
         - connector installation settings are editable by admin/operator; viewer denied server-side with 403
         - config secrets redacted to [REDACTED] in all GET responses and evidence bundles
@@ -539,6 +539,46 @@ current_state:
         - cross-tenant connector installation access returns 404
         - connector readiness returns readyForRealWriteback=false and realNetwork=false
         - delivery policy controls still deny real writeback
+        - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
+    bl_097_status:
+      completed: true
+      status: closure_ready
+      scope: connector_credential_reference_secret_broker_foundation
+      backlog_id: BL-097
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      prisma_schema: prisma/schema.prisma
+      migration: prisma/migrations/20260428160000_bl097_credential_reference_foundation/
+      runtime:
+        store_mode: postgres
+        auth_mode: local
+        api_url: http://localhost:4110
+        web_url: http://localhost:3200
+        postgres: localhost:5434
+      new_api_endpoints:
+        - POST /credential-references
+        - GET /credential-references
+        - GET /credential-references/:id
+        - PATCH /credential-references/:id
+        - POST /connector-installations/:id/link-credential
+        - POST /connector-installations/:id/unlink-credential
+      new_audit_events:
+        - credential_reference_created
+        - credential_reference_updated
+        - credential_reference_linked
+        - credential_reference_unlinked
+      screenshot_folder: output/playwright/session-097-credential-reference-foundation-canonical/
+      screenshot_count: 6
+      validation: full_gate_passed
+      final_closure_commit: b6b42ce571edbccb742eaff447338afb622aa8a3
+      notes:
+        - credential references are tenant-scoped and stored in PostgreSQL via Prisma
+        - all API responses redact secretRef to [REDACTED]; raw secret values never leave the server
+        - evidence bundles include credential reference summaries with metadata only (no secrets)
+        - admin/operator can link/unlink credential references to connector installations
+        - viewer sees read-only credential reference list; server-side 403 on write operations
+        - secretRef values are local-dev opaque placeholders; no production credential broker exists
         - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
     bl_093_status:
       completed: true

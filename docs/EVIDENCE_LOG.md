@@ -1603,3 +1603,25 @@
   - Credential/config JSON storage is explicitly local/mock/dev-only, not production credential management.
 - Type: browser-runtime-verification
 - as_of: 2026-04-28T16:00:00+02:00
+
+
+## EV-2026-04-28-058 through EV-2026-04-28-063 — BL-097 Credential Reference Foundation (Canonical Closure)
+
+- Folder: `output/playwright/session-097-credential-reference-foundation-canonical/`
+- Screenshots: 6 (all unique, 0 duplicates)
+  - 01-admin-connector-panel-with-credential-refs.png: Admin view showing expanded connector installation with linked credential reference "Dev Zammad API Token (Placeholder)" active status badge
+  - 02-admin-credential-ref-selector.png: Admin view scrolled to Credential References section showing link dropdown selector for available credential references
+  - 03-viewer-readonly-credential-refs.png: Viewer view showing same credential reference with "View-only. Admin role required to modify installation settings." message; no unlink button visible
+  - 04-api-credential-refs-list-redacted.png: API JSON response from `GET /credential-references` showing credential references with `secretRef: "[REDACTED]"`
+  - 05-api-credential-ref-single-redacted.png: API JSON response from `GET /credential-references/:id` showing single credential reference with `secretRef: "[REDACTED]"`
+  - 06-api-evidence-bundle-credential-refs.png: Evidence bundle JSON showing `credentialReferences` array with metadata only (id, displayName, connectorType, status, secretKind, linked, lastValidatedAt) — no secret values
+- Proves:
+  - Credential references are created, stored, and listed with tenant scoping.
+  - All API responses redact `secretRef` to `[REDACTED]`; raw secret values never leave the server.
+  - Evidence bundles include credential reference summaries without secret values.
+  - Admin can view linked credential references and has link/unlink UI controls.
+  - Viewer sees read-only credential reference list with no modification controls.
+  - Connector installations reference credentials by ID via `secretReferenceIds` array.
+  - Audit events track credential reference lifecycle (created, updated, linked, unlinked).
+- Type: browser-runtime-verification
+- as_of: 2026-04-28T17:30:00+02:00
