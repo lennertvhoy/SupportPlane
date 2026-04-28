@@ -946,7 +946,7 @@ and must be protected from quiet regression.
 - Scope: ConnectorInstallation Prisma model extended with `displayName`, `description`, `capabilities`, `mockMode`, `enabled`, `timeoutMs`, and `validateBeforeWrite` safety flag. Prisma migration `20260428131300_bl095_connector_installation_settings` applied. API endpoints `POST /connector-installations`, `PATCH /connector-installations/:id`, `POST /connector-installations/:id/validate`, `POST /connector-installations/:id/test` with Zod contract validation, RBAC enforcement (`connector_installation:read/write/test`), server-side secret redaction (`[REDACTED]`), cross-tenant denial (404), viewer mutation denial (403). Web UI ConnectorPanel with expandable installation cards, safe field editing, mock mode locked ON, credentials placeholder (`•••••••• managed server-side`), and viewer read-only state. Evidence bundle includes `connectorInstallations` summaries with redaction. Connector readiness returns `readyForRealWriteback: false`. Delivery policy still denies real writeback.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
-- final_closure_commit: 6b91c924e6ea8f7e3d9ce1f09cb3cf96a9dd91b5
+- final_closure_commit: ff83fdf8d530d549fd7a24c6820f07251f0aaeb5
 - process_or_container:
   - node process (NestJS API via tsx) on port 4110
   - node process (Next.js dev) on port 3200

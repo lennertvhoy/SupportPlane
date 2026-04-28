@@ -531,7 +531,7 @@ current_state:
           - Added scripts/bl095_screenshots.js with hard max-20 cap and duplicate detection
           - Updated docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md with current endpoint truth and credential handling note
           - Ran full validation gate with exact command results
-      final_closure_commit: 6b91c924e6ea8f7e3d9ce1f09cb3cf96a9dd91b5
+      final_closure_commit: ff83fdf8d530d549fd7a24c6820f07251f0aaeb5
       notes:
         - connector installation settings are editable by admin/operator; viewer denied server-side with 403
         - config secrets redacted to [REDACTED] in all GET responses and evidence bundles
