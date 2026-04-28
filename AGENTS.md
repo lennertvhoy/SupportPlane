@@ -281,6 +281,42 @@ cross-tenant denial, evidence/no-secret proof, and persistence/restart proof
 when requested. Validation summaries are not enough; final handoffs must list
 exact commands and pass/fail results.
 
+### Screenshot budget and quality rule (mandatory)
+
+- Maximum 20 screenshots per backlog item. Exceeding this cap requires explicit
+  user approval or backlog item splitting.
+- Screenshots must be sequentially numbered with descriptive kebab-case names.
+- Each screenshot must show a distinct state, interaction, or panel; redundant
+  near-identical captures of the same unchanged page are unacceptable.
+- Viewport-only captures (not full-page) are preferred when scrolling to specific
+  panels; full-page is acceptable only when the entire vertical state matters.
+- The reproducible screenshot script must be committed (e.g. under `scripts/`).
+
+### Final handoff report structure rule (mandatory)
+
+Every final handoff must include a structured report with all of the following
+sections. Missing sections make the handoff incomplete.
+
+1. **Commits** — full hashes for all commits in the slice, in order
+2. **Worktree** — `git status --short --branch` output proving clean state
+3. **What Changed** — concise bullet list of code, schema, UI, and doc changes
+4. **Verification** — exact commands run and exact pass/fail results (counts,
+   not "tests pass")
+5. **Evidence Inventory** — screenshot folder path, count, and a numbered list
+   mapping each screenshot file to the state it proves
+6. **Risks and Limitations** — honest list of what is NOT implemented, what is
+   mock-only, and what requires future work
+7. **Next Recommended Action** — one concrete next step or backlog item
+
+### Better report quality rule (mandatory)
+
+- Do not use vague phrases like "validated" or "tests pass" without listing
+  exact commands and counts.
+- Do not claim "complete" when any required section is missing or any
+  verification command failed.
+- Do not omit the reproducible screenshot script from commits.
+- Do not present screenshots without explaining what each one proves.
+
 These rules are repo truth. Violations mean "not closure-grade."}}}}
 
 Use `prompts/FINAL_HANDOFF_TEMPLATE.md` when you need a canonical handoff shape.

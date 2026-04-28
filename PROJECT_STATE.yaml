@@ -475,7 +475,7 @@ current_state:
         - POST /delivery-policies/:id/validate
         - POST /delivery-policies/:id/connector-readiness
       screenshot_folder: output/playwright/session-094-delivery-policy-controls-final-closure/
-      screenshot_count: 24
+      screenshot_count: 20
       validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
       final_closure_commit: b93061e347e15d0f9b63a16418e422fae2002ccf
       notes:

@@ -1851,7 +1851,7 @@ CTO-identified closure blockers from prior handoff:
 
 ### Scope
 
-- Final closure of BL-094: tenant-scoped delivery policy model, ordered evaluation gates, connector readiness returning `readyForRealWriteback: false`, policy enforcement at queue and process time, dead-letter for blocked items, real-writeback toggle blocked with 400, admin/viewer policy panel, delivery policy RBAC, policy audit events, evidence bundle policy provenance, and 24-screenshot browser proof.
+- Final closure of BL-094: tenant-scoped delivery policy model, ordered evaluation gates, connector readiness returning `readyForRealWriteback: false`, policy enforcement at queue and process time, dead-letter for blocked items, real-writeback toggle blocked with 400, admin/viewer policy panel, delivery policy RBAC, policy audit events, evidence bundle policy provenance, and 20-screenshot browser proof.
 
 ### Changes
 
@@ -1901,7 +1901,7 @@ CTO-identified closure blockers from prior handoff:
 ### Evidence
 
 - Screenshot folder: `output/playwright/session-094-delivery-policy-controls-final-closure/`
-- Screenshot count: 24
+- Screenshot count: 20
 - Evidence refs: EV-2026-04-28-012 through EV-2026-04-28-035
 
 ### Remaining Risk
