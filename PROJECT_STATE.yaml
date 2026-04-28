@@ -381,7 +381,7 @@ current_state:
       screenshot_folder: output/playwright/session-098-connector-runtime-readiness-final-closure/
       screenshot_count: 15
       validation: full_gate_passed
-      final_closure_commit: 89a8590dacfff01646b2459228bf7734df6aefff
+      final_closure_commit: 6b8e36676828ae70d6f1065128674d6fe50d38a9
       notes:
         - config validation enforces mock-only safety: rejects mockMode:false, rejects unsafe real-network fields
         - runtime readiness returns mockReady based on mockMode && enabled; realReady is always false

@@ -1072,7 +1072,7 @@ and must be protected from quiet regression.
 - status: accepted
 - accepted_at: 2026-04-28T18:35:00+02:00
 - accepted_by: coding-agent
-- commit: 89a8590dacfff01646b2459228bf7734df6aefff
+- commit: 6b8e36676828ae70d6f1065128674d6fe50d38a9
 - evidence_refs:
   - EV-2026-04-28-064
   - EV-2026-04-28-065
