@@ -1,0 +1,3 @@
+GET /credential-references/0562151e-df45-497c-ba66-6639c538909e as alt-tenant admin
+Status: 404
+Body: {"message":"Credential reference 0562151e-df45-497c-ba66-6639c538909e not found","error":"Not Found","statusCode":404}

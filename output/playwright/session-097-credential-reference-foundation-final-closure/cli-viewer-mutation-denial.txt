@@ -1,0 +1,3 @@
+POST /credential-references as viewer
+Status: 403
+Body: {"message":"Forbidden: credential_reference:write requires a higher role","error":"Forbidden","statusCode":403}

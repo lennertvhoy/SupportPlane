@@ -568,7 +568,7 @@ current_state:
         - credential_reference_updated
         - credential_reference_linked
         - credential_reference_unlinked
-      screenshot_folder: output/playwright/session-097-credential-reference-foundation-canonical/
+      screenshot_folder: output/playwright/session-097-credential-reference-foundation-final-closure/
       screenshot_count: 6
       validation: full_gate_passed
       final_closure_commit: b6b42ce571edbccb742eaff447338afb622aa8a3

@@ -2234,7 +2234,7 @@ CTO-identified closure blockers from prior handoff:
 
 ### Evidence Inventory
 
-- Screenshot folder: `output/playwright/session-097-credential-reference-foundation-canonical/`
+- Screenshot folder: `output/playwright/session-097-credential-reference-foundation-final-closure/`
 - Screenshot count: 6 (all unique, 0 duplicates)
   - 01-admin-connector-panel-with-credential-refs.png: Admin view showing expanded connector installation with linked credential reference "Dev Zammad API Token (Placeholder)" active
   - 02-admin-credential-ref-selector.png: Admin view scrolled to Credential References section showing link dropdown

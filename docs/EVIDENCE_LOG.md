@@ -1607,7 +1607,7 @@
 
 ## EV-2026-04-28-058 through EV-2026-04-28-063 — BL-097 Credential Reference Foundation (Canonical Closure)
 
-- Folder: `output/playwright/session-097-credential-reference-foundation-canonical/`
+- Folder: `output/playwright/session-097-credential-reference-foundation-final-closure/`
 - Screenshots: 6 (all unique, 0 duplicates)
   - 01-admin-connector-panel-with-credential-refs.png: Admin view showing expanded connector installation with linked credential reference "Dev Zammad API Token (Placeholder)" active status badge
   - 02-admin-credential-ref-selector.png: Admin view scrolled to Credential References section showing link dropdown selector for available credential references

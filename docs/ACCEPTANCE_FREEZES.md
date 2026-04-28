@@ -1031,7 +1031,7 @@ and must be protected from quiet regression.
   - EV-2026-04-28-061
   - EV-2026-04-28-062
   - EV-2026-04-28-063
-- evidence_folder: output/playwright/session-097-credential-reference-foundation-canonical/
+- evidence_folder: output/playwright/session-097-credential-reference-foundation-final-closure/
 - screenshot_count: 6
 - validation_summary:
   - `npx tsc --noEmit -p apps/api/tsconfig.json` passed (0 errors).
