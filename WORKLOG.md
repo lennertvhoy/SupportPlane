@@ -4,6 +4,60 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-28 - BL-046–BL-053 Backlog Truth Audit
+
+**Type:** backlog_truth_audit
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** b8498af3d96896edc54d5bba23ba60a5c838803e
+**Worktree:** clean_after_audit_commit
+
+### What changed
+
+- Audited `BL-046` through `BL-053` against committed evidence, acceptance freezes, and repo truth.
+- **BL-046 downgraded from `[accepted]` to `[partial/local-mock]` in `BACKLOG.md`.** The backlog text says "Scaffold Tauri operator companion with explicit start/stop sharing state." Direct repo search found:
+  - `apps/operator-companion/` does not exist
+  - No `Cargo.toml`, `tauri.conf.json`, or `.rs` files anywhere in the repo
+  - The implemented scope is web-based mock screen observations in Call Console UI panels
+  - Sharing state exists as a web API, not in a Tauri desktop app
+  - Acceptance freeze AF-2026-04-27-004 accepted the web-based mock implementation, not a Tauri app
+- **BL-047, BL-048, BL-049 remain `[accepted]` in `BACKLOG.md`.** Evidence supports the implemented mock-only scope:
+  - AF-2026-04-27-005 (Screen Context Hardening Wave) accepted with 10 screenshots
+  - Sharing state transitions, active-window mock metadata, manual screenshot metadata, structured upload, and redaction are all implemented and browser-verified
+  - Honest mock-only limitations are documented in the acceptance freeze notes
+- **BL-050 remains `[accepted]` in `BACKLOG.md`.** Evidence supports the implemented scope:
+  - AF-2026-04-27-006 (PostgreSQL Persistence Foundation) accepted with 14 screenshots
+  - Prisma schema includes `ScreenObservation` and `ScreenObservationSharingState` models
+  - `PrismaStore` implements full PostgreSQL CRUD with restart survival verified
+  - Note updated to clarify actual implementation scope was broader PostgreSQL persistence foundation
+- **BL-051, BL-052, BL-053 remain `[partial/local-mock]` in `BACKLOG.md`.** No evidence found to upgrade them:
+  - No dedicated AI screen summary flow from structured observations (BL-051)
+  - AI Context Quality panel shows observation-derived packets but no dedicated screen context panel (BL-052)
+  - Basic mock safety disclaimers visible but no full privacy/consent workflow (BL-053)
+- Updated `PROJECT_STATE.yaml` `bl_046_status` with `backlog_truth_audit_note`.
+- Updated `docs/ACCEPTANCE_FREEZES.md` AF-2026-04-27-004 with backlog truth audit note.
+
+### Verification
+
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `npm run validate` passed.
+- `git status --short --branch` showed clean worktree after commit.
+
+### Evidence
+
+- Repo file search: `apps/operator-companion/` not found; no Tauri/Rust artifacts found
+- Acceptance freezes: AF-2026-04-27-004 (BL-046), AF-2026-04-27-005 (BL-047/048/049), AF-2026-04-27-006 (BL-050)
+- Screenshot folders: `session-046-operator-companion-closure-canonical/` (9 screenshots), `session-047-049-screen-context-hardening-final-closure/` (10 screenshots), `session-050-postgres-persistence-foundation-final-closure/` (14 screenshots)
+
+### Remaining Risk
+
+- BL-046 Tauri operator companion remains unimplemented. Future work if desired.
+- All screen observation behavior remains mock-only with visible UI warnings.
+
+---
+
 ## 2026-04-28 - BL-094 Governance Repair and Max-20 Closure Hygiene Pass
 
 **Type:** governance_repair_and_closure_hygiene

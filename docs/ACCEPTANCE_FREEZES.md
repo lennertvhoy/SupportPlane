@@ -547,6 +547,7 @@ and must be protected from quiet regression.
   - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
   - No real database persistence; all data is in-memory and lost on API restart.
   - Closure hygiene pass fixed API controller to return wrapped `ScreenObservationCaptureResponse` and resolved lint errors.
+  - Backlog truth audit (2026-04-28): the accepted scope is web-based mock screen observations in Call Console UI panels. The BACKLOG.md text 'Scaffold Tauri operator companion' was not fulfilled; no Tauri app, Rust code, or `apps/operator-companion/` directory exists. BL-046 downgraded to `[partial/local-mock]` in BACKLOG.md to reflect this gap.
 
 ## AF-2026-04-27-005: BL-047/048/049 Screen Context Hardening Wave final closure
 

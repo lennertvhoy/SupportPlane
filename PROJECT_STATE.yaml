@@ -291,6 +291,7 @@ current_state:
         real_ocr: false
         screenshot_folder: output/playwright/session-046-operator-companion-closure-canonical/
         screenshot_count: 9
+      backlog_truth_audit_note: BACKLOG.md text says 'Scaffold Tauri operator companion' but apps/operator-companion/ does not exist; no Tauri/Rust/Cargo.toml found. Implemented scope is web-based mock screen observations in Call Console UI panels. BL-046 downgraded to [partial/local-mock] in BACKLOG.md.
     bl_047_048_049_status:
       completed: true
       scope: screen_context_hardening_wave
@@ -900,15 +901,4 @@ current_state:
   documentation:
     status: observed
     primary_user_guide: README.md
-    live_docs:
-      - README.md
-      - AGENTS.md
-      - STATUS.md
-      - PROJECT_STATE.yaml
-      - PROJECT_DNA.yaml
-      - PROJECT_ADAPTER.yaml
-      - NEXT_ACTIONS.md
-      - BACKLOG.md
-      - WORKLOG.md
-      - docs/EVIDENCE_LOG.md
-      - docs/ACCEPTANCE_FREEZES.md
+    live_docs: [README.md, AGENTS.md, STATUS.md, PROJECT_STATE.yaml, PROJECT_DNA.yaml, PROJECT_ADAPTER.yaml, NEXT_ACTIONS.md, BACKLOG.md, WORKLOG.md, docs/EVIDENCE_LOG.md, docs/ACCEPTANCE_FREEZES.md]

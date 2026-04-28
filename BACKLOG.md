@@ -80,11 +80,11 @@ Status markers:
 
 ## MVP 3 - Operator Companion
 
-- [BL-046] `[accepted]` Scaffold Tauri operator companion with explicit start/stop sharing state.
-- [BL-047] `[accepted]` Implement active-window metadata capture and visible sharing indicator.
-- [BL-048] `[accepted]` Implement manual screenshot-to-session capture with raw image retention disabled by default.
-- [BL-049] `[accepted]` Implement local redaction placeholder and structured ScreenObservation upload.
-- [BL-050] `[accepted]` Implement screen observation API, persistence, timeline event, and audit event.
+- [BL-046] `[partial/local-mock]` Screen observation mock UI, capture/review/context-packet APIs, and sharing state are implemented in Call Console web panels with honest mock labels. Tauri operator companion scaffold does not exist. No native OS integration, real screen capture, raw pixels, clipboard access, OCR, or desktop monitoring.
+- [BL-047] `[accepted]` Implement active-window metadata capture and visible sharing indicator. (mock-only deterministic metadata; no real OS active window capture)
+- [BL-048] `[accepted]` Implement manual screenshot-to-session capture with raw image retention disabled by default. (metadata-only capture; no real screenshot image storage)
+- [BL-049] `[accepted]` Implement local redaction placeholder and structured ScreenObservation upload. (pattern-based redaction applied before storage)
+- [BL-050] `[accepted]` Implement screen observation API, persistence, timeline event, and audit event. (Actual implementation scope was PostgreSQL persistence foundation including ScreenObservation and ScreenObservationSharingState models; screen observation APIs, timeline events, and audit events were covered by BL-046/047/048/049)
 - [BL-051] `[partial/local-mock]` Implement AI screen summary flow using structured observations. (mock-only, limited)
 - [BL-052] `[partial/local-mock]` Implement cockpit screen context panel and AI Context Quality integration. (panel exists, AI summary is mock-only)
 - [BL-053] `[partial/local-mock]` Add privacy/consent checks and operator-companion acceptance evidence. (basic disclaimers visible, no full consent workflow)
