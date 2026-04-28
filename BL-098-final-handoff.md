@@ -3,6 +3,7 @@
 ## Commits
 
 - `6b8e36676828ae70d6f1065128674d6fe50d38a9` — BL-098 implementation: contracts, service, controller, UI, tests, verification, screenshots
+- `129cbecdc3b846b09676d376084ef18b6013fcff` — chore: update BL-098 final commit hash in state docs and handoff
 
 ## Worktree
 
