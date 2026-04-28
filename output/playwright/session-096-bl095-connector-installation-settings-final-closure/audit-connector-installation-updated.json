@@ -1,0 +1,71 @@
+[
+  {
+    "id": "216fbe9b-111a-4ede-b3c8-4db3ee6a2303",
+    "tenantId": "dev-tenant",
+    "sessionId": null,
+    "eventType": "connector_installation_updated",
+    "actorType": "user",
+    "actorId": "dev-admin",
+    "action": "connector_installation_updated",
+    "resourceType": "connector_installation",
+    "resourceId": "conn-inst-dev-001",
+    "metadata": {
+      "newStatus": "active",
+      "updatedBy": "dev-admin",
+      "newEnabled": true,
+      "newMockMode": true,
+      "previousStatus": "active",
+      "previousEnabled": true,
+      "previousMockMode": true
+    },
+    "hashChainPrevious": null,
+    "integrityHash": "h74587099",
+    "createdAt": "2026-04-28T14:10:38.471Z"
+  },
+  {
+    "id": "dd095fa3-5194-4722-95c7-73e2fec0e5c2",
+    "tenantId": "dev-tenant",
+    "sessionId": null,
+    "eventType": "connector_installation_updated",
+    "actorType": "user",
+    "actorId": "dev-admin",
+    "action": "connector_installation_updated",
+    "resourceType": "connector_installation",
+    "resourceId": "conn-inst-dev-001",
+    "metadata": {
+      "newStatus": "active",
+      "updatedBy": "dev-admin",
+      "newEnabled": true,
+      "newMockMode": true,
+      "previousStatus": "active",
+      "previousEnabled": true,
+      "previousMockMode": true
+    },
+    "hashChainPrevious": null,
+    "integrityHash": "h6d367117",
+    "createdAt": "2026-04-28T14:10:32.156Z"
+  },
+  {
+    "id": "cedac63b-ed8d-4229-b5ba-f20b00651efb",
+    "tenantId": "dev-tenant",
+    "sessionId": null,
+    "eventType": "connector_installation_updated",
+    "actorType": "user",
+    "actorId": "dev-admin",
+    "action": "connector_installation_updated",
+    "resourceType": "connector_installation",
+    "resourceId": "conn-inst-dev-001",
+    "metadata": {
+      "newStatus": "active",
+      "updatedBy": "dev-admin",
+      "newEnabled": true,
+      "newMockMode": true,
+      "previousStatus": "active",
+      "previousEnabled": true,
+      "previousMockMode": true
+    },
+    "hashChainPrevious": null,
+    "integrityHash": "h4c1d0c61",
+    "createdAt": "2026-04-28T14:09:19.506Z"
+  }
+]

@@ -1,16 +1,17 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-28 15:55 CEST
+**Updated At:** 2026-04-28 16:00 CEST
 **Execution Mode:** operating
-**Project State:** bl_095_connector_installation_settings_foundation_closed
+**Project State:** bl_095_connector_installation_settings_foundation_accepted
 **Public URL:** not configured
 
 ## Snapshot
 
-- BL-095 is **closed**. Schema migration applied and committed, API endpoints enhanced with Zod validation and mock-only safety, web UI settings panel implemented with RBAC gating, tests expanded to 124/124 passing, verification script passes all 14 checks, 8 browser screenshots captured.
+- BL-095 is **accepted**. Schema migration applied and committed, API endpoints enhanced with Zod validation and mock-only safety, web UI settings panel implemented with RBAC gating, tests expanded to 124/124 passing, verification script passes all 14 checks, 14 unique browser screenshots captured in canonical folder `session-096-bl095-connector-installation-settings-final-closure/`.
 - ConnectorInstallation model now includes `displayName`, `description`, `capabilities`, `mockMode`, `enabled`, `timeoutMs`. Seed data updated with new fields and honest mock labels.
 - Admin can PATCH safe connector installation settings; viewer is denied server-side. Config secrets (`apiToken`, `password`, etc.) are redacted to `[REDACTED]` in all GET responses.
 - Cross-tenant connector installation access returns 404. Evidence bundle includes new connector installation fields.
+- Credential/config behavior is explicitly documented as **local/mock/dev-only**, not production credential management.
 - Delivery policy controls (BL-094) remain accepted. All delivery decisions still return `realNetworkAllowed: false`.
 - PostgreSQL/local-auth baseline remains active: API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
 

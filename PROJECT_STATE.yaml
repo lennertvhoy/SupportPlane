@@ -496,6 +496,50 @@ current_state:
         - ActionsService.processClaimedOutbox() re-evaluates policy before processing
         - evidence bundles include policy provenance
         - no real external writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
+    bl_095_status:
+      completed: true
+      status: closure_complete_after_repair
+      scope: connector_installation_settings_foundation
+      backlog_id: BL-095
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      prisma_schema: prisma/schema.prisma
+      migration: prisma/migrations/20260428131300_bl095_connector_installation_settings/
+      docs:
+        - docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md
+        - docs/ZAMMAD_CONNECTOR.md
+      runtime:
+        store_mode: postgres
+        auth_mode: local
+        api_url: http://localhost:4110
+        web_url: http://localhost:3200
+        postgres: localhost:5434
+      new_api_endpoints:
+        - POST /connector-installations
+        - PATCH /connector-installations/:id
+        - POST /connector-installations/:id/validate
+        - POST /connector-installations/:id/test
+      screenshot_folder: output/playwright/session-096-bl095-connector-installation-settings-final-closure/
+      screenshot_count: 14
+      validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
+      closure_repair:
+        reason: prior closure had wrong screenshot folder name (session-095 conflicted with BL-094), incomplete validation gate, missing 18-section handoff, short commit hash, and under-proven cross-tenant/server-side denial evidence
+        actions:
+          - Deleted old session-095-connector-installation-settings/ folder
+          - Created canonical session-096-bl095-connector-installation-settings-final-closure/ with 14 unique screenshots
+          - Added scripts/bl095_screenshots.js with hard max-20 cap and duplicate detection
+          - Updated docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md with current endpoint truth and credential handling note
+          - Ran full validation gate with exact command results
+      final_closure_commit: TO_BE_UPDATED_AFTER_COMMIT
+      notes:
+        - connector installation settings are editable by admin/operator; viewer denied server-side with 403
+        - config secrets redacted to [REDACTED] in all GET responses and evidence bundles
+        - credential/config JSON storage is local/mock/dev-only; not production credential management
+        - cross-tenant connector installation access returns 404
+        - connector readiness returns readyForRealWriteback=false and realNetwork=false
+        - delivery policy controls still deny real writeback
+        - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
     bl_093_status:
       completed: true
       status: closure_ready

@@ -75,7 +75,10 @@ Persistent connector configuration with safety flags and validation state.
 | GET | `/connector-installations` | `connector_installation:read` | List installations for tenant |
 | GET | `/connector-installations/:id` | `connector_installation:read` | Get single installation |
 
-**Not implemented (deferred):** `POST /connector-installations`, `PATCH /connector-installations/:id`, `POST /connector-installations/:id/validate`, `POST /connector-installations/:id/test`. These will be added when connector lifecycle management is prioritized.
+| POST | `/connector-installations` | `connector_installation:write` | Create installation with mock defaults |
+| PATCH | `/connector-installations/:id` | `connector_installation:write` | Update safe fields (displayName, description, status, enabled, timeout, capabilities, safetyFlags). Config secrets redacted in responses. |
+| POST | `/connector-installations/:id/validate` | `connector_installation:test` | Mock validation only |
+| POST | `/connector-installations/:id/test` | `connector_installation:test` | Mock test only |
 
 ## Evidence Bundle Integration
 
@@ -113,9 +116,16 @@ No new required env vars. Existing vars:
 - `SUPPORTPLANE_STORE=postgres` required for PrismaStore persistence
 - `DATABASE_URL` required when `SUPPORTPLANE_STORE=postgres`
 
+## Credential and Secret Handling (BL-095)
+
+- Connector config secrets (e.g., `apiToken`, `password`) are stored as plain JSON fields in the `ConnectorInstallation.config` column **for local/mock/dev use only**.
+- Secrets are redacted to `[REDACTED]` in all API GET responses and evidence bundle exports.
+- This is **not production credential management**. Production deployments must use a dedicated credential broker, encrypted secret storage, or secret references (see BL-084).
+- The UI shows a `•••••••• (managed server-side)` placeholder without exposing secret values.
+
 ## Known Limitations
 
 - Customer lookup by email/phone query params is accepted by the controller but full adapter-backed lookup is not implemented.
 - TicketSummary has no dedicated API endpoint or UI panel.
-- Connector installation mutation, validation, and test endpoints are deferred.
 - All connector behavior remains mock-first.
+- No production credential broker or encrypted secret storage exists.

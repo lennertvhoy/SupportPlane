@@ -1568,18 +1568,30 @@
 - The old `session-094-delivery-policy-controls-final-closure/` folder was deleted per AGENTS.md screenshot lifecycle rules.
 
 
-## EV-2026-04-28-036 through EV-2026-04-28-043 — BL-095 Connector Installation Settings Foundation
+## Note: Superseded BL-095 Evidence
 
-- Folder: `output/playwright/session-095-connector-installation-settings/`
-- Screenshots: 8 (all unique, 0 duplicates)
-  - 01-admin-dashboard.png: Admin dashboard showing connector panel with installations section
-  - 02-admin-connector-panel-expanded.png: Admin view with installation card expanded, showing all editable settings
-  - 03-admin-full-page.png: Full page view of admin cockpit
-  - 04-connector-settings-focus.png: Focused view of installation settings form with displayName, description, status, enabled toggle, mockMode Locked ON, validateBeforeWrite toggle, timeoutMs, capabilities, credentials placeholder
-  - 05-viewer-settings-readonly.png: Viewer role with expanded settings panel; all fields are disabled/readonly
-  - 06-admin-validation-result.png: Mock validation result JSON visible after clicking Validate (mode=mock, realNetwork=false, writebackEnabled=false)
-  - 07-evidence-bundle-json.png: Evidence bundle JSON tab showing connectorInstallations array with BL-095 fields
-  - 08-evidence-bundle-summary.png: Evidence bundle summary showing Connectors count = 1
+- EV-2026-04-28-036 through EV-2026-04-28-043 (8 screenshots in `session-095-connector-installation-settings/`) are superseded by EV-2026-04-28-044 through EV-2026-04-28-057.
+- The old `session-095-connector-installation-settings/` folder was deleted per AGENTS.md screenshot lifecycle rules because BL-094 already owns the `session-095-*` namespace.
+
+## EV-2026-04-28-044 through EV-2026-04-28-057 — BL-095 Connector Installation Settings Foundation (Canonical Closure)
+
+- Folder: `output/playwright/session-096-bl095-connector-installation-settings-final-closure/`
+- Screenshots: 14 (all unique, 0 duplicates)
+  - 01-admin-runtime-identity.png: Admin runtime identity showing user, tenant, role, API endpoint, auth mode, store mode
+  - 02-connector-panel-visible.png: Connector settings panel visible with installations list
+  - 03-settings-expanded-safe-fields.png: Settings expanded showing safe editable fields (displayName, description, status, enabled, timeout, validateBeforeWrite)
+  - 04-admin-saves-settings.png: Admin saves display name/description/status/timeout and safe fields
+  - 05-settings-persist-after-reload.png: Saved settings persist after page reload
+  - 06-connector-readiness-mock-only.png: Connector readiness reflects installation settings and still says real writeback not ready
+  - 07-delivery-policy-real-writeback-denied.png: Delivery policy still denies real writeback / real network remains locked off
+  - 08-credential-secret-placeholder.png: Credential/secret placeholder visible without secret value (•••••••• managed server-side)
+  - 09-evidence-bundle-connector-provenance.png: Evidence bundle JSON proves connector installation provenance without secrets
+  - 10-audit-connector-settings-update.png: Audit trail/timeline showing connector-related events
+  - 11-viewer-readonly-and-denial.png: Viewer read-only connector settings with view-only message and disabled controls
+  - 12-viewer-api-mutation-denied.png: Server-side viewer mutation denial: API returns 403 with explicit role requirement message
+  - 13-cross-tenant-denied.png: Cross-tenant connector access denied (404 on session access)
+  - 14-final-local-mock-proof.png: Final local/mock/no-real-writeback proof with visible mock labels
+- CLI artifact: `output/playwright/session-096-bl095-connector-installation-settings-final-closure/audit-connector-installation-updated.json` proving `connector_installation_updated` audit events in PostgreSQL
 - Proves:
   - BL-095 connector installation settings are editable by admin/operator and visible in the UI.
   - Mock mode is locked ON with visible safety banner; real writeback is denied.
@@ -1587,5 +1599,7 @@
   - Cross-tenant access is denied (404).
   - Config secrets are redacted to `[REDACTED]` in API responses.
   - Evidence bundles include connector installations with new fields (displayName, capabilities, mockMode, enabled, timeoutMs).
-- Type: browser-verification
-- as_of: 2026-04-28T15:55:00+02:00
+  - Audit events record connector installation updates with previous/new state metadata.
+  - Credential/config JSON storage is explicitly local/mock/dev-only, not production credential management.
+- Type: browser-runtime-verification
+- as_of: 2026-04-28T16:00:00+02:00

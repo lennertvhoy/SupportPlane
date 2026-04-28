@@ -2095,3 +2095,82 @@ CTO-identified closure blockers from prior handoff:
 ### Next Recommended Action
 
 - Review BACKLOG.md for next slice. Candidate: BL-096 (connector installation config editor with JSON schema validation) or BL-097 (connector credential reference / secret broker foundation).
+
+
+## 2026-04-28 - BL-095 Closure Repair Pass
+
+**Type:** closure_repair
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** TO_BE_UPDATED_AFTER_COMMIT
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Deleted old conflicting screenshot folder `output/playwright/session-095-connector-installation-settings/` (BL-094 already owns session-095).
+- Created canonical folder `output/playwright/session-096-bl095-connector-installation-settings-final-closure/` with exactly 14 unique screenshots and zero duplicates.
+- Added committed screenshot script `scripts/bl095_screenshots.js` with hard max-20 cap, duplicate filename detection, md5sum verification, and proof-state mapping.
+- Added CLI artifact `audit-connector-installation-updated.json` proving `connector_installation_updated` audit events exist in PostgreSQL.
+- Updated `docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md` to reflect implemented endpoints (POST, PATCH, validate, test) and added explicit **Credential and Secret Handling** section documenting that config JSON storage is local/mock/dev-only and not production credential management.
+- Updated `BACKLOG.md` to mark BL-095 as `[accepted]`.
+- Updated `STATUS.md` with accepted state and canonical folder reference.
+- Updated `PROJECT_STATE.yaml` with `bl_095_status` including closure repair metadata.
+- Added acceptance freeze `AF-2026-04-28-013` in `docs/ACCEPTANCE_FREEZES.md`.
+- Updated `docs/EVIDENCE_LOG.md` with canonical BL-095 evidence entries.
+
+### Verification
+
+- `npm install` passed.
+- `npm run lint` passed.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed.
+- `npm run health` returned valid JSON.
+- `npx prisma validate`, `npx prisma generate`, `npx prisma migrate status`, `npx prisma db seed` passed.
+- `scripts/verify_delivery_policy_controls.sh` passed all 14 checks.
+- `scripts/verify_ticket_context_connector.sh` passed all 14 checks.
+- `scripts/verify_support_case_workflow.sh` passed all 15 checks.
+- `cd apps/api && npm test` passed: 124/124 tests (12 suites).
+- `npm test --workspace @supportplane/contracts` passed: 29/29 tests.
+- `npm test --workspace @supportplane/web` passed: 15/15 tests.
+- `npm test --workspace @supportplane/connectors` passed: 16/16 tests.
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` passed.
+- `curl -s http://localhost:4110/health` returned valid JSON with HEAD matching current commit.
+- `curl -s http://localhost:3200/` returned HTTP 200.
+- `podman ps` showed sp-postgres healthy on 5434, sp-nats healthy, sp-minio healthy.
+- Screenshot duplicate detection: 0 duplicates across 14 screenshots.
+- `npm audit` reported 10 pre-existing vulnerabilities (8 moderate, 2 high); no new vulnerabilities introduced.
+
+### Evidence Inventory
+
+- Screenshot folder: `output/playwright/session-096-bl095-connector-installation-settings-final-closure/`
+- Screenshot count: 14
+- CLI artifact: `output/playwright/session-096-bl095-connector-installation-settings-final-closure/audit-connector-installation-updated.json`
+- Evidence refs: EV-2026-04-28-044 through EV-2026-04-28-057
+  - 01: Admin runtime identity (user, tenant, role, API, auth/store/mock mode)
+  - 02: Connector settings panel visible with installations list
+  - 03: Settings expanded showing safe editable fields
+  - 04: Admin saves display name/description/status/timeout and safe fields
+  - 05: Saved settings persist after page reload
+  - 06: Connector readiness reflects installation settings and still says real writeback not ready
+  - 07: Delivery policy still denies real writeback / real network remains locked off
+  - 08: Credential/secret placeholder visible without secret value
+  - 09: Evidence bundle JSON proves connector installation provenance without secrets
+  - 10: Audit trail showing connector-related events
+  - 11: Viewer read-only connector settings with view-only message and disabled controls
+  - 12: Server-side viewer mutation denial: API returns 403 with explicit role requirement message
+  - 13: Cross-tenant connector access denied (404 on session access)
+  - 14: Final local/mock/no-real-writeback proof with visible mock labels
+
+### Risks and Limitations
+
+- No real credential broker or encrypted secret storage exists. `secretReferenceIds` are placeholders; credentials are stored in `config` JSON server-side and redacted in responses. This is explicitly documented as local/mock/dev-only, not production credential management.
+- The global `/connectors/zammad/*` singleton (env-driven) remains separate from the per-tenant DB-backed `ConnectorInstallation`. Wiring the global connector to `ConnectorInstallation` config is future work.
+- Mock-only enforcement is hardcoded in the service layer. Real writeback readiness requires future network path validation, tenant admin configuration, and credential management.
+- No production queue semantics, external broker, or distributed worker infrastructure exists.
+
+### Next Recommended Action
+
+- Review BACKLOG.md for next slice. Candidate: BL-096 (connector installation config editor with JSON schema validation) or BL-097 (connector credential reference / secret broker foundation).

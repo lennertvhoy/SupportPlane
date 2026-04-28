@@ -936,3 +936,80 @@ and must be protected from quiet regression.
 - explicit_non_claims:
   - No real production Zammad writeback was implemented.
   - No real email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
+
+
+## AF-2026-04-28-013: BL-095 Connector Installation Settings Foundation
+
+- ID: AF-2026-04-28-013
+- Backlog ID: BL-095
+- Milestone: Connector installation settings foundation
+- Scope: ConnectorInstallation Prisma model extended with `displayName`, `description`, `capabilities`, `mockMode`, `enabled`, `timeoutMs`, and `validateBeforeWrite` safety flag. Prisma migration `20260428131300_bl095_connector_installation_settings` applied. API endpoints `POST /connector-installations`, `PATCH /connector-installations/:id`, `POST /connector-installations/:id/validate`, `POST /connector-installations/:id/test` with Zod contract validation, RBAC enforcement (`connector_installation:read/write/test`), server-side secret redaction (`[REDACTED]`), cross-tenant denial (404), viewer mutation denial (403). Web UI ConnectorPanel with expandable installation cards, safe field editing, mock mode locked ON, credentials placeholder (`•••••••• managed server-side`), and viewer read-only state. Evidence bundle includes `connectorInstallations` summaries with redaction. Connector readiness returns `readyForRealWriteback: false`. Delivery policy still denies real writeback.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- final_closure_commit: TO_BE_UPDATED_AFTER_COMMIT
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+  - Podman container `sp-postgres` on port 5434
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- routes:
+  - /
+  - POST /connector-installations
+  - PATCH /connector-installations/:id
+  - POST /connector-installations/:id/validate
+  - POST /connector-installations/:id/test
+  - POST /connector-installations/:id/readiness
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: true
+- migration: prisma/migrations/20260428131300_bl095_connector_installation_settings/
+- evidence_refs:
+  - EV-2026-04-28-044
+  - EV-2026-04-28-045
+  - EV-2026-04-28-046
+  - EV-2026-04-28-047
+  - EV-2026-04-28-048
+  - EV-2026-04-28-049
+  - EV-2026-04-28-050
+  - EV-2026-04-28-051
+  - EV-2026-04-28-052
+  - EV-2026-04-28-053
+  - EV-2026-04-28-054
+  - EV-2026-04-28-055
+  - EV-2026-04-28-056
+  - EV-2026-04-28-057
+- evidence_folder: output/playwright/session-096-bl095-connector-installation-settings-final-closure/
+- screenshot_count: 14
+- closure_repair_note: prior closure used conflicting session-095 folder name (BL-094 already owns session-095), incomplete validation gate, missing 18-section handoff, short commit hash, and under-proven cross-tenant/server-side denial. this acceptance freeze uses the canonical session-096 folder after closure repair.
+- validation_summary:
+  - `npm install` passed; npm reported 10 vulnerabilities (8 moderate, 2 high), treated as pre-existing audit debt.
+  - `npm run lint`, `npm run typecheck --workspaces --if-present`, `npm run validate`, and `npm run health` passed.
+  - `npx prisma validate`, `npx prisma generate`, `npx prisma migrate status`, and `npx prisma db seed` passed.
+  - `scripts/verify_delivery_policy_controls.sh` passed all 14 checks.
+  - `scripts/verify_ticket_context_connector.sh` passed all 14 checks.
+  - `scripts/verify_support_case_workflow.sh` passed all 15 checks.
+  - `cd apps/api && npm test` passed: 124/124 tests (12 suites).
+  - `npm test --workspace @supportplane/contracts` passed: 29/29 tests.
+  - `npm test --workspace @supportplane/web` passed: 15/15 tests.
+  - `npm test --workspace @supportplane/connectors` passed: 16/16 tests.
+  - Web build passed with existing Next ESLint-plugin warning.
+  - State docs and bootstrap gate checks passed.
+  - Python compilation passed.
+- regression_guard:
+  - ConnectorInstallation Prisma model must keep `displayName`, `description`, `capabilities`, `mockMode`, `enabled`, `timeoutMs` fields.
+  - `POST /connector-installations` must create installations with `mockMode: true`, `enabled: false`, `status: 'inactive'`.
+  - `PATCH /connector-installations/:id` must validate `status` against `active|inactive|error`, enforce `connector_installation:write`, and reject viewer with 403.
+  - GET responses must redact secret-like config keys to `[REDACTED]`.
+  - Cross-tenant access must return 404 for both GET and PATCH.
+  - Evidence bundle JSON must include `connectorInstallations` array with `safetyFlags` redacted.
+  - UI must show mock mode locked ON, credentials placeholder, and viewer view-only message.
+  - `POST /connector-installations/:id/readiness` must return `readyForRealWriteback: false`.
+- known_limitations:
+  - Credential/config JSON storage is local/mock/dev-only; not production credential management.
+  - No production credential broker, encrypted secret storage, or secret reference resolution exists.
+  - The global `/connectors/zammad/*` singleton remains separate from per-tenant DB-backed `ConnectorInstallation`.
+- explicit_non_claims:
+  - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
