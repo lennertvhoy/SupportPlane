@@ -283,14 +283,21 @@ exact commands and pass/fail results.
 
 ### Screenshot budget and quality rule (mandatory)
 
-- Maximum 20 screenshots per backlog item. Exceeding this cap requires explicit
-  user approval or backlog item splitting.
+- Default screenshot budget is 20 per backlog item. This is a default, not a hard
+  ceiling that overrides explicit closure requirements.
+- If a closure prompt explicitly requires specific proof states, those required
+  states take precedence over the default cap. Capture every required state.
+- If a required proof state is omitted, the handoff must explicitly map it to
+  another valid artifact (e.g., API response log, test output, curl result) or
+  state why it is not applicable.
 - Screenshots must be sequentially numbered with descriptive kebab-case names.
 - Each screenshot must show a distinct state, interaction, or panel; redundant
   near-identical captures of the same unchanged page are unacceptable.
 - Viewport-only captures (not full-page) are preferred when scrolling to specific
   panels; full-page is acceptable only when the entire vertical state matters.
 - The reproducible screenshot script must be committed (e.g. under `scripts/`).
+- After capture, run duplicate detection (e.g. `md5sum`) and report results.
+  Unexplained duplicate screenshots fail closure.
 
 ### Final handoff report structure rule (mandatory)
 
