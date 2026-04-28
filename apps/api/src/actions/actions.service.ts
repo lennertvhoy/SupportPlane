@@ -6,11 +6,13 @@ import {
   AuditEvent,
   SupportAction,
   SupportActionCreateRequest,
+  type DeliveryPolicyDecision,
 } from '@supportplane/contracts';
 import type { CurrentIdentity } from '../auth/auth.types.js';
 import { hasPermission } from '../auth/rbac.js';
 import { InMemoryStore } from '../support-sessions/in-memory.store.js';
 import type { Store } from '../store/store.interface.js';
+import { DeliveryPolicyService } from '../delivery-policy/delivery-policy.service.js';
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -48,7 +50,10 @@ type DeliverySimulation =
 
 @Injectable()
 export class ActionsService {
-  constructor(@Inject(InMemoryStore) private readonly store: Store) {}
+  constructor(
+    @Inject(InMemoryStore) private readonly store: Store,
+    @Inject(DeliveryPolicyService) private readonly policyService: DeliveryPolicyService
+  ) {}
 
   async listSessionActions(identity: CurrentIdentity, sessionId: string) {
     await this.assertPermission(identity, 'action:read', sessionId);
@@ -169,6 +174,25 @@ export class ActionsService {
     await this.assertPermission(identity, 'action:approve');
     const action = await this.requireAction(identity, id);
     if (action.status !== 'approved') throw new BadRequestException(`Cannot queue action from ${action.status}`);
+
+    const decision = await this.policyService.evaluateDeliveryPolicy(
+      identity.tenantId,
+      action.actionType,
+      action.connectorInstallationId,
+      'admin',
+      false,
+      false,
+      true,
+      true
+    );
+
+    if (!decision.allowed) {
+      await this.audit(identity, 'delivery_policy_blocked', action.sessionId, 'support_action', action.id, { decision });
+      throw new ForbiddenException({ message: decision.reason, policyDecision: decision });
+    }
+
+    await this.audit(identity, 'delivery_policy_evaluated', action.sessionId, 'support_action', action.id, { decision });
+
     const existing = (await this.store.listActionOutboxItems(identity.tenantId, { supportActionId: id }))[0];
     if (existing) return { action, outboxItem: existing, idempotentReplay: true };
     const at = nowIso();
@@ -190,6 +214,8 @@ export class ActionsService {
         realNetwork: false,
         writebackEnabled: false,
         externalWriteAttempted: false,
+        policyDecision: decision.decision,
+        policyVersion: decision.policyVersion,
       },
       attemptCount: 0,
       maxAttempts: 3,
@@ -200,7 +226,16 @@ export class ActionsService {
       createdAt: at,
       updatedAt: at,
     };
-    const updated = { ...action, status: 'queued' as const, queuedAt: at, updatedAt: at };
+    const updated = {
+      ...action,
+      status: 'queued' as const,
+      queuedAt: at,
+      updatedAt: at,
+      payloadSummary: {
+        ...action.payloadSummary,
+        policyDecision: decision.decision,
+      },
+    };
     await this.store.saveSupportAction(updated);
     await this.store.saveActionOutboxItem(outboxItem);
     await this.audit(identity, 'action_queued', action.sessionId, 'support_action', action.id, { outboxItemId: outboxItem.id });
@@ -403,6 +438,26 @@ export class ActionsService {
     options?: { forceSuccess?: boolean }
   ) {
     const action = await this.requireAction(identity, item.supportActionId);
+
+    // Re-evaluate delivery policy before processing (BL-094)
+    const connectorInstallation = action.connectorInstallationId
+      ? await this.store.getConnectorInstallation(identity.tenantId, action.connectorInstallationId)
+      : undefined;
+    const decision = await this.policyService.evaluateDeliveryPolicy(
+      identity.tenantId,
+      action.actionType,
+      action.connectorInstallationId,
+      'admin',
+      false,
+      Boolean(connectorInstallation?.lastVerifiedAt),
+      true,
+      true
+    );
+
+    if (!decision.allowed) {
+      return this.handlePolicyBlock(identity, item, action, workerId, decision);
+    }
+
     const at = nowIso();
     const simulation = options?.forceSuccess ? { outcome: 'success' as const } : this.simulateDelivery(item);
     if (simulation.outcome === 'success') {
@@ -516,6 +571,69 @@ export class ActionsService {
       attemptNumber,
     });
     return { processed: true, action: updatedAction, outboxItem: updatedItem, attempt, delivery: deliveryResult, workerId };
+  }
+
+  private async handlePolicyBlock(
+    identity: CurrentIdentity,
+    item: ActionOutboxItem,
+    action: SupportAction,
+    workerId: string,
+    decision: DeliveryPolicyDecision
+  ) {
+    const at = nowIso();
+    const deliveryResult = {
+      mode: 'mock',
+      realNetwork: false,
+      writebackEnabled: false,
+      externalWriteAttempted: false,
+      deliveryClaim: 'policy_blocked',
+      policyDecision: decision.decision,
+      policyReason: decision.reason,
+      workerId,
+      blockedAt: at,
+    };
+    const attempt: ActionOutboxAttempt = {
+      id: randomUUID(),
+      tenantId: identity.tenantId as ActionOutboxAttempt['tenantId'],
+      outboxItemId: item.id,
+      supportActionId: action.id,
+      attemptNumber: item.attemptCount + 1,
+      state: 'policy_blocked',
+      deliveryResult,
+      errorCode: 'POLICY_BLOCKED',
+      errorMessage: decision.reason,
+      errorRedacted: true,
+      attemptedAt: at,
+      completedAt: at,
+      mockDevOnly: true,
+    };
+    const updatedItem = {
+      ...item,
+      status: 'dead_lettered' as const,
+      attemptCount: item.attemptCount + 1,
+      latestAttemptState: 'policy_blocked' as const,
+      deadLetteredAt: at,
+      deadLetterReason: decision.reason,
+      lastError: decision.reason,
+      lastErrorCode: 'POLICY_BLOCKED',
+      lastErrorMessage: decision.reason,
+      lastErrorRedacted: true,
+      workerLockId: undefined,
+      workerLockedAt: undefined,
+      workerLockExpiresAt: undefined,
+      updatedAt: at,
+    };
+    const updatedAction = { ...action, status: 'dead_lettered' as const, failureReason: decision.reason, updatedAt: at };
+    await this.store.saveActionOutboxAttempt(attempt);
+    await this.store.saveActionOutboxItem(updatedItem);
+    await this.store.saveSupportAction(updatedAction);
+    await this.audit(identity, 'delivery_policy_blocked', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
+    await this.audit(identity, 'action_failed', item.sessionId, 'support_action', action.id, {
+      reason: decision.reason,
+      errorCode: 'POLICY_BLOCKED',
+      terminal: true,
+    });
+    return { processed: false, reason: decision.decision, policyDecision: decision };
   }
 
   private async markDeadLetter(identity: CurrentIdentity, item: ActionOutboxItem, reason: string, errorCode = 'MOCK_DEAD_LETTERED') {

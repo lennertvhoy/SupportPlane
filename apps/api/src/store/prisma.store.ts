@@ -20,6 +20,7 @@ import type {
   SupportAction as SupportActionShape,
   ActionOutboxItem as ActionOutboxItemShape,
   ActionOutboxAttempt as ActionOutboxAttemptShape,
+  DeliveryPolicy as DeliveryPolicyShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from './store.interface.js';
 
@@ -1284,5 +1285,129 @@ export class PrismaStore implements Store {
       completedAt: toISO(r.completedAt),
       mockDevOnly: r.mockDevOnly,
     }));
+  }
+
+  async saveDeliveryPolicy(policy: DeliveryPolicyShape): Promise<void> {
+    await this.prisma.deliveryPolicy.upsert({
+      where: { id: policy.id },
+      create: {
+        id: policy.id,
+        tenantId: policy.tenantId,
+        connectorInstallationId: policy.connectorInstallationId ?? null,
+        name: policy.name,
+        enabled: policy.enabled,
+        killSwitch: policy.killSwitch,
+        dryRunRequired: policy.dryRunRequired,
+        mockOnlyEnforced: policy.mockOnlyEnforced,
+        allowRealNetworkCalls: policy.allowRealNetworkCalls,
+        allowedActionTypes: policy.allowedActionTypes,
+        approvalRequired: policy.approvalRequired,
+        minimumApproverRole: policy.minimumApproverRole,
+        requireHumanReview: policy.requireHumanReview,
+        requireEvidenceBundleBeforeDelivery: policy.requireEvidenceBundleBeforeDelivery,
+        requireConnectorValidationBeforeDelivery: policy.requireConnectorValidationBeforeDelivery,
+        retryPolicy: json(policy.retryPolicy),
+        deadLetterPolicy: json(policy.deadLetterPolicy),
+        updatedBy: policy.updatedBy ?? null,
+        policyVersion: policy.policyVersion,
+        lastValidationStatus: policy.lastValidationStatus,
+        safetyFlags: json(policy.safetyFlags),
+        createdAt: dateOrNow(policy.createdAt),
+        updatedAt: dateOrNow(policy.updatedAt),
+      },
+      update: {
+        connectorInstallationId: policy.connectorInstallationId ?? null,
+        name: policy.name,
+        enabled: policy.enabled,
+        killSwitch: policy.killSwitch,
+        dryRunRequired: policy.dryRunRequired,
+        mockOnlyEnforced: policy.mockOnlyEnforced,
+        allowRealNetworkCalls: policy.allowRealNetworkCalls,
+        allowedActionTypes: policy.allowedActionTypes,
+        approvalRequired: policy.approvalRequired,
+        minimumApproverRole: policy.minimumApproverRole,
+        requireHumanReview: policy.requireHumanReview,
+        requireEvidenceBundleBeforeDelivery: policy.requireEvidenceBundleBeforeDelivery,
+        requireConnectorValidationBeforeDelivery: policy.requireConnectorValidationBeforeDelivery,
+        retryPolicy: json(policy.retryPolicy),
+        deadLetterPolicy: json(policy.deadLetterPolicy),
+        updatedBy: policy.updatedBy ?? null,
+        policyVersion: policy.policyVersion,
+        lastValidationStatus: policy.lastValidationStatus,
+        safetyFlags: json(policy.safetyFlags),
+        updatedAt: dateOrNow(policy.updatedAt),
+      },
+    });
+  }
+
+  async getDeliveryPolicy(tenantId: string, id: string): Promise<DeliveryPolicyShape | undefined> {
+    const row = await this.prisma.deliveryPolicy.findFirst({ where: { id, tenantId } });
+    if (!row) return undefined;
+    return this.mapDeliveryPolicy(row);
+  }
+
+  async getDeliveryPolicyByConnector(tenantId: string, connectorInstallationId: string | null): Promise<DeliveryPolicyShape | undefined> {
+    const row = await this.prisma.deliveryPolicy.findFirst({
+      where: { tenantId, connectorInstallationId },
+    });
+    if (!row) return undefined;
+    return this.mapDeliveryPolicy(row);
+  }
+
+  async listDeliveryPolicies(tenantId: string): Promise<DeliveryPolicyShape[]> {
+    const rows = await this.prisma.deliveryPolicy.findMany({ where: { tenantId } });
+    return rows.map((r) => this.mapDeliveryPolicy(r));
+  }
+
+  private mapDeliveryPolicy(row: {
+    id: string;
+    tenantId: string;
+    connectorInstallationId: string | null;
+    name: string;
+    enabled: boolean;
+    killSwitch: boolean;
+    dryRunRequired: boolean;
+    mockOnlyEnforced: boolean;
+    allowRealNetworkCalls: boolean;
+    allowedActionTypes: string[];
+    approvalRequired: boolean;
+    minimumApproverRole: string;
+    requireHumanReview: boolean;
+    requireEvidenceBundleBeforeDelivery: boolean;
+    requireConnectorValidationBeforeDelivery: boolean;
+    retryPolicy: unknown;
+    deadLetterPolicy: unknown;
+    updatedBy: string | null;
+    updatedAt: Date;
+    policyVersion: number;
+    lastValidationStatus: string;
+    safetyFlags: unknown;
+    createdAt: Date;
+  }): DeliveryPolicyShape {
+    return {
+      id: row.id as DeliveryPolicyShape['id'],
+      tenantId: row.tenantId as DeliveryPolicyShape['tenantId'],
+      connectorInstallationId: row.connectorInstallationId,
+      name: row.name,
+      enabled: row.enabled,
+      killSwitch: row.killSwitch,
+      dryRunRequired: row.dryRunRequired,
+      mockOnlyEnforced: row.mockOnlyEnforced,
+      allowRealNetworkCalls: row.allowRealNetworkCalls,
+      allowedActionTypes: row.allowedActionTypes,
+      approvalRequired: row.approvalRequired,
+      minimumApproverRole: row.minimumApproverRole as DeliveryPolicyShape['minimumApproverRole'],
+      requireHumanReview: row.requireHumanReview,
+      requireEvidenceBundleBeforeDelivery: row.requireEvidenceBundleBeforeDelivery,
+      requireConnectorValidationBeforeDelivery: row.requireConnectorValidationBeforeDelivery,
+      retryPolicy: row.retryPolicy as DeliveryPolicyShape['retryPolicy'],
+      deadLetterPolicy: row.deadLetterPolicy as DeliveryPolicyShape['deadLetterPolicy'],
+      updatedBy: row.updatedBy,
+      updatedAt: toISO(row.updatedAt)!,
+      policyVersion: row.policyVersion,
+      lastValidationStatus: row.lastValidationStatus as DeliveryPolicyShape['lastValidationStatus'],
+      safetyFlags: row.safetyFlags as DeliveryPolicyShape['safetyFlags'],
+      createdAt: toISO(row.createdAt)!,
+    };
   }
 }

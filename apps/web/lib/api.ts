@@ -349,6 +349,95 @@ export interface SupportAction {
   updatedAt: string;
 }
 
+export interface DeliveryPolicy {
+  id: string;
+  tenantId: string;
+  connectorInstallationId: string | null;
+  name: string;
+  enabled: boolean;
+  killSwitch: boolean;
+  dryRunRequired: boolean;
+  mockOnlyEnforced: boolean;
+  allowRealNetworkCalls: boolean;
+  allowedActionTypes: string[];
+  approvalRequired: boolean;
+  minimumApproverRole: 'admin' | 'owner' | 'operator';
+  requireHumanReview: boolean;
+  requireEvidenceBundleBeforeDelivery: boolean;
+  requireConnectorValidationBeforeDelivery: boolean;
+  retryPolicy: { maxAttempts: number; baseDelaySeconds: number; maxDelaySeconds: number; backoffMultiplier: number };
+  deadLetterPolicy: { enabled: boolean; maxAttemptsBeforeDeadLetter: number; requireManualRetry: boolean };
+  updatedBy: string | null;
+  updatedAt: string;
+  policyVersion: number;
+  lastValidationStatus: 'valid' | 'invalid' | 'pending' | 'not_run';
+  safetyFlags: { realNetworkAllowed: boolean; writebackEnabled: boolean; externalWriteAllowed: boolean; mockOnly: boolean; localDevOnly: boolean };
+  createdAt: string;
+}
+
+export interface DeliveryPolicyUpdate {
+  enabled?: boolean;
+  killSwitch?: boolean;
+  dryRunRequired?: boolean;
+  mockOnlyEnforced?: boolean;
+  allowedActionTypes?: string[];
+  approvalRequired?: boolean;
+  minimumApproverRole?: 'admin' | 'owner' | 'operator';
+  requireHumanReview?: boolean;
+  requireEvidenceBundleBeforeDelivery?: boolean;
+  requireConnectorValidationBeforeDelivery?: boolean;
+  retryPolicy?: Partial<DeliveryPolicy['retryPolicy']>;
+  deadLetterPolicy?: Partial<DeliveryPolicy['deadLetterPolicy']>;
+}
+
+export interface DeliveryPolicyDecision {
+  allowed: boolean;
+  decision: string;
+  reason: string;
+  mode: 'mock' | 'dry_run' | 'real';
+  realNetworkAllowed: boolean;
+  writebackEnabled: boolean;
+  externalWriteAllowed: boolean;
+  requiredApproverRole: string | null;
+  policyVersion: number;
+  policyId: string;
+  safetyFlags: DeliveryPolicy['safetyFlags'];
+}
+
+export interface ConnectorReadinessResult {
+  mode: 'mock' | 'real';
+  readyForMockDelivery: boolean;
+  readyForRealWriteback: boolean;
+  realNetwork: boolean;
+  writebackEnabled: boolean;
+  externalWriteAttempted: boolean;
+  policyDecision: string;
+  connectorInstalled: boolean;
+  connectorActive: boolean;
+  connectorSupportsActionType: boolean;
+  connectorValidationStatus: string;
+  credentialsAbsentOrRedacted: boolean;
+  policyVersion: number;
+  lastValidationResult: string | null;
+  safetyFlags: DeliveryPolicy['safetyFlags'];
+}
+
+export interface WorkerStatus {
+  mode: string;
+  status: string;
+  consumerEnabled: boolean;
+  queueBackend: string;
+  storeMode: string;
+  deliveryMode: string;
+  realNetwork: boolean;
+  writebackEnabled: boolean;
+  externalWriteAttempted: boolean;
+  summary: Record<string, number>;
+  warnings: string[];
+  checkedAt: string;
+  mockDevOnly: boolean;
+}
+
 export interface ActionOutboxItem {
   id: string;
   tenantId: string;
@@ -1388,6 +1477,26 @@ export const api = {
     }
     return res.text();
   },
+
+  // Delivery Policy
+  listDeliveryPolicies: (identity?: DevIdentity) =>
+    apiFetch<{ policies: DeliveryPolicy[] }>(`/delivery-policies`, { method: 'GET' }, identity),
+
+  getDeliveryPolicy: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ policy: DeliveryPolicy }>(`/delivery-policies/${id}`, { method: 'GET' }, identity),
+
+  updateDeliveryPolicy: (id: string, body: Partial<DeliveryPolicyUpdate>, identity?: DevIdentity) =>
+    apiFetch<{ policy: DeliveryPolicy }>(`/delivery-policies/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, identity),
+
+  validateDeliveryPolicy: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ policy: DeliveryPolicy; decision: DeliveryPolicyDecision }>(`/delivery-policies/${id}/validate`, { method: 'POST' }, identity),
+
+  checkConnectorReadiness: (installationId: string, identity?: DevIdentity) =>
+    apiFetch<ConnectorReadinessResult>(`/connector-installations/${installationId}/readiness`, { method: 'POST' }, identity),
+
+  // Worker status
+  getWorkerStatus: (identity?: DevIdentity) =>
+    apiFetch<WorkerStatus>(`/outbox/worker/status`, { method: 'GET' }, identity),
 };
 
 export { ApiClientError };

@@ -12,6 +12,7 @@ import type {
   SupportAction as SupportActionShape,
   ActionOutboxItem as ActionOutboxItemShape,
   ActionOutboxAttempt as ActionOutboxAttemptShape,
+  DeliveryPolicy as DeliveryPolicyShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from '../store/store.interface.js';
 
@@ -30,6 +31,7 @@ export class InMemoryStore implements Store {
   private supportActions = new Map<string, SupportActionShape>();
   private actionOutboxItems = new Map<string, ActionOutboxItemShape>();
   private actionOutboxAttempts = new Map<string, ActionOutboxAttemptShape>();
+  private deliveryPolicies = new Map<string, DeliveryPolicyShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -275,5 +277,23 @@ export class InMemoryStore implements Store {
     return Array.from(this.actionOutboxAttempts.values())
       .filter((a) => a.tenantId === tenantId && a.outboxItemId === outboxItemId)
       .sort((a, b) => a.attemptNumber - b.attemptNumber);
+  }
+
+  saveDeliveryPolicy(policy: DeliveryPolicyShape): void {
+    this.deliveryPolicies.set(`${policy.tenantId}:${policy.id}`, policy);
+  }
+
+  getDeliveryPolicy(tenantId: string, id: string): DeliveryPolicyShape | undefined {
+    return this.deliveryPolicies.get(`${tenantId}:${id}`);
+  }
+
+  getDeliveryPolicyByConnector(tenantId: string, connectorInstallationId: string | null): DeliveryPolicyShape | undefined {
+    return Array.from(this.deliveryPolicies.values()).find(
+      (p) => p.tenantId === tenantId && p.connectorInstallationId === connectorInstallationId
+    );
+  }
+
+  listDeliveryPolicies(tenantId: string): DeliveryPolicyShape[] {
+    return Array.from(this.deliveryPolicies.values()).filter((p) => p.tenantId === tenantId);
   }
 }

@@ -12,6 +12,7 @@ import type {
   SupportAction as SupportActionShape,
   ActionOutboxItem as ActionOutboxItemShape,
   ActionOutboxAttempt as ActionOutboxAttemptShape,
+  DeliveryPolicy as DeliveryPolicyShape,
 } from '@supportplane/contracts';
 
 export interface SharingStateShape {
@@ -92,4 +93,10 @@ export interface Store {
   ): Promise<ActionOutboxItemShape | undefined> | ActionOutboxItemShape | undefined;
   saveActionOutboxAttempt(attempt: ActionOutboxAttemptShape): Promise<void> | void;
   listActionOutboxAttempts(tenantId: string, outboxItemId: string): Promise<ActionOutboxAttemptShape[]> | ActionOutboxAttemptShape[];
+
+  // DeliveryPolicy
+  saveDeliveryPolicy(policy: DeliveryPolicyShape): Promise<void> | void;
+  getDeliveryPolicy(tenantId: string, id: string): Promise<DeliveryPolicyShape | undefined> | DeliveryPolicyShape | undefined;
+  getDeliveryPolicyByConnector(tenantId: string, connectorInstallationId: string | null): Promise<DeliveryPolicyShape | undefined> | DeliveryPolicyShape | undefined;
+  listDeliveryPolicies(tenantId: string): Promise<DeliveryPolicyShape[]> | DeliveryPolicyShape[];
 }

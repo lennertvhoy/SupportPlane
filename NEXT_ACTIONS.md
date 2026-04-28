@@ -1,12 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-28 11:22 CEST
+**Updated At:** 2026-04-28 11:33 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-- No active implementation item after BL-093 validation. Next action is CTO closure review and selection of the next backlog slice.
+- [BL-094] Connector writeback readiness gates and delivery policy controls.
+  - Owner: coding agent
+  - Next action: implement delivery policy model, Prisma migration, policy evaluator, connector readiness gates, worker integration, web admin UX, evidence/audit/docs, verification script, browser proof, and closure.
+  - Exit criteria: clean worktree, full validation gate passed, 24 browser screenshots in fresh folder, acceptance freeze recorded.
 
 ## Queue Rules
 

@@ -264,7 +264,84 @@ async function main() {
     });
   }
 
-  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, and connector installations');
+  // Seed default delivery policies for each tenant
+  const policies = [
+    {
+      id: 'delivery-policy-dev-001',
+      tenantId: 'dev-tenant',
+      connectorInstallationId: null,
+      name: 'Default Delivery Policy',
+      enabled: true,
+      killSwitch: false,
+      dryRunRequired: true,
+      mockOnlyEnforced: true,
+      allowRealNetworkCalls: false,
+      allowedActionTypes: ['ticket_note'],
+      approvalRequired: true,
+      minimumApproverRole: 'admin',
+      requireHumanReview: true,
+      requireEvidenceBundleBeforeDelivery: false,
+      requireConnectorValidationBeforeDelivery: false,
+      retryPolicy: { maxAttempts: 3, baseDelaySeconds: 5, maxDelaySeconds: 300, backoffMultiplier: 2 },
+      deadLetterPolicy: { enabled: true, maxAttemptsBeforeDeadLetter: 3, requireManualRetry: true },
+      updatedBy: 'dev-admin',
+      policyVersion: 1,
+      lastValidationStatus: 'valid',
+      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true },
+    },
+    {
+      id: 'delivery-policy-alt-001',
+      tenantId: 'alt-tenant',
+      connectorInstallationId: null,
+      name: 'Default Delivery Policy',
+      enabled: true,
+      killSwitch: false,
+      dryRunRequired: true,
+      mockOnlyEnforced: true,
+      allowRealNetworkCalls: false,
+      allowedActionTypes: ['ticket_note'],
+      approvalRequired: true,
+      minimumApproverRole: 'admin',
+      requireHumanReview: true,
+      requireEvidenceBundleBeforeDelivery: false,
+      requireConnectorValidationBeforeDelivery: false,
+      retryPolicy: { maxAttempts: 3, baseDelaySeconds: 5, maxDelaySeconds: 300, backoffMultiplier: 2 },
+      deadLetterPolicy: { enabled: true, maxAttemptsBeforeDeadLetter: 3, requireManualRetry: true },
+      updatedBy: 'alt-admin',
+      policyVersion: 1,
+      lastValidationStatus: 'valid',
+      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true },
+    },
+  ];
+
+  for (const policy of policies) {
+    await prisma.deliveryPolicy.upsert({
+      where: { id: policy.id },
+      create: policy,
+      update: {
+        name: policy.name,
+        enabled: policy.enabled,
+        killSwitch: policy.killSwitch,
+        dryRunRequired: policy.dryRunRequired,
+        mockOnlyEnforced: policy.mockOnlyEnforced,
+        allowRealNetworkCalls: policy.allowRealNetworkCalls,
+        allowedActionTypes: policy.allowedActionTypes,
+        approvalRequired: policy.approvalRequired,
+        minimumApproverRole: policy.minimumApproverRole,
+        requireHumanReview: policy.requireHumanReview,
+        requireEvidenceBundleBeforeDelivery: policy.requireEvidenceBundleBeforeDelivery,
+        requireConnectorValidationBeforeDelivery: policy.requireConnectorValidationBeforeDelivery,
+        retryPolicy: policy.retryPolicy,
+        deadLetterPolicy: policy.deadLetterPolicy,
+        updatedBy: policy.updatedBy,
+        policyVersion: policy.policyVersion,
+        lastValidationStatus: policy.lastValidationStatus,
+        safetyFlags: policy.safetyFlags,
+      },
+    });
+  }
+
+  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, and delivery policies');
 }
 
 main()

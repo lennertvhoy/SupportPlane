@@ -15,6 +15,15 @@ export class ConnectorInstallationsService {
     private readonly store: Store
   ) {}
 
+  async getConnectorInstallation(identity: DevIdentity, id: string) {
+    requirePermission(identity, 'connector_installation:read');
+    const installation = await this.store.getConnectorInstallation(identity.tenantId, id);
+    if (!installation) {
+      throw new NotFoundException(`Connector installation ${id} not found`);
+    }
+    return installation;
+  }
+
   async updateInstallation(
     identity: DevIdentity,
     id: string,

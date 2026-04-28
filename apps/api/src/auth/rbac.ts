@@ -30,6 +30,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'connector_installation:read',
     'connector_installation:write',
     'connector_installation:test',
+    'delivery_policy:read',
     'action:read',
     'action:create',
     'action:submit',
@@ -53,6 +54,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'action:read',
     'outbox:read',
     'worker:read',
+    'delivery_policy:read',
   ],
   support_agent: [
     'support_session:read',

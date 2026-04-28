@@ -39,6 +39,7 @@ model Tenant {
   actionOutboxItems   ActionOutboxItem[]
   actionOutboxAttempts ActionOutboxAttempt[]
   sharingStates       SharingState[]
+  deliveryPolicies    DeliveryPolicy[]
 
   @@index([slug])
   @@index([status])
@@ -260,6 +261,7 @@ model ConnectorInstallation {
   updatedAt         DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deliveryPolicies DeliveryPolicy[]
 
   @@unique([tenantId, name])
   @@index([tenantId])
@@ -599,4 +601,39 @@ model ActionOutboxAttempt {
   @@index([attemptedAt])
   @@unique([tenantId, outboxItemId, attemptNumber])
   @@map("action_outbox_attempts")
+}
+
+model DeliveryPolicy {
+  id                                      String   @id @default(cuid())
+  tenantId                                String
+  connectorInstallationId                 String?
+  name                                    String   @default("Default Delivery Policy")
+  enabled                                 Boolean  @default(true)
+  killSwitch                              Boolean  @default(false)
+  dryRunRequired                          Boolean  @default(true)
+  mockOnlyEnforced                        Boolean  @default(true)
+  allowRealNetworkCalls                   Boolean  @default(false)
+  allowedActionTypes                      String[] @default(["ticket_note"])
+  approvalRequired                        Boolean  @default(true)
+  minimumApproverRole                     String   @default("admin")
+  requireHumanReview                      Boolean  @default(true)
+  requireEvidenceBundleBeforeDelivery     Boolean  @default(false)
+  requireConnectorValidationBeforeDelivery Boolean @default(false)
+  retryPolicy                             Json     @default("{}")
+  deadLetterPolicy                        Json     @default("{}")
+  updatedBy                               String?
+  updatedAt                               DateTime @updatedAt
+  policyVersion                           Int      @default(1)
+  lastValidationStatus                    String   @default("not_run")
+  safetyFlags                             Json     @default("{}")
+  createdAt                               DateTime @default(now())
+
+  tenant                Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  connectorInstallation ConnectorInstallation? @relation(fields: [connectorInstallationId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, connectorInstallationId])
+  @@index([tenantId])
+  @@index([tenantId, enabled])
+  @@index([tenantId, killSwitch])
+  @@map("delivery_policies")
 }

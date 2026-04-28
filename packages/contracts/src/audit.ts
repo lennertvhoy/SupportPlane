@@ -111,6 +111,10 @@ export const AuditEventType = z.enum([
   'outbox_worker_status_checked',
   'outbox_access_denied',
   'outbox_process_once_requested',
+  // BL-094 Delivery Policy
+  'delivery_policy_evaluated',
+  'delivery_policy_blocked',
+  'delivery_policy_updated',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

@@ -38,6 +38,7 @@ export const ActionOutboxAttemptState = z.enum([
   'retry_requested',
   'dead_lettered',
   'cancelled',
+  'policy_blocked',
 ]);
 export type ActionOutboxAttemptState = z.infer<typeof ActionOutboxAttemptState>;
 

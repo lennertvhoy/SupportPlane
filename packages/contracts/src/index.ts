@@ -18,3 +18,4 @@ export * from './greeting-suggestion.js';
 export * from './telephony.js';
 export * from './call-recording.js';
 export * from './action-outbox.js';
+export * from './delivery-policy.js';
