@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: f950a11586caf21190c00580cdceffebdf419d15
-    worktree_status: dirty_before_governance_commit
+    head: 93afe787847964b666e502d083b0dbc63cc79d86
+    worktree_status: clean
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -484,7 +484,7 @@ current_state:
           - BACKLOG.md reconciled with accepted/superseded/partial markers for BL-001 through BL-094
           - Old screenshot folder session-094-delivery-policy-controls-final-closure/ deleted
           - New canonical folder session-095-bl094-final-closure-max20/ created with 20 unique screenshots
-      final_closure_commit: pending_this_session_commit
+      final_closure_commit: 93afe787847964b666e502d083b0dbc63cc79d86
       notes:
         - delivery policy evaluation gates (in order): killSwitch → enabled → allowedActionTypes → approvalRequired → minimumApproverRole → requireHumanReview → requireEvidenceBundle → requireConnectorValidation
         - all policy decisions return realNetworkAllowed=false, writebackEnabled=false, externalWriteAllowed=false
