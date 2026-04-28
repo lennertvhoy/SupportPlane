@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-28T11:22:00+02:00
+  updated_at: 2026-04-28T11:33:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: f5c101da467384bce940f886f0e8226478180bfa
-    worktree_status: clean_after_bl_093_commit
+    head: 26cf3154905b9223238fe65136744c5c0ce96386
+    worktree_status: clean_after_bl_094_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -282,67 +282,26 @@ current_state:
     bl_046_status:
       completed: true
       scope: operator_companion_screen_observations_during_active_calls
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      docs:
-        - docs/OPERATOR_COMPANION.md
-        - docs/CALL_CONSOLE.md
-        - docs/EVIDENCE_BUNDLES.md
       validation: full_validation_gate_and_browser_boundary_verified
       runtime:
-        api_endpoints:
-          - POST /support-sessions/:id/screen-observations/mock
-          - GET /support-sessions/:id/screen-observations
-          - POST /support-sessions/:id/screen-observations/:observationId/review
-          - POST /support-sessions/:id/screen-observations/:observationId/context-packet
+        api_endpoints: [POST/GET /support-sessions/:id/screen-observations, POST .../review, POST .../context-packet]
         storage_type: in-memory
         real_screen_capture: false
         real_clipboard: false
         real_ocr: false
-        audit_events:
-          - screen_observation_captured
-          - screen_observation_reviewed
-          - screen_observation_discarded
-          - screen_observation_context_packet_created
-        evidence_bundle_includes:
-          - screenObservations
-          - mock screen observation disclaimers
-          - noRealScreenCapture / noRawPixels / noClipboardAccess flags
-        ui_panels:
-          - Call Console Operator Companion panel
-          - Support Cockpit AI Context Quality panel (observation-derived packets)
         screenshot_folder: output/playwright/session-046-operator-companion-closure-canonical/
         screenshot_count: 9
-        superseded_screenshots_removed: true
-        closure_notes:
-          - tenant isolation enforced on all screen observation endpoints
-          - no real screen capture, raw pixels, clipboard access, or OCR performed
-          - review gate required before AI context packet creation
-          - pattern redaction applied to observation metadata in evidence bundle
     bl_047_048_049_status:
       completed: true
-      scope: screen_context_hardening_wave_sharing_state_active_window_screenshot_metadata_structured_upload_redaction
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
+      scope: screen_context_hardening_wave
       validation: full_validation_gate_and_browser_boundary_verified
       runtime:
-        api_endpoints: [GET/POST /support-sessions/:id/screen-observations/sharing-state, POST /active-window/mock, POST /manual-screenshot, POST /structured-upload]
+        api_endpoints: [GET/POST /screen-observations/sharing-state, POST /active-window/mock, POST /manual-screenshot, POST /structured-upload]
         storage_type: in-memory
         real_screen_capture: false
-        real_clipboard: false
-        real_ocr: false
         raw_image_retention: disabled
-        audit_events: [screen_observation_sharing_started, screen_observation_sharing_paused, screen_observation_sharing_stopped, active_window_metadata_captured, manual_screenshot_metadata_attached, structured_screen_observation_uploaded, screen_observation_redaction_applied]
-        ui_panels: [Call Console Operator Companion, Support Cockpit AI Context Quality]
         screenshot_folder: output/playwright/session-047-049-screen-context-hardening-final-closure/
         screenshot_count: 10
-        closure_notes:
-          - sharing state lifecycle fully verified via browser automation
-          - all 3 capture types verified
-          - evidence bundle JSON verified to include new structured fields
-          - no real screen capture, raw pixels, clipboard access, or OCR performed
     bl_050_status:
       completed: true
       scope: postgres_persistence_foundation_prisma_store_runtime_switching
@@ -425,7 +384,7 @@ current_state:
     status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: 1dba4bbe0b75bfb26112619e4b0b2b7af7426132
+    head: 26cf3154905b9223238fe65136744c5c0ce96386
     process_or_container:
       - node process (NestJS) on port 4110
       - node process (Next.js) on port 3200
@@ -491,11 +450,44 @@ current_state:
       notes:
         - action/outbox delivery is local mock only with realNetwork=false and externalWriteAttempted=false
         - viewer can inspect but cannot mutate; operator can create/submit; admin can approve/reject/queue
-        - API restart persistence proof passed against PostgreSQL local-auth runtime
-        - local DB drift was cleared with npx prisma migrate reset --force and recreated from committed migrations plus seed
-        - backend now suppresses outbox items until queued/delivered/failed state
-        - frontend now scopes attempt history to latest action's outbox item by supportActionId
-        - verify_postgres_persistence.sh now auto-detects occupied port 4110 and uses next available port
+        - backend suppresses outbox items until queued/delivered/failed; frontend scopes attempt history by supportActionId
+    bl_094_status:
+      completed: true
+      status: closure_ready
+      scope: connector_writeback_readiness_gates_and_delivery_policy_controls
+      backlog_id: BL-094
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      prisma_schema: prisma/schema.prisma
+      migration: prisma/migrations/20260428094012_delivery_policy_controls/
+      docs: [docs/DELIVERY_POLICY.md]
+      runtime:
+        store_mode: postgres
+        auth_mode: local
+        api_url: http://localhost:4110
+        web_url: http://localhost:3200
+        postgres: localhost:5434
+      new_api_endpoints:
+        - GET /delivery-policies
+        - GET /delivery-policies/:id
+        - PATCH /delivery-policies/:id
+        - POST /delivery-policies/:id/validate
+        - POST /delivery-policies/:id/connector-readiness
+      screenshot_folder: output/playwright/session-094-delivery-policy-controls-foundation/
+      screenshot_count: 6
+      validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
+      final_closure_commit: 26cf3154905b9223238fe65136744c5c0ce96386
+      notes:
+        - delivery policy evaluation gates (in order): killSwitch → enabled → allowedActionTypes → approvalRequired → minimumApproverRole → requireHumanReview → requireEvidenceBundle → requireConnectorValidation
+        - all policy decisions return realNetworkAllowed=false, writebackEnabled=false, externalWriteAllowed=false
+        - real writeback toggle requests return 400 with explicit rejection
+        - viewer sees read-only policy panel; admin can update safe fields only
+        - policy decisions are stored in outbox item deliveryIntent and audit events
+        - ActionsService.queue() evaluates policy before creating outbox item
+        - ActionsService.processClaimedOutbox() re-evaluates policy before processing
+        - evidence bundles include policy provenance
+        - no real external writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
     bl_093_status:
       completed: true
       status: closure_ready
@@ -507,7 +499,7 @@ current_state:
       worker_app: apps/worker
       prisma_schema: prisma/schema.prisma
       migration: prisma/migrations/20260428120000_outbox_worker_retry_deadletter_foundation/
-      docs: [docs/OUTBOX_WORKER_OPERATIONS.md, docs/ACTION_OUTBOX_WORKFLOW.md, docs/PERSISTENCE.md, docs/EVIDENCE_BUNDLES.md, docs/LOCAL_DEVELOPMENT.md, docs/SUPPORT_CASE_WORKFLOW.md]
+      docs: [docs/OUTBOX_WORKER_OPERATIONS.md, docs/ACTION_OUTBOX_WORKFLOW.md, docs/PERSISTENCE.md]
       runtime:
         store_mode: postgres
         auth_mode: local
@@ -521,13 +513,11 @@ current_state:
       validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
       final_closure_commit: f5c101da467384bce940f886f0e8226478180bfa
       notes:
-        - worker/process-once delivery mode is local mock only
-        - all delivery results include mode=mock, realNetwork=false, writebackEnabled=false, externalWriteAttempted=false
+        - worker/process-once delivery mode is local mock only; all results include mode=mock, realNetwork=false, writebackEnabled=false, externalWriteAttempted=false
         - retryable failures schedule retry; non-retryable or exhausted attempts move to dead_lettered
         - viewer can inspect only; admin/owner can process, retry, cancel, and dead-letter
-        - forged role headers are ignored in local auth mode; cross-tenant outbox access is denied server-side
+        - forged role headers ignored; cross-tenant outbox access denied server-side
         - evidence bundles include attempt provenance without secrets or raw media
-        - no real external writeback, email, telephony, AI provider, external broker, object storage, raw media storage, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment
     bl_091_status:
       completed: true
       scope: support_case_workflow_foundation

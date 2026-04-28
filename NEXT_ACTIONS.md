@@ -6,10 +6,7 @@
 
 ## Active Work
 
-- [BL-094] Connector writeback readiness gates and delivery policy controls.
-  - Owner: coding agent
-  - Next action: implement delivery policy model, Prisma migration, policy evaluator, connector readiness gates, worker integration, web admin UX, evidence/audit/docs, verification script, browser proof, and closure.
-  - Exit criteria: clean worktree, full validation gate passed, 24 browser screenshots in fresh folder, acceptance freeze recorded.
+- None. BL-094 is complete and committed. Awaiting CTO direction for next backlog slice.
 
 ## Queue Rules
 

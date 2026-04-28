@@ -4,6 +4,64 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-28 - BL-094 Connector Writeback Readiness Gates and Delivery Policy Controls
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 26cf3154905b9223238fe65136744c5c0ce96386
+**Worktree:** clean_after_bl_094_commit
+
+### What changed
+
+- Prisma schema: added `DeliveryPolicy` model with tenant-scoped policy state: `enabled`, `killSwitch`, `dryRunRequired`, `mockOnlyEnforced`, `allowRealNetworkCalls` (default false), `allowedActionTypes`, `approvalRequired`, `minimumApproverRole`, `requireHumanReview`, `requireEvidenceBundleBeforeDelivery`, `requireConnectorValidationBeforeDelivery`, `retryPolicy`, `deadLetterPolicy`, `policyVersion`, `updatedBy`, `safetyFlags`, `lastValidationStatus`.
+- Migration `20260428094012_delivery_policy_controls` applied against PostgreSQL on localhost:5434.
+- Contracts: `packages/contracts/src/delivery-policy.ts` with Zod schemas for `DeliveryPolicy`, `DeliveryPolicyUpdateRequest` (rejects real writeback fields), `DeliveryPolicyDecision`, `ConnectorReadinessResult`.
+- Backend service: `apps/api/src/delivery-policy/delivery-policy.service.ts` with `evaluateDeliveryPolicy()`, `checkConnectorReadiness()`, `buildDecisionFromPolicy()`.
+- Backend controller: `apps/api/src/delivery-policy/delivery-policy.controller.ts` with GET list, GET by ID, PATCH (admin only), POST validate, POST connector-readiness.
+- Integration: `ActionsService.queue()` evaluates policy before creating outbox item; throws `ForbiddenException` if blocked.
+- Integration: `ActionsService.processClaimedOutbox()` re-evaluates policy before processing; creates `policy_blocked` attempt if blocked.
+- Store layer: `PrismaStore` and `InMemoryStore` updated with `saveDeliveryPolicy`, `getDeliveryPolicy`, `listDeliveryPolicies`, `getDeliveryPolicyByConnector`.
+- RBAC: added `delivery_policy:read` and `delivery_policy:write` permissions.
+- Seed: default delivery policies seeded for dev-tenant and alt-tenant with `mockOnlyEnforced: true`, `allowRealNetworkCalls: false`.
+- Web: `DeliveryPolicyPanel.tsx` component showing policy state, kill switch toggle, approval required toggle, minimum approver role dropdown, mock-only locked ON, real network calls locked OFF, allowed actions, max attempts.
+- Web: admin can update policy; viewer sees read-only panel with "View-only. Admin role required to modify policy." message.
+- Web: `api.ts` updated with `listDeliveryPolicies`, `getDeliveryPolicy`, `updateDeliveryPolicy`, `validateDeliveryPolicy`, `checkConnectorReadiness`.
+- Verification script: `scripts/verify_delivery_policy_controls.sh` with 14 checks (all passing).
+
+### Verification
+
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run lint` passed.
+- `cd apps/api && npm test` passed: 114/114 tests (12 suites).
+- `scripts/verify_delivery_policy_controls.sh` passed all 14 checks against `http://localhost:4110` with `SUPPORTPLANE_STORE=postgres`.
+- `scripts/verify_local_auth_rbac.sh` passed.
+- `scripts/verify_ticket_context_connector.sh` passed.
+- `scripts/verify_support_case_workflow.sh` passed.
+- `scripts/verify_durable_action_outbox.sh` passed.
+- `scripts/verify_outbox_worker_retry_deadletter.sh` passed.
+- `scripts/verify_postgres_persistence.sh` passed.
+- API dev server `http://localhost:4110` and web dev server `http://localhost:3200` both confirmed running.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-094-delivery-policy-controls-foundation/`
+  - `01-login-local-auth.png` - Login page
+  - `02-admin-cockpit-delivery-policy-panel.png` - Admin cockpit with Delivery Policy panel visible
+  - `03-policy-validation-result.png` - Policy validation showing `mock_only_allowed` decision
+  - `04-connector-readiness-result.png` - Connector readiness showing mock ready, not real ready
+  - `05-session-audit-policy-events.png` - Session audit trail with `delivery_policy_evaluated` and `delivery_policy_blocked` events
+  - `06-viewer-mode-readonly-policy.png` - Viewer mode with read-only policy controls
+- Git commit: `26cf3154905b9223238fe65136744c5c0ce96386`
+
+### Remaining Risk
+
+- All behavior remains local/mock-only with visible UI warnings.
+- Real writeback remains impossible; all policy decisions return `realNetworkAllowed: false`.
+- No real external integrations, queue workers, or production delivery exists.
+
+
 ## 2026-04-28 - BL-092 Durable Action/Outbox Workflow Closure Repair
 
 **Type:** closure repair

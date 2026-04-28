@@ -854,3 +854,82 @@ and must be protected from quiet regression.
 - explicit_non_claims:
   - No real production Zammad writeback was implemented.
   - No real email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
+
+---
+
+## AF-2026-04-28-012: BL-094 Delivery Policy Controls and Connector Readiness Gates
+
+- ID: AF-2026-04-28-012
+- Backlog ID: BL-094
+- Milestone: Connector writeback readiness gates and delivery policy controls
+- Scope: Tenant-scoped DeliveryPolicy model with Prisma migration, policy evaluation service with ordered gates (killSwitch → enabled → allowedActionTypes → approvalRequired → minimumApproverRole → requireHumanReview → requireEvidenceBundle → requireConnectorValidation), connector readiness check returning readyForRealWriteback=false, policy enforcement in ActionsService.queue() and processClaimedOutbox(), real writeback toggle blocked with 400, admin/viewer policy panel in Support Cockpit, delivery_policy:read/write RBAC, policy audit events (delivery_policy_evaluated, delivery_policy_blocked), evidence bundle policy provenance, and verification script with 14 checks.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- final_closure_commit: 26cf3154905b9223238fe65136744c5c0ce96386
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+  - Podman container `sp-postgres` on port 5434
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- routes:
+  - /
+  - GET /delivery-policies
+  - GET /delivery-policies/:id
+  - PATCH /delivery-policies/:id
+  - POST /delivery-policies/:id/validate
+  - POST /delivery-policies/:id/connector-readiness
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: true
+- migration: prisma/migrations/20260428094012_delivery_policy_controls/
+- evidence_refs:
+  - EV-2026-04-28-006
+  - EV-2026-04-28-007
+  - EV-2026-04-28-008
+  - EV-2026-04-28-009
+  - EV-2026-04-28-010
+  - EV-2026-04-28-011
+- evidence_folder: output/playwright/session-094-delivery-policy-controls-foundation/
+- screenshot_count: 6
+- validation_summary:
+  - `npm install` passed; npm reported 10 vulnerabilities (8 moderate, 2 high), treated as pre-existing audit debt.
+  - `npm run lint`, `npm run typecheck --workspaces --if-present`, `npm run validate`, and `npm run health` passed.
+  - `npx prisma validate`, `npx prisma generate`, `npx prisma migrate status`, and `npx prisma db seed` passed.
+  - `scripts/verify_postgres_persistence.sh` passed.
+  - `scripts/verify_local_auth_rbac.sh` passed.
+  - `scripts/verify_ticket_context_connector.sh` passed.
+  - `scripts/verify_support_case_workflow.sh` passed.
+  - `scripts/verify_durable_action_outbox.sh` passed.
+  - `scripts/verify_outbox_worker_retry_deadletter.sh` passed.
+  - `scripts/verify_delivery_policy_controls.sh` passed all 14 checks.
+  - API tests: 114/114 pass.
+  - Contracts tests: 29/29 pass.
+  - Web tests: 15/15 pass.
+  - AI tests: 9/9 pass.
+  - Connectors build/test passed; connector tests: 16/16 pass.
+  - Web build passed with existing Next ESLint-plugin warning.
+  - State docs and bootstrap gate checks passed.
+  - Python compilation passed.
+- regression_guard:
+  - Delivery Policy panel must remain visible in Support Cockpit with policy state, kill switch, approval required, minimum approver role, mock-only locked ON, real network calls locked OFF.
+  - Admin role must be able to PATCH safe policy fields (killSwitch, approvalRequired, minimumApproverRole, allowedActionTypes, maxAttempts).
+  - Viewer role must see read-only policy panel with disabled controls.
+  - PATCH requesting `allowRealNetworkCalls=true`, `writebackEnabled=true`, or `externalWriteAllowed=true` must return 400.
+  - `POST /delivery-policies/:id/validate` must return `decision: mock_only_allowed` with `allowed: true` under default policy.
+  - `POST /delivery-policies/:id/connector-readiness` must return `readyForRealWriteback: false`.
+  - ActionsService.queue() must evaluate policy and throw ForbiddenException with policy decision if blocked.
+  - ActionsService.processClaimedOutbox() must re-evaluate policy and create `policy_blocked` attempt if blocked.
+  - Audit trail must display `delivery_policy_evaluated` and `delivery_policy_blocked` events with full decision metadata.
+  - Evidence bundle must include policy provenance with `mockOnly: true`, `realNetworkAllowed: false`, `writebackEnabled: false`.
+  - Cross-tenant policy access must be denied server-side.
+  - Forged identity headers must be ignored in local auth mode.
+- known_limitations:
+  - Real writeback readiness gates are structural only; real writeback requires future connector credential management, network path validation, and tenant admin configuration.
+  - Policy evaluation uses a hardcoded default fallback for dev-mode compatibility when no DB policy exists.
+  - No production queue semantics, external broker, or distributed worker infrastructure exists.
+- explicit_non_claims:
+  - No real production Zammad writeback was implemented.
+  - No real email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.

@@ -1391,3 +1391,103 @@
 - Result: pass
 - Type: api-behavior-verification
 - as_of: 2026-04-28T11:17:00+02:00
+
+## EV-2026-04-28-006: BL-094 admin cockpit with Delivery Policy panel
+
+- File: output/playwright/session-094-delivery-policy-controls-foundation/02-admin-cockpit-delivery-policy-panel.png
+- Title: Admin cockpit with Delivery Policy panel visible
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Logged in as admin and scrolled to Delivery Policy panel.
+- Shows:
+  - Delivery Policy panel showing "Default Delivery Policy" with "Enabled" badge and version.
+  - Kill switch toggle, Approval required toggle, Min. approver role dropdown (Admin selected).
+  - Mock-only enforced: "Locked ON" with lock icon.
+  - Real network calls: "Locked OFF" with lock icon.
+  - Allowed actions: ticket_note. Max attempts: 3.
+  - Validate Policy and Connector Readiness buttons.
+- Proves:
+  - Delivery Policy panel is visible to admin users with all policy controls rendered.
+- Type: docs-render-verification
+- as_of: 2026-04-28T11:24:00+02:00
+
+## EV-2026-04-28-007: BL-094 policy validation result
+
+- File: output/playwright/session-094-delivery-policy-controls-foundation/03-policy-validation-result.png
+- Title: Policy validation showing mock_only_allowed decision
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Clicked "Validate Policy" button in Delivery Policy panel.
+- Shows:
+  - Policy decision badge: "mock_only_allowed".
+  - Message: "Delivery allowed under current policy."
+  - Subtext: "Mode: mock • Version: 21".
+- Proves:
+  - Policy validation endpoint returns visible decision with mode and version metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-28T11:26:00+02:00
+
+## EV-2026-04-28-008: BL-094 connector readiness result
+
+- File: output/playwright/session-094-delivery-policy-controls-foundation/04-connector-readiness-result.png
+- Title: Connector readiness showing mock ready, not real ready
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Clicked "Connector Readiness" button in Delivery Policy panel.
+- Shows:
+  - Connector Readiness header with checkmark icon.
+  - Mock ready: Yes. Real ready: No. Active: Yes. Supports type: Yes.
+  - Message: "Real writeback not implemented."
+  - Policy: mock_only_allowed.
+- Proves:
+  - Connector readiness check explicitly reports real writeback is not implemented.
+- Type: docs-render-verification
+- as_of: 2026-04-28T11:27:00+02:00
+
+## EV-2026-04-28-009: BL-094 session audit with policy events
+
+- File: output/playwright/session-094-delivery-policy-controls-foundation/05-session-audit-policy-events.png
+- Title: Session audit trail with delivery_policy_evaluated and delivery_policy_blocked
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Selected "Policy test session" and scrolled to Audit Trail panel.
+- Shows:
+  - `delivery_policy_evaluated` event with decision metadata including `allowed: true`, `decision: mock_only_allowed`, `policyVersion`, `safetyFlags`.
+  - `delivery_policy_blocked` event with `allowed: false`, `decision: blocked_by_kill_switch`, safety flags.
+  - `action_queued` and `outbox_item_created` events showing policy decision embedded in delivery intent.
+- Proves:
+  - Policy evaluation and blocking events are captured in the audit trail with full decision metadata.
+- Type: docs-render-verification
+- as_of: 2026-04-28T11:28:00+02:00
+
+## EV-2026-04-28-010: BL-094 viewer mode read-only policy
+
+- File: output/playwright/session-094-delivery-policy-controls-foundation/06-viewer-mode-readonly-policy.png
+- Title: Viewer mode with read-only policy controls
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Logged out and re-logged in as viewer@supportplane.local.
+- Shows:
+  - Delivery Policy panel with all toggles disabled (Kill switch, Approval required, Max attempts).
+  - Min. approver role dropdown disabled.
+  - Message: "View-only. Admin role required to modify policy."
+  - Validate Policy and Connector Readiness buttons remain available.
+- Proves:
+  - Viewer role cannot modify delivery policy; admin role is required for updates.
+- Type: docs-render-verification
+- as_of: 2026-04-28T11:28:00+02:00
+
+## EV-2026-04-28-011: BL-094 local auth login page
+
+- File: output/playwright/session-094-delivery-policy-controls-foundation/01-login-local-auth.png
+- Title: Local auth login page
+- Source/System: browser
+- Route/Page: http://localhost:3200/
+- Action: Opened SupportPlane login page before authentication.
+- Shows:
+  - SupportPlane local login header with "Local MVP auth, not SSO or production auth" subtitle.
+  - Tenant, Email, Password fields with seeded local password hint.
+- Proves:
+  - Login page is the authentication entry point for browser verification.
+- Type: docs-render-verification
+- as_of: 2026-04-28T11:23:00+02:00
