@@ -1136,3 +1136,83 @@ and must be protected from quiet regression.
 - explicit_non_claims:
   - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
   - No real secret broker, credential vault, or encrypted secret storage was implemented.
+
+## BL-099 — Connector Runtime Test Coverage + Documentation Hardening
+
+- accepted_at: 2026-04-28T21:30:00+02:00
+- scope: connector_runtime_test_coverage_documentation_hardening
+- backlog_id: BL-099
+- final_commit: <see_git_log>
+- verification:
+  - lint: pass
+  - typecheck (9 workspaces): pass
+  - validate: pass
+  - health: pass
+  - prisma validate/generate/migrate status/db seed: pass
+  - apps/api tests: 147/147 pass (14 suites)
+  - packages/contracts tests: 43/43 pass (7 suites)
+  - apps/web tests: 19/19 pass (1 suite)
+  - packages/connectors tests: 16/16 pass (6 suites)
+  - scripts/verify_connector_runtime_readiness.sh: 12/12 pass
+  - scripts/verify_connector_runtime_contracts.sh: 14/14 pass
+  - screenshot script: 13 screenshots, 0 duplicate MD5 hashes
+- what_is_frozen:
+  - Connector runtime config schema, validation, readiness, and resolver endpoints
+  - Mock-only safety enforcement: mockMode required, unsafe fields rejected
+  - No secretRef leakage in any runtime response
+  - Credential metadata only in resolver output
+  - RBAC boundaries: viewer 403, operator/admin allowed on safe operations
+  - Cross-tenant isolation: 404 on all runtime endpoints
+  - Audit event emission for config validation, readiness, runtime resolve
+- regression_guard:
+  - `GET /connector-installations/:id/config-schema` must return `mockOnly: true`
+  - `POST .../validate-config` safe config → valid:true, mockMode:true, realNetwork:false
+  - `POST .../validate-config` unsafe config → valid:false with ≥3 errors (MOCK_MODE_REQUIRED, UNSAFE_FIELD_REJECTED, REAL_NETWORK_FIELD_REJECTED)
+  - `POST .../runtime-readiness` → realReady:false, realNetwork:false, writebackEnabled:false
+  - `GET .../runtime/resolve` → mode:'mock', no secretRef, secretResolutionImplemented:false
+  - Viewer denied 403 on validate-config and runtime-readiness
+  - Cross-tenant access returns 404
+  - Evidence bundles remain secret-free
+- known_limitations:
+  - Config schema is hardcoded for mock-only Zammad-local development
+  - Runtime readiness depends only on static flags; no actual external health checks
+  - Secret resolution is not implemented; `secretResolutionImplemented: false` is hardcoded
+  - No production credential broker, Vault/KMS, or encrypted secret storage exists
+- explicit_non_claims:
+  - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
+  - No real secret broker, credential vault, or encrypted secret storage was implemented.
+
+## BL-100 — Real Writeback Path Design Document
+
+- accepted_at: 2026-04-28T21:30:00+02:00
+- scope: real_writeback_path_design_document
+- backlog_id: BL-100
+- final_commit: <see_git_log>
+- verification:
+  - lint: pass
+  - typecheck (9 workspaces): pass
+  - validate: pass
+  - health: pass
+  - design document reviewed and accepted
+- what_is_frozen:
+  - `docs/REAL_WRITEBACK_PATH_DESIGN.md` as the canonical design document for real writeback
+  - Current truth section documents mock-only state honestly
+  - Block reasons section documents why real writeback is not safe today
+  - Required architecture section documents all components needed before real writeback
+  - Phased path (Phase 0→4) defines incremental, gated rollout
+  - Explicit non-goals prevent scope creep and unsafe shortcuts
+- regression_guard:
+  - No implementation of real writeback without satisfying all "Do not build until" checklist items
+  - No credential broker, encrypted storage, or network egress policy may be implemented without design-doc alignment
+  - No production writeback may be enabled before Phase 3 dry-run and Phase 4 approval gates + kill switch
+- known_limitations:
+  - Design document only; no implementation
+  - No credential broker exists
+  - No encrypted secret storage exists
+  - No network egress policy exists
+  - No approval gate UI exists
+  - No kill switch exists
+- explicit_non_claims:
+  - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
+  - No real secret broker, credential vault, or encrypted secret storage was implemented.
+  - Design document does not constitute implementation or readiness for real writeback.

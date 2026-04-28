@@ -1723,3 +1723,51 @@
   - All screenshots are compact and reviewable (max 900px height)
 - Type: browser-runtime-verification
 - as_of: 2026-04-28T21:15:00+02:00
+
+- id: EV-2026-04-28-006
+  backlog_id: BL-099
+  title: Connector Runtime Test Coverage + Documentation Hardening Evidence
+  evidence_type: test_coverage_and_documentation
+  status: accepted
+  artifact_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
+  artifact_count: 13
+  screenshots:
+    - 01-admin-runtime-identity.png — admin@supportplane.local with tenant pill, role badge
+    - 02-connector-panel-config-readiness-controls.png — Config Schema, Validate Config, Runtime Readiness buttons visible
+    - 03-valid-config-validation.png — Valid badge, valid:true, mockMode:true
+    - 04-unsafe-config-rejected.png — mockMode:false, apiToken, baseUrl rejected with errors
+    - 05-runtime-readiness-mock-only.png — mockReady, realReady:false, writebackEnabled:false
+    - 06-runtime-resolve-credential-metadata-only.png — mode:mock, credential metadata only, no secretRef
+    - 07-ticket-context-connector-runtime-provenance.png — Connector Runtime Provenance card visible
+    - 08-evidence-bundle-connector-runtime-metadata.png — connector counts, realNetwork:false, no secret leakage
+    - 09-viewer-read-only-connector-panel.png — disabled buttons, read-only UI
+    - 10-viewer-server-side-denial.png — 403 response on mutation attempt
+    - 11-cross-tenant-denial.png — 404 on cross-tenant runtime access
+    - 12-real-writeback-path-design-proof.png — REAL_WRITEBACK_PATH_DESIGN.md rendered in browser
+    - 13-final-local-mock-no-real-writeback-proof.png — Mock-only badge, no real writeback
+  test_results:
+    - apps/api: 147/147 pass (14 suites)
+    - packages/contracts: 43/43 pass (7 suites)
+    - apps/web: 19/19 pass (1 suite)
+    - packages/connectors: 16/16 pass (6 suites)
+  verification_scripts:
+    - scripts/verify_connector_runtime_readiness.sh: 12/12 pass
+    - scripts/verify_connector_runtime_contracts.sh: 14/14 pass
+  docs:
+    - docs/CONNECTOR_RUNTIME_CONTRACT.md
+    - docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md
+  as_of: 2026-04-28T21:30:00+02:00
+
+- id: EV-2026-04-28-007
+  backlog_id: BL-100
+  title: Real Writeback Path Design Document Evidence
+  evidence_type: design_documentation
+  status: accepted
+  artifact_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
+  artifact_count: 2
+  screenshots:
+    - 12-real-writeback-path-design-proof.png — REAL_WRITEBACK_PATH_DESIGN.md rendered in browser showing all sections
+    - 13-final-local-mock-no-real-writeback-proof.png — connector panel shows mock-only state with design doc referenced
+  docs:
+    - docs/REAL_WRITEBACK_PATH_DESIGN.md
+  as_of: 2026-04-28T21:30:00+02:00

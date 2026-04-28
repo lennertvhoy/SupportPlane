@@ -67,7 +67,7 @@ current_state:
     type: governed_ai_support_cockpit
     lifecycle_stage: mvp_foundation
     foundation_history:
-      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094, BL-095, BL-097, BL-098]
+      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094, BL-095, BL-097, BL-098, BL-099, BL-100]
       summary: >
         Early slices established contracts/schema, mock-first API, cockpit UI,
         mock AI gateway, local Podman-compatible topology, Zammad connector
@@ -398,6 +398,53 @@ current_state:
         - evidence bundle summary (08) and final proof (15) show generated bundle state, not empty
         - API evidence (09, 10) uses compact styled pages, not unreadable tall JSON dumps
         - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
+    bl_099_status:
+      completed: true
+      status: closure_ready
+      scope: connector_runtime_test_coverage_documentation_hardening
+      backlog_id: BL-099
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      docs:
+        - docs/CONNECTOR_RUNTIME_CONTRACT.md
+        - docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md
+      new_tests:
+        - packages/contracts/test/connector-runtime.test.ts
+        - apps/api/test/api.test.ts (expanded connector runtime describe block)
+        - apps/web/lib/api.test.ts (connector runtime resolve response)
+      verification_scripts:
+        - scripts/verify_connector_runtime_contracts.sh
+      screenshot_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
+      screenshot_count: 13
+      validation: full_gate_passed
+      final_closure_commit: see_git_log_for_current_head
+      notes:
+        - 14 new API tests added (147/147 pass, 14 suites)
+        - 43 contracts tests pass (7 suites)
+        - 19 web tests pass
+        - no secretRef leakage verified in all runtime flows
+        - deterministic credential count verified (exactly 1 from seed)
+        - evidence bundles secret-free verified
+        - viewer/operator/admin RBAC boundaries verified
+        - cross-tenant isolation verified
+        - all behavior remains mock-only; no real writeback
+    bl_100_status:
+      completed: true
+      status: closure_ready
+      scope: real_writeback_path_design_document
+      backlog_id: BL-100
+      docs:
+        - docs/REAL_WRITEBACK_PATH_DESIGN.md
+      implementation: none
+      screenshot_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
+      screenshot_count: 2
+      validation: full_gate_passed
+      final_closure_commit: see_git_log_for_current_head
+      notes:
+        - design-only backlog item; no implementation
+        - documents current truth (mock-only state), block reasons, required architecture, phased path, non-goals, acceptance gates, threat/risk, test plan, rollback strategy, and "do not build until" checklist
+        - screenshots 12 and 13 show design doc and final proof state
     bl_093_status:
       completed: true
       status: closure_ready

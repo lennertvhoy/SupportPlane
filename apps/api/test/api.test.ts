@@ -1413,6 +1413,149 @@ describe('Connector runtime configuration and readiness (BL-098)', () => {
     assert.strictEqual(provenance.realNetwork, false);
     assert.strictEqual(provenance.writebackEnabled, false);
   });
+
+  it('operator role can use runtime test endpoints', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Operator Runtime Test', adapterType: 'mock' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/validate-config`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({ config: { mockMode: true } })
+      .expect(200);
+
+    await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/runtime-readiness`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .expect(200);
+  });
+
+  it('viewer can read config-schema but cannot validate-config or runtime-readiness', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Viewer Runtime Test', adapterType: 'mock' })
+      .expect(201);
+
+    await supertest(server)
+      .get(`/connector-installations/${created.body.installation.id}/config-schema`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(200);
+
+    await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/validate-config`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .send({ config: { mockMode: true } })
+      .expect(403);
+
+    await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/runtime-readiness`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(403);
+  });
+
+  it('rejects secret-like fields individually', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Secret Field Test', adapterType: 'mock' })
+      .expect(201);
+
+    for (const field of ['apiToken', 'password', 'secret', 'privateKey', 'webhookSecret']) {
+      const res = await supertest(server)
+        .post(`/connector-installations/${created.body.installation.id}/validate-config`)
+        .set('x-tenant-id', 'tenant-runtime')
+        .set('x-user-id', 'admin-1')
+        .set('x-user-role', 'admin')
+        .send({ config: { mockMode: true, [field]: 'super-secret' } })
+        .expect(200);
+
+      const errors = res.body.result.issues.filter((i: { severity: string }) => i.severity === 'error');
+      const codes = errors.map((i: { code: string }) => i.code);
+      assert.ok(codes.includes('UNSAFE_FIELD_REJECTED'), `field ${field} should trigger UNSAFE_FIELD_REJECTED`);
+    }
+  });
+
+  it('rejects real-network implying fields individually', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Network Field Test', adapterType: 'mock' })
+      .expect(201);
+
+    for (const field of ['baseUrl', 'endpoint', 'url', 'host', 'proxy']) {
+      const res = await supertest(server)
+        .post(`/connector-installations/${created.body.installation.id}/validate-config`)
+        .set('x-tenant-id', 'tenant-runtime')
+        .set('x-user-id', 'admin-1')
+        .set('x-user-role', 'admin')
+        .send({ config: { mockMode: true, [field]: 'http://real.example.com' } })
+        .expect(200);
+
+      const errors = res.body.result.issues.filter((i: { severity: string }) => i.severity === 'error');
+      const codes = errors.map((i: { code: string }) => i.code);
+      assert.ok(codes.includes('REAL_NETWORK_FIELD_REJECTED'), `field ${field} should trigger REAL_NETWORK_FIELD_REJECTED`);
+    }
+  });
+
+  it('runtime readiness returns deterministic linked credential count from seed', async () => {
+    // This test uses the mock in-memory store; credential count depends on test ordering.
+    // We create a fresh installation, link a credential, and verify the count is exact.
+    const installation = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Deterministic Count Test', adapterType: 'mock', enabled: true, status: 'active' })
+      .expect(201);
+
+    const credential = await supertest(server)
+      .post('/credential-references')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ connectorType: 'mock', displayName: 'Deterministic Credential' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/connector-installations/${installation.body.installation.id}/link-credential`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ credentialReferenceId: credential.body.credentialReference.id })
+      .expect(200);
+
+    const res = await supertest(server)
+      .post(`/connector-installations/${installation.body.installation.id}/runtime-readiness`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+
+    assert.strictEqual(res.body.result.linkedCredentialReferenceCount, 1);
+    assert.strictEqual(res.body.result.credentialReferencesLinked, true);
+  });
 });
 
 describe('Evidence bundle endpoints', () => {

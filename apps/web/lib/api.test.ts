@@ -695,6 +695,151 @@ describe('web API client', () => {
     }
   });
 
+  it('handles connector runtime config schema response', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/connector-installations/inst-1/config-schema');
+      assert.equal(init?.method, 'GET');
+      return new Response(
+        JSON.stringify({
+          installationId: 'inst-1',
+          schema: { type: 'object', properties: {}, required: ['mockMode'], additionalProperties: false },
+          safeFields: ['mockMode', 'enabled', 'timeoutMs'],
+          rejectedFields: ['apiToken', 'password', 'secret'],
+          mockOnly: true,
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.getConnectorConfigSchema('inst-1');
+      assert.strictEqual(response.mockOnly, true);
+      assert.ok(response.safeFields.includes('mockMode'));
+      assert.ok(response.rejectedFields.includes('apiToken'));
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it('handles connector config validation response', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/connector-installations/inst-1/validate-config');
+      assert.equal(init?.method, 'POST');
+      return new Response(
+        JSON.stringify({
+          installationId: 'inst-1',
+          result: {
+            valid: true,
+            mockMode: true,
+            realNetwork: false,
+            writebackEnabled: false,
+            issues: [],
+            warnings: ['Config is valid for mock-only mode.'],
+            timestamp: '2026-04-28T12:00:00.000Z',
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.validateConnectorConfig('inst-1', { mockMode: true, enabled: true });
+      assert.strictEqual(response.result.valid, true);
+      assert.strictEqual(response.result.realNetwork, false);
+      assert.strictEqual(response.result.writebackEnabled, false);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it('handles connector runtime readiness response', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/connector-installations/inst-1/runtime-readiness');
+      assert.equal(init?.method, 'POST');
+      return new Response(
+        JSON.stringify({
+          installationId: 'inst-1',
+          result: {
+            mockReady: true,
+            realReady: false,
+            realNetwork: false,
+            writebackEnabled: false,
+            externalWriteAttempted: false,
+            warnings: ['Mock only', 'No real network call was made.'],
+            credentialReferencesLinked: true,
+            linkedCredentialReferenceCount: 1,
+            timestamp: '2026-04-28T12:00:00.000Z',
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.checkConnectorRuntimeReadiness('inst-1');
+      assert.strictEqual(response.result.mockReady, true);
+      assert.strictEqual(response.result.realReady, false);
+      assert.strictEqual(response.result.linkedCredentialReferenceCount, 1);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it('handles connector runtime resolve response with credential metadata only', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/connector-installations/runtime/resolve?connectorType=zammad');
+      assert.equal(init?.method, 'GET');
+      return new Response(
+        JSON.stringify({
+          tenantId: 'dev-tenant',
+          connectorType: 'zammad',
+          installationId: 'inst-1',
+          installationDisplayName: 'Zammad Mock',
+          capabilities: ['read_tickets', 'write_notes'],
+          credentialReferences: [
+            {
+              id: 'cred-1',
+              displayName: 'Zammad API Key',
+              kind: 'api_token',
+              status: 'active',
+              secretResolutionImplemented: false,
+            },
+          ],
+          mode: 'mock',
+          realNetwork: false,
+          writebackEnabled: false,
+          externalWriteAttempted: false,
+          readiness: {
+            mockReady: true,
+            realReady: false,
+            realNetwork: false,
+            writebackEnabled: false,
+            externalWriteAttempted: false,
+            warnings: [],
+            credentialReferencesLinked: true,
+            linkedCredentialReferenceCount: 1,
+            timestamp: '2026-04-28T12:00:00.000Z',
+          },
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.resolveConnectorRuntime('zammad');
+      assert.strictEqual(response.mode, 'mock');
+      assert.strictEqual(response.credentialReferences.length, 1);
+      assert.strictEqual(response.credentialReferences[0].secretResolutionImplemented, false);
+      assert.strictEqual((response.credentialReferences[0] as Record<string, unknown>).secretRef, undefined);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it('handles mock recording attach/list/review/playback responses', async () => {
     const originalFetch = globalThis.fetch;
     const calls: string[] = [];

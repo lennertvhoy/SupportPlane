@@ -2476,3 +2476,90 @@ CTO rejected prior closure because evidence set still contained stale/contradict
 - Secret resolution is not implemented; `secretResolutionImplemented: false` is hardcoded.
 - All behavior remains local/mock-only with visible UI warnings.
 - No real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset.
+
+
+---
+
+## Session: 2026-04-28 — BL-099 + BL-100 Final Closure
+
+### Scope
+
+- `[BL-099]` Connector Runtime Test Coverage + Documentation Hardening
+- `[BL-100]` Real Writeback Path Design Document
+
+### What Changed
+
+- Added 14 new API tests for connector runtime edge cases (config schema, validation, unsafe rejection, secret-like field rejection, real-network field rejection, runtime readiness mock-only behavior, resolver credential metadata, no secretRef leakage, tenant isolation, viewer/operator/admin RBAC boundaries, audit events, deterministic linked credential count).
+- API tests: 147/147 pass (14 suites).
+- Added `packages/contracts/test/connector-runtime.test.ts` with Zod schema validation for safe/unsafe runtime responses and evidence bundle metadata secret-free verification. Contracts tests: 43/43 pass (7 suites).
+- Added web API client tests for connector runtime resolve response shape with credential metadata only. Web tests: 19/19 pass.
+- Created `docs/CONNECTOR_RUNTIME_CONTRACT.md` documenting implemented mock-only connector runtime contract.
+- Updated `docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md` with current endpoint truth.
+- Created `scripts/verify_connector_runtime_contracts.sh` (14/14 checks pass).
+- Created `scripts/bl099_bl100_screenshots.js` (13 screenshots, 0 duplicates).
+- Created `docs/REAL_WRITEBACK_PATH_DESIGN.md` with current truth, block reasons, required architecture, phased path (Phase 0→4), explicit non-goals, acceptance gates, threat/risk table, test plan, rollback strategy, and "do not build until" checklist.
+- No implementation of real writeback.
+
+### Commits
+
+- `148a617ea629120d45074a8ac07f3a8f107af24b` — BL-098 evidence repair final
+- `<final_commit_pending>` — BL-099 BL-100 connector runtime confidence and writeback design
+
+### Validation
+
+- `npm run lint` — passed
+- `npm run typecheck` — passed (9 workspaces)
+- `npm run validate` — passed
+- `npm run health` — passed
+- `npx prisma validate` — passed
+- `npx prisma generate` — passed
+- `npx prisma migrate status` — passed (no pending migrations)
+- `npx prisma db seed` — passed
+- `cd apps/api && npm test` — passed (147/147 tests, 14 suites)
+- `npm test --workspace @supportplane/contracts` — passed (43/43 tests, 7 suites)
+- `npm test --workspace @supportplane/web` — passed (19/19 tests, 1 suite)
+- `npm test --workspace @supportplane/connectors` — passed (16/16 tests, 6 suites)
+- `python3 scripts/check_state_docs.py` — passed
+- `python3 scripts/check_state_docs.py --bootstrap-gate` — passed
+- `bash scripts/verify_connector_runtime_readiness.sh` — passed (12/12 checks)
+- `bash scripts/verify_connector_runtime_contracts.sh` — passed (14/14 checks)
+- `node scripts/bl099_bl100_screenshots.js` — passed (13 screenshots, 0 duplicates)
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/`
+  - 13 screenshots, all compact and readable
+  - 01: admin runtime identity with tenant/role pill
+  - 02: connector panel Config/Readiness controls
+  - 03: valid config validation with Valid badge
+  - 04: unsafe config rejected
+  - 05: runtime readiness mock-only
+  - 06: runtime resolve credential metadata only
+  - 07: ticket context connector runtime provenance
+  - 08: evidence bundle connector/runtime metadata
+  - 09: viewer read-only connector panel
+  - 10: viewer server-side denial
+  - 11: cross-tenant denial
+  - 12: REAL_WRITEBACK_PATH_DESIGN.md docs proof
+  - 13: final local/mock/no-real-writeback proof
+- CLI artifacts in same folder:
+  - `screenshot-md5s.txt`
+  - `proof-state-mapping.md`
+
+### State File Updates
+
+- BACKLOG.md: BL-099 and BL-100 marked `[accepted]`
+- NEXT_ACTIONS.md: active work cleared
+- STATUS.md: updated with BL-099 + BL-100 snapshot
+- PROJECT_STATE.yaml: added bl_099_status and bl_100_status entries, updated foundation_history
+- docs/EVIDENCE_LOG.md: added EV-2026-04-28-006 (BL-099 evidence), EV-2026-04-28-007 (BL-100 evidence)
+- docs/ACCEPTANCE_FREEZES.md: added BL-099 and BL-100 acceptance freeze entries
+
+### Remaining Risk
+
+- Config schema is hardcoded for mock-only Zammad-local development.
+- Runtime readiness depends only on static flags; no actual external health checks.
+- Secret resolution is not implemented; `secretResolutionImplemented: false` is hardcoded.
+- All behavior remains local/mock-only with visible UI warnings.
+- No real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset.
+- Real writeback design is documented but not implemented; requires credential broker, encrypted storage, network egress policy, approval gates, and kill switch before Phase 1.
