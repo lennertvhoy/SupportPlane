@@ -1,13 +1,14 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-28 19:30 CEST
+**Updated At:** 2026-04-28 21:15 CEST
 **Execution Mode:** operating
-**Project State:** bl_098_connector_runtime_configuration_readiness_foundation_accepted_repaired
+**Project State:** bl_098_connector_runtime_configuration_readiness_foundation_accepted_repaired_evidence
 **Public URL:** not configured
 
 ## Snapshot
 
-- BL-098 is **accepted and closure-repaired**. Connector runtime configuration and credential reference readiness foundation: schema-driven config validation, runtime readiness checks, tenant-scoped runtime resolver, credential reference metadata in runtime flows, ticket/customer connector provenance in AI context packets, and idempotent seed hygiene. Config validation enforces mock-only safety. Runtime readiness returns `mockReady`, `realReady: false`, `realNetwork: false`, `writebackEnabled: false`. Runtime resolver never exposes `secretRef`; credential metadata includes `secretResolutionImplemented: false`. Seed now uses `upsert` with fixed IDs; exactly 1 credential reference (`cred-ref-dev-001`) linked to `conn-inst-dev-001`.
+- BL-098 is **accepted and evidence-repaired**. Connector runtime configuration and credential reference readiness foundation: schema-driven config validation, runtime readiness checks, tenant-scoped runtime resolver, credential reference metadata in runtime flows, ticket/customer connector provenance in AI context packets, and idempotent seed hygiene. Config validation enforces mock-only safety. Runtime readiness returns `mockReady`, `realReady: false`, `realNetwork: false`, `writebackEnabled: false`. Runtime resolver never exposes `secretRef`; credential metadata includes `secretResolutionImplemented: false`. Seed now uses `upsert` with fixed IDs; exactly 1 credential reference (`cred-ref-dev-001`) linked to `conn-inst-dev-001`.
+- Evidence repair completed: all 15 screenshots in `session-100-bl098-evidence-repair-final/` are reviewable, compact, and label-accurate. No empty states, no contradictions, no unreadable tall JSON dumps.
 - BL-097 remains accepted. Credential reference foundation with CRUD, link/unlink, RBAC, redaction, and evidence bundle inclusion.
 - BL-095 and BL-094 remain accepted. Connector installation settings with editable safe fields, RBAC gating, and mock-only safety. Delivery policy controls still return `realNetworkAllowed: false` on all decisions.
 - PostgreSQL/local-auth baseline remains active: API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.

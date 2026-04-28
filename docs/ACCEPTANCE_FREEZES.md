@@ -1070,40 +1070,54 @@ and must be protected from quiet regression.
 
 - backlog_id: BL-098
 - status: accepted
-- accepted_at: 2026-04-28T19:30:00+02:00
+- accepted_at: 2026-04-28T21:15:00+02:00
 - accepted_by: coding-agent
-- commit: 36e51607bee95232bec4f7d49f3aea67b4937053
+- commit: see_git_log_for_current_head
 - evidence_refs:
-  - EV-2026-04-28-079
-  - EV-2026-04-28-080
-  - EV-2026-04-28-081
-  - EV-2026-04-28-082
-  - EV-2026-04-28-083
-  - EV-2026-04-28-084
-  - EV-2026-04-28-085
-  - EV-2026-04-28-086
-  - EV-2026-04-28-087
-  - EV-2026-04-28-088
-  - EV-2026-04-28-089
-  - EV-2026-04-28-090
-  - EV-2026-04-28-091
-  - EV-2026-04-28-092
-  - EV-2026-04-28-093
-- evidence_folder: output/playwright/session-099-bl098-closure-repair-final/
+  - EV-2026-04-28-094
+  - EV-2026-04-28-095
+  - EV-2026-04-28-096
+  - EV-2026-04-28-097
+  - EV-2026-04-28-098
+  - EV-2026-04-28-099
+  - EV-2026-04-28-100
+  - EV-2026-04-28-101
+  - EV-2026-04-28-102
+  - EV-2026-04-28-103
+  - EV-2026-04-28-104
+  - EV-2026-04-28-105
+  - EV-2026-04-28-106
+  - EV-2026-04-28-107
+  - EV-2026-04-28-108
+- evidence_folder: output/playwright/session-100-bl098-evidence-repair-final/
 - screenshot_count: 15
+- cli_artifacts:
+  - evidence-bundle-no-secret-summary.json
+  - audit-bl098-events-summary.json
+  - screenshot-md5s.txt
+  - proof-state-mapping.md
 - validation_summary:
   - `npm run lint` passed
   - `npm run typecheck --workspaces --if-present` passed for all 9 workspaces
   - `npm run validate` passed
   - `npm run health` passed
+  - `npx prisma validate` passed
+  - `npx prisma generate` passed
+  - `npx prisma migrate status` passed (schema up to date)
+  - `npx prisma db seed` passed (idempotent, exactly 1 cred linked)
   - `cd apps/api && npm test` passed: 142/142 tests (14 suites)
   - `npm test --workspace @supportplane/contracts` passed: 29/29 tests (6 suites)
   - `npm test --workspace @supportplane/web` passed: 15/15 tests (1 suite)
   - `npm test --workspace @supportplane/connectors` passed: 16/16 tests (6 suites)
-  - `scripts/verify_connector_runtime_readiness.sh` passed all 12/12 checks against `http://localhost:4110` with `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
-  - API runtime verified via curl: all new endpoints return correct mock-only safety fields
-  - Web runtime verified via Playwright browser automation: 15 screenshots captured in `session-099-bl098-closure-repair-final/`, 0 duplicate MD5 hashes
-  - Prisma validate/generate/migrate status: schema valid, client generated, database up to date
+  - `scripts/verify_connector_runtime_readiness.sh` passed all 12/12 checks
+  - `python3 scripts/check_state_docs.py` passed
+  - `python3 scripts/check_state_docs.py --bootstrap-gate` passed
+  - API runtime verified via curl: all endpoints return correct mock-only safety fields
+  - Web runtime verified via Playwright browser automation: 15 screenshots captured in `session-100-bl098-evidence-repair-final/`, 0 duplicate MD5 hashes, all ≤900px height
+  - Screenshot 03 visibly shows `valid: true` with Valid badge
+  - Screenshot 08 shows generated evidence bundle summary (not empty state)
+  - Screenshot 15 shows connector panel Mock-only proof (not empty state)
+  - Screenshots 09 and 10 are compact styled API pages (not unreadable tall JSON dumps)
 - regression_guard:
   - `GET /connector-installations/:id/config-schema` must return `mockOnly: true`, `safeFields`, and `rejectedFields`.
   - `POST /connector-installations/:id/validate-config` must reject `mockMode: false` with error `MOCK_MODE_REQUIRED`.

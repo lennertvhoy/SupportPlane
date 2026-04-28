@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * BL-098 Closure Repair Screenshot Script
- * Uses local auth via web UI login form, writes to canonical repair folder.
+ * BL-098 Evidence Repair Screenshot Script
+ * Writes to session-100-bl098-evidence-repair-final/
+ * Hard-fail on contradictions, duplicates, budget, empty states, unreadable tall shots.
  */
 
 const { chromium } = require('playwright');
@@ -9,11 +10,11 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const OUTPUT_DIR = path.join(__dirname, '..', 'output', 'playwright', 'session-099-bl098-closure-repair-final');
+const OUTPUT_DIR = path.join(__dirname, '..', 'output', 'playwright', 'session-100-bl098-evidence-repair-final');
 const WEB_URL = 'http://localhost:3200';
 const API_URL = 'http://localhost:4110';
 const MAX_SCREENSHOTS = 20;
-
+const MAX_SCREENSHOT_HEIGHT = 1200;
 const INST_ID = 'conn-inst-dev-001';
 
 let screenshotCount = 0;
@@ -27,8 +28,17 @@ async function screenshot(page, name, proofState, opts = {}) {
   const filename = `${String(screenshotCount).padStart(2, '0')}-${name}.png`;
   const filepath = path.join(OUTPUT_DIR, filename);
   await page.screenshot({ path: filepath, ...opts });
-  console.log(`Captured: ${filename} — ${proofState}`);
-  proofMapping.push({ number: screenshotCount, filename, proofState });
+
+  // Verify screenshot is not unreasonably tall
+  const sizeOf = require('image-size');
+  const imgBuf = fs.readFileSync(filepath);
+  const { width, height } = sizeOf.imageSize(imgBuf);
+  if (height > MAX_SCREENSHOT_HEIGHT) {
+    throw new Error(`Screenshot ${filename} is too tall (${height}px > ${MAX_SCREENSHOT_HEIGHT}px). Use compact content.`);
+  }
+
+  console.log(`Captured: ${filename} — ${proofState} (${width}x${height})`);
+  proofMapping.push({ number: screenshotCount, filename, proofState, width, height });
   return filepath;
 }
 
@@ -42,9 +52,27 @@ async function screenshotElement(page, locator, name, proofState) {
   await locator.scrollIntoViewIfNeeded();
   await page.waitForTimeout(400);
   await locator.screenshot({ path: filepath });
-  console.log(`Captured: ${filename} — ${proofState}`);
-  proofMapping.push({ number: screenshotCount, filename, proofState });
+
+  const sizeOf = require('image-size');
+  const imgBuf = fs.readFileSync(filepath);
+  const { width, height } = sizeOf.imageSize(imgBuf);
+  if (height > MAX_SCREENSHOT_HEIGHT) {
+    throw new Error(`Screenshot ${filename} is too tall (${height}px > ${MAX_SCREENSHOT_HEIGHT}px)`);
+  }
+
+  console.log(`Captured: ${filename} — ${proofState} (${width}x${height})`);
+  proofMapping.push({ number: screenshotCount, filename, proofState, width, height });
   return filepath;
+}
+
+async function assertVisibleText(page, text, timeout = 5000) {
+  const locator = page.locator(`text=/${text}/i`).first();
+  await locator.waitFor({ state: 'visible', timeout });
+  const visible = await locator.isVisible();
+  if (!visible) {
+    throw new Error(`Expected visible text "${text}" not found on page`);
+  }
+  return locator;
 }
 
 function panelLocator(page, title) {
@@ -52,7 +80,6 @@ function panelLocator(page, title) {
 }
 
 async function webLogin(page, email, password, tenantSlug) {
-  // Check if already logged in on current page
   const identityPill = page.locator('text=/admin|viewer|support_agent/i').first();
   if (await identityPill.count() > 0 && await identityPill.isVisible()) {
     console.log('Already logged in');
@@ -101,14 +128,14 @@ async function apiCall(path, sessionToken, method = 'GET', body) {
   return res.json();
 }
 
-async function styleApiPage(page, title, color, jsonObj) {
-  const text = JSON.stringify(jsonObj, null, 2);
+async function styleCompactApiPage(page, title, color, contentObj) {
+  const text = JSON.stringify(contentObj, null, 2);
   await page.setContent(`
-    <div style="font-family:monospace;padding:20px;background:#0f172a;color:#e2e8f0;min-height:100vh;">
-      <div style="background:${color};color:white;padding:12px 16px;font-size:18px;font-weight:bold;margin-bottom:16px;border-radius:6px;">
+    <div style="font-family:monospace;padding:16px;background:#0f172a;color:#e2e8f0;min-height:auto;">
+      <div style="background:${color};color:white;padding:10px 14px;font-size:16px;font-weight:bold;margin-bottom:12px;border-radius:6px;">
         ${title}
       </div>
-      <pre style="background:#1e293b;padding:16px;border-radius:6px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.5;">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+      <pre style="background:#1e293b;padding:14px;border-radius:6px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.5;max-height:800px;">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
     </div>
   `);
   await page.waitForTimeout(300);
@@ -118,7 +145,7 @@ async function main() {
   if (!fs.existsSync(OUTPUT_DIR)) {
     fs.mkdirSync(OUTPUT_DIR, { recursive: true });
   }
-  for (const f of fs.readdirSync(OUTPUT_DIR).filter(f => f.endsWith('.png'))) {
+  for (const f of fs.readdirSync(OUTPUT_DIR).filter(f => f.endsWith('.png') || f.endsWith('.json') || f.endsWith('.txt') || f.endsWith('.md'))) {
     fs.unlinkSync(path.join(OUTPUT_DIR, f));
   }
 
@@ -127,19 +154,25 @@ async function main() {
   const viewerToken = await apiLogin('viewer@supportplane.local', 'supportplane-demo', 'dev-tenant');
   const altAdminToken = await apiLogin('admin@alt.supportplane.local', 'supportplane-demo', 'alt-tenant');
 
-  // Create session and prep data for provenance/bundle proof
+  // Fix installation config to safe values BEFORE any UI validation
+  await apiCall(`/connector-installations/${INST_ID}`, adminToken, 'PATCH', {
+    config: { mockMode: true, enabled: true, validateBeforeWrite: true, timeoutMs: 5000, capabilities: ['read_tickets'], baseUrlPlaceholder: 'mock-zammad' },
+  });
+  console.log('Fixed installation config to safe values');
+
+  // Create session for evidence bundle and provenance
   const session = await apiCall('/support-sessions', adminToken, 'POST', {
-    title: 'BL-099 Closure Repair Test',
-    description: 'Session for BL-098 closure repair evidence',
+    title: 'BL-098 Evidence Repair Session',
+    description: 'Session for BL-098 evidence repair',
     priority: 'normal',
   });
   const sessionId = session.id;
 
-  // Load ticket context via API so provenance is visible (use non-seeded ticket to avoid unique constraint conflict)
+  // Load ticket context so provenance is populated
   await apiCall(`/support-sessions/${sessionId}/zammad/ticket-context`, adminToken, 'POST', { externalTicketId: 'TICKET-999' });
 
-  // Generate evidence bundle via API so it exists for screenshots
-  await apiCall(`/support-sessions/${sessionId}/evidence-bundle`, adminToken);
+  // Pre-generate evidence bundle via API
+  const bundleResponse = await apiCall(`/support-sessions/${sessionId}/evidence-bundle`, adminToken);
 
   const browser = await chromium.launch({ headless: true });
 
@@ -147,26 +180,35 @@ async function main() {
   const adminContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const adminPage = await adminContext.newPage();
   await webLogin(adminPage, 'admin@supportplane.local', 'supportplane-demo', 'dev-tenant');
+  await assertVisibleText(adminPage, 'admin');
+  await assertVisibleText(adminPage, 'Acme Support Demo');
   await screenshot(adminPage, 'admin-runtime-identity', 'Admin runtime identity: user/tenant/role/API URL/local auth/postgres store/mock mode', { fullPage: false });
 
-  // ── 2. Connector installation expanded with clean credential refs ──
+  // ── 2. Connector panel with exactly one linked credential reference ──
   const chevron = adminPage.locator('svg[class*="lucide-chevron-down"]').first();
   if (await chevron.count() > 0) {
     await chevron.click();
     await adminPage.waitForTimeout(800);
   }
-  // Scroll to credential refs section and verify clean count
-  await adminPage.waitForSelector('text=/Credential References/i', { timeout: 5000 });
+  await assertVisibleText(adminPage, 'Credential References');
   const credSection = adminPage.locator('text=/Credential References/i').first().locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
   await screenshotElement(adminPage, credSection, 'admin-connector-clean-credentials', 'Connector installation expanded with one linked active placeholder credential (clean set)');
 
-  // ── 3. Safe config validation: valid: true ──
+  // ── 3. Safe config validation: must show valid: true ──
   const configBtn = adminPage.locator('button').filter({ hasText: 'Config' }).first();
   if (await configBtn.count() > 0) {
     await configBtn.click();
     await adminPage.waitForTimeout(1200);
   }
-  await adminPage.waitForSelector('text=/Config validation/i', { timeout: 5000 });
+  await assertVisibleText(adminPage, 'Config validation');
+  await assertVisibleText(adminPage, 'Valid');
+
+  // Hard-fail if valid: false is visible
+  const validFalseVisible = await adminPage.locator('text=/valid: false/i').first().isVisible().catch(() => false);
+  if (validFalseVisible) {
+    throw new Error('FATAL: Screenshot 03 would show valid: false. Installation config is not safe.');
+  }
+
   const configPanel = adminPage.locator('text=/Config validation/i').first().locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
   await screenshotElement(adminPage, configPanel, 'admin-config-validation-valid', 'Safe config validation result shows Valid badge, valid: true, mockMode: true, realNetwork: false, writebackEnabled: false');
 
@@ -175,8 +217,13 @@ async function main() {
     config: { mockMode: false, apiToken: 'secret123', baseUrl: 'http://real.example.com' },
   });
   const apiPage = await adminContext.newPage();
-  await styleApiPage(apiPage, `POST /connector-installations/${INST_ID}/validate-config (unsafe)`, '#ef4444', unsafeResult);
-  await screenshot(apiPage, 'api-config-validation-unsafe-rejected', 'Unsafe config validation rejected: mockMode:false, apiToken, baseUrl all flagged as errors', { fullPage: true });
+  await styleCompactApiPage(apiPage, `POST /connector-installations/${INST_ID}/validate-config (unsafe)`, '#ef4444', {
+    valid: unsafeResult.result?.valid,
+    mockMode: unsafeResult.result?.mockMode,
+    issueCount: unsafeResult.result?.issues?.length,
+    issues: unsafeResult.result?.issues?.map(i => ({ field: i.field, severity: i.severity, code: i.code })),
+  });
+  await screenshot(apiPage, 'api-config-validation-unsafe-rejected', 'Unsafe config validation rejected: mockMode:false, apiToken, baseUrl all flagged as errors', { fullPage: false });
 
   // ── 5. Runtime readiness panel ──
   await adminPage.goto(WEB_URL);
@@ -192,70 +239,117 @@ async function main() {
     await readinessBtn.click();
     await adminPage.waitForTimeout(1200);
   }
-  await adminPage.waitForSelector('text=/Runtime readiness/i', { timeout: 5000 });
+  await assertVisibleText(adminPage, 'Runtime readiness');
+  await assertVisibleText(adminPage, 'Mock ready');
   const readinessPanel = adminPage.locator('text=/Runtime readiness/i').first().locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
   await screenshotElement(adminPage, readinessPanel, 'admin-runtime-readiness-panel', 'Runtime readiness panel shows mockReady, realReady: false, realNetwork: false, writebackEnabled: false, linkedCredentials count');
 
-  // ── 6. Runtime resolver credential metadata only ──
+  // ── 6. Runtime resolver compact proof ──
   const resolveResult = await apiCall('/connector-installations/runtime/resolve?connectorType=zammad', adminToken);
-  await styleApiPage(apiPage, 'GET /connector-installations/runtime/resolve?connectorType=zammad', '#10b981', resolveResult);
-  await screenshot(apiPage, 'api-runtime-resolve-credential-metadata', 'Runtime resolver returns tenant-scoped result with credential metadata only, no secretRef, secretResolutionImplemented: false', { fullPage: true });
+  const creds = resolveResult.result?.credentialReferences || [];
+  await styleCompactApiPage(apiPage, 'GET /connector-installations/runtime/resolve?connectorType=zammad', '#10b981', {
+    installationId: resolveResult.result?.installationId,
+    adapterType: resolveResult.result?.adapterType,
+    mode: resolveResult.result?.mode,
+    realNetwork: resolveResult.result?.realNetwork,
+    writebackEnabled: resolveResult.result?.writebackEnabled,
+    credentialReferenceCount: creds.length,
+    credentialReferences: creds.map(c => ({
+      id: c.id,
+      displayName: c.displayName,
+      status: c.status,
+      secretResolutionImplemented: c.secretResolutionImplemented,
+      hasSecretRef: 'secretRef' in c,
+    })),
+  });
+  await screenshot(apiPage, 'api-runtime-resolve-credential-metadata', 'Runtime resolver returns tenant-scoped result with credential metadata only, no secretRef, secretResolutionImplemented: false', { fullPage: false });
 
-  // ── 7. Ticket/customer context provenance ──
-  await adminPage.goto(`${WEB_URL}?session=${sessionId}`);
-  await adminPage.waitForTimeout(4000);
+  // ── 7. Ticket context provenance ──
+  await adminPage.goto(WEB_URL);
+  await adminPage.waitForTimeout(2000);
   await webLogin(adminPage, 'admin@supportplane.local', 'supportplane-demo', 'dev-tenant');
-  // Ensure session is selected
-  const sessionItem = adminPage.locator('div').filter({ hasText: /BL-099 Closure Repair Test/ }).first();
+  // Wait for sessions to load, then click the created session
+  await adminPage.waitForSelector('button:has-text("BL-098 Evidence Repair Session")', { timeout: 15000 });
+  const sessionItem = adminPage.locator('button').filter({ hasText: /BL-098 Evidence Repair Session/ }).first();
   if (await sessionItem.count() > 0) {
     await sessionItem.click();
-    await adminPage.waitForTimeout(2000);
+    await adminPage.waitForTimeout(3000);
   }
-  // Wait for ticket input to be enabled
-  await adminPage.waitForSelector('input[placeholder="External ticket ID"]:not([disabled])', { timeout: 15000 });
+  // Load ticket context
   const ticketInput = adminPage.locator('input[placeholder="External ticket ID"]').first();
+  await ticketInput.waitFor({ state: 'visible', timeout: 15000 });
   await ticketInput.fill('TICKET-999');
   const loadBtn = adminPage.locator('button').filter({ hasText: 'Load' }).first();
   await loadBtn.click();
   await adminPage.waitForTimeout(2500);
-  // Wait for ticket to load first, then provenance
-  await adminPage.waitForSelector('text=/Zammad ticket TICKET-999/i', { timeout: 15000 });
-  await adminPage.waitForTimeout(1000);
+  await assertVisibleText(adminPage, 'TICKET-999');
   const ticketPanel = panelLocator(adminPage, 'Ticket Context');
   await screenshotElement(adminPage, ticketPanel, 'admin-ticket-context-provenance', 'Ticket/customer context provenance showing connector installation source, mock mode, linked credentials, capabilities, no real network');
 
-  // ── 8. Evidence bundle summary with connector/runtime/credential provenance ──
+  // ── 8. Evidence bundle summary (must be generated, not empty) ──
+  // Click Generate button in Evidence Bundle panel
   const evidencePanel = panelLocator(adminPage, 'Evidence Bundle');
-  await screenshotElement(adminPage, evidencePanel, 'admin-evidence-bundle-summary', 'Evidence bundle summary with connector installations count, mock/dev-only disclaimers');
+  const generateBtn = evidencePanel.locator('button').filter({ hasText: /Generate|Refresh/ }).first();
+  if (await generateBtn.count() > 0 && await generateBtn.isEnabled()) {
+    await generateBtn.click();
+    await adminPage.waitForTimeout(3000);
+  }
+  // Assert bundle is generated (not empty state)
+  const emptyStateVisible = await evidencePanel.locator('text=/Select a session to generate/i').first().isVisible().catch(() => false);
+  if (emptyStateVisible) {
+    throw new Error('FATAL: Evidence bundle panel shows empty "Select a session" state. Session must be selected and bundle generated.');
+  }
+  await assertVisibleText(adminPage, 'Bundle ID');
+  await screenshotElement(adminPage, evidencePanel, 'admin-evidence-bundle-summary', 'Generated evidence bundle summary showing connector/runtime/credential provenance');
 
-  // ── 9. Evidence bundle JSON no-secret proof ──
-  await apiPage.goto(`${API_URL}/support-sessions/${sessionId}/evidence-bundle.json`);
-  await apiPage.waitForTimeout(1200);
-  await apiPage.context().addCookies([{
-    name: 'supportplane_session',
-    value: adminToken,
-    domain: 'localhost',
-    path: '/',
-    httpOnly: true,
-    sameSite: 'Lax',
-  }]);
-  await apiPage.reload();
-  await apiPage.waitForTimeout(1200);
+  // ── 9. Compact evidence bundle no-secret proof ──
   const bundleJson = await apiCall(`/support-sessions/${sessionId}/evidence-bundle.json`, adminToken);
-  await styleApiPage(apiPage, `GET /support-sessions/${sessionId}/evidence-bundle.json`, '#f59e0b', bundleJson);
-  await screenshot(apiPage, 'api-evidence-bundle-json-no-secret', 'Evidence bundle JSON includes connector installations with realNetwork:false, writebackEnabled:false, externalWriteAttempted:false, credentialReferenceCount, no raw secrets', { fullPage: true });
-
-  // ── 10. Audit trail showing BL-098 connector events ──
-  const auditEvents = await apiCall('/auth/audit-events', adminToken);
-  // Filter to BL-098 relevant events for clarity
-  const bl098Events = {
-    ...auditEvents,
-    events: (auditEvents.events || auditEvents).filter(e =>
-      ['connector_config_validated', 'connector_readiness_checked', 'connector_runtime_resolved'].includes(e.eventType)
-    ).slice(0, 10),
+  const installations = bundleJson.bundle?.connectorInstallations || [];
+  const credentialRefs = bundleJson.bundle?.credentialReferences || [];
+  const compactEvidence = {
+    connectorInstallationsCount: installations.length,
+    credentialReferencesCount: credentialRefs.length,
+    connectorInstallations: installations.map(inst => ({
+      id: inst.id,
+      adapterType: inst.adapterType,
+      realNetwork: inst.realNetwork,
+      writebackEnabled: inst.writebackEnabled,
+      externalWriteAttempted: inst.externalWriteAttempted,
+      credentialReferenceCount: inst.credentialReferenceCount,
+    })),
+    credentialReferences: credentialRefs.map(c => ({
+      id: c.id,
+      displayName: c.displayName,
+      status: c.status,
+      hasSecretRef: 'secretRef' in c,
+    })),
+    noSecretLeak: !JSON.stringify(bundleJson).match(/secret123|apiToken|password|bearer|privateKey/i),
   };
-  await styleApiPage(apiPage, 'GET /auth/audit-events (BL-098 connector events)', '#8b5cf6', bl098Events);
-  await screenshot(apiPage, 'api-audit-bl098-events', 'Audit trail showing connector_config_validated, connector_readiness_checked, connector_runtime_resolved events with tenant/actor/metadata', { fullPage: true });
+  await styleCompactApiPage(apiPage, `GET /support-sessions/${sessionId}/evidence-bundle.json (compact)`, '#f59e0b', compactEvidence);
+  await screenshot(apiPage, 'api-evidence-bundle-compact-no-secret', 'Compact evidence bundle proof: connectorInstallations count, credentialReferences count, realNetwork:false, writebackEnabled:false, externalWriteAttempted:false, no secretRef, no token/password values', { fullPage: false });
+
+  // Write CLI artifact
+  fs.writeFileSync(path.join(OUTPUT_DIR, 'evidence-bundle-no-secret-summary.json'), JSON.stringify(compactEvidence, null, 2));
+
+  // ── 10. Compact audit proof showing BL-098 event types ──
+  const auditEvents = await apiCall('/auth/audit-events', adminToken);
+  const allEvents = auditEvents.events || auditEvents || [];
+  const bl098Events = allEvents.filter(e =>
+    ['connector_config_validated', 'connector_readiness_checked', 'connector_runtime_resolved'].includes(e.eventType)
+  );
+  const compactAudit = {
+    bl098EventCount: bl098Events.length,
+    events: bl098Events.slice(-5).map(e => ({
+      eventType: e.eventType,
+      tenantId: e.tenantId,
+      actorId: e.actorId,
+      timestamp: e.timestamp,
+    })),
+  };
+  await styleCompactApiPage(apiPage, 'GET /auth/audit-events (BL-098 events, compact)', '#8b5cf6', compactAudit);
+  await screenshot(apiPage, 'api-audit-bl098-events-compact', 'Compact audit proof showing connector_config_validated, connector_readiness_checked, connector_runtime_resolved event types with tenant/actor/timestamp', { fullPage: false });
+
+  fs.writeFileSync(path.join(OUTPUT_DIR, 'audit-bl098-events-summary.json'), JSON.stringify(compactAudit, null, 2));
 
   // ── 11. Viewer read-only connector panel ──
   const viewerContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -275,8 +369,11 @@ async function main() {
     body: JSON.stringify({ config: { mockMode: true } }),
   });
   const viewerDenialBody = await viewerDenialRes.json().catch(() => ({ status: viewerDenialRes.status, error: 'Forbidden' }));
-  await styleApiPage(apiPage, `POST /connector-installations/${INST_ID}/validate-config (viewer)`, '#dc2626', { status: viewerDenialRes.status, ...viewerDenialBody });
-  await screenshot(apiPage, 'api-viewer-mutation-denied', 'Viewer server-side mutation denied with 403 on config validation');
+  await styleCompactApiPage(apiPage, `POST /connector-installations/${INST_ID}/validate-config (viewer)`, '#dc2626', {
+    status: viewerDenialRes.status,
+    error: viewerDenialBody.message || viewerDenialBody.error,
+  });
+  await screenshot(apiPage, 'api-viewer-mutation-denied', 'Viewer server-side mutation denied with 403 on config validation', { fullPage: false });
 
   // ── 13. Cross-tenant connector/credential access denied ──
   const crossRes = await fetch(`${API_URL}/connector-installations/${INST_ID}/config-schema`, {
@@ -284,26 +381,48 @@ async function main() {
     headers: { Cookie: `supportplane_session=${altAdminToken}` },
   });
   const crossBody = await crossRes.json().catch(() => ({ status: crossRes.status, error: 'Not Found' }));
-  await styleApiPage(apiPage, `GET /connector-installations/${INST_ID}/config-schema (alt-tenant)`, '#dc2626', { status: crossRes.status, ...crossBody });
-  await screenshot(apiPage, 'api-cross-tenant-denied', 'Cross-tenant connector installation access denied with 404');
+  await styleCompactApiPage(apiPage, `GET /connector-installations/${INST_ID}/config-schema (alt-tenant)`, '#dc2626', {
+    status: crossRes.status,
+    error: crossBody.message || crossBody.error,
+  });
+  await screenshot(apiPage, 'api-cross-tenant-denied', 'Cross-tenant connector installation access denied with 404', { fullPage: false });
 
   // ── 14. Delivery policy still denies real writeback ──
   const policies = await apiCall('/delivery-policies', adminToken);
   const policyId = (policies.policies || policies)[0]?.id;
   const policyCheck = await apiCall(`/delivery-policies/${policyId}/validate`, adminToken, 'POST');
-  await styleApiPage(apiPage, `POST /delivery-policies/${policyId}/validate`, '#dc2626', policyCheck);
-  await screenshot(apiPage, 'api-delivery-policy-denies-writeback', 'Delivery policy validation returns realNetworkAllowed: false, writebackEnabled: false');
+  await styleCompactApiPage(apiPage, `POST /delivery-policies/${policyId}/validate`, '#dc2626', {
+    realNetworkAllowed: policyCheck.realNetworkAllowed,
+    writebackEnabled: policyCheck.writebackEnabled,
+    dryRun: policyCheck.dryRun,
+    policyName: policyCheck.policy?.name || policyCheck.name,
+  });
+  await screenshot(apiPage, 'api-delivery-policy-denies-writeback', 'Delivery policy validation returns realNetworkAllowed: false, writebackEnabled: false', { fullPage: false });
 
   // ── 15. Final local/mock/no-real-network/no-secret proof ──
-  await adminPage.goto(`${WEB_URL}?session=${sessionId}`);
-  await adminPage.waitForTimeout(3000);
+  // Navigate back to main page with session selected and bundle generated
+  await adminPage.goto(WEB_URL);
+  await adminPage.waitForTimeout(2000);
   await webLogin(adminPage, 'admin@supportplane.local', 'supportplane-demo', 'dev-tenant');
-  const sessionItem2 = adminPage.locator('div').filter({ hasText: /BL-099 Closure Repair Test/ }).first();
+  await adminPage.waitForSelector('button:has-text("BL-098 Evidence Repair Session")', { timeout: 15000 });
+  const sessionItem2 = adminPage.locator('button').filter({ hasText: /BL-098 Evidence Repair Session/ }).first();
   if (await sessionItem2.count() > 0) {
     await sessionItem2.click();
-    await adminPage.waitForTimeout(1500);
+    await adminPage.waitForTimeout(3000);
   }
-  // Scroll to connector panel and capture it as final proof
+  // Re-generate bundle for final proof
+  const finalEvidencePanel = panelLocator(adminPage, 'Evidence Bundle');
+  const finalGenerateBtn = finalEvidencePanel.locator('button').filter({ hasText: /Generate|Refresh/ }).first();
+  if (await finalGenerateBtn.count() > 0 && await finalGenerateBtn.isEnabled()) {
+    await finalGenerateBtn.click();
+    await adminPage.waitForTimeout(3000);
+  }
+  const finalEmptyVisible = await finalEvidencePanel.locator('text=/Select a session to generate/i').first().isVisible().catch(() => false);
+  if (finalEmptyVisible) {
+    throw new Error('FATAL: Final evidence bundle panel shows empty state. Must be generated.');
+  }
+  await assertVisibleText(adminPage, 'Bundle ID');
+  // Capture connector panel as final proof
   const connectorPanel = panelLocator(adminPage, 'Connector');
   await screenshotElement(adminPage, connectorPanel, 'final-mock-no-secret-proof', 'Final local/mock/no-real-network/no-secret proof: connector panel shows Mock-only badge, Locked ON, secret values hidden');
 
@@ -327,7 +446,16 @@ async function main() {
     }
   }
 
-  console.log(`\n=== BL-098 Closure Repair Screenshot Summary ===`);
+  // Write CLI artifacts
+  const md5Lines = Object.entries(hashes).map(([h, f]) => `${h}  ${f}`).sort();
+  fs.writeFileSync(path.join(OUTPUT_DIR, 'screenshot-md5s.txt'), md5Lines.join('\n') + '\n');
+
+  const proofMd = `# BL-098 Proof-State Mapping
+\n| # | Filename | Proof State | Size |\n|---|----------|-------------|------|\n` +
+    proofMapping.map(m => `| ${m.number} | \`${m.filename}\` | ${m.proofState} | ${m.width}x${m.height} |`).join('\n') + '\n';
+  fs.writeFileSync(path.join(OUTPUT_DIR, 'proof-state-mapping.md'), proofMd);
+
+  console.log(`\n=== BL-098 Evidence Repair Screenshot Summary ===`);
   console.log(`Folder: ${OUTPUT_DIR}`);
   console.log(`Screenshots: ${screenshotCount} (max ${MAX_SCREENSHOTS})`);
   console.log(`Duplicates: ${duplicates}`);

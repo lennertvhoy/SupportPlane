@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-28T19:30:00+02:00
+  updated_at: 2026-04-28T21:15:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,7 +42,7 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 3c425c3f3f5adf891f598d4ae5c5286fd98be5e0
+    head: see_git_log_for_current_head
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
@@ -378,10 +378,10 @@ current_state:
         - connector_config_validated
         - connector_readiness_checked
         - connector_runtime_resolved
-      screenshot_folder: output/playwright/session-099-bl098-closure-repair-final/
+      screenshot_folder: output/playwright/session-100-bl098-evidence-repair-final/
       screenshot_count: 15
       validation: full_gate_passed
-      final_closure_commit: 36e51607bee95232bec4f7d49f3aea67b4937053
+      final_closure_commit: see_git_log_for_current_head
       notes:
         - config validation enforces mock-only safety: rejects mockMode:false, rejects unsafe real-network fields
         - runtime readiness returns mockReady based on mockMode && enabled; realReady is always false
@@ -392,7 +392,11 @@ current_state:
         - all behavior remains local/mock-only with visible UI warnings
         - seed is idempotent via upsert with fixed IDs; exactly 1 credential ref linked to conn-inst-dev-001
         - ticket context panel shows connector runtime provenance card (installation name, type, mode, network status, linked credential count, capabilities)
-        - old session-098 screenshot folder superseded and deleted per repair rules
+        - old session-098 and session-099 screenshot folders superseded and deleted per repair rules
+        - all 15 screenshots are compact (max 900px height), readable, and label-accurate
+        - screenshot 03 visibly shows valid: true with Valid badge
+        - evidence bundle summary (08) and final proof (15) show generated bundle state, not empty
+        - API evidence (09, 10) uses compact styled pages, not unreadable tall JSON dumps
         - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
     bl_093_status:
       completed: true

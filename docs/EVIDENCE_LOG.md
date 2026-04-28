@@ -1687,3 +1687,39 @@
   - No empty panels in audit or evidence screenshots
 - Type: browser-runtime-verification
 - as_of: 2026-04-28T19:30:00+02:00
+
+
+## EV-2026-04-28-094 through EV-2026-04-28-108: BL-098 Evidence Repair (Second Pass)
+
+- Files: `output/playwright/session-100-bl098-evidence-repair-final/01-admin-runtime-identity.png` through `15-final-mock-no-secret-proof.png`
+- Source/System: visible Chromium via Playwright CLI against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - admin runtime identity with tenant/role pill
+  - connector panel with exactly 1 linked credential reference (clean seed)
+  - config validation: Valid badge, `valid: true`, mock-only flags (label matches content)
+  - unsafe config rejected via API: mockMode:false, apiToken, baseUrl flagged as errors
+  - runtime readiness panel: mockReady, realNetwork:false, writebackEnabled:false, 1 linked credential
+  - API runtime resolve: tenant-scoped result with credential metadata, no secretRef, secretResolutionImplemented:false
+  - ticket context panel: Connector Runtime Provenance card visible with installation name, type, mode, network status, linked credential count, capabilities
+  - generated evidence bundle summary: Bundle ID visible, connector counts, mock/dev-only disclaimers (not empty state)
+  - compact evidence bundle proof: connectorInstallations count, credentialReferences count, realNetwork:false, writebackEnabled:false, externalWriteAttempted:false, no secret leakage
+  - compact audit proof: connector_config_validated, connector_readiness_checked, connector_runtime_resolved event types with tenant/actor/timestamp (not empty, not unreadable tall dump)
+  - viewer read-only connector panel with disabled buttons
+  - viewer server-side mutation denial via API (403)
+  - cross-tenant access denied via API (404)
+  - delivery policy denies writeback via API
+  - final mock/no-secret/no-real-writeback proof: connector panel shows Mock-only badge, Locked ON, secret values hidden (not empty bundle state)
+- CLI artifacts:
+  - `evidence-bundle-no-secret-summary.json` — compact connector/credential summary with noSecretLeak:true
+  - `audit-bl098-events-summary.json` — compact BL-098 event summary (12 events)
+  - `screenshot-md5s.txt` — MD5 hashes of all 15 screenshots
+  - `proof-state-mapping.md` — numbered proof-state table
+- Proves:
+  - BL-098 evidence repair: all prior screenshot defects fixed
+  - No contradictions between screenshot labels and visible content
+  - No empty panels in audit, evidence, or final proof screenshots
+  - No unreadable tall JSON dumps
+  - All screenshots are compact and reviewable (max 900px height)
+- Type: browser-runtime-verification
+- as_of: 2026-04-28T21:15:00+02:00

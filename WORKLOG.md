@@ -2399,3 +2399,80 @@ Repair BL-098 closure defects identified by CTO review:
 - Secret resolution is not implemented; `secretResolutionImplemented: false` is hardcoded.
 - All behavior remains local/mock-only with visible UI warnings.
 - No real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset.
+
+
+## 2026-04-28 — BL-098 Evidence Repair (Second Pass)
+
+### Scope
+
+CTO rejected prior closure because evidence set still contained stale/contradictory screenshots:
+1. `03-admin-config-validation-valid.png` showed `valid: false` and "Issues found" — contradicted label
+2. `08-admin-evidence-bundle-summary.png` showed empty "Select a session..." state
+3. `15-final-mock-no-secret-proof.png` showed empty evidence bundle state
+4. `09-api-evidence-bundle-json-no-secret.png` and `10-api-audit-bl098-events.png` were extremely tall/unreadable full-page JSON dumps
+
+### Root Causes
+
+- Config validation screenshot: The connector installation config in the running DB had been mutated by prior test runs to `{baseUrl: "http://localhost:3000", apiToken: "[REDACTED]"}` (unsafe). The seed's `upsert` was not re-run before screenshot capture, so validation of the current config returned `valid: false`.
+- Evidence bundle empty state: The script navigated to `?session={id}` but did not ensure the session was actually selected in the UI state before capturing the EvidenceBundlePanel. The panel showed "Select a session to generate an evidence bundle" because `selectedSession` was undefined.
+- Tall JSON dumps: The script used `styleApiPage` with full JSON objects and `fullPage: true`, producing 43,000+ pixel tall screenshots.
+
+### Changes
+
+- **scripts/bl098_screenshots.js:** Complete rewrite (second pass).
+  - Outputs to `output/playwright/session-100-bl098-evidence-repair-final/`
+  - Fixes installation config to safe values via API PATCH before UI validation
+  - Clicks session button in UI list (not div) to ensure `selectedSession` is set
+  - Clicks "Generate" button in EvidenceBundlePanel to produce generated bundle state
+  - Uses compact styled API pages showing only relevant fields, viewport screenshots (max 900px)
+  - Adds `image-size` dependency for runtime screenshot dimension validation
+  - Adds hard-fail assertions:
+    - `valid: false` visible text aborts before screenshot 03
+    - Empty evidence bundle state aborts before screenshots 08 and 15
+    - Screenshot height > 1200px aborts
+  - Creates CLI artifacts: `evidence-bundle-no-secret-summary.json`, `audit-bl098-events-summary.json`, `screenshot-md5s.txt`, `proof-state-mapping.md`
+- **package.json / package-lock.json:** Added `image-size` dev dependency for screenshot dimension checks.
+
+### Verification
+
+- `npm run lint` — passed
+- `npm run typecheck --workspaces --if-present` — passed (0 errors across 9 workspaces)
+- `npm run validate` — passed
+- `npm run health` — passed
+- `npx prisma validate` — passed
+- `npx prisma generate` — passed
+- `npx prisma migrate status` — schema up to date
+- `npx prisma db seed` — passed (idempotent, exactly 1 cred linked)
+- `bash scripts/verify_connector_runtime_readiness.sh` — passed (12/12 checks)
+- `cd apps/api && npm test` — passed (142/142 tests, 14 suites)
+- `npm test --workspace @supportplane/contracts` — passed (29/29 tests, 6 suites)
+- `npm test --workspace @supportplane/web` — passed (15/15 tests, 1 suite)
+- `npm test --workspace @supportplane/connectors` — passed (16/16 tests, 6 suites)
+- `python3 scripts/check_state_docs.py` — passed
+- `python3 scripts/check_state_docs.py --bootstrap-gate` — passed
+- Screenshot script: 15 screenshots, 0 duplicate MD5 hashes, all ≤900px height
+- `curl http://localhost:4110/health` — API healthy
+- `curl http://localhost:3200/` — Web responding
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-100-bl098-evidence-repair-final/`
+  - 15 screenshots, all compact and readable
+  - 03 shows Valid badge and `valid: true`
+  - 08 shows generated evidence bundle summary with Bundle ID, connector counts
+  - 15 shows connector panel with Mock-only badge (not empty bundle state)
+  - 09 and 10 are compact styled API pages (1440x900) with selected fields only
+- CLI artifacts in same folder:
+  - `evidence-bundle-no-secret-summary.json`
+  - `audit-bl098-events-summary.json`
+  - `screenshot-md5s.txt`
+  - `proof-state-mapping.md`
+- Old folders deleted: `session-098-connector-runtime-readiness-final-closure/`, `session-099-bl098-closure-repair-final/`
+
+### Remaining Risk
+
+- Config schema is hardcoded for mock-only Zammad-local development.
+- Runtime readiness depends only on static flags; no actual external health checks.
+- Secret resolution is not implemented; `secretResolutionImplemented: false` is hardcoded.
+- All behavior remains local/mock-only with visible UI warnings.
+- No real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset.
