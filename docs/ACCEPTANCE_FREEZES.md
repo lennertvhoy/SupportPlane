@@ -1072,7 +1072,7 @@ and must be protected from quiet regression.
 - status: accepted
 - accepted_at: 2026-04-28T21:15:00+02:00
 - accepted_by: coding-agent
-- commit: see_git_log_for_current_head
+- commit: 298ea8f57bbef9c3e69509c72e183001e9852e25
 - evidence_refs:
   - EV-2026-04-28-094
   - EV-2026-04-28-095
@@ -1142,7 +1142,7 @@ and must be protected from quiet regression.
 - accepted_at: 2026-04-28T21:30:00+02:00
 - scope: connector_runtime_test_coverage_documentation_hardening
 - backlog_id: BL-099
-- final_commit: <see_git_log>
+- final_commit: 298ea8f57bbef9c3e69509c72e183001e9852e25
 - verification:
   - lint: pass
   - typecheck (9 workspaces): pass
@@ -1187,7 +1187,7 @@ and must be protected from quiet regression.
 - accepted_at: 2026-04-28T21:30:00+02:00
 - scope: real_writeback_path_design_document
 - backlog_id: BL-100
-- final_commit: <see_git_log>
+- final_commit: 298ea8f57bbef9c3e69509c72e183001e9852e25
 - verification:
   - lint: pass
   - typecheck (9 workspaces): pass

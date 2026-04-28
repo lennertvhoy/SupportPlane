@@ -2503,7 +2503,7 @@ CTO rejected prior closure because evidence set still contained stale/contradict
 ### Commits
 
 - `148a617ea629120d45074a8ac07f3a8f107af24b` — BL-098 evidence repair final
-- `<final_commit_pending>` — BL-099 BL-100 connector runtime confidence and writeback design
+- `298ea8f57bbef9c3e69509c72e183001e9852e25` — BL-099 BL-100 connector runtime confidence and writeback design
 
 ### Validation
 

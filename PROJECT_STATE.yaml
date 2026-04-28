@@ -42,7 +42,7 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: see_git_log_for_current_head
+    head: 298ea8f57bbef9c3e69509c72e183001e9852e25
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
@@ -381,7 +381,7 @@ current_state:
       screenshot_folder: output/playwright/session-100-bl098-evidence-repair-final/
       screenshot_count: 15
       validation: full_gate_passed
-      final_closure_commit: see_git_log_for_current_head
+      final_closure_commit: 298ea8f57bbef9c3e69509c72e183001e9852e25
       notes:
         - config validation enforces mock-only safety: rejects mockMode:false, rejects unsafe real-network fields
         - runtime readiness returns mockReady based on mockMode && enabled; realReady is always false
@@ -418,7 +418,7 @@ current_state:
       screenshot_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
       screenshot_count: 13
       validation: full_gate_passed
-      final_closure_commit: see_git_log_for_current_head
+      final_closure_commit: 298ea8f57bbef9c3e69509c72e183001e9852e25
       notes:
         - 14 new API tests added (147/147 pass, 14 suites)
         - 43 contracts tests pass (7 suites)
@@ -440,7 +440,7 @@ current_state:
       screenshot_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
       screenshot_count: 2
       validation: full_gate_passed
-      final_closure_commit: see_git_log_for_current_head
+      final_closure_commit: 298ea8f57bbef9c3e69509c72e183001e9852e25
       notes:
         - design-only backlog item; no implementation
         - documents current truth (mock-only state), block reasons, required architecture, phased path, non-goals, acceptance gates, threat/risk, test plan, rollback strategy, and "do not build until" checklist
