@@ -9,6 +9,7 @@ import type {
   ScreenObservation as ScreenObservationShape,
   CustomerReference as CustomerReferenceShape,
   ConnectorInstallation as ConnectorInstallationShape,
+  ConnectorCredentialReference as ConnectorCredentialReferenceShape,
   SupportAction as SupportActionShape,
   ActionOutboxItem as ActionOutboxItemShape,
   ActionOutboxAttempt as ActionOutboxAttemptShape,
@@ -79,6 +80,11 @@ export interface Store {
   saveConnectorInstallation(installation: ConnectorInstallationShape): Promise<void> | void;
   getConnectorInstallation(tenantId: string, id: string): Promise<ConnectorInstallationShape | undefined> | ConnectorInstallationShape | undefined;
   listConnectorInstallations(tenantId: string): Promise<ConnectorInstallationShape[]> | ConnectorInstallationShape[];
+
+  // ConnectorCredentialReference
+  saveCredentialReference(ref: ConnectorCredentialReferenceShape): Promise<void> | void;
+  getCredentialReference(tenantId: string, id: string): Promise<ConnectorCredentialReferenceShape | undefined> | ConnectorCredentialReferenceShape | undefined;
+  listCredentialReferences(tenantId: string, options?: { connectorType?: string }): Promise<ConnectorCredentialReferenceShape[]> | ConnectorCredentialReferenceShape[];
 
   // Durable action/outbox
   saveSupportAction(action: SupportActionShape): Promise<void> | void;

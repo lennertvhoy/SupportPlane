@@ -198,6 +198,70 @@ export class ConnectorInstallationsService {
     return { installationId: id, result };
   }
 
+  async linkCredentialReference(
+    identity: DevIdentity,
+    installationId: string,
+    credentialReferenceId: string
+  ) {
+    requirePermission(identity, 'connector_installation:write');
+    const installation = await this.store.getConnectorInstallation(identity.tenantId, installationId);
+    if (!installation) {
+      throw new NotFoundException(`Connector installation ${installationId} not found`);
+    }
+    const credRef = await this.store.getCredentialReference(identity.tenantId, credentialReferenceId);
+    if (!credRef) {
+      throw new NotFoundException(`Credential reference ${credentialReferenceId} not found`);
+    }
+
+    const secretReferenceIds = Array.from(new Set([...installation.secretReferenceIds, credentialReferenceId]));
+    const updated: ConnectorInstallationShape = {
+      ...installation,
+      secretReferenceIds,
+      updatedAt: new Date().toISOString(),
+    };
+    await this.store.saveConnectorInstallation(updated);
+
+    await this.appendAuditEvent(identity, AuditEventType.enum.credential_reference_linked, 'connector_installation', installationId, {
+      credentialReferenceId,
+      credentialReferenceDisplayName: credRef.displayName,
+      mockDevOnly: true,
+    });
+
+    return { installation: redactInstallation(updated), credentialReference: { id: credRef.id, displayName: credRef.displayName } };
+  }
+
+  async unlinkCredentialReference(
+    identity: DevIdentity,
+    installationId: string,
+    credentialReferenceId: string
+  ) {
+    requirePermission(identity, 'connector_installation:write');
+    const installation = await this.store.getConnectorInstallation(identity.tenantId, installationId);
+    if (!installation) {
+      throw new NotFoundException(`Connector installation ${installationId} not found`);
+    }
+    const credRef = await this.store.getCredentialReference(identity.tenantId, credentialReferenceId);
+    if (!credRef) {
+      throw new NotFoundException(`Credential reference ${credentialReferenceId} not found`);
+    }
+
+    const secretReferenceIds = installation.secretReferenceIds.filter((id) => id !== credentialReferenceId);
+    const updated: ConnectorInstallationShape = {
+      ...installation,
+      secretReferenceIds,
+      updatedAt: new Date().toISOString(),
+    };
+    await this.store.saveConnectorInstallation(updated);
+
+    await this.appendAuditEvent(identity, AuditEventType.enum.credential_reference_unlinked, 'connector_installation', installationId, {
+      credentialReferenceId,
+      credentialReferenceDisplayName: credRef.displayName,
+      mockDevOnly: true,
+    });
+
+    return { installation: redactInstallation(updated), credentialReference: { id: credRef.id, displayName: credRef.displayName } };
+  }
+
   private async appendAuditEvent(
     identity: DevIdentity,
     eventType: AuditEventType,

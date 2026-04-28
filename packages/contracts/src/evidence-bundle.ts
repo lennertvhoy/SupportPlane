@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
+import { EvidenceBundleCredentialReferenceSummary } from './connector-credential-reference.js';
 
 export const EvidenceBundleId = EntityId.brand<'EvidenceBundleId'>();
 export type EvidenceBundleId = z.infer<typeof EvidenceBundleId>;
@@ -320,6 +321,7 @@ export const EvidenceBundle = z.object({
   screenObservations: z.array(EvidenceBundleScreenObservationSummary).default([]),
   customerReferences: z.array(EvidenceBundleCustomerSummary).default([]),
   connectorInstallations: z.array(EvidenceBundleConnectorInstallationSummary).default([]),
+  credentialReferences: z.array(EvidenceBundleCredentialReferenceSummary).default([]),
   supportNoteDrafts: z.array(EvidenceBundleSupportNoteDraftSummary).default([]),
   actionOutbox: z.array(EvidenceBundleActionOutboxSummary).default([]),
   deliveryPolicies: z.array(EvidenceBundleDeliveryPolicySummary).default([]),

@@ -630,6 +630,10 @@ export class SupportSessionsService {
         [AuditEventType.enum.outbox_worker_status_checked]: 'Outbox worker status checked',
         [AuditEventType.enum.outbox_access_denied]: 'Outbox access denied',
         [AuditEventType.enum.outbox_process_once_requested]: 'Outbox process-once requested',
+        [AuditEventType.enum.credential_reference_created]: 'Credential reference created',
+        [AuditEventType.enum.credential_reference_updated]: 'Credential reference updated',
+        [AuditEventType.enum.credential_reference_linked]: 'Credential reference linked',
+        [AuditEventType.enum.credential_reference_unlinked]: 'Credential reference unlinked',
       };
       timeline.push({
         id: event.id,
@@ -1337,6 +1341,7 @@ export class SupportSessionsService {
     const customerRefsResult = await this.getCustomerReferencesForSession(identity, sessionId);
     const customerReferences = customerRefsResult.customers as unknown as import('@supportplane/contracts').CustomerReference[];
     const connectorInstallations = await this.store.listConnectorInstallations(identity.tenantId);
+    const credentialReferences = await this.store.listCredentialReferences(identity.tenantId);
     const supportNoteDrafts = await this.store.listInternalNoteDrafts(identity.tenantId, sessionId);
     const supportActions = await this.store.listSupportActions(identity.tenantId, { sessionId });
     const actionOutboxItems = await this.store.listActionOutboxItems(identity.tenantId, { sessionId });
@@ -1375,6 +1380,7 @@ export class SupportSessionsService {
       screenObservations,
       customerReferences,
       connectorInstallations,
+      credentialReferences,
       supportNoteDrafts,
       supportActions,
       actionOutboxItems,

@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
-import { api, type ConnectorStatus, type ConnectorTestResult, type ConnectorInstallation, type AuthIdentity, ApiClientError } from '@/lib/api';
+import { api, type ConnectorStatus, type ConnectorTestResult, type ConnectorInstallation, type ConnectorCredentialReference, type AuthIdentity, ApiClientError } from '@/lib/api';
 
 export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
   const [status, setStatus] = useState<ConnectorStatus | undefined>(undefined);
@@ -35,20 +35,27 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
   const [editing, setEditing] = useState<Record<string, Partial<ConnectorInstallation>>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [credentialReferences, setCredentialReferences] = useState<ConnectorCredentialReference[]>([]);
+  const [linkingId, setLinkingId] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   const canTest = identity?.permissions.includes('*') || identity?.permissions.includes('connector_installation:test');
   const canEdit = identity?.permissions.includes('*') || identity?.permissions.includes('connector_installation:write');
+  const canManageCredentials = identity?.permissions.includes('*') || identity?.permissions.includes('credential_reference:write');
+  const canViewCredentials = identity?.permissions.includes('*') || identity?.permissions.includes('credential_reference:read');
 
   async function fetchStatus() {
     setLoading(true);
     setError(null);
     try {
-      const [s, inst] = await Promise.all([
+      const [s, inst, creds] = await Promise.all([
         api.getConnectorStatus(),
         api.listConnectorInstallations(),
+        canViewCredentials ? api.listCredentialReferences() : Promise.resolve([]),
       ]);
       setStatus(s);
       setInstallations(inst);
+      setCredentialReferences(creds);
     } catch (err) {
       setError(err instanceof ApiClientError ? err.message : 'Failed to load connector status');
     } finally {
@@ -142,6 +149,40 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
       ...prev,
       [id]: { ...(prev[id] ?? {}), [field]: value },
     }));
+  }
+
+  async function handleLinkCredential(installationId: string, credentialReferenceId: string) {
+    if (!canManageCredentials) {
+      setLinkError('Insufficient permissions to link credentials');
+      return;
+    }
+    setLinkingId(installationId);
+    setLinkError(null);
+    try {
+      const result = await api.linkCredentialReference(installationId, credentialReferenceId);
+      setInstallations((prev) => prev.map((i) => (i.id === result.installation.id ? result.installation : i)));
+    } catch (err) {
+      setLinkError(err instanceof ApiClientError ? err.message : 'Failed to link credential');
+    } finally {
+      setLinkingId(null);
+    }
+  }
+
+  async function handleUnlinkCredential(installationId: string, credentialReferenceId: string) {
+    if (!canManageCredentials) {
+      setLinkError('Insufficient permissions to unlink credentials');
+      return;
+    }
+    setLinkingId(installationId);
+    setLinkError(null);
+    try {
+      const result = await api.unlinkCredentialReference(installationId, credentialReferenceId);
+      setInstallations((prev) => prev.map((i) => (i.id === result.installation.id ? result.installation : i)));
+    } catch (err) {
+      setLinkError(err instanceof ApiClientError ? err.message : 'Failed to unlink credential');
+    } finally {
+      setLinkingId(null);
+    }
   }
 
   useEffect(() => {
@@ -467,13 +508,81 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                         </div>
                       </div>
 
-                      {/* Secrets placeholder */}
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-cockpit-400">Credentials</span>
-                        <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-500">
-                          <Lock size={10} />
-                          •••••••• (managed server-side)
-                        </span>
+                      {/* Credential references */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] text-cockpit-400">Credential References</span>
+                          <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-500">
+                            <Lock size={10} />
+                            Secret values hidden
+                          </span>
+                        </div>
+
+                        {inst.secretReferenceIds.length === 0 ? (
+                          <div className="text-[10px] text-cockpit-500 italic">No credential references linked.</div>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {inst.secretReferenceIds.map((credId) => {
+                              const cred = credentialReferences.find((c) => c.id === credId);
+                              return (
+                                <span
+                                  key={credId}
+                                  className="inline-flex items-center gap-1 rounded bg-cockpit-700 px-1.5 py-0.5 text-[10px] text-cockpit-200"
+                                >
+                                  {cred?.displayName ?? credId}
+                                  {canManageCredentials && (
+                                    <button
+                                      onClick={() => handleUnlinkCredential(inst.id, credId)}
+                                      disabled={linkingId === inst.id}
+                                      className="ml-0.5 text-cockpit-400 hover:text-danger disabled:opacity-50"
+                                      title="Unlink credential"
+                                    >
+                                      <XCircle size={10} />
+                                    </button>
+                                  )}
+                                  <Badge
+                                    variant={cred?.status === 'active' ? 'success' : cred?.status === 'error' ? 'danger' : 'warning'}
+                                    className="text-[9px] ml-0.5"
+                                  >
+                                    {cred?.status ?? 'unknown'}
+                                  </Badge>
+                                </span>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                        {canManageCredentials && credentialReferences.length > 0 && (
+                          <div className="flex items-center gap-1.5 pt-1">
+                            <select
+                              disabled={linkingId === inst.id}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value) {
+                                  handleLinkCredential(inst.id, value);
+                                  e.target.value = '';
+                                }
+                              }}
+                              className="flex-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 disabled:opacity-50"
+                              defaultValue=""
+                            >
+                              <option value="" disabled>Link a credential reference...</option>
+                              {credentialReferences
+                                .filter((c) => c.connectorType === inst.adapterType || c.connectorType === 'mock')
+                                .filter((c) => !inst.secretReferenceIds.includes(c.id))
+                                .map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.displayName} ({c.status})
+                                  </option>
+                                ))}
+                            </select>
+                            {linkingId === inst.id && <Loader2 size={12} className="animate-spin text-cockpit-400" />}
+                          </div>
+                        )}
+
+                        {linkError && (
+                          <div className="text-[10px] text-danger">{linkError}</div>
+                        )}
                       </div>
 
                       {saveError && isExpanded && (

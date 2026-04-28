@@ -223,6 +223,22 @@ export interface ConnectorInstallation {
   updatedAt: string;
 }
 
+export interface ConnectorCredentialReference {
+  id: string;
+  tenantId: string;
+  connectorType: string;
+  displayName: string;
+  description?: string;
+  status: 'active' | 'inactive' | 'error';
+  secretKind: string;
+  secretRef: string;
+  lastValidatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdByUserId?: string;
+  updatedByUserId?: string;
+}
+
 export interface ConnectorTestResult {
   mode: 'mock' | 'zammad';
   success: boolean;
@@ -1510,6 +1526,40 @@ export const api = {
 
   checkConnectorReadiness: (installationId: string, identity?: DevIdentity) =>
     apiFetch<ConnectorReadinessResult>(`/connector-installations/${installationId}/readiness`, { method: 'POST' }, identity),
+
+  // Credential references
+  listCredentialReferences: (identity?: DevIdentity) =>
+    apiFetch<{ credentialReferences: ConnectorCredentialReference[] }>('/credential-references', { method: 'GET' }, identity).then(r => r.credentialReferences),
+
+  getCredentialReference: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ credentialReference: ConnectorCredentialReference }>(`/credential-references/${id}`, { method: 'GET' }, identity).then(r => r.credentialReference),
+
+  createCredentialReference: (
+    body: { connectorType: string; displayName: string; description?: string; status?: string; secretKind?: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<{ credentialReference: ConnectorCredentialReference }>('/credential-references', { method: 'POST', body: JSON.stringify(body) }, identity).then(r => r.credentialReference),
+
+  updateCredentialReference: (
+    id: string,
+    body: { displayName?: string; description?: string; status?: string; secretKind?: string },
+    identity?: DevIdentity
+  ) =>
+    apiFetch<{ credentialReference: ConnectorCredentialReference }>(`/credential-references/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, identity).then(r => r.credentialReference),
+
+  linkCredentialReference: (installationId: string, credentialReferenceId: string, identity?: DevIdentity) =>
+    apiFetch<{ installation: ConnectorInstallation; credentialReference: { id: string; displayName: string } }>(
+      `/connector-installations/${installationId}/link-credential`,
+      { method: 'POST', body: JSON.stringify({ credentialReferenceId }) },
+      identity
+    ),
+
+  unlinkCredentialReference: (installationId: string, credentialReferenceId: string, identity?: DevIdentity) =>
+    apiFetch<{ installation: ConnectorInstallation; credentialReference: { id: string; displayName: string } }>(
+      `/connector-installations/${installationId}/unlink-credential`,
+      { method: 'POST', body: JSON.stringify({ credentialReferenceId }) },
+      identity
+    ),
 
   // Worker status
   getWorkerStatus: (identity?: DevIdentity) =>

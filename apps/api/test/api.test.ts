@@ -977,6 +977,188 @@ describe('Customer and connector installation endpoints (BL-020)', () => {
   });
 });
 
+describe('Credential reference endpoints', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('GET /credential-references requires tenant identity', async () => {
+    const res = await supertest(server)
+      .get('/credential-references')
+      .expect(400);
+    assert.ok(res.body.error.includes('x-tenant-id'));
+  });
+
+  it('GET /credential-references returns empty list for in-memory test store', async () => {
+    const res = await supertest(server)
+      .get('/credential-references')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+    assert.deepStrictEqual(res.body.credentialReferences, []);
+  });
+
+  it('POST /credential-references creates a credential reference with redacted secretRef', async () => {
+    const res = await supertest(server)
+      .post('/credential-references')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({
+        connectorType: 'zammad',
+        displayName: 'Test Credential',
+        description: 'Test description',
+      })
+      .expect(201);
+
+    assert.strictEqual(res.body.credentialReference.connectorType, 'zammad');
+    assert.strictEqual(res.body.credentialReference.displayName, 'Test Credential');
+    assert.strictEqual(res.body.credentialReference.secretRef, '[REDACTED]');
+    assert.ok(res.body.credentialReference.id);
+  });
+
+  it('GET /credential-references/:id returns redacted credential reference', async () => {
+    const created = await supertest(server)
+      .post('/credential-references')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ connectorType: 'mock', displayName: 'Get Test' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/credential-references/${created.body.credentialReference.id}`)
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+
+    assert.strictEqual(res.body.credentialReference.displayName, 'Get Test');
+    assert.strictEqual(res.body.credentialReference.secretRef, '[REDACTED]');
+  });
+
+  it('GET /credential-references/:id returns 404 for unknown reference', async () => {
+    await supertest(server)
+      .get('/credential-references/unknown-id')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(404);
+  });
+
+  it('PATCH /credential-references/:id updates safe fields', async () => {
+    const created = await supertest(server)
+      .post('/credential-references')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ connectorType: 'mock', displayName: 'Before Update' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .patch(`/credential-references/${created.body.credentialReference.id}`)
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ displayName: 'After Update', status: 'inactive' })
+      .expect(200);
+
+    assert.strictEqual(res.body.credentialReference.displayName, 'After Update');
+    assert.strictEqual(res.body.credentialReference.status, 'inactive');
+    assert.strictEqual(res.body.credentialReference.secretRef, '[REDACTED]');
+  });
+
+  it('POST /credential-references denies viewer role', async () => {
+    await supertest(server)
+      .post('/credential-references')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .send({ connectorType: 'mock', displayName: 'Viewer Test' })
+      .expect(403);
+  });
+
+  it('GET /credential-references allows viewer role', async () => {
+    const res = await supertest(server)
+      .get('/credential-references')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(200);
+    assert.ok(Array.isArray(res.body.credentialReferences));
+  });
+
+  it('POST /connector-installations/:id/link-credential links credential to installation', async () => {
+    const installation = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Link Test', adapterType: 'mock' })
+      .expect(201);
+
+    const credential = await supertest(server)
+      .post('/credential-references')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ connectorType: 'mock', displayName: 'Linkable Credential' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/connector-installations/${installation.body.installation.id}/link-credential`)
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ credentialReferenceId: credential.body.credentialReference.id })
+      .expect(200);
+
+    assert.ok(res.body.installation.secretReferenceIds.includes(credential.body.credentialReference.id));
+  });
+
+  it('POST /connector-installations/:id/unlink-credential unlinks credential from installation', async () => {
+    const installation = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Unlink Test', adapterType: 'mock' })
+      .expect(201);
+
+    const credential = await supertest(server)
+      .post('/credential-references')
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ connectorType: 'mock', displayName: 'Unlinkable Credential' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/connector-installations/${installation.body.installation.id}/link-credential`)
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ credentialReferenceId: credential.body.credentialReference.id })
+      .expect(200);
+
+    const res = await supertest(server)
+      .post(`/connector-installations/${installation.body.installation.id}/unlink-credential`)
+      .set('x-tenant-id', 'tenant-cred')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ credentialReferenceId: credential.body.credentialReference.id })
+      .expect(200);
+
+    assert.ok(!res.body.installation.secretReferenceIds.includes(credential.body.credentialReference.id));
+  });
+});
+
 describe('Evidence bundle endpoints', () => {
   let app: INestApplication;
   let server: ReturnType<INestApplication['getHttpServer']>;

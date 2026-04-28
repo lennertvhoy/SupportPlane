@@ -22,6 +22,7 @@ import type {
   EvidenceBundleSupportNoteDraftSummary,
   EvidenceBundleActionOutboxSummary,
   EvidenceBundleDeliveryPolicySummary,
+  EvidenceBundleCredentialReferenceSummary,
   TenantId,
   SupportSessionId,
   EvidenceBundleId,
@@ -50,6 +51,7 @@ export interface BuildEvidenceBundleInput {
   screenObservations?: ScreenObservation[];
   customerReferences?: CustomerReference[];
   connectorInstallations?: import('@supportplane/contracts').ConnectorInstallation[];
+  credentialReferences?: import('@supportplane/contracts').ConnectorCredentialReference[];
   supportNoteDrafts?: InternalNoteDraft[];
   supportActions?: SupportAction[];
   actionOutboxItems?: ActionOutboxItem[];
@@ -121,6 +123,25 @@ function toConnectorInstallationSummaries(
     timeoutMs: i.timeoutMs,
     lastVerifiedAt: i.lastVerifiedAt,
     lastError: i.lastError ? redactString(i.lastError) : undefined,
+  }));
+}
+
+function toCredentialReferenceSummaries(
+  refs: import('@supportplane/contracts').ConnectorCredentialReference[] | undefined,
+  installations: import('@supportplane/contracts').ConnectorInstallation[] | undefined
+): EvidenceBundleCredentialReferenceSummary[] {
+  if (!refs) return [];
+  const linkedIds = new Set(
+    (installations ?? []).flatMap((i) => i.secretReferenceIds ?? [])
+  );
+  return refs.map((r) => ({
+    id: r.id,
+    displayName: r.displayName,
+    connectorType: r.connectorType,
+    status: r.status,
+    secretKind: r.secretKind,
+    linked: linkedIds.has(r.id),
+    lastValidatedAt: r.lastValidatedAt,
   }));
 }
 
@@ -436,6 +457,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     screenObservations: toScreenObservationSummaries(input.screenObservations),
     customerReferences: toCustomerSummaries(input.customerReferences),
     connectorInstallations: toConnectorInstallationSummaries(input.connectorInstallations),
+    credentialReferences: toCredentialReferenceSummaries(input.credentialReferences, input.connectorInstallations),
     supportNoteDrafts: toSupportNoteDraftSummaries(input.supportNoteDrafts),
     actionOutbox: toActionOutboxSummaries(input.supportActions, input.actionOutboxItems, input.actionOutboxAttempts),
     deliveryPolicies: toDeliveryPolicySummaries(input.deliveryPolicies),
@@ -677,6 +699,44 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       lines.push(`- **Not Sent to Zammad:** ${d.notSentToZammad}`);
       lines.push(`- **Requires Human Review:** ${d.requiresHumanReview}`);
       if (d.generatedAt) lines.push(`- **Generated At:** ${d.generatedAt}`);
+      lines.push(``);
+    }
+  }
+  lines.push(``);
+
+  lines.push(`## Connector Installations`);
+  lines.push(``);
+  if (bundle.connectorInstallations.length === 0) {
+    lines.push(`*No connector installations recorded.*`);
+  } else {
+    for (const inst of bundle.connectorInstallations) {
+      lines.push(`### ${inst.displayName ?? inst.name} (${inst.id})`);
+      lines.push(`- **Adapter Type:** ${inst.adapterType}`);
+      lines.push(`- **Status:** ${inst.status}`);
+      lines.push(`- **Enabled:** ${inst.enabled}`);
+      lines.push(`- **Mock Mode:** ${inst.mockMode}`);
+      lines.push(`- **Capabilities:** ${inst.capabilities.join(', ')}`);
+      if (inst.timeoutMs) lines.push(`- **Timeout:** ${inst.timeoutMs}ms`);
+      if (inst.lastVerifiedAt) lines.push(`- **Last Verified:** ${inst.lastVerifiedAt}`);
+      if (inst.lastError) lines.push(`- **Last Error:** ${inst.lastError}`);
+      lines.push(``);
+    }
+  }
+  lines.push(``);
+
+  lines.push(`## Credential References`);
+  lines.push(``);
+  if (bundle.credentialReferences.length === 0) {
+    lines.push(`*No credential references recorded.*`);
+  } else {
+    for (const cred of bundle.credentialReferences) {
+      lines.push(`### ${cred.displayName} (${cred.id})`);
+      lines.push(`- **Connector Type:** ${cred.connectorType}`);
+      lines.push(`- **Status:** ${cred.status}`);
+      lines.push(`- **Secret Kind:** ${cred.secretKind}`);
+      lines.push(`- **Linked:** ${cred.linked ? 'Yes' : 'No'}`);
+      if (cred.lastValidatedAt) lines.push(`- **Last Validated:** ${cred.lastValidatedAt}`);
+      lines.push(`- **Secret Value:** [REDACTED — never included in evidence bundles]`);
       lines.push(``);
     }
   }

@@ -27,6 +27,7 @@ model Tenant {
   ticketReferences    TicketReference[]
   ticketSummaries     TicketSummary[]
   connectorInstallations ConnectorInstallation[]
+  connectorCredentialReferences ConnectorCredentialReference[]
   aiContextPackets    AIContextPacket[]
   screenObservations  ScreenObservation[]
   policyDecisions     PolicyDecision[]
@@ -274,6 +275,29 @@ model ConnectorInstallation {
   @@index([tenantId, status])
   @@index([tenantId, enabled])
   @@map("connector_installations")
+}
+
+model ConnectorCredentialReference {
+  id              String   @id @default(cuid())
+  tenantId        String
+  connectorType   String
+  displayName     String
+  description     String?
+  status          String   @default("active")
+  secretKind      String   @default("api_token_placeholder")
+  secretRef       String   @default("local-dev-placeholder")
+  lastValidatedAt DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdByUserId String?
+  updatedByUserId String?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, connectorType])
+  @@index([tenantId, status])
+  @@map("connector_credential_references")
 }
 
 model AIContextPacket {

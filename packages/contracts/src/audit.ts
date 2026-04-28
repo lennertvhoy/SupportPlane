@@ -115,6 +115,11 @@ export const AuditEventType = z.enum([
   'delivery_policy_evaluated',
   'delivery_policy_blocked',
   'delivery_policy_updated',
+  // BL-097 Credential Reference Foundation
+  'credential_reference_created',
+  'credential_reference_updated',
+  'credential_reference_linked',
+  'credential_reference_unlinked',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

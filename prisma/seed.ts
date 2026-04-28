@@ -276,6 +276,57 @@ async function main() {
     });
   }
 
+  // Seed demo credential references
+  const credentialReferences = [
+    {
+      id: 'cred-ref-dev-001',
+      tenantId: 'dev-tenant',
+      connectorType: 'zammad',
+      displayName: 'Dev Zammad API Token (Placeholder)',
+      description: 'Local dev placeholder credential reference. No real secret stored.',
+      status: 'active',
+      secretKind: 'api_token_placeholder',
+      secretRef: 'local-dev-placeholder',
+      createdByUserId: 'dev-admin',
+    },
+    {
+      id: 'cred-ref-dev-002',
+      tenantId: 'dev-tenant',
+      connectorType: 'zammad',
+      displayName: 'Dev Zammad Basic Auth (Placeholder)',
+      description: 'Local dev placeholder basic auth reference. No real secret stored.',
+      status: 'inactive',
+      secretKind: 'basic_auth_placeholder',
+      secretRef: 'local-dev-placeholder',
+      createdByUserId: 'dev-admin',
+    },
+    {
+      id: 'cred-ref-alt-001',
+      tenantId: 'alt-tenant',
+      connectorType: 'mock',
+      displayName: 'Alt Tenant Mock Credential (Placeholder)',
+      description: 'Local dev placeholder for alt-tenant. No real secret stored.',
+      status: 'active',
+      secretKind: 'api_token_placeholder',
+      secretRef: 'local-dev-placeholder',
+      createdByUserId: 'alt-admin',
+    },
+  ];
+
+  for (const cred of credentialReferences) {
+    await prisma.connectorCredentialReference.upsert({
+      where: { id: cred.id },
+      create: cred,
+      update: cred,
+    });
+  }
+
+  // Link dev-tenant credential to connector installation
+  await prisma.connectorInstallation.update({
+    where: { id: 'conn-inst-dev-001' },
+    data: { secretReferenceIds: ['cred-ref-dev-001'] },
+  });
+
   // Seed default delivery policies for each tenant
   const policies = [
     {
@@ -353,7 +404,7 @@ async function main() {
     });
   }
 
-  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, and delivery policies');
+  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, credential references, and delivery policies');
 }
 
 main()

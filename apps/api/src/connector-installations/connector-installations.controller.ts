@@ -68,4 +68,26 @@ export class ConnectorInstallationsController {
     const identity = getCurrentIdentity(req);
     return this.service.testInstallation(identity, id);
   }
+
+  @Post(':id/link-credential')
+  @HttpCode(200)
+  async linkCredential(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { credentialReferenceId: string }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.service.linkCredentialReference(identity, id, body.credentialReferenceId);
+  }
+
+  @Post(':id/unlink-credential')
+  @HttpCode(200)
+  async unlinkCredential(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { credentialReferenceId: string }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.service.unlinkCredentialReference(identity, id, body.credentialReferenceId);
+  }
 }

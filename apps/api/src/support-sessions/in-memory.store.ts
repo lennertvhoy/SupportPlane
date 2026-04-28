@@ -9,6 +9,7 @@ import type {
   ScreenObservation as ScreenObservationShape,
   CustomerReference as CustomerReferenceShape,
   ConnectorInstallation as ConnectorInstallationShape,
+  ConnectorCredentialReference as ConnectorCredentialReferenceShape,
   SupportAction as SupportActionShape,
   ActionOutboxItem as ActionOutboxItemShape,
   ActionOutboxAttempt as ActionOutboxAttemptShape,
@@ -28,6 +29,7 @@ export class InMemoryStore implements Store {
   private sharingStates = new Map<string, SharingStateShape>();
   private customerReferences = new Map<string, CustomerReferenceShape>();
   private connectorInstallations = new Map<string, ConnectorInstallationShape>();
+  private credentialReferences = new Map<string, ConnectorCredentialReferenceShape>();
   private supportActions = new Map<string, SupportActionShape>();
   private actionOutboxItems = new Map<string, ActionOutboxItemShape>();
   private actionOutboxAttempts = new Map<string, ActionOutboxAttemptShape>();
@@ -204,6 +206,22 @@ export class InMemoryStore implements Store {
 
   listConnectorInstallations(tenantId: string): ConnectorInstallationShape[] {
     return Array.from(this.connectorInstallations.values()).filter((i) => i.tenantId === tenantId);
+  }
+
+  saveCredentialReference(ref: ConnectorCredentialReferenceShape): void {
+    this.credentialReferences.set(`${ref.tenantId}:${ref.id}`, ref);
+  }
+
+  getCredentialReference(tenantId: string, id: string): ConnectorCredentialReferenceShape | undefined {
+    return this.credentialReferences.get(`${tenantId}:${id}`);
+  }
+
+  listCredentialReferences(tenantId: string, options?: { connectorType?: string }): ConnectorCredentialReferenceShape[] {
+    let results = Array.from(this.credentialReferences.values()).filter((c) => c.tenantId === tenantId);
+    if (options?.connectorType) {
+      results = results.filter((c) => c.connectorType === options.connectorType);
+    }
+    return results.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
   saveSupportAction(action: SupportActionShape): void {

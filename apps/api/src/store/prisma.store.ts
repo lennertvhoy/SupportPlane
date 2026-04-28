@@ -17,6 +17,7 @@ import type {
   ScreenObservation as ScreenObservationShape,
   CustomerReference as CustomerReferenceShape,
   ConnectorInstallation as ConnectorInstallationShape,
+  ConnectorCredentialReference as ConnectorCredentialReferenceShape,
   SupportAction as SupportActionShape,
   ActionOutboxItem as ActionOutboxItemShape,
   ActionOutboxAttempt as ActionOutboxAttemptShape,
@@ -944,6 +945,89 @@ export class PrismaStore implements Store {
       orderBy: { updatedAt: 'desc' },
     });
     return rows.map((r) => this.mapConnectorInstallation(r));
+  }
+
+  // ConnectorCredentialReference
+  async saveCredentialReference(ref: ConnectorCredentialReferenceShape): Promise<void> {
+    await this.prisma.connectorCredentialReference.upsert({
+      where: { id: ref.id },
+      create: {
+        id: ref.id,
+        tenantId: ref.tenantId,
+        connectorType: ref.connectorType,
+        displayName: ref.displayName,
+        description: ref.description ?? null,
+        status: ref.status,
+        secretKind: ref.secretKind,
+        secretRef: ref.secretRef,
+        lastValidatedAt: ref.lastValidatedAt ? new Date(ref.lastValidatedAt) : null,
+        createdByUserId: ref.createdByUserId ?? null,
+        updatedByUserId: ref.updatedByUserId ?? null,
+        createdAt: dateOrNow(ref.createdAt),
+        updatedAt: dateOrNow(ref.updatedAt),
+      },
+      update: {
+        connectorType: ref.connectorType,
+        displayName: ref.displayName,
+        description: ref.description ?? null,
+        status: ref.status,
+        secretKind: ref.secretKind,
+        secretRef: ref.secretRef,
+        lastValidatedAt: ref.lastValidatedAt ? new Date(ref.lastValidatedAt) : null,
+        updatedByUserId: ref.updatedByUserId ?? null,
+        updatedAt: dateOrNow(ref.updatedAt),
+      },
+    });
+  }
+
+  async getCredentialReference(tenantId: string, id: string): Promise<ConnectorCredentialReferenceShape | undefined> {
+    const row = await this.prisma.connectorCredentialReference.findFirst({
+      where: { id, tenantId },
+    });
+    if (!row) return undefined;
+    return this.mapCredentialReference(row);
+  }
+
+  async listCredentialReferences(tenantId: string, options?: { connectorType?: string }): Promise<ConnectorCredentialReferenceShape[]> {
+    const where: Prisma.ConnectorCredentialReferenceWhereInput = { tenantId };
+    if (options?.connectorType) where.connectorType = options.connectorType;
+    const rows = await this.prisma.connectorCredentialReference.findMany({
+      where,
+      orderBy: { updatedAt: 'desc' },
+    });
+    return rows.map((r) => this.mapCredentialReference(r));
+  }
+
+  private mapCredentialReference(row: {
+    id: string;
+    tenantId: string;
+    connectorType: string;
+    displayName: string;
+    description: string | null;
+    status: string;
+    secretKind: string;
+    secretRef: string;
+    lastValidatedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
+    createdByUserId: string | null;
+    updatedByUserId: string | null;
+  }): ConnectorCredentialReferenceShape {
+    return {
+      id: row.id as ConnectorCredentialReferenceShape['id'],
+      tenantId: row.tenantId as ConnectorCredentialReferenceShape['tenantId'],
+      connectorType: row.connectorType,
+      displayName: row.displayName,
+      description: row.description ?? undefined,
+      status: row.status as ConnectorCredentialReferenceShape['status'],
+      secretKind: row.secretKind as ConnectorCredentialReferenceShape['secretKind'],
+      secretRef: row.secretRef,
+      lastValidatedAt: toISO(row.lastValidatedAt),
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+      createdByUserId: row.createdByUserId ?? undefined,
+      updatedByUserId: row.updatedByUserId ?? undefined,
+    };
   }
 
   private mapConnectorInstallation(row: {
