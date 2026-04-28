@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 26cf3154905b9223238fe65136744c5c0ce96386
-    worktree_status: clean_after_bl_094_commit
+    head: b93061e347e15d0f9b63a16418e422fae2002ccf
+    worktree_status: clean
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -67,7 +67,7 @@ current_state:
     type: governed_ai_support_cockpit
     lifecycle_stage: mvp_foundation
     foundation_history:
-      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009]
+      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094]
       summary: >
         Early slices established contracts/schema, mock-first API, cockpit UI,
         mock AI gateway, local Podman-compatible topology, Zammad connector
@@ -461,7 +461,7 @@ current_state:
       web_app: apps/web
       prisma_schema: prisma/schema.prisma
       migration: prisma/migrations/20260428094012_delivery_policy_controls/
-      docs: [docs/DELIVERY_POLICY.md]
+      docs: [docs/DELIVERY_POLICY_CONTROLS.md]
       runtime:
         store_mode: postgres
         auth_mode: local
@@ -474,10 +474,10 @@ current_state:
         - PATCH /delivery-policies/:id
         - POST /delivery-policies/:id/validate
         - POST /delivery-policies/:id/connector-readiness
-      screenshot_folder: output/playwright/session-094-delivery-policy-controls-foundation/
-      screenshot_count: 6
+      screenshot_folder: output/playwright/session-094-delivery-policy-controls-final-closure/
+      screenshot_count: 24
       validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
-      final_closure_commit: 26cf3154905b9223238fe65136744c5c0ce96386
+      final_closure_commit: b93061e347e15d0f9b63a16418e422fae2002ccf
       notes:
         - delivery policy evaluation gates (in order): killSwitch → enabled → allowedActionTypes → approvalRequired → minimumApproverRole → requireHumanReview → requireEvidenceBundle → requireConnectorValidation
         - all policy decisions return realNetworkAllowed=false, writebackEnabled=false, externalWriteAllowed=false

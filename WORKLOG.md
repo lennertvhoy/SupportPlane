@@ -1846,3 +1846,67 @@ CTO-identified closure blockers from prior handoff:
 - Worker/process-once behavior is local/mock-only and not production queue infrastructure.
 - Claim/lock behavior is designed for the local PostgreSQL MVP and does not claim distributed queue guarantees.
 - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment implemented.
+
+## 2026-04-28: BL-094 Delivery Policy Controls and Connector Readiness Gates — Final Closure
+
+### Scope
+
+- Final closure of BL-094: tenant-scoped delivery policy model, ordered evaluation gates, connector readiness returning `readyForRealWriteback: false`, policy enforcement at queue and process time, dead-letter for blocked items, real-writeback toggle blocked with 400, admin/viewer policy panel, delivery policy RBAC, policy audit events, evidence bundle policy provenance, and 24-screenshot browser proof.
+
+### Changes
+
+- Added `DeliveryPolicy` Prisma model with migration `prisma/migrations/20260428094012_delivery_policy_controls/`.
+- Seeded default delivery policies for both tenants with `mockOnlyEnforced: true`, `allowRealNetworkCalls: false`.
+- Implemented `DeliveryPolicyService` with ordered gates: killSwitch → enabled → allowedActionTypes → approvalRequired → minimumApproverRole → requireHumanReview → requireEvidenceBundle → requireConnectorValidation.
+- `HARDCODED_DEFAULT_DECISION` returns `mock_only_allowed` with all real-writeback flags false and `localDevOnly: true`.
+- `updatePolicy` rejects `allowRealNetworkCalls=true`, `writebackEnabled=true`, or `externalWriteAllowed=true` with 400.
+- `checkConnectorReadiness` always returns `readyForRealWriteback: false`.
+- `ActionsService.queue()` evaluates policy before outbox item creation; throws `ForbiddenException` with decision if blocked.
+- `ActionsService.processClaimedOutbox()` re-evaluates policy before mock delivery; blocked items are dead-lettered with `policy_blocked` attempts.
+- Added delivery policy controller routes with `delivery_policy:read/write` RBAC.
+- Added `DeliveryPolicyPanel` component in web cockpit: read/write for admin, read-only for viewer.
+- Added `EvidenceBundleDeliveryPolicySummary` to contracts and `evidence-bundle.builder.ts`; bundle JSON/Markdown now includes `deliveryPolicies` with safety flags.
+- Added API tests for delivery policy RBAC, real-writeback rejection, and evidence bundle policy inclusion.
+- Added `docs/DELIVERY_POLICY_CONTROLS.md` with policy model, gates, fallback behavior, and mock-only constraints.
+- Added `scripts/bl094_screenshots.js` for reproducible 24-screenshot browser proof.
+- Deleted superseded `output/playwright/session-094-delivery-policy-controls-foundation/` (6 screenshots).
+
+### Verification
+
+- `npm install` — pass; npm reported 10 vulnerabilities (8 moderate, 2 high), treated as pre-existing audit debt.
+- `npm run lint` — pass.
+- `npm run typecheck --workspaces --if-present` — pass (9 workspaces).
+- `npm run validate` — pass.
+- `npm run health` — pass.
+- `npx prisma validate` — pass.
+- `npx prisma generate` — pass.
+- `npx prisma migrate status` — pass; 6 migrations up to date.
+- `npx prisma db seed` — pass.
+- `scripts/verify_postgres_persistence.sh` — pass.
+- `scripts/verify_local_auth_rbac.sh` — pass.
+- `scripts/verify_ticket_context_connector.sh` — pass.
+- `scripts/verify_support_case_workflow.sh` — pass.
+- `scripts/verify_durable_action_outbox.sh` — pass.
+- `scripts/verify_outbox_worker_retry_deadletter.sh` — pass.
+- `scripts/verify_delivery_policy_controls.sh` — pass (14 checks).
+- `cd apps/api && npm test` — 116/116 pass.
+- `npm test --workspace @supportplane/contracts` — 29/29 pass.
+- `npm test --workspace @supportplane/web` — 15/15 pass.
+- `npm test --workspace @supportplane/ai` — 9/9 pass.
+- `npm run build --workspace @supportplane/connectors` — pass.
+- `npm test --workspace @supportplane/connectors` — 16/16 pass.
+- `npm run build --workspace @supportplane/web` — pass with existing Next ESLint-plugin warning.
+- `npm run build --workspace @supportplane/worker` — pass.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-094-delivery-policy-controls-final-closure/`
+- Screenshot count: 24
+- Evidence refs: EV-2026-04-28-012 through EV-2026-04-28-035
+
+### Remaining Risk
+
+- Real writeback readiness gates are structural only; real writeback requires future connector credential management, network path validation, and tenant admin configuration.
+- Policy evaluation uses a hardcoded default fallback (`mock_only_allowed`) for dev-mode compatibility when no DB policy exists.
+- No production queue semantics, external broker, or distributed worker infrastructure exists.
+- No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment implemented.

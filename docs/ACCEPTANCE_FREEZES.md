@@ -865,7 +865,7 @@ and must be protected from quiet regression.
 - Scope: Tenant-scoped DeliveryPolicy model with Prisma migration, policy evaluation service with ordered gates (killSwitch → enabled → allowedActionTypes → approvalRequired → minimumApproverRole → requireHumanReview → requireEvidenceBundle → requireConnectorValidation), connector readiness check returning readyForRealWriteback=false, policy enforcement in ActionsService.queue() and processClaimedOutbox(), real writeback toggle blocked with 400, admin/viewer policy panel in Support Cockpit, delivery_policy:read/write RBAC, policy audit events (delivery_policy_evaluated, delivery_policy_blocked), evidence bundle policy provenance, and verification script with 14 checks.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
-- final_closure_commit: 26cf3154905b9223238fe65136744c5c0ce96386
+- final_closure_commit: b93061e347e15d0f9b63a16418e422fae2002ccf
 - process_or_container:
   - node process (NestJS API via tsx) on port 4110
   - node process (Next.js dev) on port 3200
@@ -892,8 +892,8 @@ and must be protected from quiet regression.
   - EV-2026-04-28-009
   - EV-2026-04-28-010
   - EV-2026-04-28-011
-- evidence_folder: output/playwright/session-094-delivery-policy-controls-foundation/
-- screenshot_count: 6
+- evidence_folder: output/playwright/session-094-delivery-policy-controls-final-closure/
+- screenshot_count: 24
 - validation_summary:
   - `npm install` passed; npm reported 10 vulnerabilities (8 moderate, 2 high), treated as pre-existing audit debt.
   - `npm run lint`, `npm run typecheck --workspaces --if-present`, `npm run validate`, and `npm run health` passed.
@@ -919,7 +919,8 @@ and must be protected from quiet regression.
   - Viewer role must see read-only policy panel with disabled controls.
   - PATCH requesting `allowRealNetworkCalls=true`, `writebackEnabled=true`, or `externalWriteAllowed=true` must return 400.
   - `POST /delivery-policies/:id/validate` must return `decision: mock_only_allowed` with `allowed: true` under default policy.
-  - `POST /delivery-policies/:id/connector-readiness` must return `readyForRealWriteback: false`.
+  - `POST /connector-installations/:id/readiness` must return `readyForRealWriteback: false`.
+  - ActionsService.queue() must evaluate policy and throw ForbiddenException with policy decision if blocked; blocked actions must be dead-lettered with `policy_blocked` attempts.
   - ActionsService.queue() must evaluate policy and throw ForbiddenException with policy decision if blocked.
   - ActionsService.processClaimedOutbox() must re-evaluate policy and create `policy_blocked` attempt if blocked.
   - Audit trail must display `delivery_policy_evaluated` and `delivery_policy_blocked` events with full decision metadata.
@@ -928,7 +929,7 @@ and must be protected from quiet regression.
   - Forged identity headers must be ignored in local auth mode.
 - known_limitations:
   - Real writeback readiness gates are structural only; real writeback requires future connector credential management, network path validation, and tenant admin configuration.
-  - Policy evaluation uses a hardcoded default fallback for dev-mode compatibility when no DB policy exists.
+  - Policy evaluation uses a hardcoded default fallback (`mock_only_allowed`) for dev-mode compatibility when no DB policy exists.
   - No production queue semantics, external broker, or distributed worker infrastructure exists.
 - explicit_non_claims:
   - No real production Zammad writeback was implemented.

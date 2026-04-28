@@ -1491,3 +1491,48 @@
   - Login page is the authentication entry point for browser verification.
 - Type: docs-render-verification
 - as_of: 2026-04-28T11:23:00+02:00
+
+## EV-2026-04-28-012 through EV-2026-04-28-035: BL-094 Final Closure — 24 Screenshot Set
+
+- Files: `output/playwright/session-094-delivery-policy-controls-final-closure/01-login-local-auth.png` through `24-final-no-real-writeback-proof.png`
+- Source/System: visible Chromium via Playwright script against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - 01: local login page with tenant/email/password fields
+  - 02: authenticated admin cockpit with DEV/MOCK badges
+  - 03: admin Delivery Policy panel with kill switch, approval required, mock-only locked ON, real network locked OFF
+  - 04: real writeback controls showing "Locked OFF" badges
+  - 05: admin toggling approval required (safe field update)
+  - 06: policy saved with incremented policy version visible
+  - 07: connector readiness check returning `readyForRealWriteback: false`
+  - 08: outbox monitor showing queued action with `policyDecision: mock_only_allowed`
+  - 09: worker status showing mock-only mode, local PostgreSQL worker foundation
+  - 10: action outbox for session blocked by kill switch (API returned `blocked_by_kill_switch`)
+  - 11: case timeline showing `delivery_policy_evaluated` events
+  - 12: audit trail showing `delivery_policy_evaluated` and `delivery_policy_blocked` events
+  - 13: evidence bundle summary with Delivery Policies count
+  - 14: evidence bundle JSON showing `deliveryPolicies` array with `mockOnlyEnforced: true`, `realNetworkAllowed: false`, safety flags
+  - 15: logout state returning to login form
+  - 16: viewer read-only policy panel (no editable controls)
+  - 17: viewer attempting to toggle kill switch (control remains disabled/no-op)
+  - 18: cross-tenant admin denied access to dev-tenant session
+  - 19: relogin as admin showing preserved policy state
+  - 20: outbox persistence after logout/relogin cycle
+  - 21: dev/mock badges in cockpit header
+  - 22: action outbox panel scoped to selected session
+  - 23: final local mode proof with mock-only badges
+  - 24: final no-real-writeback proof with all safety flags visible
+- Proves:
+  - BL-094 delivery policy controls are visible, enforced at queue and process time, and produce audit/dead-letter artifacts.
+  - Both allowed (`mock_only_allowed`) and blocked (`blocked_by_kill_switch`) paths are proven.
+  - Admin and viewer roles are differentiated in the UI with server-side enforcement.
+  - Cross-tenant access is denied.
+  - Evidence bundles include policy provenance without secrets.
+  - Policy state persists across logout/relogin.
+- Type: docs-render-verification
+- as_of: 2026-04-28T13:16:00+02:00
+
+## Note: Superseded Evidence
+
+- EV-2026-04-28-006 through EV-2026-04-28-011 (foundation screenshots in `session-094-delivery-policy-controls-foundation/`) are superseded by EV-2026-04-28-012 through EV-2026-04-28-035.
+- The old screenshot folder was deleted per AGENTS.md screenshot lifecycle rules.
