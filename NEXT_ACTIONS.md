@@ -1,12 +1,12 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-28 14:40 CEST
+**Updated At:** 2026-04-28 15:30 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-- None. BL-094 is closed. Awaiting CTO direction for next backlog slice.
+- [BL-095] `[in_progress]` Connector installation settings foundation. Implementing schema migration, API PATCH/POST endpoints, RBAC hardening, secret redaction, web UI settings panel, tests, verification script, and evidence capture.
 
 ## Queue Rules
 

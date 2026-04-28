@@ -206,11 +206,17 @@ export interface ConnectorInstallation {
   id: string;
   tenantId: string;
   name: string;
+  displayName?: string;
+  description?: string;
   adapterType: string;
+  capabilities: string[];
   config: Record<string, unknown>;
   secretReferenceIds: string[];
   status: 'active' | 'inactive' | 'error';
+  mockMode: boolean;
+  enabled: boolean;
   safetyFlags: Record<string, unknown>;
+  timeoutMs?: number;
   lastVerifiedAt?: string;
   lastError?: string;
   createdAt: string;
@@ -1219,7 +1225,18 @@ export const api = {
 
   updateConnectorInstallation: (
     id: string,
-    body: { name?: string; config?: Record<string, unknown>; status?: string; safetyFlags?: Record<string, unknown> },
+    body: {
+      name?: string;
+      displayName?: string;
+      description?: string;
+      config?: Record<string, unknown>;
+      status?: string;
+      mockMode?: boolean;
+      enabled?: boolean;
+      capabilities?: string[];
+      safetyFlags?: Record<string, unknown>;
+      timeoutMs?: number;
+    },
     identity?: DevIdentity
   ) =>
     apiFetch<{ installation: ConnectorInstallation }>(`/connector-installations/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, identity).then(r => r.installation),

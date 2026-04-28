@@ -111,9 +111,14 @@ function toConnectorInstallationSummaries(
   return installations.map((i) => ({
     id: i.id,
     name: i.name,
+    displayName: i.displayName,
     adapterType: i.adapterType,
+    capabilities: i.capabilities,
     status: i.status,
+    mockMode: i.mockMode,
+    enabled: i.enabled,
     safetyFlags: redactSecrets(i.safetyFlags as Record<string, unknown> ?? {}),
+    timeoutMs: i.timeoutMs,
     lastVerifiedAt: i.lastVerifiedAt,
     lastError: i.lastError ? redactString(i.lastError) : undefined,
   }));

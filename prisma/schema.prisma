@@ -250,11 +250,17 @@ model ConnectorInstallation {
   id                String   @id @default(cuid())
   tenantId          String
   name              String
+  displayName       String?
+  description       String?
   adapterType       String
+  capabilities      String[] @default([])
   config            Json     @default("{}")
   secretReferenceIds String[] @default([])
   status            String   @default("inactive")
+  mockMode          Boolean  @default(true)
+  enabled           Boolean  @default(false)
   safetyFlags       Json     @default("{}")
+  timeoutMs         Int?
   lastVerifiedAt    DateTime?
   lastError         String?
   createdAt         DateTime @default(now())
@@ -266,6 +272,7 @@ model ConnectorInstallation {
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([tenantId, enabled])
   @@map("connector_installations")
 }
 

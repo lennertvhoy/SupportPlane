@@ -794,6 +794,187 @@ describe('Customer and connector installation endpoints (BL-020)', () => {
     assert.ok(!bodyStr.includes('secret'), 'secret must not be exposed');
     assert.ok(!bodyStr.includes('token='), 'token must not be exposed');
   });
+
+  it('POST /connector-installations creates installation with mock defaults', async () => {
+    const res = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Test Connector', adapterType: 'zammad' })
+      .expect(201);
+    assert.strictEqual(res.body.installation.name, 'Test Connector');
+    assert.strictEqual(res.body.installation.adapterType, 'zammad');
+    assert.strictEqual(res.body.installation.mockMode, true);
+    assert.strictEqual(res.body.installation.enabled, false);
+    assert.strictEqual(res.body.installation.status, 'inactive');
+    assert.ok(Array.isArray(res.body.installation.capabilities));
+  });
+
+  it('PATCH /connector-installations/:id updates safe fields as admin', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Patch Test', adapterType: 'mock' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .patch(`/connector-installations/${created.body.installation.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({
+        displayName: 'Patched Display',
+        description: 'Patched description',
+        enabled: true,
+        status: 'active',
+        timeoutMs: 8000,
+        capabilities: ['read_tickets', 'write_notes'],
+        safetyFlags: { validateBeforeWrite: true, maxRetries: 5 },
+      })
+      .expect(200);
+
+    assert.strictEqual(res.body.installation.displayName, 'Patched Display');
+    assert.strictEqual(res.body.installation.description, 'Patched description');
+    assert.strictEqual(res.body.installation.enabled, true);
+    assert.strictEqual(res.body.installation.status, 'active');
+    assert.strictEqual(res.body.installation.timeoutMs, 8000);
+    assert.deepStrictEqual(res.body.installation.capabilities, ['read_tickets', 'write_notes']);
+    assert.strictEqual(res.body.installation.safetyFlags.maxRetries, 5);
+  });
+
+  it('PATCH /connector-installations/:id denies viewer', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Viewer Deny Test', adapterType: 'mock' })
+      .expect(201);
+
+    await supertest(server)
+      .patch(`/connector-installations/${created.body.installation.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .send({ enabled: true })
+      .expect(403);
+  });
+
+  it('dev mode trusts identity headers (forged role denial covered in local auth script)', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Forged Test', adapterType: 'mock' })
+      .expect(201);
+
+    // In dev mode, headers are trusted; a viewer with forged admin header is treated as admin.
+    // Real forged-role denial is verified by verify_delivery_policy_controls.sh in local auth mode.
+    const res = await supertest(server)
+      .patch(`/connector-installations/${created.body.installation.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'admin')
+      .send({ enabled: true })
+      .expect(200);
+    assert.strictEqual(res.body.installation.enabled, true);
+  });
+
+  it('cross-tenant connector installation access is denied', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Cross-tenant Test', adapterType: 'mock' })
+      .expect(201);
+
+    await supertest(server)
+      .get(`/connector-installations/${created.body.installation.id}`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'admin-b')
+      .set('x-user-role', 'admin')
+      .expect(404);
+
+    await supertest(server)
+      .patch(`/connector-installations/${created.body.installation.id}`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'admin-b')
+      .set('x-user-role', 'admin')
+      .send({ enabled: true })
+      .expect(404);
+  });
+
+  it('config secrets are redacted in connector installation responses', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({
+        name: 'Redaction Test',
+        adapterType: 'zammad',
+        config: { apiToken: 'super-secret-123', baseUrl: 'http://localhost:3000', password: 'hunter2' },
+      })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/connector-installations/${created.body.installation.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+
+    assert.strictEqual(res.body.installation.config.apiToken, '[REDACTED]');
+    assert.strictEqual(res.body.installation.config.password, '[REDACTED]');
+    assert.strictEqual(res.body.installation.config.baseUrl, 'http://localhost:3000');
+  });
+
+  it('POST /connector-installations/:id/validate returns mock validation', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Validate Test', adapterType: 'mock' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/validate`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+
+    assert.strictEqual(res.body.result.mode, 'mock');
+    assert.strictEqual(res.body.result.realNetwork, false);
+    assert.strictEqual(res.body.result.writebackEnabled, false);
+  });
+
+  it('POST /connector-installations/:id/test returns mock test result', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Test Endpoint Test', adapterType: 'mock' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/test`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+
+    assert.strictEqual(res.body.result.mode, 'mock');
+    assert.strictEqual(res.body.result.realNetwork, false);
+    assert.strictEqual(res.body.result.writebackEnabled, false);
+  });
 });
 
 describe('Evidence bundle endpoints', () => {

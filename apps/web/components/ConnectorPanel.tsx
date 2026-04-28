@@ -1,7 +1,24 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Plug, CheckCircle, XCircle, RefreshCw, Shield, Settings, Wrench, TestTube } from 'lucide-react';
+import {
+  Loader2,
+  AlertCircle,
+  Plug,
+  CheckCircle,
+  XCircle,
+  RefreshCw,
+  Shield,
+  Settings,
+  Wrench,
+  TestTube,
+  Lock,
+  Eye,
+  ChevronDown,
+  ChevronUp,
+  Save,
+  RotateCcw,
+} from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
 import { api, type ConnectorStatus, type ConnectorTestResult, type ConnectorInstallation, type AuthIdentity, ApiClientError } from '@/lib/api';
@@ -14,8 +31,13 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [installationResults, setInstallationResults] = useState<Record<string, { type: string; result: unknown }>>({});
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Record<string, Partial<ConnectorInstallation>>>({});
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const canTest = identity?.permissions.includes('*') || identity?.permissions.includes('connector_installation:test');
+  const canEdit = identity?.permissions.includes('*') || identity?.permissions.includes('connector_installation:write');
 
   async function fetchStatus() {
     setLoading(true);
@@ -73,6 +95,53 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
     } catch (err) {
       setInstallationResults((prev) => ({ ...prev, [id]: { type: 'test', result: { error: err instanceof ApiClientError ? err.message : 'Test failed' } } }));
     }
+  }
+
+  async function handleSave(id: string) {
+    if (!canEdit) {
+      setSaveError('Viewer role cannot modify connector settings');
+      return;
+    }
+    const updates = editing[id];
+    if (!updates) return;
+    setSavingId(id);
+    setSaveError(null);
+    try {
+      const updated = await api.updateConnectorInstallation(id, updates);
+      setInstallations((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+      setEditing((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    } catch (err) {
+      setSaveError(err instanceof ApiClientError ? err.message : 'Failed to save settings');
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  function handleCancel(id: string) {
+    setEditing((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    setSaveError(null);
+  }
+
+  function toggleField(id: string, field: keyof ConnectorInstallation, value: boolean) {
+    setEditing((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] ?? {}), [field]: value },
+    }));
+  }
+
+  function setField(id: string, field: keyof ConnectorInstallation, value: string | number | string[] | Record<string, unknown> | undefined) {
+    setEditing((prev) => ({
+      ...prev,
+      [id]: { ...(prev[id] ?? {}), [field]: value },
+    }));
   }
 
   useEffect(() => {
@@ -196,69 +265,252 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
           )}
 
           <div className="space-y-2">
-            {installations.map((inst) => (
-              <div
-                key={inst.id}
-                className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-cockpit-100">{inst.name}</span>
-                  <Badge
-                    variant={
-                      inst.status === 'active'
-                        ? 'success'
-                        : inst.status === 'error'
-                        ? 'danger'
-                        : 'warning'
-                    }
-                    className="text-[10px]"
-                  >
-                    {inst.status}
-                  </Badge>
-                </div>
-                <div className="mt-1 text-[10px] text-cockpit-400">
-                  Type: <span className="text-cockpit-200">{inst.adapterType}</span>
-                </div>
-                {Object.keys(inst.safetyFlags).length > 0 && (
-                  <div className="mt-1 flex items-center gap-1 text-[10px] text-cockpit-500">
-                    <Shield size={10} className="text-accent" />
-                    Safety: {Object.entries(inst.safetyFlags)
-                      .map(([k, v]) => `${k}=${String(v)}`)
-                      .join(', ')}
-                  </div>
-                )}
-                {inst.lastError && (
-                  <div className="mt-1 text-[10px] text-danger">{inst.lastError}</div>
-                )}
-                <div className="mt-2 flex items-center gap-2">
-                  <button
-                    onClick={() => handleValidateInstallation(inst.id)}
-                    disabled={!canTest || installationResults[inst.id]?.type === 'validating'}
-                    className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
-                  >
-                    {installationResults[inst.id]?.type === 'validating' ? <Loader2 size={10} className="animate-spin" /> : <Wrench size={10} />}
-                    Validate
-                  </button>
-                  <button
-                    onClick={() => handleTestInstallation(inst.id)}
-                    disabled={!canTest || installationResults[inst.id]?.type === 'testing'}
-                    className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
-                  >
-                    {installationResults[inst.id]?.type === 'testing' ? <Loader2 size={10} className="animate-spin" /> : <TestTube size={10} />}
-                    Test
-                  </button>
-                </div>
-                {(() => {
-                  const res = installationResults[inst.id]?.result;
-                  if (!res) return null;
-                  return (
-                    <div className="mt-1 rounded border border-cockpit-700 bg-cockpit-900/50 p-1.5 text-[10px] text-cockpit-300">
-                      {JSON.stringify(res as Record<string, unknown>, null, 2)}
+            {installations.map((inst) => {
+              const isExpanded = expandedId === inst.id;
+              const edit = editing[inst.id] ?? {};
+              const display = inst.displayName || inst.name;
+              const isSaving = savingId === inst.id;
+
+              return (
+                <div
+                  key={inst.id}
+                  className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-cockpit-100">{display}</span>
+                    <div className="flex items-center gap-1.5">
+                      {!inst.enabled && (
+                        <Badge variant="warning" className="text-[10px]">Disabled</Badge>
+                      )}
+                      <Badge
+                        variant={
+                          inst.status === 'active'
+                            ? 'success'
+                            : inst.status === 'error'
+                            ? 'danger'
+                            : 'warning'
+                        }
+                        className="text-[10px]"
+                      >
+                        {inst.status}
+                      </Badge>
+                      <button
+                        onClick={() => setExpandedId(isExpanded ? null : inst.id)}
+                        className="text-cockpit-400 hover:text-cockpit-200"
+                      >
+                        {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      </button>
                     </div>
-                  );
-                })()}
-              </div>
-            ))}
+                  </div>
+                  <div className="mt-1 text-[10px] text-cockpit-400">
+                    Type: <span className="text-cockpit-200">{inst.adapterType}</span>
+                    {inst.capabilities.length > 0 && (
+                      <span className="ml-2 text-cockpit-500">
+                        ({inst.capabilities.join(', ')})
+                      </span>
+                    )}
+                  </div>
+                  {inst.description && (
+                    <div className="mt-0.5 text-[10px] text-cockpit-500">{inst.description}</div>
+                  )}
+                  {Object.keys(inst.safetyFlags).length > 0 && (
+                    <div className="mt-1 flex items-center gap-1 text-[10px] text-cockpit-500">
+                      <Shield size={10} className="text-accent" />
+                      Safety:{' '}
+                      {Object.entries(inst.safetyFlags)
+                        .map(([k, v]) => `${k}=${String(v)}`)
+                        .join(', ')}
+                    </div>
+                  )}
+                  {inst.lastError && (
+                    <div className="mt-1 text-[10px] text-danger">{inst.lastError}</div>
+                  )}
+                  <div className="mt-2 flex items-center gap-2">
+                    <button
+                      onClick={() => handleValidateInstallation(inst.id)}
+                      disabled={!canTest || installationResults[inst.id]?.type === 'validating'}
+                      className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
+                    >
+                      {installationResults[inst.id]?.type === 'validating' ? <Loader2 size={10} className="animate-spin" /> : <Wrench size={10} />}
+                      Validate
+                    </button>
+                    <button
+                      onClick={() => handleTestInstallation(inst.id)}
+                      disabled={!canTest || installationResults[inst.id]?.type === 'testing'}
+                      className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
+                    >
+                      {installationResults[inst.id]?.type === 'testing' ? <Loader2 size={10} className="animate-spin" /> : <TestTube size={10} />}
+                      Test
+                    </button>
+                  </div>
+
+                  {(() => {
+                    const res = installationResults[inst.id]?.result;
+                    if (!res) return null;
+                    return (
+                      <div className="mt-1 rounded border border-cockpit-700 bg-cockpit-900/50 p-1.5 text-[10px] text-cockpit-300">
+                        {JSON.stringify(res as Record<string, unknown>, null, 2)}
+                      </div>
+                    );
+                  })()}
+
+                  {isExpanded && (
+                    <div className="mt-2 space-y-2 rounded border border-cockpit-700 bg-cockpit-800/30 p-2">
+                      <div className="text-[10px] font-semibold text-cockpit-300">Installation Settings</div>
+
+                      {/* Display name */}
+                      <div className="space-y-0.5">
+                        <label className="text-[10px] text-cockpit-400">Display name</label>
+                        <input
+                          type="text"
+                          disabled={!canEdit || isSaving}
+                          value={edit.displayName !== undefined ? (edit.displayName ?? '') : (inst.displayName ?? '')}
+                          onChange={(e) => setField(inst.id, 'displayName', e.target.value || undefined)}
+                          className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 disabled:opacity-50"
+                        />
+                      </div>
+
+                      {/* Description */}
+                      <div className="space-y-0.5">
+                        <label className="text-[10px] text-cockpit-400">Description</label>
+                        <textarea
+                          disabled={!canEdit || isSaving}
+                          value={edit.description !== undefined ? (edit.description ?? '') : (inst.description ?? '')}
+                          onChange={(e) => setField(inst.id, 'description', e.target.value || undefined)}
+                          rows={2}
+                          className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 disabled:opacity-50"
+                        />
+                      </div>
+
+                      {/* Status */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-cockpit-400">Status</span>
+                        <select
+                          disabled={!canEdit || isSaving}
+                          value={edit.status ?? inst.status}
+                          onChange={(e) => setField(inst.id, 'status', e.target.value)}
+                          className="rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 disabled:opacity-50"
+                        >
+                          <option value="active">active</option>
+                          <option value="inactive">inactive</option>
+                          <option value="error">error</option>
+                        </select>
+                      </div>
+
+                      {/* Enabled toggle */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-cockpit-400">Enabled</span>
+                        <button
+                          disabled={!canEdit || isSaving}
+                          onClick={() => toggleField(inst.id, 'enabled', !(edit.enabled !== undefined ? edit.enabled : inst.enabled))}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                            (edit.enabled !== undefined ? edit.enabled : inst.enabled) ? 'bg-emerald-600' : 'bg-cockpit-600'
+                          } ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                            (edit.enabled !== undefined ? edit.enabled : inst.enabled) ? 'translate-x-5' : 'translate-x-1'
+                          }`} />
+                        </button>
+                      </div>
+
+                      {/* Mock mode - locked ON */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-cockpit-400">Mock mode</span>
+                        <span className="inline-flex items-center gap-1 rounded bg-amber-900/30 px-2 py-0.5 text-[10px] text-amber-300">
+                          <Lock size={10} /> Locked ON
+                        </span>
+                      </div>
+
+                      {/* Validate before write toggle */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-cockpit-400">Validate before write</span>
+                        <button
+                          disabled={!canEdit || isSaving}
+                          onClick={() => {
+                            const currentFlags = edit.safetyFlags ?? inst.safetyFlags;
+                            const nextFlags = { ...currentFlags, validateBeforeWrite: !currentFlags.validateBeforeWrite };
+                            setField(inst.id, 'safetyFlags', nextFlags);
+                          }}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                            (edit.safetyFlags ?? inst.safetyFlags).validateBeforeWrite ? 'bg-emerald-600' : 'bg-cockpit-600'
+                          } ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                            (edit.safetyFlags ?? inst.safetyFlags).validateBeforeWrite ? 'translate-x-5' : 'translate-x-1'
+                          }`} />
+                        </button>
+                      </div>
+
+                      {/* Timeout */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-cockpit-400">Timeout (ms)</span>
+                        <input
+                          type="number"
+                          disabled={!canEdit || isSaving}
+                          min={1000}
+                          max={60000}
+                          value={edit.timeoutMs !== undefined ? (edit.timeoutMs ?? '') : (inst.timeoutMs ?? '')}
+                          onChange={(e) => setField(inst.id, 'timeoutMs', e.target.value ? Number(e.target.value) : undefined)}
+                          className="w-20 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 text-center disabled:opacity-50"
+                        />
+                      </div>
+
+                      {/* Capabilities - read only */}
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] text-cockpit-400">Capabilities</span>
+                        <div className="flex flex-wrap gap-1">
+                          {inst.capabilities.map((cap) => (
+                            <span key={cap} className="rounded bg-cockpit-700 px-1.5 py-0.5 text-[10px] text-cockpit-200">
+                              {cap}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Secrets placeholder */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-cockpit-400">Credentials</span>
+                        <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-500">
+                          <Lock size={10} />
+                          •••••••• (managed server-side)
+                        </span>
+                      </div>
+
+                      {saveError && isExpanded && (
+                        <div className="text-[10px] text-danger">{saveError}</div>
+                      )}
+
+                      {canEdit ? (
+                        <div className="flex items-center gap-2 pt-1">
+                          <button
+                            onClick={() => handleSave(inst.id)}
+                            disabled={isSaving || !editing[inst.id]}
+                            className="inline-flex items-center gap-1 rounded bg-accent px-2 py-0.5 text-[10px] font-medium text-white hover:bg-accent-dark disabled:opacity-50"
+                          >
+                            {isSaving && <Loader2 size={10} className="animate-spin" />}
+                            <Save size={10} />
+                            Save
+                          </button>
+                          <button
+                            onClick={() => handleCancel(inst.id)}
+                            disabled={isSaving}
+                            className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
+                          >
+                            <RotateCcw size={10} />
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-cockpit-500">
+                          <Eye size={10} className="inline mr-1" />
+                          View-only. Admin role required to modify installation settings.
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

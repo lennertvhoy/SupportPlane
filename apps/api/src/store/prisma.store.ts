@@ -894,11 +894,17 @@ export class PrismaStore implements Store {
         id: installation.id,
         tenantId: installation.tenantId,
         name: installation.name,
+        displayName: installation.displayName ?? null,
+        description: installation.description ?? null,
         adapterType: installation.adapterType,
+        capabilities: installation.capabilities,
         config: json(installation.config),
         secretReferenceIds: installation.secretReferenceIds,
         status: installation.status,
+        mockMode: installation.mockMode,
+        enabled: installation.enabled,
         safetyFlags: json(installation.safetyFlags),
+        timeoutMs: installation.timeoutMs ?? null,
         lastVerifiedAt: installation.lastVerifiedAt ? new Date(installation.lastVerifiedAt) : null,
         lastError: installation.lastError ?? null,
         createdAt: dateOrNow(installation.createdAt),
@@ -906,11 +912,17 @@ export class PrismaStore implements Store {
       },
       update: {
         name: installation.name,
+        displayName: installation.displayName ?? null,
+        description: installation.description ?? null,
         adapterType: installation.adapterType,
+        capabilities: installation.capabilities,
         config: json(installation.config),
         secretReferenceIds: installation.secretReferenceIds,
         status: installation.status,
+        mockMode: installation.mockMode,
+        enabled: installation.enabled,
         safetyFlags: json(installation.safetyFlags),
+        timeoutMs: installation.timeoutMs ?? null,
         lastVerifiedAt: installation.lastVerifiedAt ? new Date(installation.lastVerifiedAt) : null,
         lastError: installation.lastError ?? null,
         updatedAt: dateOrNow(installation.updatedAt),
@@ -938,11 +950,17 @@ export class PrismaStore implements Store {
     id: string;
     tenantId: string;
     name: string;
+    displayName: string | null;
+    description: string | null;
     adapterType: string;
+    capabilities: string[];
     config: unknown;
     secretReferenceIds: string[];
     status: string;
+    mockMode: boolean;
+    enabled: boolean;
     safetyFlags: unknown;
+    timeoutMs: number | null;
     lastVerifiedAt: Date | null;
     lastError: string | null;
     createdAt: Date;
@@ -952,11 +970,17 @@ export class PrismaStore implements Store {
       id: row.id as ConnectorInstallationShape['id'],
       tenantId: row.tenantId as ConnectorInstallationShape['tenantId'],
       name: row.name,
+      displayName: row.displayName ?? undefined,
+      description: row.description ?? undefined,
       adapterType: row.adapterType,
+      capabilities: row.capabilities,
       config: row.config as Record<string, unknown>,
       secretReferenceIds: row.secretReferenceIds,
       status: row.status as ConnectorInstallationShape['status'],
+      mockMode: row.mockMode,
+      enabled: row.enabled,
       safetyFlags: row.safetyFlags as Record<string, unknown>,
+      timeoutMs: row.timeoutMs ?? undefined,
       lastVerifiedAt: toISO(row.lastVerifiedAt),
       lastError: row.lastError ?? undefined,
       createdAt: toISO(row.createdAt)!,

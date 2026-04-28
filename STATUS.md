@@ -1,23 +1,22 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-28 14:40 CEST
+**Updated At:** 2026-04-28 15:30 CEST
 **Execution Mode:** operating
-**Project State:** bl_094_delivery_policy_controls_max20_closure_complete
+**Project State:** bl_095_connector_installation_settings_foundation_in_progress
 **Public URL:** not configured
 
 ## Snapshot
 
-- BL-094 is **closure complete** after governance repair. Max-20 screenshot proof in `session-095-bl094-final-closure-max20/`. `AGENTS.md` now enforces a hard 20-screenshot cap, mandatory backlog currency rule, and reconciled `BACKLOG.md` for BL-001–BL-094. Future work remains clearly planned.
-- DeliveryPolicy model stores tenant-scoped policy state with ordered evaluation gates. All decisions return `realNetworkAllowed: false`, `writebackEnabled: false`, `externalWriteAllowed: false`; real writeback remains structurally impossible.
-- ActionsService.queue() and processClaimedOutbox() enforce policy before queue/processing; blocked actions create `delivery_policy_blocked` audit events and dead-letter attempts. Connector readiness returns `readyForRealWriteback: false`. Admin can update safe policy fields; viewer sees read-only panel. Real writeback toggle requests return 400.
-- Evidence bundle includes `deliveryPolicies` summaries with `mockOnlyEnforced: true`, `realNetworkAllowed: false`, and safety flags.
+- BL-095 is **in progress**. Schema migration applied, API endpoints enhanced, web UI settings panel implemented, tests added, verification script updated.
+- ConnectorInstallation model now includes `displayName`, `description`, `capabilities`, `mockMode`, `enabled`, `timeoutMs`. Seed data updated with new fields and honest mock labels.
+- Admin can PATCH safe connector installation settings; viewer is denied server-side. Config secrets (`apiToken`, `password`, etc.) are redacted to `[REDACTED]` in all GET responses.
+- Cross-tenant connector installation access returns 404. Evidence bundle includes new connector installation fields.
+- Delivery policy controls (BL-094) remain accepted. All delivery decisions still return `realNetworkAllowed: false`.
 - PostgreSQL/local-auth baseline remains active: API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
-- Accepted prior foundations remain BL-018 local auth/RBAC/tenant boundaries, BL-020 ticket/customer/connector safety, BL-050 PostgreSQL persistence, BL-091 support case workflow foundation, BL-092 durable action/outbox workflow, and BL-093 background outbox worker retry/dead-letter foundation.
-- All delivery behavior is local PostgreSQL-backed mock processing. No real Zammad writeback, email sending, telephony, AI provider, external broker-backed queue, object storage, raw media storage, production audit immutability, compliance certification, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment is implemented.
 
 ## Immediate Priorities
 
-1. BL-094 is closed. Next likely MVP slice is configurable connector installation settings or production readiness hardening.
+1. Complete BL-095 validation gate, browser evidence capture, and state/doc updates.
 
 ## Active Blockers
 
@@ -25,14 +24,15 @@
 - No real external integrations exist yet.
 - Local MVP auth exists for PostgreSQL mode, but no production SSO/OAuth/SAML/OIDC, MFA, password reset, rate limiting, or hardened auth exists.
 - Mock AI draft and greeting generation are deterministic and dev-only; no real AI provider is connected.
-- No real telephony or PBX integration exists; BL-044 adds only a mock adapter boundary and local mock control intents.
-- No real audio recording, playback, or storage exists; BL-045 adds only mock metadata and audit placeholders.
-- No real screen capture, raw pixels, clipboard access, OCR, or desktop monitoring exists; BL-046 adds only mock metadata and audit placeholders.
-- Durable action/outbox workflow is local PostgreSQL state and synchronous mock delivery only; it is not a production queue.
-- Delivery policy controls enforce mock-only safety but do not implement real writeback readiness; real writeback requires future connector credential management, network path validation, and tenant admin configuration.
+- No real telephony or PBX integration exists.
+- No real audio recording, playback, or storage exists.
+- No real screen capture, raw pixels, clipboard access, OCR, or desktop monitoring exists.
+- Durable action/outbox workflow is local PostgreSQL state and synchronous mock delivery only.
+- Delivery policy controls enforce mock-only safety but do not implement real writeback readiness.
+- No production credential broker or encrypted secret storage exists.
 
 ## Notes
 
-- Use `prompts/OPERATING_LOOP_START_PROMPT.md` to start the CTO/coding-agent operating loop from the completed planning backlog.
+- Use `prompts/OPERATING_LOOP_START_PROMPT.md` to start the CTO/coding-agent operating loop.
 - Do not claim any external integration is implemented until directly verified.
 - Do not accept user-facing behavior without runtime identity proof and evidence.

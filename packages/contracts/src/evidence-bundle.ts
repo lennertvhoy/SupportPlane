@@ -37,9 +37,14 @@ export type EvidenceBundleCustomerSummary = z.infer<typeof EvidenceBundleCustome
 export const EvidenceBundleConnectorInstallationSummary = z.object({
   id: EntityId,
   name: z.string(),
+  displayName: z.string().optional(),
   adapterType: z.string(),
+  capabilities: z.array(z.string()).default([]),
   status: z.string(),
+  mockMode: z.boolean().default(true),
+  enabled: z.boolean().default(false),
   safetyFlags: z.record(JsonValue),
+  timeoutMs: z.number().optional(),
   lastVerifiedAt: Timestamp.optional(),
   lastError: z.string().optional(),
 });
