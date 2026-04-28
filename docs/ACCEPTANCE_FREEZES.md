@@ -892,8 +892,9 @@ and must be protected from quiet regression.
   - EV-2026-04-28-009
   - EV-2026-04-28-010
   - EV-2026-04-28-011
-- evidence_folder: output/playwright/session-094-delivery-policy-controls-final-closure/
+- evidence_folder: output/playwright/session-095-bl094-final-closure-max20/
 - screenshot_count: 20
+- governance_repair_note: prior closure used 24 screenshots in session-094-delivery-policy-controls-final-closure/, violating AGENTS.md cap. this acceptance freeze updated to the canonical max-20 folder after governance repair.
 - validation_summary:
   - `npm install` passed; npm reported 10 vulnerabilities (8 moderate, 2 high), treated as pre-existing audit debt.
   - `npm run lint`, `npm run typecheck --workspaces --if-present`, `npm run validate`, and `npm run health` passed.

@@ -1,5 +1,7 @@
 # BL-094 Final Handoff — Delivery Policy Controls & Evidence Bundle Integration
 
+> **SUPERSEDED by governance repair (2026-04-28):** This handoff documented a 24-screenshot closure that violated the AGENTS.md screenshot cap. The canonical max-20 proof is now in `output/playwright/session-095-bl094-final-closure-max20/`. See `WORKLOG.md` entry "BL-094 Governance Repair and Max-20 Closure Hygiene Pass" for the repair details.
+
 ## 1. Commits
 
 - `d59055aa522a2406698f2cba99dd3fbd6373b26f` — BL-094 closure repair: 24 unique screenshots, AGENTS.md cap override, fixed session selection

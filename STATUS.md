@@ -1,16 +1,16 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-28 13:16 CEST
+**Updated At:** 2026-04-28 14:40 CEST
 **Execution Mode:** operating
-**Project State:** bl_094_delivery_policy_controls_final_closure
+**Project State:** bl_094_delivery_policy_controls_max20_closure_complete
 **Public URL:** not configured
 
 ## Snapshot
 
-- BL-094 Connector writeback readiness gates and delivery policy controls is **final-closure complete**. DeliveryPolicy model stores tenant-scoped policy state with ordered evaluation gates. All decisions return `realNetworkAllowed: false`, `writebackEnabled: false`, `externalWriteAllowed: false`; real writeback remains structurally impossible.
+- BL-094 is **closure complete** after governance repair. Max-20 screenshot proof in `session-095-bl094-final-closure-max20/`. `AGENTS.md` now enforces a hard 20-screenshot cap, mandatory backlog currency rule, and reconciled `BACKLOG.md` for BL-001–BL-094. Future work remains clearly planned.
+- DeliveryPolicy model stores tenant-scoped policy state with ordered evaluation gates. All decisions return `realNetworkAllowed: false`, `writebackEnabled: false`, `externalWriteAllowed: false`; real writeback remains structurally impossible.
 - ActionsService.queue() and processClaimedOutbox() enforce policy before queue/processing; blocked actions create `delivery_policy_blocked` audit events and dead-letter attempts. Connector readiness returns `readyForRealWriteback: false`. Admin can update safe policy fields; viewer sees read-only panel. Real writeback toggle requests return 400.
 - Evidence bundle includes `deliveryPolicies` summaries with `mockOnlyEnforced: true`, `realNetworkAllowed: false`, and safety flags.
-- Browser proof: `output/playwright/session-094-delivery-policy-controls-final-closure/` with 20 screenshots covering login, admin cockpit header, policy panel, writeback locked, policy update, connector readiness, outbox queued/allowed, worker status mock-only, queue blocked by kill switch, case timeline policy events, audit trail, evidence bundle summary/JSON, logout, viewer read-only, viewer toggle blocked, cross-tenant denied, relogin policy preserved, persistence outbox, and final no-real-writeback proof.
 - PostgreSQL/local-auth baseline remains active: API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
 - Accepted prior foundations remain BL-018 local auth/RBAC/tenant boundaries, BL-020 ticket/customer/connector safety, BL-050 PostgreSQL persistence, BL-091 support case workflow foundation, BL-092 durable action/outbox workflow, and BL-093 background outbox worker retry/dead-letter foundation.
 - All delivery behavior is local PostgreSQL-backed mock processing. No real Zammad writeback, email sending, telephony, AI provider, external broker-backed queue, object storage, raw media storage, production audit immutability, compliance certification, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment is implemented.

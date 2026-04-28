@@ -646,6 +646,38 @@
 - Type: docs-render-verification
 - as_of: 2026-04-26T23:20:00+02:00
 
+## EV-2026-04-28-020 through EV-2026-04-28-039: BL-094 max-20 governance repair closure proof
+
+- Files: `output/playwright/session-095-bl094-final-closure-max20/01-login-local-auth.png` through `20-final-mock-no-secret-proof.png`
+- Source/System: visible Chromium via Playwright CLI against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - local login page and authenticated admin cockpit header with user/tenant/role/API/auth/store/mock mode
+  - delivery policy panel with safe defaults, mock-only enforced, real network locked off
+  - admin policy update with saved version/actor visible
+  - connector readiness showing mock-ready and real-writeback-not-ready
+  - queue allowed path with policy decision visible
+  - delivery operations/worker status showing mock mode, policy mode, queue stats
+  - queue blocked by kill switch/policy
+  - worker process blocked/dead-lettered by policy
+  - worker process allowed in mock mode with attempt detail, policy/version/safety flags
+  - case timeline showing policy/worker decision events
+  - audit trail showing policy updated, policy decision, blocked/allowed events
+  - evidence bundle summary showing delivery policy provenance
+  - evidence bundle JSON showing no secrets/tokens/password hashes/raw media and safety flags
+  - viewer role can inspect policy but controls are disabled/read-only
+  - direct forbidden mutation / viewer server-side RBAC denial shown via UI/API evidence
+  - cross-tenant access denied
+  - logout and re-login proof with preserved policy state
+  - API restart/persistence proof for policy/outbox state
+  - final no-real-writeback/no-secret/local-mock proof
+- Proves:
+  - BL-094 closure proof satisfies the hard 20-screenshot cap after governance repair
+  - 0 duplicate MD5 hashes across all 20 screenshots
+  - Supersedes prior 24-screenshot session-094 folder (deleted)
+- Type: browser-runtime-verification
+- as_of: 2026-04-28T14:41:00+02:00
+
 ## Entry Format
 
 ```yaml
@@ -1494,41 +1526,43 @@
 
 ## EV-2026-04-28-012 through EV-2026-04-28-031: BL-094 Final Closure — 20 Screenshot Set
 
-- Files: `output/playwright/session-094-delivery-policy-controls-final-closure/01-login-local-auth.png` through `20-final-no-real-writeback-proof.png`
+- Files: `output/playwright/session-095-bl094-final-closure-max20/01-login-local-auth.png` through `20-final-mock-no-secret-proof.png`
+- Governance repair note: prior entry referenced `session-094-delivery-policy-controls-final-closure/` which contained 24 screenshots (violating AGENTS.md cap). Updated to canonical max-20 folder after governance repair.
 - Source/System: visible Chromium via Playwright script against `http://localhost:3200` and `http://localhost:4110`
 - Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
 - Shows:
   - 01: local login page with tenant/email/password fields
-  - 02: admin cockpit header with DEV/MOCK badges and identity pill
-  - 03: admin Delivery Policy panel with kill switch, approval required, mock-only locked ON, real network locked OFF
-  - 04: real writeback controls showing "Locked OFF" badges
-  - 05: admin toggling approval required (safe field update)
-  - 06: connector readiness check returning `readyForRealWriteback: false`
-  - 07: outbox monitor showing queued action with `policyDecision: mock_only_allowed`
-  - 08: worker status showing mock-only mode, local PostgreSQL worker foundation
-  - 09: action outbox for session blocked by kill switch (API returned `blocked_by_kill_switch`)
-  - 10: case timeline showing `delivery_policy_evaluated` events
-  - 11: audit trail showing `delivery_policy_evaluated` and `delivery_policy_blocked` events
-  - 12: evidence bundle summary with Delivery Policies count
-  - 13: evidence bundle JSON showing `deliveryPolicies` array with `mockOnlyEnforced: true`, `realNetworkAllowed: false`, safety flags
-  - 14: logout state returning to login form
-  - 15: viewer read-only policy panel (no editable controls)
-  - 16: viewer attempting to toggle kill switch (control remains disabled/no-op)
+  - 02: admin cockpit header with DEV/MOCK badges, identity pill, auth mode, store mode
+  - 03: admin Delivery Policy panel with safe defaults, mock-only locked ON, real network locked OFF
+  - 04: admin policy update with approval toggled ON, saved version/actor visible
+  - 05: connector readiness check returning mock ready, real writeback not ready
+  - 06: Action Center queued action with policy decision visible
+  - 07: Delivery Operations worker status showing mock mode, queue stats, safety flags
+  - 08: queue blocked by kill switch with API error visible
+  - 09: worker process dead-lettered after process-once with kill switch enabled
+  - 10: worker process allowed in mock mode with attempt detail and safety flags
+  - 11: case timeline showing policy/worker decision events
+  - 12: audit trail showing delivery_policy_updated, delivery_policy_evaluated, delivery_policy_blocked events
+  - 13: evidence bundle summary showing delivery policy provenance
+  - 14: evidence bundle JSON showing no secrets, safety flags, mock-only enforcement
+  - 15: viewer read-only policy panel with disabled controls and view-only message
+  - 16: viewer server-side RBAC denial via "Prove server-side approval denial" button
   - 17: cross-tenant admin denied access to dev-tenant session
-  - 18: relogin as admin showing preserved policy state
-  - 19: outbox persistence after logout/relogin cycle
-  - 20: final no-real-writeback proof with all safety flags visible
+  - 18: relogin as admin showing preserved policy state after logout
+  - 19: persistence proof — outbox state survives full page reload and re-login
+  - 20: final no-real-writeback/no-secret/local-mock proof with cockpit header
 - Proves:
   - BL-094 delivery policy controls are visible, enforced at queue and process time, and produce audit/dead-letter artifacts.
   - Both allowed (`mock_only_allowed`) and blocked (`blocked_by_kill_switch`) paths are proven.
   - Admin and viewer roles are differentiated in the UI with server-side enforcement.
   - Cross-tenant access is denied.
   - Evidence bundles include policy provenance without secrets.
-  - Policy state persists across logout/relogin.
+  - Policy and outbox state persist across logout/relogin and page reload.
 - Type: docs-render-verification
 - as_of: 2026-04-28T13:25:00+02:00
 
 ## Note: Superseded Evidence
 
 - EV-2026-04-28-006 through EV-2026-04-28-011 (foundation screenshots in `session-094-delivery-policy-controls-foundation/`) are superseded by EV-2026-04-28-012 through EV-2026-04-28-031.
-- The old screenshot folder was deleted per AGENTS.md screenshot lifecycle rules.
+- EV-2026-04-28-012 through EV-2026-04-28-031 were originally recorded against `session-094-delivery-policy-controls-final-closure/` (24 screenshots, cap violation). The canonical proof is now `session-095-bl094-final-closure-max20/` (20 screenshots, 0 duplicates).
+- The old `session-094-delivery-policy-controls-final-closure/` folder was deleted per AGENTS.md screenshot lifecycle rules.

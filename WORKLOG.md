@@ -4,6 +4,66 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-28 - BL-094 Governance Repair and Max-20 Closure Hygiene Pass
+
+**Type:** governance_repair_and_closure_hygiene
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** f950a11586caf21190c00580cdceffebdf419d15
+**Worktree:** dirty_before_governance_commit
+
+### What changed
+
+- `AGENTS.md`: added mandatory **Backlog Currency Rule** requiring every closure session to reconcile `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `WORKLOG.md`, `docs/EVIDENCE_LOG.md`, and `docs/ACCEPTANCE_FREEZES.md`. A backlog item may not be called complete if `BACKLOG.md` still lists it as future/planned without an honest status marker.
+- `AGENTS.md`: changed Screenshot Budget and Quality Rule from a default-20 soft cap to a **hard cap of max 20 screenshots per backlog item, always**. No prompt may override this cap. Combined proof states and mapping tables are required when more than 20 states are requested.
+- `BACKLOG.md`: reconciled all BL-001 through BL-094 items with honest status markers (`[accepted]`, `[partial/local-mock]`, `[superseded by BL-xxx]`, `[planned]`). Removed stale "future work" presentation for already-implemented slices. Added explicit non-claims for mock-only and not-yet-started items.
+- `STATUS.md`: updated snapshot to reflect BL-094 closure complete after governance repair, max-20 screenshot proof, and backlog reconciliation.
+- `NEXT_ACTIONS.md`: cleared closed history; active queue now empty awaiting CTO direction.
+- `PROJECT_STATE.yaml`: updated `bl_094_status` to `closure_complete_after_governance_repair`, changed screenshot folder to `session-095-bl094-final-closure-max20/`, added `governance_repair` metadata, updated `updated_at` and `head`.
+- Deleted superseded screenshot folder `output/playwright/session-094-delivery-policy-controls-final-closure/`.
+- Created canonical screenshot folder `output/playwright/session-095-bl094-final-closure-max20/` with exactly 20 unique screenshots and zero duplicates.
+- `scripts/bl094_screenshots.js`: hard-fail enforcement for max 20 screenshots and duplicate filenames; outputs proof-state mapping table; runs `md5sum` duplicate detection.
+
+### Verification
+
+- Screenshot script `scripts/bl094_screenshots.js` ran successfully and captured exactly 20 screenshots.
+- `md5sum` duplicate detection reported 0 duplicate hashes across all 20 screenshots.
+- Old `session-094-delivery-policy-controls-final-closure/` folder deleted.
+- All state files updated and consistent with reconciled backlog.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-095-bl094-final-closure-max20/`
+  - `01-login-local-auth.png` — Login page in local auth mode
+  - `02-admin-cockpit-header.png` — Authenticated admin cockpit header
+  - `03-delivery-policy-safe-defaults.png` — Delivery policy panel safe defaults
+  - `04-policy-update-saved.png` — Admin policy update with saved version/actor
+  - `05-connector-readiness-mock-only.png` — Connector readiness mock-only
+  - `06-queue-allowed-policy-decision.png` — Queue allowed path with policy decision
+  - `07-delivery-operations-worker-status.png` — Delivery operations/worker status
+  - `08-queue-blocked-killswitch.png` — Queue blocked by kill switch
+  - `09-worker-deadlettered-policy.png` — Worker dead-lettered by policy
+  - `10-worker-allowed-mock-detail.png` — Worker allowed in mock mode with attempt detail
+  - `11-case-timeline-policy-events.png` — Case timeline policy events
+  - `12-audit-trail-policy-events.png` — Audit trail policy events
+  - `13-evidence-bundle-summary.png` — Evidence bundle summary with policy provenance
+  - `14-evidence-bundle-json-safety.png` — Evidence bundle JSON safety/no secrets
+  - `15-viewer-readonly-policy.png` — Viewer read-only policy panel
+  - `16-viewer-rbac-denial.png` — Viewer server-side RBAC denial
+  - `17-cross-tenant-denied.png` — Cross-tenant access denied
+  - `18-logout-relogin-policy-preserved.png` — Logout/re-login with preserved policy
+  - `19-persistence-outbox-state.png` — Persistence/outbox state after reload
+  - `20-final-mock-no-secret-proof.png` — Final no-real-writeback/no-secret/local-mock proof
+
+### Remaining Risk
+
+- All behavior remains local/mock-only with visible UI warnings.
+- Real writeback remains impossible; all policy decisions return `realNetworkAllowed: false`.
+- No real external integrations, queue workers, or production delivery exists.
+
+---
+
 ## 2026-04-28 - BL-094 Connector Writeback Readiness Gates and Delivery Policy Controls
 
 **Type:** implementation

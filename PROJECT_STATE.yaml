@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-28T11:33:00+02:00
+  updated_at: 2026-04-28T14:40:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: b93061e347e15d0f9b63a16418e422fae2002ccf
-    worktree_status: clean
+    head: f950a11586caf21190c00580cdceffebdf419d15
+    worktree_status: dirty_before_governance_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -453,7 +453,7 @@ current_state:
         - backend suppresses outbox items until queued/delivered/failed; frontend scopes attempt history by supportActionId
     bl_094_status:
       completed: true
-      status: closure_ready
+      status: closure_complete_after_governance_repair
       scope: connector_writeback_readiness_gates_and_delivery_policy_controls
       backlog_id: BL-094
       contracts_package: packages/contracts
@@ -474,10 +474,17 @@ current_state:
         - PATCH /delivery-policies/:id
         - POST /delivery-policies/:id/validate
         - POST /delivery-policies/:id/connector-readiness
-      screenshot_folder: output/playwright/session-094-delivery-policy-controls-final-closure/
+      screenshot_folder: output/playwright/session-095-bl094-final-closure-max20/
       screenshot_count: 20
       validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
-      final_closure_commit: b93061e347e15d0f9b63a16418e422fae2002ccf
+      governance_repair:
+        reason: prior closure violated AGENTS.md screenshot cap (24 screenshots) and stale BACKLOG.md
+        actions:
+          - AGENTS.md updated with hard 20-screenshot cap and backlog currency rule
+          - BACKLOG.md reconciled with accepted/superseded/partial markers for BL-001 through BL-094
+          - Old screenshot folder session-094-delivery-policy-controls-final-closure/ deleted
+          - New canonical folder session-095-bl094-final-closure-max20/ created with 20 unique screenshots
+      final_closure_commit: pending_this_session_commit
       notes:
         - delivery policy evaluation gates (in order): killSwitch → enabled → allowedActionTypes → approvalRequired → minimumApproverRole → requireHumanReview → requireEvidenceBundle → requireConnectorValidation
         - all policy decisions return realNetworkAllowed=false, writebackEnabled=false, externalWriteAllowed=false

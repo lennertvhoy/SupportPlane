@@ -37,6 +37,12 @@ These rules apply in all modes:
   if a canonical or final proof set supersedes an earlier partial folder,
   delete the old folder and update all doc references. do not leave multiple
   folders for the same backlog item
+- **backlog currency rule:** every closure session must reconcile `BACKLOG.md`,
+  `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `WORKLOG.md`,
+  `docs/EVIDENCE_LOG.md`, and `docs/ACCEPTANCE_FREEZES.md` before claiming
+  closure-grade complete. a backlog item may not be called complete if
+  `BACKLOG.md` still lists it as future or planned without an honest status
+  marker. superseded items must be marked as superseded, not left as future work.
 - active queue stays short
 - history belongs in `WORKLOG.md`, not live state files
 - structured state must remain machine-checkable
@@ -283,13 +289,24 @@ exact commands and pass/fail results.
 
 ### Screenshot budget and quality rule (mandatory)
 
-- Default screenshot budget is 20 per backlog item. This is a default, not a hard
-  ceiling that overrides explicit closure requirements.
-- If a closure prompt explicitly requires specific proof states, those required
-  states take precedence over the default cap. Capture every required state.
-- If a required proof state is omitted, the handoff must explicitly map it to
-  another valid artifact (e.g., API response log, test output, curl result) or
-  state why it is not applicable.
+- **Max 20 screenshots per backlog item, always.** No prompt, closure requirement,
+  or explicit proof-state list may override this hard cap.
+- If more than 20 proof states are requested, the coding agent must:
+  - combine multiple proof states into composite screenshots where possible,
+  - use API/CLI validation artifacts for non-visual checks,
+  - and provide a proof-state mapping table showing how each required state is
+    covered by one of the max-20 screenshots, a CLI artifact, a committed test,
+    or a documented not-applicable reason.
+- One backlog item gets exactly one canonical screenshot folder under
+  `output/playwright/`. Name it clearly (e.g.
+  `session-046-operator-companion-closure-canonical/`).
+- If a canonical or final proof set supersedes an earlier partial folder,
+  delete the old folder and update all doc references. Do not leave multiple
+  folders for the same backlog item.
+- Duplicate screenshots are only allowed if explicitly justified, but should
+  normally be avoided. After capture, run duplicate detection (e.g. `md5sum`)
+  and report results. Unexplained duplicate screenshots fail closure.
+- Screenshot labels (filenames) must match visible content.
 - Screenshots must be sequentially numbered with descriptive kebab-case names.
 - Each screenshot must show a distinct state, interaction, or panel; redundant
   near-identical captures of the same unchanged page are unacceptable.
