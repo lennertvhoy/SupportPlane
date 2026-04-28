@@ -865,7 +865,7 @@ and must be protected from quiet regression.
 - Scope: Tenant-scoped DeliveryPolicy model with Prisma migration, policy evaluation service with ordered gates (killSwitch → enabled → allowedActionTypes → approvalRequired → minimumApproverRole → requireHumanReview → requireEvidenceBundle → requireConnectorValidation), connector readiness check returning readyForRealWriteback=false, policy enforcement in ActionsService.queue() and processClaimedOutbox(), real writeback toggle blocked with 400, admin/viewer policy panel in Support Cockpit, delivery_policy:read/write RBAC, policy audit events (delivery_policy_evaluated, delivery_policy_blocked), evidence bundle policy provenance, and verification script with 14 checks.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
-- final_closure_commit: b93061e347e15d0f9b63a16418e422fae2002ccf
+- final_closure_commit: 93afe787847964b666e502d083b0dbc63cc79d86
 - process_or_container:
   - node process (NestJS API via tsx) on port 4110
   - node process (Next.js dev) on port 3200

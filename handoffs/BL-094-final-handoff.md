@@ -21,7 +21,7 @@ BL-094 is closure-grade after governance repair. The previous closure captured 2
 
 - **Repo path:** /home/ff/Documents/Projects/SupportPlane
 - **Branch:** main
-- **Head:** COMMIT_HASH_PLACEHOLDER
+- **Head:** 93afe787847964b666e502d083b0dbc63cc79d86
 - **Worktree:** clean
 
 ## 4. AGENTS.md governance update
@@ -224,7 +224,7 @@ BL-094 is closure-grade after governance repair. The previous closure captured 2
 
 ## 22. Commit information
 
-- **Final commit:** COMMIT_HASH_PLACEHOLDER
+- **Final commit:** 93afe787847964b666e502d083b0dbc63cc79d86
 - **Message:** BL-094 closure: enforce max-20 final proof
 
 ## 23. Remaining risks or limitations
