@@ -2024,3 +2024,74 @@ CTO-identified closure blockers from prior handoff:
 - Policy evaluation uses a hardcoded default fallback (`mock_only_allowed`) for dev-mode compatibility when no DB policy exists.
 - No production queue semantics, external broker, or distributed worker infrastructure exists.
 - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment implemented.
+
+
+## 2026-04-28 — BL-095 Closure: Connector Installation Settings Foundation
+
+### Commits
+
+- `9470173a392bc8fa078be65ae4489ba08e8e2263` — BL-095: Connector Installation Settings Foundation (16 files changed, 784 insertions, 109 deletions)
+
+### Worktree
+
+```
+## main...origin/main
+ M .env
+```
+
+(`.env` is gitignored; changes are local dev env vars only.)
+
+### What Changed
+
+- Prisma schema: added `displayName`, `description`, `capabilities`, `enabled`, `mockMode`, `timeoutMs` to `ConnectorInstallation`; created migration `20260428131300_bl095_connector_installation_settings` and applied it.
+- Contracts: updated `ConnectorInstallation`, `ConnectorInstallationCreateRequest`, `ConnectorInstallationUpdateRequest` with new fields and Zod validation.
+- Evidence bundle contracts: `EvidenceBundleConnectorInstallationSummary` expanded with `displayName`, `capabilities`, `mockMode`, `enabled`, `timeoutMs`.
+- Store layer: `PrismaStore` and `InMemoryStore` map all new fields in create/update/select.
+- API service: `ConnectorInstallationsService.updateInstallation` validates updates, enforces mock-only safety (rejects `mockMode: false` and enabling non-mock connectors), applies audit events.
+- API controller: `PATCH /connector-installations/:id` uses Zod-parsed `ConnectorInstallationUpdateRequest` for body validation.
+- Web UI: `ConnectorPanel` enhanced with per-installation expandable Settings form, `canEdit` RBAC gating, mock-mode badges, secret placeholder (`••••••••`), inline JSON validation for config/safetyFlags.
+- API tests: added admin update, viewer 403 denial, forged role header ignored, cross-tenant 404 denial, config secret redaction, POST validate/test endpoint coverage. Total: 124 tests passing, 0 failures.
+- Verification script: fixed local auth `/auth/me` header passing, jq array handling in step 5, removed `-f` from curl for expected 403/404 responses.
+- `.env`: restored missing `API_PORT`, `SUPPORTPLANE_AUTH_MODE`, `SUPPORTPLANE_STORE`, and other dev defaults.
+
+### Verification
+
+- `cd apps/api && npm test` — 124/124 pass, 0 fail
+- `cd apps/web && npm run typecheck` — pass (no errors)
+- `cd apps/api && npm run typecheck` — pass
+- `npx prisma migrate status` — pass; 7 migrations up to date
+- `npx prisma db seed` — pass
+- `scripts/verify_ticket_context_connector.sh` — pass (14 checks)
+  - Step 5: `Local Zammad Mock mockMode=true enabled=true capabilities=2`
+  - Step 6: `Updated Zammad Mock enabled=true timeout=9999`
+  - Step 7: `403` (viewer denied)
+  - Step 8: `404` (cross-tenant denied)
+  - Step 9: `false` (readiness mock-only)
+  - Step 10: `1` (evidence bundle includes connectorInstallations)
+  - Step 11: `true` (BL-095 fields present in evidence bundle)
+  - Step 12: `[REDACTED]` (config secrets redacted)
+
+### Evidence Inventory
+
+- Screenshot folder: `output/playwright/session-095-connector-installation-settings/`
+- Screenshot count: 8
+- Evidence refs: EV-2026-04-28-036 through EV-2026-04-28-043
+  - 01: Admin dashboard showing connector panel with installations
+  - 02: Admin connector panel expanded with editable installation settings
+  - 03: Admin full-page view
+  - 04: Connector settings focus (displayName, description, status, enabled, mockMode locked, validateBeforeWrite, timeout, capabilities, credentials placeholder)
+  - 05: Viewer settings read-only (all fields disabled)
+  - 06: Admin validation result showing mock validation JSON
+  - 07: Evidence bundle JSON tab showing connectorInstallations data
+  - 08: Evidence bundle summary showing Connectors count = 1
+
+### Risks and Limitations
+
+- No real credential broker or encrypted secret storage exists. `secretReferenceIds` are placeholders; credentials are stored in `config` JSON server-side and redacted in responses.
+- The global `/connectors/zammad/*` singleton (env-driven) remains separate from the per-tenant DB-backed `ConnectorInstallation`. Wiring the global connector to `ConnectorInstallation` config is future work.
+- Mock-only enforcement is hardcoded in the service layer. Real writeback readiness requires future network path validation, tenant admin configuration, and credential management.
+- No production queue semantics, external broker, or distributed worker infrastructure exists.
+
+### Next Recommended Action
+
+- Review BACKLOG.md for next slice. Candidate: BL-096 (connector installation config editor with JSON schema validation) or BL-097 (connector credential reference / secret broker foundation).

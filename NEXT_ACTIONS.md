@@ -1,12 +1,12 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-28 15:30 CEST
+**Updated At:** 2026-04-28 15:55 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-- [BL-095] `[in_progress]` Connector installation settings foundation. Implementing schema migration, API PATCH/POST endpoints, RBAC hardening, secret redaction, web UI settings panel, tests, verification script, and evidence capture.
+- No active items. BL-095 closed. Review BACKLOG.md for next slice.
 
 ## Queue Rules
 

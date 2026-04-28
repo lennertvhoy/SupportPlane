@@ -1,13 +1,13 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-28 15:30 CEST
+**Updated At:** 2026-04-28 15:55 CEST
 **Execution Mode:** operating
-**Project State:** bl_095_connector_installation_settings_foundation_in_progress
+**Project State:** bl_095_connector_installation_settings_foundation_closed
 **Public URL:** not configured
 
 ## Snapshot
 
-- BL-095 is **in progress**. Schema migration applied, API endpoints enhanced, web UI settings panel implemented, tests added, verification script updated.
+- BL-095 is **closed**. Schema migration applied and committed, API endpoints enhanced with Zod validation and mock-only safety, web UI settings panel implemented with RBAC gating, tests expanded to 124/124 passing, verification script passes all 14 checks, 8 browser screenshots captured.
 - ConnectorInstallation model now includes `displayName`, `description`, `capabilities`, `mockMode`, `enabled`, `timeoutMs`. Seed data updated with new fields and honest mock labels.
 - Admin can PATCH safe connector installation settings; viewer is denied server-side. Config secrets (`apiToken`, `password`, etc.) are redacted to `[REDACTED]` in all GET responses.
 - Cross-tenant connector installation access returns 404. Evidence bundle includes new connector installation fields.
@@ -16,7 +16,7 @@
 
 ## Immediate Priorities
 
-1. Complete BL-095 validation gate, browser evidence capture, and state/doc updates.
+1. Review backlog for next slice; no active blockers.
 
 ## Active Blockers
 

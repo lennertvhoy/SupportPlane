@@ -1566,3 +1566,26 @@
 - EV-2026-04-28-006 through EV-2026-04-28-011 (foundation screenshots in `session-094-delivery-policy-controls-foundation/`) are superseded by EV-2026-04-28-012 through EV-2026-04-28-031.
 - EV-2026-04-28-012 through EV-2026-04-28-031 were originally recorded against `session-094-delivery-policy-controls-final-closure/` (24 screenshots, cap violation). The canonical proof is now `session-095-bl094-final-closure-max20/` (20 screenshots, 0 duplicates).
 - The old `session-094-delivery-policy-controls-final-closure/` folder was deleted per AGENTS.md screenshot lifecycle rules.
+
+
+## EV-2026-04-28-036 through EV-2026-04-28-043 — BL-095 Connector Installation Settings Foundation
+
+- Folder: `output/playwright/session-095-connector-installation-settings/`
+- Screenshots: 8 (all unique, 0 duplicates)
+  - 01-admin-dashboard.png: Admin dashboard showing connector panel with installations section
+  - 02-admin-connector-panel-expanded.png: Admin view with installation card expanded, showing all editable settings
+  - 03-admin-full-page.png: Full page view of admin cockpit
+  - 04-connector-settings-focus.png: Focused view of installation settings form with displayName, description, status, enabled toggle, mockMode Locked ON, validateBeforeWrite toggle, timeoutMs, capabilities, credentials placeholder
+  - 05-viewer-settings-readonly.png: Viewer role with expanded settings panel; all fields are disabled/readonly
+  - 06-admin-validation-result.png: Mock validation result JSON visible after clicking Validate (mode=mock, realNetwork=false, writebackEnabled=false)
+  - 07-evidence-bundle-json.png: Evidence bundle JSON tab showing connectorInstallations array with BL-095 fields
+  - 08-evidence-bundle-summary.png: Evidence bundle summary showing Connectors count = 1
+- Proves:
+  - BL-095 connector installation settings are editable by admin/operator and visible in the UI.
+  - Mock mode is locked ON with visible safety banner; real writeback is denied.
+  - Viewer role cannot edit settings (all fields disabled) and receives 403 on PATCH attempts.
+  - Cross-tenant access is denied (404).
+  - Config secrets are redacted to `[REDACTED]` in API responses.
+  - Evidence bundles include connector installations with new fields (displayName, capabilities, mockMode, enabled, timeoutMs).
+- Type: browser-verification
+- as_of: 2026-04-28T15:55:00+02:00
