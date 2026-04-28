@@ -1625,3 +1625,34 @@
   - Audit events track credential reference lifecycle (created, updated, linked, unlinked).
 - Type: browser-runtime-verification
 - as_of: 2026-04-28T17:30:00+02:00
+
+
+## EV-2026-04-28-064 through EV-2026-04-28-078: BL-098 connector runtime configuration and readiness browser proof
+
+- Files: `output/playwright/session-098-connector-runtime-readiness-final-closure/01-admin-runtime-identity.png` through `15-final-mock-no-secret-proof.png`
+- Source/System: visible Chromium via Playwright CLI against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - admin runtime identity with user/tenant/role/API URL/local auth/postgres store/mock mode
+  - connector panel with Config and Readiness action buttons visible
+  - config validation result showing Valid badge, mockMode:true, realNetwork:false, writebackEnabled:false
+  - unsafe config validation rejected via API: mockMode:false, apiToken, baseUrl all flagged as errors
+  - runtime readiness panel showing mockReady, realNetwork:false, writebackEnabled:false, linkedCredentials count
+  - expanded installation settings showing Mock-only badge, Locked ON mock mode, credential references
+  - API config schema endpoint returning safeFields, rejectedFields, mockOnly:true
+  - API runtime readiness endpoint returning mockReady, realReady:false, realNetwork:false, writebackEnabled:false
+  - API runtime resolve endpoint returning tenant-scoped result with credential reference metadata (no secretRef), secretResolutionImplemented:false
+  - evidence bundle JSON including connector installations with realNetwork:false, writebackEnabled:false, externalWriteAttempted:false
+  - viewer read-only connector panel with disabled Config/Readiness buttons
+  - viewer server-side mutation denial visible in UI and CLI artifact
+  - cross-tenant access denied via API and CLI artifact
+  - audit trail showing connector_config_validated, connector_readiness_checked, connector_runtime_resolved events
+  - final mock/no-secret/no-real-writeback proof
+- Proves:
+  - BL-098 config validation, runtime readiness, and runtime resolver are implemented and browser-verified
+  - Mock-only safety is enforced at schema, service, controller, and UI layers
+  - Secret redaction is maintained: no secretRef values exposed in runtime resolver or evidence bundle
+  - RBAC enforcement denies viewer mutations server-side with 403
+  - Tenant isolation returns 404 for cross-tenant access
+- Type: browser-runtime-verification
+- as_of: 2026-04-28T18:35:00+02:00

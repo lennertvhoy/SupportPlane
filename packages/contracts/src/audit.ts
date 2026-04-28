@@ -120,6 +120,9 @@ export const AuditEventType = z.enum([
   'credential_reference_updated',
   'credential_reference_linked',
   'credential_reference_unlinked',
+  // BL-098 Connector Runtime Configuration + Credential Reference Readiness Foundation
+  'connector_runtime_resolved',
+  'connector_readiness_checked',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

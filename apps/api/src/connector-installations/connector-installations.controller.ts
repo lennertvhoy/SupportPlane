@@ -1,9 +1,10 @@
-import { Controller, Get, Patch, Post, Param, Req, Body, Inject, HttpCode } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Param, Req, Body, Inject, HttpCode, Query } from '@nestjs/common';
 import type { Request } from 'express';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { InMemoryStore } from '../support-sessions/in-memory.store.js';
 import type { Store } from '../store/store.interface.js';
 import { ConnectorInstallationsService } from './connector-installations.service.js';
+import { ConnectorRuntimeService } from './connector-runtime.service.js';
 
 @Controller('connector-installations')
 export class ConnectorInstallationsController {
@@ -11,7 +12,9 @@ export class ConnectorInstallationsController {
     @Inject(InMemoryStore)
     private readonly store: Store,
     @Inject(ConnectorInstallationsService)
-    private readonly service: ConnectorInstallationsService
+    private readonly service: ConnectorInstallationsService,
+    @Inject(ConnectorRuntimeService)
+    private readonly runtimeService: ConnectorRuntimeService
   ) {}
 
   @Post()
@@ -89,5 +92,40 @@ export class ConnectorInstallationsController {
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.unlinkCredentialReference(identity, id, body.credentialReferenceId);
+  }
+
+  @Get(':id/config-schema')
+  @HttpCode(200)
+  async getConfigSchema(@Req() req: Request, @Param('id') id: string) {
+    const identity = getCurrentIdentity(req);
+    return this.runtimeService.getConfigSchema(identity, id);
+  }
+
+  @Post(':id/validate-config')
+  @HttpCode(200)
+  async validateConfig(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { config: Record<string, unknown> }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.runtimeService.validateConfig(identity, id, body.config);
+  }
+
+  @Post(':id/runtime-readiness')
+  @HttpCode(200)
+  async runtimeReadiness(@Req() req: Request, @Param('id') id: string) {
+    const identity = getCurrentIdentity(req);
+    return this.runtimeService.checkRuntimeReadiness(identity, id);
+  }
+
+  @Get('runtime/resolve')
+  @HttpCode(200)
+  async resolveRuntime(@Req() req: Request, @Query('connectorType') connectorType: string) {
+    const identity = getCurrentIdentity(req);
+    if (!connectorType) {
+      return { error: 'connectorType query parameter is required' };
+    }
+    return this.runtimeService.resolveRuntime(identity, connectorType);
   }
 }

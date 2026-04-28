@@ -1062,3 +1062,56 @@ and must be protected from quiet regression.
 - explicit_non_claims:
   - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
   - No real secret broker, credential vault, or encrypted secret storage was implemented.
+
+
+---
+
+## AF-2026-04-28-015 — BL-098 Connector Runtime Configuration + Credential Reference Readiness Foundation
+
+- backlog_id: BL-098
+- status: accepted
+- accepted_at: 2026-04-28T18:35:00+02:00
+- accepted_by: coding-agent
+- commit: 89a8590dacfff01646b2459228bf7734df6aefff
+- evidence_refs:
+  - EV-2026-04-28-064
+  - EV-2026-04-28-065
+  - EV-2026-04-28-066
+  - EV-2026-04-28-067
+  - EV-2026-04-28-068
+  - EV-2026-04-28-069
+  - EV-2026-04-28-070
+  - EV-2026-04-28-071
+  - EV-2026-04-28-072
+  - EV-2026-04-28-073
+  - EV-2026-04-28-074
+  - EV-2026-04-28-075
+  - EV-2026-04-28-076
+  - EV-2026-04-28-077
+  - EV-2026-04-28-078
+- evidence_folder: output/playwright/session-098-connector-runtime-readiness-final-closure/
+- screenshot_count: 15
+- validation_summary:
+  - `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+  - `cd apps/api && npm test` passed: 142/142 tests (14 suites).
+  - `scripts/verify_connector_runtime_readiness.sh` passed all 12/12 checks against `http://localhost:4110` with `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
+  - API runtime verified via curl: config-schema, validate-config (safe and unsafe), runtime-readiness, runtime-resolve all return correct mock-only safety fields.
+  - Web runtime verified via Playwright browser automation: 15 screenshots captured, 0 duplicate MD5 hashes.
+- regression_guard:
+  - `GET /connector-installations/:id/config-schema` must return `mockOnly: true`, `safeFields`, and `rejectedFields`.
+  - `POST /connector-installations/:id/validate-config` must reject `mockMode: false` with error `MOCK_MODE_REQUIRED`.
+  - `POST /connector-installations/:id/validate-config` must reject unsafe fields (`apiToken`, `baseUrl`, `realEndpoint`) with severity `error`.
+  - `POST /connector-installations/:id/runtime-readiness` must return `realReady: false`, `realNetwork: false`, `writebackEnabled: false`, `externalWriteAttempted: false`.
+  - `GET /connector-installations/runtime/resolve` must return `mode: 'mock'`, `realNetwork: false`, `writebackEnabled: false`.
+  - `GET /connector-installations/runtime/resolve` credential references must never include `secretRef`; must include `secretResolutionImplemented: false`.
+  - Viewer role must be denied config validation and readiness mutations with 403.
+  - Cross-tenant access must return 404 on all runtime endpoints.
+  - Evidence bundle JSON must include connector installations with `realNetwork: false`, `writebackEnabled: false`, `externalWriteAttempted: false`.
+- known_limitations:
+  - Config schema is hardcoded for mock-only Zammad-local development; no dynamic schema generation from real connector manifests.
+  - Runtime readiness `mockReady` depends only on `mockMode && enabled`; no actual health checks against external endpoints.
+  - Secret resolution is not implemented; `secretResolutionImplemented: false` is hardcoded.
+  - No production credential broker, Vault/KMS, or encrypted secret storage exists.
+- explicit_non_claims:
+  - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
+  - No real secret broker, credential vault, or encrypted secret storage was implemented.

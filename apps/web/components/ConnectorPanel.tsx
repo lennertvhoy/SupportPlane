@@ -18,6 +18,8 @@ import {
   ChevronUp,
   Save,
   RotateCcw,
+  FileCode,
+  Activity,
 } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
@@ -38,6 +40,8 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
   const [credentialReferences, setCredentialReferences] = useState<ConnectorCredentialReference[]>([]);
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [configValidationResults, setConfigValidationResults] = useState<Record<string, { type: string; result: unknown }>>({});
+  const [runtimeReadinessResults, setRuntimeReadinessResults] = useState<Record<string, { type: string; result: unknown }>>({});
 
   const canTest = identity?.permissions.includes('*') || identity?.permissions.includes('connector_installation:test');
   const canEdit = identity?.permissions.includes('*') || identity?.permissions.includes('connector_installation:write');
@@ -182,6 +186,35 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
       setLinkError(err instanceof ApiClientError ? err.message : 'Failed to unlink credential');
     } finally {
       setLinkingId(null);
+    }
+  }
+
+  async function handleValidateConfig(id: string) {
+    if (!canTest) {
+      setError('Viewer role cannot validate connector config');
+      return;
+    }
+    setConfigValidationResults((prev) => ({ ...prev, [id]: { type: 'validating', result: undefined } }));
+    try {
+      const config = installations.find((i) => i.id === id)?.config ?? {};
+      const r = await api.validateConnectorConfig(id, config);
+      setConfigValidationResults((prev) => ({ ...prev, [id]: { type: 'validate-config', result: r } }));
+    } catch (err) {
+      setConfigValidationResults((prev) => ({ ...prev, [id]: { type: 'validate-config', result: { error: err instanceof ApiClientError ? err.message : 'Config validation failed' } } }));
+    }
+  }
+
+  async function handleRuntimeReadiness(id: string) {
+    if (!canTest) {
+      setError('Viewer role cannot check runtime readiness');
+      return;
+    }
+    setRuntimeReadinessResults((prev) => ({ ...prev, [id]: { type: 'checking', result: undefined } }));
+    try {
+      const r = await api.checkConnectorRuntimeReadiness(id);
+      setRuntimeReadinessResults((prev) => ({ ...prev, [id]: { type: 'runtime-readiness', result: r } }));
+    } catch (err) {
+      setRuntimeReadinessResults((prev) => ({ ...prev, [id]: { type: 'runtime-readiness', result: { error: err instanceof ApiClientError ? err.message : 'Runtime readiness check failed' } } }));
     }
   }
 
@@ -366,7 +399,7 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                   {inst.lastError && (
                     <div className="mt-1 text-[10px] text-danger">{inst.lastError}</div>
                   )}
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => handleValidateInstallation(inst.id)}
                       disabled={!canTest || installationResults[inst.id]?.type === 'validating'}
@@ -383,6 +416,22 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                       {installationResults[inst.id]?.type === 'testing' ? <Loader2 size={10} className="animate-spin" /> : <TestTube size={10} />}
                       Test
                     </button>
+                    <button
+                      onClick={() => handleValidateConfig(inst.id)}
+                      disabled={!canTest || configValidationResults[inst.id]?.type === 'validating'}
+                      className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
+                    >
+                      {configValidationResults[inst.id]?.type === 'validating' ? <Loader2 size={10} className="animate-spin" /> : <FileCode size={10} />}
+                      Config
+                    </button>
+                    <button
+                      onClick={() => handleRuntimeReadiness(inst.id)}
+                      disabled={!canTest || runtimeReadinessResults[inst.id]?.type === 'checking'}
+                      className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
+                    >
+                      {runtimeReadinessResults[inst.id]?.type === 'checking' ? <Loader2 size={10} className="animate-spin" /> : <Activity size={10} />}
+                      Readiness
+                    </button>
                   </div>
 
                   {(() => {
@@ -395,9 +444,76 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                     );
                   })()}
 
+                  {(() => {
+                    const res = configValidationResults[inst.id]?.result;
+                    if (!res) return null;
+                    const result = res as Record<string, unknown>;
+                    const hasError = result.error || (result.result && (result.result as Record<string, unknown>).valid === false);
+                    return (
+                      <div className={`mt-1 rounded border p-1.5 text-[10px] ${hasError ? 'border-amber-700/40 bg-amber-950/20 text-amber-200' : 'border-cockpit-700 bg-cockpit-900/50 text-cockpit-300'}`}>
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">Config validation</span>
+                          {hasError ? (
+                            <Badge variant="warning" className="text-[9px]">Issues found</Badge>
+                          ) : (
+                            <Badge variant="success" className="text-[9px]">Valid</Badge>
+                          )}
+                        </div>
+                        {result.error ? (
+                          <div className="text-danger">{String(result.error)}</div>
+                        ) : (
+                          <div className="mt-1 whitespace-pre-wrap">{JSON.stringify(result.result ?? result, null, 2)}</div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
+                  {(() => {
+                    const res = runtimeReadinessResults[inst.id]?.result;
+                    if (!res) return null;
+                    const result = res as Record<string, unknown>;
+                    const readiness = result.result as Record<string, unknown> | undefined;
+                    return (
+                      <div className="mt-1 rounded border border-cockpit-700 bg-cockpit-900/50 p-1.5 text-[10px] text-cockpit-300">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">Runtime readiness</span>
+                          <Badge variant={readiness?.mockReady ? 'success' : 'warning'} className="text-[9px]">
+                            {readiness?.mockReady ? 'Mock ready' : 'Not ready'}
+                          </Badge>
+                        </div>
+                        {result.error ? (
+                          <div className="text-danger">{String(result.error)}</div>
+                        ) : (
+                          <div className="mt-1 space-y-0.5">
+                            <div>realNetwork: {String(readiness?.realNetwork ?? false)}</div>
+                            <div>writebackEnabled: {String(readiness?.writebackEnabled ?? false)}</div>
+                            <div>externalWriteAttempted: {String(readiness?.externalWriteAttempted ?? false)}</div>
+                            <div>linkedCredentials: {String(readiness?.linkedCredentialReferenceCount ?? 0)}</div>
+                            {(() => {
+                              const warnings = readiness?.warnings;
+                              if (!Array.isArray(warnings)) return null;
+                              return (
+                                <div className="text-cockpit-500">
+                                  {warnings.map((w: string, i: number) => (
+                                    <div key={i}>• {w}</div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   {isExpanded && (
                     <div className="mt-2 space-y-2 rounded border border-cockpit-700 bg-cockpit-800/30 p-2">
-                      <div className="text-[10px] font-semibold text-cockpit-300">Installation Settings</div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-[10px] font-semibold text-cockpit-300">Installation Settings</div>
+                        <span className="inline-flex items-center gap-1 rounded bg-amber-900/30 px-1.5 py-0.5 text-[9px] text-amber-300">
+                          <Lock size={8} /> Mock-only
+                        </span>
+                      </div>
 
                       {/* Display name */}
                       <div className="space-y-0.5">

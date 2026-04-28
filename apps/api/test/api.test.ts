@@ -1159,6 +1159,262 @@ describe('Credential reference endpoints', () => {
   });
 });
 
+describe('Connector runtime configuration and readiness (BL-098)', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  it('GET /connector-installations/:id/config-schema returns safe field schema', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Schema Test', adapterType: 'zammad' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .get(`/connector-installations/${created.body.installation.id}/config-schema`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+
+    assert.strictEqual(res.body.mockOnly, true);
+    assert.ok(Array.isArray(res.body.safeFields));
+    assert.ok(res.body.safeFields.includes('mockMode'));
+    assert.ok(Array.isArray(res.body.rejectedFields));
+  });
+
+  it('POST /connector-installations/:id/validate-config accepts safe mock config', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Validate Safe Test', adapterType: 'zammad' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/validate-config`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({
+        config: {
+          mockMode: true,
+          enabled: true,
+          validateBeforeWrite: true,
+          timeoutMs: 5000,
+          capabilities: ['read_tickets'],
+          baseUrlPlaceholder: 'mock-zammad',
+        },
+      })
+      .expect(200);
+
+    assert.strictEqual(res.body.result.valid, true);
+    assert.strictEqual(res.body.result.mockMode, true);
+    assert.strictEqual(res.body.result.realNetwork, false);
+    assert.strictEqual(res.body.result.writebackEnabled, false);
+  });
+
+  it('POST /connector-installations/:id/validate-config rejects unsafe real-network config', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Validate Unsafe Test', adapterType: 'zammad' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/validate-config`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({
+        config: {
+          mockMode: false,
+          apiToken: 'super-secret',
+          baseUrl: 'http://real-zammad.example.com',
+          realEndpoint: 'http://production',
+        },
+      })
+      .expect(200);
+
+    assert.strictEqual(res.body.result.valid, false);
+    const errorIssues = res.body.result.issues.filter((i: { severity: string }) => i.severity === 'error');
+    assert.ok(errorIssues.length >= 3, `Expected at least 3 errors, got ${errorIssues.length}`);
+    const codes = errorIssues.map((i: { code: string }) => i.code);
+    assert.ok(codes.includes('MOCK_MODE_REQUIRED'));
+    assert.ok(codes.includes('UNSAFE_FIELD_REJECTED'));
+    assert.ok(codes.includes('REAL_NETWORK_FIELD_REJECTED'));
+  });
+
+  it('POST /connector-installations/:id/runtime-readiness returns mock-ready and real-ready false', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Readiness Test', adapterType: 'zammad', enabled: true })
+      .expect(201);
+
+    // enable the installation via patch since enabled in create may not be accepted
+    await supertest(server)
+      .patch(`/connector-installations/${created.body.installation.id}`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ enabled: true, status: 'active' })
+      .expect(200);
+
+    const res = await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/runtime-readiness`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+
+    assert.strictEqual(res.body.result.mockReady, true);
+    assert.strictEqual(res.body.result.realReady, false);
+    assert.strictEqual(res.body.result.realNetwork, false);
+    assert.strictEqual(res.body.result.writebackEnabled, false);
+    assert.strictEqual(res.body.result.externalWriteAttempted, false);
+    assert.ok(Array.isArray(res.body.result.warnings));
+  });
+
+  it('GET /connector-installations/runtime/resolve returns credential metadata only', async () => {
+    const installation = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Resolver Test', adapterType: 'mock', enabled: true, status: 'active' })
+      .expect(201);
+
+    const credential = await supertest(server)
+      .post('/credential-references')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ connectorType: 'mock', displayName: 'Resolver Credential' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/connector-installations/${installation.body.installation.id}/link-credential`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ credentialReferenceId: credential.body.credentialReference.id })
+      .expect(200);
+
+    const res = await supertest(server)
+      .get('/connector-installations/runtime/resolve?connectorType=mock')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+
+    assert.strictEqual(res.body.mode, 'mock');
+    assert.strictEqual(res.body.realNetwork, false);
+    assert.strictEqual(res.body.writebackEnabled, false);
+    assert.ok(Array.isArray(res.body.credentialReferences));
+    assert.strictEqual(res.body.credentialReferences.length, 1);
+    assert.strictEqual(res.body.credentialReferences[0].displayName, 'Resolver Credential');
+    assert.strictEqual(res.body.credentialReferences[0].secretResolutionImplemented, false);
+    assert.ok(!res.body.credentialReferences[0].secretRef, 'secretRef must not be exposed');
+  });
+
+  it('runtime endpoints deny viewer role', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Viewer Deny Runtime', adapterType: 'mock' })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/validate-config`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .send({ config: { mockMode: true } })
+      .expect(403);
+
+    await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/runtime-readiness`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(403);
+  });
+
+  it('cross-tenant runtime access is denied', async () => {
+    const created = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Cross-tenant Runtime', adapterType: 'mock' })
+      .expect(201);
+
+    await supertest(server)
+      .get(`/connector-installations/${created.body.installation.id}/config-schema`)
+      .set('x-tenant-id', 'tenant-other')
+      .set('x-user-id', 'admin-other')
+      .set('x-user-role', 'admin')
+      .expect(404);
+
+    await supertest(server)
+      .post(`/connector-installations/${created.body.installation.id}/validate-config`)
+      .set('x-tenant-id', 'tenant-other')
+      .set('x-user-id', 'admin-other')
+      .set('x-user-role', 'admin')
+      .send({ config: { mockMode: true } })
+      .expect(404);
+  });
+
+  it('ticket context payload includes connector installation provenance', async () => {
+    const installation = await supertest(server)
+      .post('/connector-installations')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ name: 'Provenance Test', adapterType: 'zammad', enabled: true, status: 'active' })
+      .expect(201);
+
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ title: 'Provenance session' })
+      .expect(201);
+
+    const res = await supertest(server)
+      .post(`/support-sessions/${session.body.id}/ticket-context`)
+      .set('x-tenant-id', 'tenant-runtime')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ externalTicketId: 'TICKET-101' })
+      .expect(201);
+
+    const payload = res.body.contextPacket.payload as Record<string, unknown>;
+    assert.ok(payload.connectorInstallationProvenance, 'connectorInstallationProvenance should exist');
+    const provenance = payload.connectorInstallationProvenance as Record<string, unknown>;
+    assert.strictEqual(provenance.noRealNetworkCall, true);
+    assert.strictEqual(provenance.realNetwork, false);
+    assert.strictEqual(provenance.writebackEnabled, false);
+  });
+});
+
 describe('Evidence bundle endpoints', () => {
   let app: INestApplication;
   let server: ReturnType<INestApplication['getHttpServer']>;

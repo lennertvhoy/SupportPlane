@@ -1527,6 +1527,18 @@ export const api = {
   checkConnectorReadiness: (installationId: string, identity?: DevIdentity) =>
     apiFetch<ConnectorReadinessResult>(`/connector-installations/${installationId}/readiness`, { method: 'POST' }, identity),
 
+  getConnectorConfigSchema: (installationId: string, identity?: DevIdentity) =>
+    apiFetch<{ installationId: string; schema: Record<string, unknown>; safeFields: string[]; rejectedFields: string[]; mockOnly: true }>(`/connector-installations/${installationId}/config-schema`, { method: 'GET' }, identity),
+
+  validateConnectorConfig: (installationId: string, config: Record<string, unknown>, identity?: DevIdentity) =>
+    apiFetch<{ installationId: string; result: { valid: boolean; mockMode: true; realNetwork: false; writebackEnabled: false; issues: Array<{ field: string; severity: string; message: string; code: string }>; warnings: string[]; timestamp: string } }>(`/connector-installations/${installationId}/validate-config`, { method: 'POST', body: JSON.stringify({ config }) }, identity),
+
+  checkConnectorRuntimeReadiness: (installationId: string, identity?: DevIdentity) =>
+    apiFetch<{ installationId: string; result: { mockReady: boolean; realReady: false; realNetwork: false; writebackEnabled: false; externalWriteAttempted: false; warnings: string[]; credentialReferencesLinked: boolean; linkedCredentialReferenceCount: number; timestamp: string } }>(`/connector-installations/${installationId}/runtime-readiness`, { method: 'POST' }, identity),
+
+  resolveConnectorRuntime: (connectorType: string, identity?: DevIdentity) =>
+    apiFetch<{ tenantId: string; connectorType: string; installationId: string; installationDisplayName: string; capabilities: string[]; credentialReferences: Array<{ id: string; displayName: string; kind: string; status: string; lastValidatedAt?: string; secretResolutionImplemented: false }>; mode: 'mock'; realNetwork: false; writebackEnabled: false; externalWriteAttempted: false; readiness: { mockReady: boolean; realReady: false; realNetwork: false; writebackEnabled: false; externalWriteAttempted: false; warnings: string[]; credentialReferencesLinked: boolean; linkedCredentialReferenceCount: number; timestamp: string } }>(`/connector-installations/runtime/resolve?connectorType=${encodeURIComponent(connectorType)}`, { method: 'GET' }, identity),
+
   // Credential references
   listCredentialReferences: (identity?: DevIdentity) =>
     apiFetch<{ credentialReferences: ConnectorCredentialReference[] }>('/credential-references', { method: 'GET' }, identity).then(r => r.credentialReferences),

@@ -2254,3 +2254,79 @@ CTO-identified closure blockers from prior handoff:
 ### Next Recommended Action
 
 - Review BACKLOG.md for next slice. Candidates: BL-096 (connector installation config editor with JSON schema validation), BL-098 (connector runtime wiring to credential references), or governance/compliance backlog items.
+
+
+## 2026-04-28 - BL-098 Connector Runtime Configuration + Credential Reference Readiness Foundation
+
+**Type:** implementation
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 89a8590dacfff01646b2459228bf7734df6aefff
+**Worktree:** clean_after_bl_098_commit
+
+### What changed
+
+- Created `packages/contracts/src/connector-runtime.ts` with Zod schemas:
+  - `ConnectorRuntimeConfig` — safe fields only (baseUrlPlaceholder, timeoutMs, capabilities, validateBeforeWrite, maxRetries, mockMode, status, enabled, linkedCredentialReferenceIds)
+  - `ConnectorRuntimeConfigValidationResult` — valid, mockMode, realNetwork, writebackEnabled, issues[], warnings[]
+  - `ConnectorRuntimeReadinessResult` — mockReady, realReady, realNetwork, writebackEnabled, externalWriteAttempted, warnings[], credentialReferencesLinked, linkedCredentialReferenceCount
+  - `ConnectorRuntimeResolverResult` — tenant-scoped full runtime boundary with credential reference metadata
+  - `ConnectorRuntimeCredentialReferenceMetadata` — id, displayName, kind, status, lastValidatedAt, secretResolutionImplemented
+  - `ConnectorConfigSchemaResponse` — schema definition, safeFields, rejectedFields, mockOnly
+- Extended `AuditEventType` with `connector_config_validated`, `connector_readiness_checked`, `connector_runtime_resolved`.
+- Created `ConnectorRuntimeService` (`apps/api/src/connector-installations/connector-runtime.service.ts`):
+  - `getConfigSchema()` — returns hardcoded mock-only Zammad-local schema with safe/rejected field lists
+  - `validateConfig()` — validates against schema, rejects mockMode:false, rejects unsafe real-network fields, returns deterministic warnings/errors, emits audit event
+  - `checkRuntimeReadiness()` — returns mockReady based on mockMode && enabled, realReady always false, linked credential ref count, emits audit event
+  - `resolveRuntime()` — finds active installation for tenant/connector type, returns full resolver result with credential metadata (no secretRef), emits audit event
+- Extended `ConnectorInstallationsController` with:
+  - `GET /connector-installations/:id/config-schema`
+  - `POST /connector-installations/:id/validate-config`
+  - `POST /connector-installations/:id/runtime-readiness`
+  - `GET /connector-installations/runtime/resolve?connectorType=...`
+- Updated `EvidenceBundleBuilder` to include `realNetwork: false`, `writebackEnabled: false`, `externalWriteAttempted: false`, and `credentialReferenceCount` on connector installation summaries.
+- Updated `ConnectorPanel.tsx` with config validation result display, runtime readiness panel, mock-only badges, linked credential counts, and viewer read-only enforcement.
+- Updated `apps/web/lib/api.ts` with client methods for all new BL-098 endpoints.
+- Added API tests in `apps/api/test/api.test.ts` for config schema, safe config validation, unsafe config rejection, runtime readiness, and credential reference metadata.
+- Created `scripts/verify_connector_runtime_readiness.sh` with 12 verification checks.
+- Created `scripts/bl098_screenshots.js` with hard max-20 cap and duplicate detection.
+
+### Verification
+
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `cd apps/api && npm test` passed: 142/142 tests (14 suites).
+- `scripts/verify_connector_runtime_readiness.sh` passed all 12/12 checks against `http://localhost:4110` with `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
+- API runtime verified via curl: all new endpoints return correct mock-only safety fields.
+- Web runtime verified via Playwright browser automation: 15 screenshots captured, 0 duplicate MD5 hashes.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-098-connector-runtime-readiness-final-closure/`
+  - `01-admin-runtime-identity.png` — Admin runtime identity
+  - `02-admin-connector-panel-buttons.png` — Connector panel with Config and Readiness buttons
+  - `03-admin-config-validation-valid.png` — Config validation result (Valid badge, mock-only flags)
+  - `04-api-config-validation-unsafe-rejected.png` — Unsafe config rejected via API
+  - `05-admin-runtime-readiness-panel.png` — Runtime readiness panel
+  - `06-admin-installation-settings-mock-only.png` — Installation settings with Mock-only badge
+  - `07-api-config-schema-mock-only.png` — Config schema API response
+  - `08-api-runtime-readiness-mock-only.png` — Runtime readiness API response
+  - `09-api-runtime-resolve-credential-metadata.png` — Runtime resolver with credential metadata
+  - `10-api-evidence-bundle-connector-safety.png` — Evidence bundle JSON with connector safety fields
+  - `11-viewer-readonly-connector-panel.png` — Viewer read-only connector panel
+  - `12-viewer-ui-mutation-denied.png` — Viewer mutation denial in UI
+  - `13-api-cross-tenant-denied.png` — Cross-tenant access denied
+  - `14-admin-audit-bl098-events.png` — Audit trail with BL-098 events
+  - `15-final-mock-no-secret-proof.png` — Final mock/no-secret proof
+- CLI artifacts:
+  - `cli-viewer-config-validation-denial.txt`
+  - `cli-cross-tenant-denial.txt`
+- Git commit: `89a8590dacfff01646b2459228bf7734df6aefff`
+
+### Remaining Risk
+
+- Config schema is hardcoded for mock-only Zammad-local development.
+- Runtime readiness depends only on static flags; no actual external health checks.
+- Secret resolution is not implemented; `secretResolutionImplemented: false` is hardcoded.
+- All behavior remains local/mock-only with visible UI warnings.
+- No real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset.

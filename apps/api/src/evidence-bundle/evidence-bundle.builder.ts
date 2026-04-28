@@ -107,23 +107,33 @@ function toCustomerSummaries(customers: CustomerReference[] | undefined): Eviden
 }
 
 function toConnectorInstallationSummaries(
-  installations: import('@supportplane/contracts').ConnectorInstallation[] | undefined
+  installations: import('@supportplane/contracts').ConnectorInstallation[] | undefined,
+  credentialRefs?: import('@supportplane/contracts').ConnectorCredentialReference[] | undefined
 ): import('@supportplane/contracts').EvidenceBundleConnectorInstallationSummary[] {
   if (!installations) return [];
-  return installations.map((i) => ({
-    id: i.id,
-    name: i.name,
-    displayName: i.displayName,
-    adapterType: i.adapterType,
-    capabilities: i.capabilities,
-    status: i.status,
-    mockMode: i.mockMode,
-    enabled: i.enabled,
-    safetyFlags: redactSecrets(i.safetyFlags as Record<string, unknown> ?? {}),
-    timeoutMs: i.timeoutMs,
-    lastVerifiedAt: i.lastVerifiedAt,
-    lastError: i.lastError ? redactString(i.lastError) : undefined,
-  }));
+  const credMap = new Set((credentialRefs ?? []).map((c) => c.id as string));
+  return installations.map((i) => {
+    const linkedCredCount = (i.secretReferenceIds ?? []).filter((id) => credMap.has(id as string)).length;
+    return {
+      id: i.id,
+      name: i.name,
+      displayName: i.displayName,
+      adapterType: i.adapterType,
+      capabilities: i.capabilities,
+      status: i.status,
+      mockMode: i.mockMode,
+      enabled: i.enabled,
+      safetyFlags: redactSecrets(i.safetyFlags as Record<string, unknown> ?? {}),
+      timeoutMs: i.timeoutMs,
+      lastVerifiedAt: i.lastVerifiedAt,
+      lastError: i.lastError ? redactString(i.lastError) : undefined,
+      realNetwork: false,
+      writebackEnabled: false,
+      externalWriteAttempted: false,
+      credentialReferenceCount: linkedCredCount,
+      runtimeReadinessSummary: i.mockMode ? 'mock-only — no real network or writeback' : 'unknown',
+    };
+  });
 }
 
 function toCredentialReferenceSummaries(
@@ -456,7 +466,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     callRecordings: toCallRecordingSummaries(input.callRecordings),
     screenObservations: toScreenObservationSummaries(input.screenObservations),
     customerReferences: toCustomerSummaries(input.customerReferences),
-    connectorInstallations: toConnectorInstallationSummaries(input.connectorInstallations),
+    connectorInstallations: toConnectorInstallationSummaries(input.connectorInstallations, input.credentialReferences),
     credentialReferences: toCredentialReferenceSummaries(input.credentialReferences, input.connectorInstallations),
     supportNoteDrafts: toSupportNoteDraftSummaries(input.supportNoteDrafts),
     actionOutbox: toActionOutboxSummaries(input.supportActions, input.actionOutboxItems, input.actionOutboxAttempts),
@@ -719,6 +729,11 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       if (inst.timeoutMs) lines.push(`- **Timeout:** ${inst.timeoutMs}ms`);
       if (inst.lastVerifiedAt) lines.push(`- **Last Verified:** ${inst.lastVerifiedAt}`);
       if (inst.lastError) lines.push(`- **Last Error:** ${inst.lastError}`);
+      lines.push(`- **Real Network:** ${inst.realNetwork ?? false}`);
+      lines.push(`- **Writeback Enabled:** ${inst.writebackEnabled ?? false}`);
+      lines.push(`- **External Write Attempted:** ${inst.externalWriteAttempted ?? false}`);
+      lines.push(`- **Linked Credentials:** ${inst.credentialReferenceCount ?? 0}`);
+      if (inst.runtimeReadinessSummary) lines.push(`- **Runtime Readiness:** ${inst.runtimeReadinessSummary}`);
       lines.push(``);
     }
   }

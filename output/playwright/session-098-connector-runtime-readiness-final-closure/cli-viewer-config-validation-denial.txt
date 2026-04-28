@@ -1,0 +1,3 @@
+POST /connector-installations/conn-inst-dev-001/validate-config as viewer
+Status: 403
+Body: {"message":"Forbidden: connector_installation:test requires a higher role","error":"Forbidden","statusCode":403}

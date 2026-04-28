@@ -20,3 +20,4 @@ export * from './call-recording.js';
 export * from './action-outbox.js';
 export * from './delivery-policy.js';
 export * from './connector-credential-reference.js';
+export * from './connector-runtime.js';

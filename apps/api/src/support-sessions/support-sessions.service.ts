@@ -137,6 +137,20 @@ export class SupportSessionsService {
     const adapter = this.getAdapter();
     const mode = this.connectorsService.getMode();
 
+    // Resolve connector installation provenance
+    const installations = await this.store.listConnectorInstallations(identity.tenantId);
+    const activeInstallation = installations.find(
+      (i) => i.adapterType === adapter.adapterType && i.enabled
+    ) ?? installations.find((i) => i.adapterType === adapter.adapterType);
+    const credentialRefs = activeInstallation
+      ? await Promise.all(
+          (activeInstallation.secretReferenceIds ?? []).map((cid) =>
+            this.store.getCredentialReference(identity.tenantId, cid)
+          )
+        )
+      : [];
+    const linkedCredentialRefs = credentialRefs.filter((c): c is NonNullable<typeof c> => c != null);
+
     const ticket = await adapter.getTicket(
       identity.tenantId as TenantId,
       externalTicketId
@@ -165,6 +179,19 @@ export class SupportSessionsService {
         customerEmail: (ticket as { customerEmail?: string }).customerEmail,
         customerName: (ticket as { customerName?: string }).customerName,
         connectorMode: mode,
+        connectorInstallationProvenance: activeInstallation
+          ? {
+              installationId: activeInstallation.id,
+              installationDisplayName: activeInstallation.displayName ?? activeInstallation.name,
+              adapterType: activeInstallation.adapterType,
+              capabilities: activeInstallation.capabilities,
+              credentialReferencesLinked: linkedCredentialRefs.length > 0,
+              linkedCredentialReferenceCount: linkedCredentialRefs.length,
+              realNetwork: false,
+              writebackEnabled: false,
+              noRealNetworkCall: true,
+            }
+          : null,
       },
       redactionLog: [],
       createdAt: new Date().toISOString(),
@@ -186,7 +213,7 @@ export class SupportSessionsService {
       AuditEventType.enum.ticket_linked,
       'ticket_reference',
       (ticket as { id: string }).id,
-      { externalTicketId, connectorMode: mode, connectorType: adapter.adapterType }
+      { externalTicketId, connectorMode: mode, connectorType: adapter.adapterType, connectorInstallationId: activeInstallation?.id }
     );
     await this.appendAuditEvent(
       identity,
@@ -194,7 +221,7 @@ export class SupportSessionsService {
       AuditEventType.enum.ai_context_loaded,
       'ai_context_packet',
       packet.id,
-      { provenance: packet.provenance, connectorMode: mode }
+      { provenance: packet.provenance, connectorMode: mode, connectorInstallationId: activeInstallation?.id }
     );
     await this.appendAuditEvent(
       identity,
@@ -202,7 +229,7 @@ export class SupportSessionsService {
       AuditEventType.enum.zammad_ticket_loaded,
       'ticket_reference',
       (ticket as { id: string }).id,
-      { externalTicketId, connectorMode: mode, connectorType: adapter.adapterType }
+      { externalTicketId, connectorMode: mode, connectorType: adapter.adapterType, connectorInstallationId: activeInstallation?.id, noRealNetworkCall: true }
     );
 
     return { ticketReference: ticket, contextPacket: packet, session: updatedSession };

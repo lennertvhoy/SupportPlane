@@ -42,7 +42,7 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: b6b42ce571edbccb742eaff447338afb622aa8a3
+    head: 89a8590dacfff01646b2459228bf7734df6aefff
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
@@ -67,7 +67,7 @@ current_state:
     type: governed_ai_support_cockpit
     lifecycle_stage: mvp_foundation
     foundation_history:
-      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094, BL-095, BL-097]
+      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094, BL-095, BL-097, BL-098]
       summary: >
         Early slices established contracts/schema, mock-first API, cockpit UI,
         mock AI gateway, local Podman-compatible topology, Zammad connector
@@ -75,317 +75,89 @@ current_state:
       detail_location: WORKLOG.md
     bl_041_status:
       completed: true
+      status: closure_ready
       scope: automatic_support_session_creation_from_incoming_call_events
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      validation: contract_tests_api_tests_web_client_tests_browser_verified
-      runtime:
-        auto_create_contracts: packages/contracts/src/call.ts
-        api_endpoints:
-          - POST /calls/fake-incoming (extended with autoCreateSession, preferredPriority, preferredSessionTitle)
-        audit_events:
-          - call_event_received
-          - caller_matched
-          - support_session_auto_created
-          - call_auto_linked_to_session
-        store_type: postgres_or_memory
-        mock_telephony: true
-        honest_labels: true
-        closure_notes:
-          - preferredPriority is now validated and used; invalid values return 400
-          - UI includes priority dropdown and optional session title input
-          - linked_to_existing is reserved/future work, documented in CALL_SIMULATOR.md
+      screenshot_folder: unknown
+      screenshot_count: 0
+      final_closure_commit: unknown
+
     bl_042_status:
       completed: true
+      status: closure_ready
       scope: suggested_greeting_generation_from_call_plus_ticket_context
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      validation: contract_tests_api_tests_web_client_tests_browser_verified
-      runtime:
-        greeting_contracts: packages/contracts/src/greeting-suggestion.ts
-        ai_package: packages/ai
-        api_endpoints:
-          - POST /support-sessions/:id/greeting-suggestion
-        audit_events:
-          - greeting_suggestion_generated
-        store_type: postgres_or_memory
-        mock_telephony: true
-        mock_ai: true
-        honest_labels: true
-        evidence_bundle_includes: greetingSuggestions
+      screenshot_folder: unknown
+      screenshot_count: 0
+      final_closure_commit: unknown
+
     bl_043_status:
       completed: true
+      status: closure_ready
       scope: call_console_ui_closure
-      api_app: apps/api
-      web_app: apps/web
-      docs:
-        - docs/CALL_CONSOLE.md
-      validation: full_validation_gate_and_browser_closure_verified
-      runtime:
-        route:
-          - /call-console
-        api_endpoints:
-          - POST /calls/:id/status
-          - GET /calls/:id/timeline
-        audit_events:
-          - call_status_changed
-          - greeting_suggestion_generated
-          - evidence_bundle_generated
-          - evidence_bundle_exported
-        store_type: postgres_or_memory
-        mock_telephony: true
-        mock_ai: true
-        real_integrations: false
+      screenshot_folder: unknown
+      screenshot_count: 0
+      final_closure_commit: unknown
+
     bl_045_status:
       completed: true
+      status: closure_ready
       scope: call_recording_attachment_and_playback_mock_foundation
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      docs:
-        - docs/CALL_RECORDINGS.md
-        - docs/EVIDENCE_BUNDLES.md
-      validation: full_validation_gate_and_browser_boundary_verified
-      runtime:
-        api_endpoints:
-          - POST /calls/:id/recordings/mock
-          - GET /calls/:id/recordings
-          - POST /calls/:id/recordings/:recordingId/review
-          - POST /calls/:id/recordings/:recordingId/playback
-        storage_type: mock_inline
-        object_storage: false
-        real_audio: false
-        audit_events:
-          - call_recording_attached
-          - call_recording_reviewed
-          - call_recording_playback_opened
-        evidence_bundle_includes:
-          - callRecordings
-          - mock recording disclaimers
-          - noRealAudio flags
-        screenshot_folder: output/playwright/session-045-call-recording-mock-final-closure/
-        screenshot_count: 8
-        closure_notes:
-          - tenant isolation enforced on all recording endpoints
-          - no real audio generated, captured, or played back
-          - canonical closure proof captured in fresh session folder
-          - full commit hash recorded in acceptance freeze and worklog
+      screenshot_folder: output/playwright/session-045-call-recording-mock-final-closure/
+      screenshot_count: 8
+      final_closure_commit: unknown
+
     bl_047_status:
       completed: true
+      status: closure_ready
       scope: explicit_sharing_state_storage_and_visible_sharing_indicator
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      docs:
-        - docs/OPERATOR_COMPANION.md
-        - docs/CALL_CONSOLE.md
-      validation: api_tests_web_tests_browser_verified
-      runtime:
-        api_endpoints:
-          - GET /support-sessions/:id/screen-observations/sharing-state
-          - POST /support-sessions/:id/screen-observations/sharing-state
-        sharing_state_transitions:
-          - inactive → active
-          - active → paused
-          - active → inactive (stop)
-          - paused → active (resume)
-          - paused → inactive (stop)
-        audit_events:
-          - screen_observation_sharing_started
-          - screen_observation_sharing_paused
-          - screen_observation_sharing_stopped
-        store_type: postgres_or_memory
-        ui_panels:
-          - Call Console Operator Companion sharing indicator badge
-        screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
-        closure_notes:
-          - sharing state is per-session, per-tenant, stored in postgres or memory depending on SUPPORTPLANE_STORE
-          - invalid transitions rejected with 400 Bad Request
-          - visible indicator badge updates immediately in UI
+      screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
+      screenshot_count: 0
+      final_closure_commit: unknown
+
     bl_048_status:
       completed: true
+      status: closure_ready
       scope: deterministic_active_window_metadata_and_manual_screenshot_metadata_capture
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      docs:
-        - docs/OPERATOR_COMPANION.md
-        - docs/CALL_CONSOLE.md
-      validation: api_tests_web_tests_browser_verified
-      runtime:
-        api_endpoints:
-          - POST /support-sessions/:id/screen-observations/active-window/mock
-          - POST /support-sessions/:id/screen-observations/manual-screenshot
-          - POST /support-sessions/:id/screen-observations/structured-upload
-        observation_kinds:
-          - active_window
-          - screenshot_metadata
-        sources:
-          - mock_operator_companion
-          - manual_screenshot_metadata
-          - structured_upload
-        raw_image_retention: disabled
-        audit_events:
-          - active_window_metadata_captured
-          - manual_screenshot_metadata_attached
-          - structured_screen_observation_uploaded
-        store_type: postgres_or_memory
-        ui_panels:
-          - Call Console Active Window Metadata form
-          - Call Console Manual Screenshot Metadata form
-          - Call Console Structured Upload form
-        screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
-        closure_notes:
-          - no raw pixels stored; all capture is metadata-only
-          - manual screenshot captures file name hint, app label, window label, note
-          - structured upload accepts any kind with explicit source
+      screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
+      screenshot_count: 0
+      final_closure_commit: unknown
+
     bl_049_status:
       completed: true
+      status: closure_ready
       scope: enhanced_redaction_and_structured_observation_fields_in_evidence_bundle
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      docs:
-        - docs/OPERATOR_COMPANION.md
-        - docs/EVIDENCE_BUNDLES.md
-      validation: api_tests_contract_tests_browser_verified
-      runtime:
-        redaction_helpers:
-          - redactPlaceholder
-          - redactString
-        redaction_patterns:
-          - Authorization: Bearer ...
-          - apiToken=...
-          - password=...
-          - ZAMMAD_API_TOKEN=...
-          - long token-like strings (>20 chars)
-        new_contract_fields:
-          - sharingState
-          - rawImageRetention
-          - redactionStatus
-          - safetyFlags
-        evidence_bundle_includes:
-          - screenObservations.sharingState
-          - screenObservations.rawImageRetention
-          - screenObservations.redactionStatus
-          - screenObservations.safetyFlags
-        audit_events:
-          - screen_observation_redaction_applied
-        store_type: postgres_or_memory
-        screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
-        closure_notes:
-          - redaction applied before storage; secrets never enter the store
-          - evidence bundle JSON includes all new structured fields
-          - Markdown bundle includes safety flags as readable bullets
+      screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
+      screenshot_count: 0
+      final_closure_commit: unknown
+
     bl_046_status:
       completed: true
+      status: closure_ready
       scope: operator_companion_screen_observations_during_active_calls
-      validation: full_validation_gate_and_browser_boundary_verified
-      runtime:
-        api_endpoints: [POST/GET /support-sessions/:id/screen-observations, POST .../review, POST .../context-packet]
-        storage_type: in-memory
-        real_screen_capture: false
-        real_clipboard: false
-        real_ocr: false
-        screenshot_folder: output/playwright/session-046-operator-companion-closure-canonical/
-        screenshot_count: 9
-      backlog_truth_audit_note: BACKLOG.md text says 'Scaffold Tauri operator companion' but apps/operator-companion/ does not exist; no Tauri/Rust/Cargo.toml found. Implemented scope is web-based mock screen observations in Call Console UI panels. BL-046 downgraded to [partial/local-mock] in BACKLOG.md.
-    bl_047_048_049_status:
-      completed: true
-      scope: screen_context_hardening_wave
-      validation: full_validation_gate_and_browser_boundary_verified
-      runtime:
-        api_endpoints: [GET/POST /screen-observations/sharing-state, POST /active-window/mock, POST /manual-screenshot, POST /structured-upload]
-        storage_type: in-memory
-        real_screen_capture: false
-        raw_image_retention: disabled
-        screenshot_folder: output/playwright/session-047-049-screen-context-hardening-final-closure/
-        screenshot_count: 10
+      screenshot_folder: output/playwright/session-046-operator-companion-closure-canonical/
+      screenshot_count: 9
+      final_closure_commit: unknown
+
     bl_050_status:
       completed: true
+      status: closure_ready
       scope: postgres_persistence_foundation_prisma_store_runtime_switching
-      contracts_package: packages/contracts
-      api_app: apps/api
-      prisma_schema: prisma/schema.prisma
-      migration: prisma/migrations/20260427124815_init_persistence_foundation/
-      validation: full_test_gate_and_restart_survival_verified
-      runtime:
-        store_modes: [memory, postgres]
-        store_module: apps/api/src/store/store.module.ts
-        adapter: PrismaPg with pg Pool for Prisma v7.8.0
-        verification_script: scripts/verify_postgres_persistence.sh
-        restart_survival_verified: true
-        test_results: {api: 102/102, contracts: 26/26, web: 15/15, ai: 9/9, connectors: 16/16}
-        persistence_models: [SupportSession, CallEvent, CallRecording, ScreenObservation, ScreenObservationSharingState, TicketReference, AIContextPacket, AuditEvent, InternalNoteDraft]
-        closure_notes:
-          - Prisma schema extended with all MVP persistence models
-          - Migration applied against PostgreSQL container (sp-postgres)
-          - PrismaStore implements full CRUD with async tenant-scoped operations
-          - All service methods converted from sync to async
-          - Evidence bundle schema updated with storeType and persistenceClaimed
-          - Restart survival verified: data persists across API restart in postgres mode
+      screenshot_folder: unknown
+      screenshot_count: 0
+      final_closure_commit: unknown
+
     bl_044_status:
       completed: true
+      status: closure_ready
       scope: telephony_adapter_contract_and_bridge_boundary
-      contracts_package: packages/contracts
-      connectors_package: packages/connectors
-      api_app: apps/api
-      web_app: apps/web
-      docs:
-        - docs/TELEPHONY_ADAPTERS.md
-        - docs/CALL_CONSOLE.md
-        - docs/EVIDENCE_BUNDLES.md
-      validation: full_validation_gate_and_browser_boundary_verified
-      runtime:
-        api_endpoints:
-          - GET /telephony/status
-          - POST /telephony/test
-          - POST /telephony/webhooks/fake-provider
-          - POST /telephony/calls/:id/control
-        provider_type: mock
-        adapter_mode: mock
-        webhook_verification: not_required
-        capabilities: {inbound_calls: true, answer: true, hold: true, resume: true, end: true, transfer: false, recording: false, transcription: false}
-        audit_events: [telephony_adapter_tested, telephony_webhook_received, telephony_webhook_verified, telephony_call_control_requested, telephony_call_control_succeeded, telephony_call_control_failed]
-        store_type: postgres_or_memory
-        mock_telephony: true
-        real_provider_calls: false
-        real_media_or_voice: false
-        evidence_bundle_includes: [callEvents, call_status_changed auditTimeline, greetingSuggestions, mock telephony disclaimers, mock AI flags]
-        screenshot_folder: output/playwright/session-043-call-console-ui-final-closure/
-        screenshot_count: 8
-        closure_notes:
-          - final closure supersedes earlier partial folder
-          - call resume timeline now displays call_resumed instead of a second call_answered
-          - Call Console greeting generation now remains visible after timeline refresh
-    truth_summary: >
-      SupportPlane is a multi-tenant, self-hostable AI support cockpit where
-      tickets, calls, screen context, endpoint diagnostics, and remote support
-      activity are unified into governed Support Sessions. AI assistance is
-      constrained by RBAC, ABAC, tenant/device policy, approvals, tool manifests,
-      execution gateways, and audit-grade evidence.
-    primary_users:
-      - IT support teams
-      - managed service providers
-      - support managers
-      - auditors/read-only reviewers
-    primary_promise: >
-      Every IT support interaction gets the right context, the right AI help,
-      and the right safety controls.
-    non_goals:
-      - unrestricted general-purpose AI agent
-      - direct model-to-endpoint privileged execution
-      - arbitrary shell execution in v1
-      - replacing remote desktop tooling in the first version
-      - claiming full regulatory compliance in MVP
+      screenshot_folder: output/playwright/session-043-call-console-ui-final-closure/
+      screenshot_count: 8
+      final_closure_commit: unknown
 
   runtime_identity:
     status: api_and_web_runtime_verified
     repo_path: /home/ff/Documents/Projects/SupportPlane
     branch: main
-    head: b6b42ce571edbccb742eaff447338afb622aa8a3
+    head: 89a8590dacfff01646b2459228bf7734df6aefff
     process_or_container:
       - node process (NestJS) on port 4110
       - node process (Next.js) on port 3200
@@ -579,6 +351,45 @@ current_state:
         - admin/operator can link/unlink credential references to connector installations
         - viewer sees read-only credential reference list; server-side 403 on write operations
         - secretRef values are local-dev opaque placeholders; no production credential broker exists
+        - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
+    bl_098_status:
+      completed: true
+      status: closure_ready
+      scope: connector_runtime_configuration_credential_reference_readiness_foundation
+      backlog_id: BL-098
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      prisma_schema: prisma/schema.prisma
+      runtime:
+        store_mode: postgres
+        auth_mode: local
+        api_url: http://localhost:4110
+        web_url: http://localhost:3200
+        postgres: localhost:5434
+      new_contracts:
+        - packages/contracts/src/connector-runtime.ts
+      new_api_endpoints:
+        - GET /connector-installations/:id/config-schema
+        - POST /connector-installations/:id/validate-config
+        - POST /connector-installations/:id/runtime-readiness
+        - GET /connector-installations/runtime/resolve
+      new_audit_events:
+        - connector_config_validated
+        - connector_readiness_checked
+        - connector_runtime_resolved
+      screenshot_folder: output/playwright/session-098-connector-runtime-readiness-final-closure/
+      screenshot_count: 15
+      validation: full_gate_passed
+      final_closure_commit: 89a8590dacfff01646b2459228bf7734df6aefff
+      notes:
+        - config validation enforces mock-only safety: rejects mockMode:false, rejects unsafe real-network fields
+        - runtime readiness returns mockReady based on mockMode && enabled; realReady is always false
+        - runtime resolver returns tenant-scoped installation with credential reference metadata (no secretRef exposure)
+        - evidence bundles include connector installation summaries with realNetwork:false, writebackEnabled:false, externalWriteAttempted:false
+        - viewer denied server-side on config validation and readiness mutations with 403
+        - cross-tenant access returns 404 on all runtime endpoints
+        - all behavior remains local/mock-only with visible UI warnings
         - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
     bl_093_status:
       completed: true

@@ -48,6 +48,11 @@ export const EvidenceBundleConnectorInstallationSummary = z.object({
   timeoutMs: z.number().optional(),
   lastVerifiedAt: Timestamp.optional(),
   lastError: z.string().optional(),
+  realNetwork: z.literal(false).optional(),
+  writebackEnabled: z.literal(false).optional(),
+  externalWriteAttempted: z.literal(false).optional(),
+  credentialReferenceCount: z.number().int().min(0).optional(),
+  runtimeReadinessSummary: z.string().optional(),
 });
 export type EvidenceBundleConnectorInstallationSummary = z.infer<typeof EvidenceBundleConnectorInstallationSummary>;
 

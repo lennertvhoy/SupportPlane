@@ -2,18 +2,15 @@
 
 **Updated At:** 2026-04-28 17:30 CEST
 **Execution Mode:** operating
-**Project State:** bl_097_credential_reference_foundation_accepted
+**Project State:** bl_098_connector_runtime_configuration_readiness_foundation_accepted
 **Public URL:** not configured
 
 ## Snapshot
 
-- BL-097 is **accepted**. Credential reference foundation implemented: `ConnectorCredentialReference` Prisma model with tenant scoping, CRUD API endpoints (`/credential-references`), link/unlink endpoints on connector installations, RBAC permissions (`credential_reference:read`, `credential_reference:write`), web UI credential reference display with link/unlink selector, and evidence bundle inclusion.
-- `secretRef` is always an opaque local-dev placeholder (`local-dev-opaque-placeholder-NOT-A-REAL-SECRET`). All API responses redact `secretRef` to `[REDACTED]`. Evidence bundles never include secret values.
-- Admin can link/unlink credential references to connector installations; viewer sees read-only credential reference list. Server-side enforcement denies viewer write operations with 403.
-- ConnectorInstallation `secretReferenceIds` array references credentials by ID. No plain JSON secrets stored in installation config.
-- Audit events track credential reference lifecycle: `credential_reference_created`, `credential_reference_updated`, `credential_reference_linked`, `credential_reference_unlinked`.
-- BL-095 remains accepted. Connector installation settings foundation with editable safe fields, RBAC gating, config secret redaction, and mock-only safety.
-- BL-094 delivery policy controls remain accepted. All delivery decisions still return `realNetworkAllowed: false`.
+- BL-098 is **accepted**. Connector runtime configuration and credential reference readiness foundation: schema-driven config validation, runtime readiness checks, tenant-scoped runtime resolver, and credential reference metadata in runtime flows. Config validation enforces mock-only safety (rejects `mockMode: false`, rejects unsafe real-network fields). Runtime readiness returns `mockReady` based on `mockMode && enabled`, `realReady: false`, `realNetwork: false`, `writebackEnabled: false`. Runtime resolver never exposes `secretRef` values; credential metadata includes `secretResolutionImplemented: false`.
+- Audit events track runtime lifecycle (`connector_config_validated`, `connector_readiness_checked`, `connector_runtime_resolved`). Evidence bundles include connector installations with `realNetwork: false`, `writebackEnabled: false`, `externalWriteAttempted: false`, and `credentialReferenceCount`.
+- BL-097 remains accepted. Credential reference foundation with CRUD, link/unlink, RBAC, redaction, and evidence bundle inclusion.
+- BL-095 and BL-094 remain accepted. Connector installation settings with editable safe fields, RBAC gating, and mock-only safety. Delivery policy controls still return `realNetworkAllowed: false` on all decisions.
 - PostgreSQL/local-auth baseline remains active: API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
 
 ## Immediate Priorities
