@@ -1,6 +1,6 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-28 00:29 CEST
+**Updated At:** 2026-04-28 10:35 CEST
 **Execution Mode:** operating
 **Project State:** bl_092_durable_action_outbox_workflow_closure_complete
 **Public URL:** not configured
@@ -10,15 +10,16 @@
 - BL-092 Durable Action/Outbox Workflow closure is complete after repair: lifecycle contradiction fixed where UI showed `mock_delivered` attempt history on `draft`/`review_required` actions. Two independent bugs were fixed:
   1. Backend `ActionsService.listSessionActions` now suppresses outbox items until at least one action reaches `queued`/`mock_delivered`/`failed` state.
   2. Frontend `ActionOutboxPanel.refresh()` now scopes attempt history to the latest action's specific outbox item by `supportActionId` instead of blindly taking `outboxItems[0]`.
-- Closure commit: `5d0a9c5c8f3b8e8c6e6a8b8c8d8e8f8a9b0c1d2e` (full: `5d0a9c5b8c7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c`).
-- Browser proof: `output/playwright/session-092-durable-action-outbox-workflow-final-closure/` with 7 screenshots covering draft, review_required, approved, queued, and mock_delivered states, plus server-side approval denial proof.
+- Closure repair commit: `5d0a9c54bd56e714da75bcfe84b8a809a417f6d8` (lifecycle contradiction fix).
+- Final closure commit: `21f99dab30d3144ac437bf29b1c42d267fe8db64` (17-screenshot audit proof + AGENTS.md closure repair rule).
+- Browser proof: `output/playwright/session-092-durable-action-outbox-workflow-final-closure/` with 17 screenshots covering full action/outbox lifecycle, evidence bundle, audit trail, RBAC, cross-tenant denial, logout/re-login, API restart persistence, and mock warnings.
 - PostgreSQL/local-auth baseline remains active: API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
 - Recent accepted foundations remain BL-018 local auth/RBAC/tenant boundaries, BL-020 ticket/customer/connector safety, BL-050 PostgreSQL persistence, BL-091 support case workflow foundation.
 - All user-facing action/outbox behavior is local/mock-only. No real Zammad writeback, email sending, telephony, AI provider, external queue worker, object storage, raw media storage, production audit immutability, compliance certification, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment is implemented.
 
 ## Immediate Priorities
 
-1. CTO review should select the next backlog slice after BL-092 closure.
+1. BL-092 is CTO-accepted closure-grade. CTO review should select the next backlog slice.
 
 ## Active Blockers
 

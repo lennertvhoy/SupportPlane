@@ -736,6 +736,8 @@ and must be protected from quiet regression.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
 - implementation_commit: 6819301fa5af04a6b02bbe6af532ae669e7a880a
+- closure_repair_commit: 5d0a9c54bd56e714da75bcfe84b8a809a417f6d8
+- final_closure_commit: 21f99dab30d3144ac437bf29b1c42d267fe8db64
 - process_or_container:
   - node process (NestJS API via tsx) on port 4110
   - node process (Next.js dev) on port 3200
@@ -768,20 +770,26 @@ and must be protected from quiet regression.
 - evidence_refs:
   - EV-2026-04-27-096 through EV-2026-04-27-112
   - EV-2026-04-28-001
-- evidence_folder: output/playwright/session-092-durable-action-outbox-workflow-foundation/
+  - EV-2026-04-28-002
+- evidence_folder: output/playwright/session-092-durable-action-outbox-workflow-final-closure/
 - screenshot_count: 17
 - validation_summary:
   - `npm install` passed; npm reported 10 vulnerabilities (8 moderate, 2 high), with no dependency changes introduced in BL-092.
   - `npm run lint`, `npm run typecheck --workspaces --if-present`, `npm run validate`, and `npm run health` passed.
   - `npx prisma validate`, `npx prisma generate`, `npx prisma migrate status`, and `npx prisma db seed` passed.
-  - `scripts/verify_postgres_persistence.sh`, `scripts/verify_local_auth_rbac.sh`, `scripts/verify_ticket_context_connector.sh`, `scripts/verify_support_case_workflow.sh`, and `scripts/verify_durable_action_outbox.sh` passed.
-  - API tests: 112/112 pass.
+  - `scripts/verify_postgres_persistence.sh` passed (fixed to use alternative port when 4110 is occupied).
+  - `scripts/verify_local_auth_rbac.sh` passed.
+  - `scripts/verify_ticket_context_connector.sh` passed (114/114 API tests).
+  - `scripts/verify_support_case_workflow.sh` passed.
+  - `scripts/verify_durable_action_outbox.sh` passed.
+  - API tests: 114/114 pass.
   - Contracts tests: 29/29 pass.
   - Web tests: 15/15 pass.
   - AI tests: 9/9 pass.
   - Connectors build/test passed; connector tests: 16/16 pass.
   - Web build passed with existing Next ESLint-plugin warning.
   - State docs and bootstrap gate checks passed.
+  - Python compilation passed.
 - regression_guard:
   - Viewer can inspect actions/outbox but cannot mutate.
   - Operator/support_agent can create drafts and submit for review.

@@ -1668,3 +1668,66 @@ Durable local support action review, approval, outbox queueing, mock delivery, a
 - Durable action/outbox workflow is synchronous local PostgreSQL state and mock delivery only; it is not a production queue or worker.
 - Legacy Zammad writeback route still exists from BL-007, but BL-092 does not use it and performs no real external writeback.
 - No real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment implemented.
+
+
+## 2026-04-28: BL-092 Final Closure Acceptance Pass
+
+### Scope
+
+CTO-identified closure blockers from prior handoff:
+1. `scripts/verify_postgres_persistence.sh` failed with EADDRINUSE when API already running on :4110.
+2. Full validation gate was reported as "passed in prior session" but not rerun in the final closure pass.
+3. Acceptance freeze and active queue cleanup were left as next actions instead of completed.
+
+### Changes
+
+- Fixed `scripts/verify_postgres_persistence.sh` to detect occupied port 4110 and automatically use the next available port (4111, 4112, etc.) for its temporary API instance. All curl commands now use `localhost:${API_PORT}`.
+- Reran full validation gate in current final state.
+- Updated `docs/ACCEPTANCE_FREEZES.md` AF-2026-04-28-010 with final closure commit, corrected evidence folder, corrected screenshot count (17), and updated validation summary.
+- Updated `STATUS.md` with final closure commit and corrected screenshot count.
+- Updated `PROJECT_STATE.yaml` head and `bl_092_status` with final closure commit, corrected screenshot count, and final closure summary.
+- Updated `AGENTS.md` with closure repair rule (already done in prior commit).
+- `NEXT_ACTIONS.md` already clean (no active BL-092 item).
+
+### Verification
+
+- `git status --short --branch` — clean, branch main
+- `npm install` — pass; 10 pre-existing vulnerabilities reported
+- `npm run lint` — pass
+- `npm run typecheck --workspaces --if-present` — pass (9 workspaces)
+- `npm run validate` — pass
+- `npm run health` — pass
+- `npx prisma validate` — pass
+- `npx prisma generate` — pass
+- `npx prisma migrate status` — pass; schema up to date
+- `npx prisma db seed` — pass
+- `scripts/verify_postgres_persistence.sh` — pass (uses alternative port 4111 when 4110 occupied)
+- `scripts/verify_local_auth_rbac.sh` — pass
+- `scripts/verify_ticket_context_connector.sh` — pass (114/114 API tests)
+- `scripts/verify_support_case_workflow.sh` — pass
+- `scripts/verify_durable_action_outbox.sh` — pass
+- `cd apps/api && npm test` — 114/114 pass
+- `npm test --workspace @supportplane/contracts` — 29/29 pass
+- `npm test --workspace @supportplane/web` — 15/15 pass
+- `npm test --workspace @supportplane/ai` — 9/9 pass
+- `npm run build --workspace @supportplane/connectors` — pass
+- `npm test --workspace @supportplane/connectors` — 16/16 pass
+- `npm run build --workspace @supportplane/web` — pass
+- `python3 scripts/check_state_docs.py` — pass
+- `python3 scripts/check_state_docs.py --bootstrap-gate` — pass
+- `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` — pass
+- `curl -s http://localhost:4110/health` — API ok
+- `curl -s http://localhost:3200/` — Web 200
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-092-durable-action-outbox-workflow-final-closure/`
+- Screenshot count: 17
+- Evidence refs: EV-2026-04-27-096 through EV-2026-04-27-112, EV-2026-04-28-001, EV-2026-04-28-002
+- Final closure commit: `21f99dab30d3144ac437bf29b1c42d267fe8db64`
+
+### Remaining Risk
+
+- Durable action/outbox workflow is synchronous local PostgreSQL state and mock delivery only; not a production queue or worker.
+- Legacy BL-007 writeback route still exists but BL-092 does not use it.
+- No real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment implemented.

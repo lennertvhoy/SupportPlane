@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-28T00:08:00+02:00
+  updated_at: 2026-04-28T10:35:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 5d0a9c5b8c7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c
-    worktree_status: clean_after_bl_092_closure_repair_commit
+    head: 21f99dab30d3144ac437bf29b1c42d267fe8db64
+    worktree_status: clean
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -475,14 +475,19 @@ current_state:
         - POST /outbox/:id/retry
         - POST /outbox/:id/mock-deliver
       screenshot_folder: output/playwright/session-092-durable-action-outbox-workflow-final-closure/
-      screenshot_count: 7
+      screenshot_count: 17
       validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
       implementation_commit: 6819301fa5af04a6b02bbe6af532ae669e7a880a
-      closure_repair_commit: 5d0a9c5b8c7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c
+      closure_repair_commit: 5d0a9c54bd56e714da75bcfe84b8a809a417f6d8
+      final_closure_commit: 21f99dab30d3144ac437bf29b1c42d267fe8db64
       closure_repair_summary: >
         Fixed lifecycle contradiction where UI showed mock_delivered attempt history
         on draft/review_required actions. Two bugs: backend returned all session outbox
         items regardless of action status; frontend picked outboxItems[0] for attempts.
+      final_closure_summary: >
+        Completed 17-screenshot audit proof set, fixed verify_postgres_persistence.sh
+        to handle occupied API ports, reran full validation gate, updated acceptance freeze
+        and all state docs, and added closure repair rule to AGENTS.md.
       notes:
         - action/outbox delivery is local mock only with realNetwork=false and externalWriteAttempted=false
         - viewer can inspect but cannot mutate; operator can create/submit; admin can approve/reject/queue
@@ -490,6 +495,7 @@ current_state:
         - local DB drift was cleared with npx prisma migrate reset --force and recreated from committed migrations plus seed
         - backend now suppresses outbox items until queued/delivered/failed state
         - frontend now scopes attempt history to latest action's outbox item by supportActionId
+        - verify_postgres_persistence.sh now auto-detects occupied port 4110 and uses next available port
     bl_091_status:
       completed: true
       scope: support_case_workflow_foundation

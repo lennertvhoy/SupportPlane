@@ -1326,3 +1326,39 @@
   - Tenant scoping, RBAC, forged-header ignore in local mode, mock delivery safety flags, audit/timeline updates, and no-secret evidence checks are directly verified.
 - Type: api-behavior-verification
 - as_of: 2026-04-28T00:05:00+02:00
+
+
+## EV-2026-04-28-002: BL-092 Final Closure Audit — 17 Screenshot Set and Script Fix
+
+- Files: `output/playwright/session-092-durable-action-outbox-workflow-final-closure/01-draft-created-no-outbox.png` through `17-no-secret-no-raw-media-proof.png`
+- Source/System: Playwright MCP browser automation against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - 01-07: Full action lifecycle — draft, review_required, approval_denial, approved, mock_delivered, second_action_no_outbox, queued
+  - 08: Evidence bundle Summary tab with action/outbox provenance
+  - 09: Evidence bundle JSON tab with no secrets visible
+  - 10: Audit trail showing action/outbox lifecycle events
+  - 11: Viewer role with disabled Action Center controls
+  - 12: Cross-tenant isolation (alt-tenant admin sees empty session list)
+  - 13: Login page after logout
+  - 14: Re-login preserving state
+  - 15: Post-API-restart persisted state
+  - 16: Local mock warnings
+  - 17: No-secret no-raw-media proof
+- Proves:
+  - Complete action/outbox lifecycle is visible and follows role boundaries.
+  - Evidence bundle includes action/outbox provenance without exposing secrets.
+  - Audit trail records all action/outbox events with actor, timestamp, and metadata.
+  - Cross-tenant isolation is enforced server-side.
+  - Viewer role is restricted in UI and server-side.
+  - State survives API restart via PostgreSQL persistence.
+- Type: browser-runtime-verification
+- as_of: 2026-04-28T10:35:00+02:00
+
+## EV-2026-04-28-003: verify_postgres_persistence.sh script fix
+
+- File: `scripts/verify_postgres_persistence.sh`
+- Change: Script now detects if port 4110 is occupied and automatically uses the next available port for its temporary API instance.
+- Proves: The persistence verification script can run honestly even when the development API is already serving on the default port.
+- Type: script-fix-verification
+- as_of: 2026-04-28T10:27:00+02:00
