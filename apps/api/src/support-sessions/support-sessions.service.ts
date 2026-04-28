@@ -1343,6 +1343,7 @@ export class SupportSessionsService {
     const actionOutboxAttempts = (
       await Promise.all(actionOutboxItems.map((item) => this.store.listActionOutboxAttempts(identity.tenantId, item.id)))
     ).flat();
+    const deliveryPolicies = await this.store.listDeliveryPolicies(identity.tenantId);
     const sessionAuditEvents = await this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEventIds = new Set<string>(callEvents.map((call) => call.id));
     const externalCallIds = new Set(callEvents.map((call) => call.externalCallId));
@@ -1378,6 +1379,7 @@ export class SupportSessionsService {
       supportActions,
       actionOutboxItems,
       actionOutboxAttempts,
+      deliveryPolicies,
       connectorMode: this.connectorsService.getMode(),
       storeType: storeType === 'postgres' ? 'postgres' : 'memory',
     });

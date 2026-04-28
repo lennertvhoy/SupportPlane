@@ -23,6 +23,13 @@ const ROLE_RANK: Record<string, number> = {
   owner: 3,
 };
 
+/**
+ * Dev-mode fallback decision used ONLY when no DeliveryPolicy exists in the store.
+ * This fallback is safe because it still returns mock-only flags and denies real
+ * writeback. In local auth + postgres mode, seeded policies ensure this fallback
+ * is never reached for seeded tenants. Production deployments must seed tenant
+ * policies and must not rely on this fallback for safety decisions.
+ */
 const HARDCODED_DEFAULT_DECISION: DeliveryPolicyDecision = {
   allowed: true,
   decision: 'mock_only_allowed',

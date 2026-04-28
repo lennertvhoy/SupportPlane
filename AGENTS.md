@@ -270,6 +270,17 @@ remain incomplete regardless of how many iterations have passed. If a repair
 session does not finish the full closure scope, the handoff must state exactly
 what remains open and why.
 
+### Closure proof completeness rule (mandatory)
+
+A closure handoff may not claim "complete" when required browser-proof states
+from the prompt are missing. If fewer screenshots are captured than requested,
+the handoff must explicitly map each omitted proof to another valid artifact or
+state why it is not applicable. For safety/governance features, browser proof
+must include both allowed and blocked paths, admin and viewer roles,
+cross-tenant denial, evidence/no-secret proof, and persistence/restart proof
+when requested. Validation summaries are not enough; final handoffs must list
+exact commands and pass/fail results.
+
 These rules are repo truth. Violations mean "not closure-grade."}}}}
 
 Use `prompts/FINAL_HANDOFF_TEMPLATE.md` when you need a canonical handoff shape.

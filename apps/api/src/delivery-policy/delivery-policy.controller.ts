@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Post, Req, Body, Inject, NotFoundException } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param, Patch, Post, Req, Body, Inject } from '@nestjs/common';
 import type { Request } from 'express';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { requirePermission } from '../auth/rbac.js';
@@ -30,6 +30,7 @@ export class DeliveryPolicyController {
   }
 
   @Post('delivery-policies/:id/validate')
+  @HttpCode(200)
   async validate(@Req() req: Request, @Param('id') id: string) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'delivery_policy:read');
@@ -37,6 +38,7 @@ export class DeliveryPolicyController {
   }
 
   @Post('connector-installations/:id/readiness')
+  @HttpCode(200)
   async readiness(@Req() req: Request, @Param('id') id: string) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'connector_installation:read');

@@ -21,6 +21,7 @@ import type {
   EvidenceBundleCustomerSummary,
   EvidenceBundleSupportNoteDraftSummary,
   EvidenceBundleActionOutboxSummary,
+  EvidenceBundleDeliveryPolicySummary,
   TenantId,
   SupportSessionId,
   EvidenceBundleId,
@@ -31,6 +32,7 @@ import type {
   SupportAction,
   ActionOutboxItem,
   ActionOutboxAttempt,
+  DeliveryPolicy,
 } from '@supportplane/contracts';
 import { redactSecrets, redactString } from './redaction.js';
 
@@ -52,6 +54,7 @@ export interface BuildEvidenceBundleInput {
   supportActions?: SupportAction[];
   actionOutboxItems?: ActionOutboxItem[];
   actionOutboxAttempts?: ActionOutboxAttempt[];
+  deliveryPolicies?: DeliveryPolicy[];
   connectorMode?: string;
   storeType?: 'memory' | 'postgres';
 }
@@ -264,6 +267,27 @@ function toSupportNoteDraftSummaries(drafts: InternalNoteDraft[] | undefined): E
   }));
 }
 
+function toDeliveryPolicySummaries(policies: DeliveryPolicy[] | undefined): EvidenceBundleDeliveryPolicySummary[] {
+  if (!policies) return [];
+  return policies.map((p) => ({
+    policyId: p.id,
+    policyVersion: p.policyVersion,
+    name: p.name,
+    enabled: p.enabled,
+    killSwitch: p.killSwitch,
+    mockOnlyEnforced: p.mockOnlyEnforced,
+    allowRealNetworkCalls: p.allowRealNetworkCalls,
+    allowedActionTypes: p.allowedActionTypes,
+    approvalRequired: p.approvalRequired,
+    minimumApproverRole: p.minimumApproverRole,
+    requireHumanReview: p.requireHumanReview,
+    requireEvidenceBundleBeforeDelivery: p.requireEvidenceBundleBeforeDelivery,
+    requireConnectorValidationBeforeDelivery: p.requireConnectorValidationBeforeDelivery,
+    safetyFlags: p.safetyFlags as Record<string, unknown>,
+    updatedAt: p.updatedAt,
+  }));
+}
+
 function toActionOutboxSummaries(
   actions: SupportAction[] | undefined,
   outboxItems: ActionOutboxItem[] | undefined,
@@ -409,6 +433,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     connectorInstallations: toConnectorInstallationSummaries(input.connectorInstallations),
     supportNoteDrafts: toSupportNoteDraftSummaries(input.supportNoteDrafts),
     actionOutbox: toActionOutboxSummaries(input.supportActions, input.actionOutboxItems, input.actionOutboxAttempts),
+    deliveryPolicies: toDeliveryPolicySummaries(input.deliveryPolicies),
     greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
     mockDevOnlyDisclaimers: [
@@ -429,6 +454,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Caller matching uses deterministic mock fixtures, not a real customer database.',
       'Support sessions may be auto-created from fake incoming calls. These are mock sessions for development only.',
       'Action outbox deliveries are local mock records processed by the local outbox worker/process-once path only. No real external writeback, email, telephony, AI, external broker, or object storage is used.',
+      'Delivery policies are tenant-scoped mock-only safety gates. Real writeback remains impossible regardless of policy settings.',
     ],
     limitations: [
       'No cryptographic hash chain integrity guarantee.',
@@ -442,6 +468,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Mock call recordings have no real audio content and do not constitute legal or compliance-grade call recording evidence.',
       'Mock screen observations have no real desktop, browser, or application content and do not constitute surveillance, monitoring, or compliance-grade evidence.',
       'Action outbox records are durable local workflow state, not a production queue or compliance-grade immutable audit ledger.',
+      'Delivery policy controls enforce mock-only safety but do not implement real writeback readiness; real writeback requires future connector credential management, network path validation, and tenant admin configuration.',
     ],
     sourceProvenance: {
       storeType: input.storeType ?? 'memory',
@@ -645,6 +672,30 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       lines.push(`- **Not Sent to Zammad:** ${d.notSentToZammad}`);
       lines.push(`- **Requires Human Review:** ${d.requiresHumanReview}`);
       if (d.generatedAt) lines.push(`- **Generated At:** ${d.generatedAt}`);
+      lines.push(``);
+    }
+  }
+  lines.push(``);
+
+  lines.push(`## Delivery Policies`);
+  lines.push(``);
+  if (bundle.deliveryPolicies.length === 0) {
+    lines.push(`*No delivery policies recorded.*`);
+  } else {
+    for (const p of bundle.deliveryPolicies) {
+      lines.push(`### ${p.name} (v${p.policyVersion})`);
+      lines.push(`- **Policy ID:** ${p.policyId}`);
+      lines.push(`- **Enabled:** ${p.enabled}`);
+      lines.push(`- **Kill Switch:** ${p.killSwitch}`);
+      lines.push(`- **Mock Only:** ${p.mockOnlyEnforced}`);
+      lines.push(`- **Real Network Calls:** ${p.allowRealNetworkCalls}`);
+      lines.push(`- **Allowed Actions:** ${p.allowedActionTypes.join(', ')}`);
+      lines.push(`- **Approval Required:** ${p.approvalRequired}`);
+      lines.push(`- **Min Approver Role:** ${p.minimumApproverRole}`);
+      lines.push(`- **Require Human Review:** ${p.requireHumanReview}`);
+      lines.push(`- **Require Evidence Bundle:** ${p.requireEvidenceBundleBeforeDelivery}`);
+      lines.push(`- **Require Connector Validation:** ${p.requireConnectorValidationBeforeDelivery}`);
+      lines.push(`- **Updated At:** ${p.updatedAt ?? 'never'}`);
       lines.push(``);
     }
   }

@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core';
 import supertest from 'supertest';
 import type { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module.js';
+import { InMemoryStore } from '../src/support-sessions/in-memory.store.js';
 
 
 describe('SupportPlane API', () => {
@@ -2575,6 +2576,152 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
     assert.strictEqual(obs.safetyFlags.mockDevOnly, true);
     assert.strictEqual(obs.safetyFlags.rawImageStored, false);
     assert.ok(!JSON.stringify(bundle.body).includes('secretvalue'));
+  });
+
+  it('delivery policy endpoints enforce RBAC and reject real writeback', async () => {
+    // Seed a policy directly into the in-memory store
+    const store = app.get(InMemoryStore);
+    const policy = {
+      id: 'policy-test-001',
+      tenantId: 'tenant-a',
+      connectorInstallationId: null,
+      name: 'Test Policy',
+      enabled: true,
+      killSwitch: false,
+      dryRunRequired: true,
+      mockOnlyEnforced: true,
+      allowRealNetworkCalls: false,
+      allowedActionTypes: ['ticket_note'],
+      approvalRequired: true,
+      minimumApproverRole: 'admin' as const,
+      requireHumanReview: true,
+      requireEvidenceBundleBeforeDelivery: false,
+      requireConnectorValidationBeforeDelivery: false,
+      retryPolicy: { maxAttempts: 3, baseDelaySeconds: 5, maxDelaySeconds: 300, backoffMultiplier: 2 },
+      deadLetterPolicy: { enabled: true, maxAttemptsBeforeDeadLetter: 3, requireManualRetry: true },
+      updatedBy: 'user-1',
+      updatedAt: new Date().toISOString(),
+      policyVersion: 1,
+      lastValidationStatus: 'valid' as const,
+      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true },
+      createdAt: new Date().toISOString(),
+    };
+    store.saveDeliveryPolicy(policy);
+
+    // Admin can list policies
+    const list = await supertest(server)
+      .get('/delivery-policies')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+    assert.ok(list.body.policies.length >= 1);
+
+    // Validation returns mock_only_allowed before any updates
+    const validate = await supertest(server)
+      .post(`/delivery-policies/${policy.id}/validate`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+    assert.strictEqual(validate.body.decision.allowed, true);
+    assert.strictEqual(validate.body.decision.decision, 'mock_only_allowed');
+    assert.strictEqual(validate.body.decision.realNetworkAllowed, false);
+    assert.strictEqual(validate.body.decision.writebackEnabled, false);
+
+    // Admin can update safe fields
+    const update = await supertest(server)
+      .patch(`/delivery-policies/${policy.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'admin')
+      .send({ killSwitch: true })
+      .expect(200);
+    assert.strictEqual(update.body.policy.killSwitch, true);
+    assert.strictEqual(update.body.policy.policyVersion, 2);
+
+    // Viewer cannot update
+    await supertest(server)
+      .patch(`/delivery-policies/${policy.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .send({ killSwitch: false })
+      .expect(403);
+
+    // Real writeback toggle rejected
+    await supertest(server)
+      .patch(`/delivery-policies/${policy.id}`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .set('x-user-role', 'admin')
+      .send({ allowRealNetworkCalls: true })
+      .expect(400);
+
+    // Cross-tenant access denied
+    await supertest(server)
+      .get(`/delivery-policies`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .set('x-user-role', 'admin')
+      .expect(200);
+    const crossTenant = await supertest(server)
+      .get(`/delivery-policies/${policy.id}`)
+      .set('x-tenant-id', 'tenant-b')
+      .set('x-user-id', 'user-2')
+      .set('x-user-role', 'admin')
+      .expect(404);
+    assert.ok(crossTenant.body.message.includes('not found'));
+  });
+
+  it('evidence bundle includes delivery policy summaries', async () => {
+    const store = app.get(InMemoryStore);
+    const policy = {
+      id: 'policy-evidence-001',
+      tenantId: 'tenant-a',
+      connectorInstallationId: null,
+      name: 'Evidence Test Policy',
+      enabled: true,
+      killSwitch: false,
+      dryRunRequired: true,
+      mockOnlyEnforced: true,
+      allowRealNetworkCalls: false,
+      allowedActionTypes: ['ticket_note'],
+      approvalRequired: true,
+      minimumApproverRole: 'admin' as const,
+      requireHumanReview: true,
+      requireEvidenceBundleBeforeDelivery: false,
+      requireConnectorValidationBeforeDelivery: false,
+      retryPolicy: { maxAttempts: 3, baseDelaySeconds: 5, maxDelaySeconds: 300, backoffMultiplier: 2 },
+      deadLetterPolicy: { enabled: true, maxAttemptsBeforeDeadLetter: 3, requireManualRetry: true },
+      updatedBy: 'user-1',
+      updatedAt: new Date().toISOString(),
+      policyVersion: 1,
+      lastValidationStatus: 'valid' as const,
+      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true },
+      createdAt: new Date().toISOString(),
+    };
+    store.saveDeliveryPolicy(policy);
+
+    const session = await supertest(server)
+      .post('/support-sessions')
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .send({ title: 'Evidence policy test' })
+      .expect(201);
+
+    const bundle = await supertest(server)
+      .get(`/support-sessions/${session.body.id}/evidence-bundle`)
+      .set('x-tenant-id', 'tenant-a')
+      .set('x-user-id', 'user-1')
+      .expect(200);
+
+    assert.ok(Array.isArray(bundle.body.bundle.deliveryPolicies));
+    const found = bundle.body.bundle.deliveryPolicies.find((p: { policyId: string }) => p.policyId === policy.id);
+    assert.ok(found, 'expected policy in evidence bundle');
+    assert.strictEqual(found.mockOnlyEnforced, true);
+    assert.strictEqual(found.allowRealNetworkCalls, false);
+    assert.strictEqual(found.safetyFlags.realNetworkAllowed, false);
   });
 });
 

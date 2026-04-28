@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Shield, Lock, CheckCircle, XCircle, AlertTriangle, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Shield, Lock, CheckCircle, XCircle, AlertTriangle, RefreshCw, Eye } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
 import { api, type DeliveryPolicy, type DeliveryPolicyDecision, type ConnectorReadinessResult, type AuthIdentity, ApiClientError } from '@/lib/api';
@@ -19,7 +19,6 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
   const [validationLoading, setValidationLoading] = useState(false);
 
   const canWrite = identity.permissions.includes('*') || identity.permissions.includes('delivery_policy:write');
-  const selectedPolicyIdRef = selectedPolicy?.id;
 
   const fetchPolicies = useCallback(async () => {
     setLoading(true);
@@ -30,8 +29,8 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
       if (data.policies.length > 0 && !selectedPolicy) {
         setSelectedPolicy(data.policies[0]);
       }
-    } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : 'Failed to load policies');
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : 'Failed to load policies');
     } finally {
       setLoading(false);
     }
@@ -50,8 +49,8 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
       const data = await api.updateDeliveryPolicy(current.id, updates);
       setSelectedPolicy(data.policy);
       setPolicies((prev) => prev.map((p) => (p.id === data.policy.id ? data.policy : p)));
-    } catch (err) {
-      setSaveError(err instanceof ApiClientError ? err.message : 'Failed to update policy');
+    } catch (e) {
+      setSaveError(e instanceof ApiClientError ? e.message : 'Failed to update policy');
     } finally {
       setSaving(false);
     }
@@ -64,7 +63,7 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
     try {
       const data = await api.validateDeliveryPolicy(current.id);
       setValidation(data);
-    } catch (err) {
+    } catch {
       // ignore
     } finally {
       setValidationLoading(false);

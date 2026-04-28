@@ -235,6 +235,25 @@ export const EvidenceBundleActionOutboxSummary = z.object({
 });
 export type EvidenceBundleActionOutboxSummary = z.infer<typeof EvidenceBundleActionOutboxSummary>;
 
+export const EvidenceBundleDeliveryPolicySummary = z.object({
+  policyId: z.string(),
+  policyVersion: z.number().int(),
+  name: z.string(),
+  enabled: z.boolean(),
+  killSwitch: z.boolean(),
+  mockOnlyEnforced: z.boolean(),
+  allowRealNetworkCalls: z.boolean(),
+  allowedActionTypes: z.array(z.string()),
+  approvalRequired: z.boolean(),
+  minimumApproverRole: z.string(),
+  requireHumanReview: z.boolean(),
+  requireEvidenceBundleBeforeDelivery: z.boolean(),
+  requireConnectorValidationBeforeDelivery: z.boolean(),
+  safetyFlags: z.record(JsonValue),
+  updatedAt: Timestamp.optional(),
+});
+export type EvidenceBundleDeliveryPolicySummary = z.infer<typeof EvidenceBundleDeliveryPolicySummary>;
+
 export const EvidenceBundleAuditSummary = z.object({
   id: EntityId,
   eventType: z.string(),
@@ -298,6 +317,7 @@ export const EvidenceBundle = z.object({
   connectorInstallations: z.array(EvidenceBundleConnectorInstallationSummary).default([]),
   supportNoteDrafts: z.array(EvidenceBundleSupportNoteDraftSummary).default([]),
   actionOutbox: z.array(EvidenceBundleActionOutboxSummary).default([]),
+  deliveryPolicies: z.array(EvidenceBundleDeliveryPolicySummary).default([]),
   auditTimeline: z.array(EvidenceBundleAuditSummary),
   mockDevOnlyDisclaimers: z.array(z.string()),
   limitations: z.array(z.string()),
