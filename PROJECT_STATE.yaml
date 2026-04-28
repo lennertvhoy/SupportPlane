@@ -42,8 +42,8 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 4c7697de0f143cba09ec60c9f1de05725ec659c7
-    worktree_status: dirty_until_bl_093_commit
+    head: f5c101da467384bce940f886f0e8226478180bfa
+    worktree_status: clean_after_bl_093_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -498,7 +498,7 @@ current_state:
         - verify_postgres_persistence.sh now auto-detects occupied port 4110 and uses next available port
     bl_093_status:
       completed: true
-      status: validation_passed_pending_final_commit
+      status: closure_ready
       scope: background_outbox_worker_retry_deadletter_foundation
       backlog_id: BL-093
       contracts_package: packages/contracts
@@ -519,7 +519,7 @@ current_state:
       screenshot_folder: output/playwright/session-093-outbox-worker-retry-deadletter-foundation/
       screenshot_count: 24
       validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
-      final_closure_commit: pending_final_commit_recorded_in_handoff
+      final_closure_commit: f5c101da467384bce940f886f0e8226478180bfa
       notes:
         - worker/process-once delivery mode is local mock only
         - all delivery results include mode=mock, realNetwork=false, writebackEnabled=false, externalWriteAttempted=false

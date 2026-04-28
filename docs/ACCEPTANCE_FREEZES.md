@@ -815,7 +815,7 @@ and must be protected from quiet regression.
 - Scope: Local PostgreSQL-backed mock outbox worker/process-once path, safe claim/lock fields, attempt history, retry scheduling, dead-letter/cancel controls, deterministic mock connector failure scenarios, worker status, RBAC/tenant boundaries, audit events, case timeline entries, evidence-bundle provenance, worker CLI, verification script, and cockpit Delivery Operations UI.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
-- final_closure_commit: recorded in final handoff after commit
+- final_closure_commit: f5c101da467384bce940f886f0e8226478180bfa
 - process_or_container:
   - node process (NestJS API via tsx) on port 4110
   - node process (Next.js dev) on port 3200
