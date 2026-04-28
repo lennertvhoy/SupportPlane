@@ -2,7 +2,10 @@
 
 ## Commits
 
-- `36e51607bee95232bec4f7d49f3aea67b4937053` — BL-098 closure repair: idempotent seed, provenance wiring, screenshot script, docs
+- `36e51607bee95232bec4f7d49f3aea67b4937053` — BL-098 closure repair: idempotent seed, provenance wiring, screenshot script, docs (primary implementation commit)
+- `e5156f6228f7a650fd8ad75c5974243cae3b6481` — docs: BL-098 closure repair state reconciliation
+- `3c425c3f3f5adf891f598d4ae5c5286fd98be5e0` — chore: update BL-098 repair screenshots after re-run
+- Final HEAD at handoff time is the latest commit on `main`; verify with `git log`
 
 ## Worktree
 
