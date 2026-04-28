@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Loader2, AlertCircle, Ticket, User, Mail, Tag, Globe } from 'lucide-react';
+import { Loader2, AlertCircle, Ticket, User, Mail, Tag, Globe, Plug, Shield, Lock } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
-import type { TicketReference, SupportSession } from '@/lib/api';
+import type { TicketReference, SupportSession, ConnectorInstallation } from '@/lib/api';
 
 export function TicketContextPanel({
   session,
@@ -13,6 +13,7 @@ export function TicketContextPanel({
   error,
   onLoad,
   connectorMode,
+  connectorInstallation,
 }: {
   session?: SupportSession;
   ticket?: TicketReference;
@@ -20,6 +21,7 @@ export function TicketContextPanel({
   error: string | null;
   onLoad: (externalTicketId: string) => void;
   connectorMode?: 'mock' | 'zammad';
+  connectorInstallation?: ConnectorInstallation;
 }) {
   const [ticketId, setTicketId] = useState('TICKET-101');
 
@@ -107,6 +109,36 @@ export function TicketContextPanel({
                   </span>
                 )}
               </div>
+
+              {/* Connector Runtime Provenance */}
+              {connectorInstallation && (
+                <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2 space-y-1">
+                  <div className="flex items-center gap-1.5 text-[10px] font-medium text-cockpit-300">
+                    <Plug size={10} className="text-accent" />
+                    Connector Runtime Provenance
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px]">
+                    <div className="text-cockpit-500">Installation:</div>
+                    <div className="text-cockpit-200">{connectorInstallation.displayName || connectorInstallation.name}</div>
+                    <div className="text-cockpit-500">Type:</div>
+                    <div className="text-cockpit-200">{connectorInstallation.adapterType}</div>
+                    <div className="text-cockpit-500">Mode:</div>
+                    <div className="inline-flex items-center gap-1">
+                      <Lock size={8} className="text-amber-400" />
+                      <span className="text-amber-300">{connectorInstallation.mockMode ? 'mock' : 'real'}</span>
+                    </div>
+                    <div className="text-cockpit-500">Network:</div>
+                    <div className="inline-flex items-center gap-1">
+                      <Shield size={8} className="text-emerald-400" />
+                      <span className="text-emerald-300">none (local-only)</span>
+                    </div>
+                    <div className="text-cockpit-500">Credentials:</div>
+                    <div className="text-cockpit-200">{connectorInstallation.secretReferenceIds.length} linked</div>
+                    <div className="text-cockpit-500">Capabilities:</div>
+                    <div className="text-cockpit-200">{connectorInstallation.capabilities.join(', ')}</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

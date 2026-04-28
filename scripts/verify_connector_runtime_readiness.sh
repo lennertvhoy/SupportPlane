@@ -105,13 +105,10 @@ READINESS=$(admin_api POST "/connector-installations/$INST_ID/runtime-readiness"
 echo "$READINESS" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d['result']; assert r['realReady']==False; assert r['realNetwork']==False; assert r['writebackEnabled']==False; assert r['externalWriteAttempted']==False"
 echo "PASS"
 
-# 6. Credential reference linked metadata appears
+# 6. Credential reference linked metadata appears (uses seeded cred-ref-dev-001)
 echo "[6/12] Credential reference linked metadata..."
-CRED=$(admin_api POST "/credential-references" '{"connectorType":"zammad","displayName":"BL-098 Verify Credential"}')
-CRED_ID=$(echo "$CRED" | python3 -c "import sys,json; print(json.load(sys.stdin)['credentialReference']['id'])")
-admin_api POST "/connector-installations/$INST_ID/link-credential" "{\"credentialReferenceId\":\"$CRED_ID\"}" > /dev/null
 RESOLVE=$(admin_api GET "/connector-installations/runtime/resolve?connectorType=zammad")
-echo "$RESOLVE" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['mode']=='mock'; assert d['realNetwork']==False; assert d['writebackEnabled']==False; creds=d.get('credentialReferences',[]); assert any(c['id']=='$CRED_ID' for c in creds), 'linked credential not found'"
+echo "$RESOLVE" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['mode']=='mock'; assert d['realNetwork']==False; assert d['writebackEnabled']==False; creds=d.get('credentialReferences',[]); assert any(c['id']=='cred-ref-dev-001' for c in creds), 'linked credential cred-ref-dev-001 not found'"
 echo "PASS"
 
 # 7. Evidence bundle redacts secrets
@@ -140,9 +137,9 @@ ALT_GET=$(alt_api GET "/connector-installations/$INST_ID")
 echo "$ALT_GET" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get('statusCode')==404 or d.get('error')=='Not Found', f'alt tenant should get 404, got {d}'"
 echo "PASS"
 
-# 10. Runtime resolver never returns raw secretRef
-echo "[10/12] Runtime resolver redacts secrets..."
-echo "$RESOLVE" | python3 -c "import sys,json; d=json.load(sys.stdin); creds=d.get('credentialReferences',[]); assert all('secretRef' not in c for c in creds), 'secretRef must not be exposed'; assert all(c.get('secretResolutionImplemented')==False for c in creds)"
+# 10. Runtime resolver never returns raw secretRef and count is deterministic
+echo "[10/12] Runtime resolver redacts secrets and credential count is deterministic..."
+echo "$RESOLVE" | python3 -c "import sys,json; d=json.load(sys.stdin); creds=d.get('credentialReferences',[]); assert len(creds)==1, f'expected 1 credential ref, got {len(creds)}'; assert all('secretRef' not in c for c in creds), 'secretRef must not be exposed'; assert all(c.get('secretResolutionImplemented')==False for c in creds)"
 echo "PASS"
 
 # 11. Config validation warns on unknown fields

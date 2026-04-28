@@ -31,6 +31,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
   const [greetingSuggestion, setGreetingSuggestion] = useState<GreetingSuggestionResponse | undefined>(undefined);
   const [writebackResult, setWritebackResult] = useState<InternalNoteWritebackResult | undefined>(undefined);
   const [connectorStatus, setConnectorStatus] = useState<ConnectorStatus | undefined>(undefined);
+  const [connectorInstallations, setConnectorInstallations] = useState<import('@/lib/api').ConnectorInstallation[]>([]);
   const [evidenceBundle, setEvidenceBundle] = useState<EvidenceBundleExportResponse | undefined>(undefined);
   const [, setRecentCalls] = useState<CallEvent[]>([]);
   const [evidenceBundleMarkdown, setEvidenceBundleMarkdown] = useState<string | undefined>(undefined);
@@ -92,6 +93,15 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
     }
   }, []);
 
+  const fetchConnectorInstallations = useCallback(async () => {
+    try {
+      const insts = await api.listConnectorInstallations();
+      setConnectorInstallations(insts);
+    } catch {
+      // Non-fatal
+    }
+  }, []);
+
   const fetchRecentCalls = useCallback(async () => {
     try {
       const calls = await api.listRecentCalls();
@@ -104,8 +114,9 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
   useEffect(() => {
     fetchSessions();
     fetchConnectorStatus();
+    fetchConnectorInstallations();
     fetchRecentCalls();
-  }, [fetchSessions, fetchConnectorStatus, fetchRecentCalls]);
+  }, [fetchSessions, fetchConnectorStatus, fetchConnectorInstallations, fetchRecentCalls]);
 
   const handleSelectSession = useCallback(
     async (session: SupportSession) => {
@@ -398,6 +409,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               error={ticketError}
               onLoad={handleLoadTicket}
               connectorMode={connectorStatus?.mode}
+              connectorInstallation={connectorInstallations.find((i) => i.adapterType === 'zammad') ?? connectorInstallations[0]}
             />
             <CaseTimelinePanel session={selectedSession} />
             <AiContextPanel

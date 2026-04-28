@@ -244,7 +244,7 @@ async function main() {
       description: 'Mock Zammad connector for local development and testing. No real network calls.',
       adapterType: 'zammad',
       capabilities: ['read_tickets', 'read_customers', 'write_notes'],
-      config: { mode: 'mock', baseUrl: 'http://localhost:3000' },
+      config: { mockMode: true, enabled: true, validateBeforeWrite: true, timeoutMs: 5000, capabilities: ['read_tickets'], baseUrlPlaceholder: 'mock-zammad' },
       status: 'active',
       mockMode: true,
       enabled: true,
@@ -275,6 +275,21 @@ async function main() {
       update: inst,
     });
   }
+
+  // Clean up stray credential references from prior test/script runs
+  const knownCredIds = ['cred-ref-dev-001', 'cred-ref-dev-002', 'cred-ref-alt-001'];
+  await prisma.connectorCredentialReference.deleteMany({
+    where: {
+      tenantId: { in: ['dev-tenant', 'alt-tenant'] },
+      id: { notIn: knownCredIds },
+    },
+  });
+
+  // Reset installation credential links to known seeded refs only
+  await prisma.connectorInstallation.updateMany({
+    where: { tenantId: { in: ['dev-tenant', 'alt-tenant'] } },
+    data: { secretReferenceIds: [] },
+  });
 
   // Seed demo credential references
   const credentialReferences = [

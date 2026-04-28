@@ -13,7 +13,6 @@ import {
 import type {
   AuditEvent as AuditEventShape,
   ConnectorInstallation as ConnectorInstallationShape,
-  ConnectorCredentialReference as ConnectorCredentialReferenceShape,
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import type { DevIdentity } from '../auth/auth.types.js';

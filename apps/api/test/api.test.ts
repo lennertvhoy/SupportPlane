@@ -1382,7 +1382,7 @@ describe('Connector runtime configuration and readiness (BL-098)', () => {
   });
 
   it('ticket context payload includes connector installation provenance', async () => {
-    const installation = await supertest(server)
+    await supertest(server)
       .post('/connector-installations')
       .set('x-tenant-id', 'tenant-runtime')
       .set('x-user-id', 'admin-1')

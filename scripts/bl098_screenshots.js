@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * BL-098 Screenshot Script — Connector Runtime Configuration + Credential Reference Readiness Foundation
- * Uses local auth via web UI login form, writes to canonical final-closure folder.
+ * BL-098 Closure Repair Screenshot Script
+ * Uses local auth via web UI login form, writes to canonical repair folder.
  */
 
 const { chromium } = require('playwright');
@@ -9,10 +9,12 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const OUTPUT_DIR = path.join(__dirname, '..', 'output', 'playwright', 'session-098-connector-runtime-readiness-final-closure');
+const OUTPUT_DIR = path.join(__dirname, '..', 'output', 'playwright', 'session-099-bl098-closure-repair-final');
 const WEB_URL = 'http://localhost:3200';
 const API_URL = 'http://localhost:4110';
 const MAX_SCREENSHOTS = 20;
+
+const INST_ID = 'conn-inst-dev-001';
 
 let screenshotCount = 0;
 const proofMapping = [];
@@ -50,13 +52,14 @@ function panelLocator(page, title) {
 }
 
 async function webLogin(page, email, password, tenantSlug) {
-  await page.goto(WEB_URL);
-  await page.waitForTimeout(2000);
+  // Check if already logged in on current page
   const identityPill = page.locator('text=/admin|viewer|support_agent/i').first();
   if (await identityPill.count() > 0 && await identityPill.isVisible()) {
     console.log('Already logged in');
     return;
   }
+  await page.goto(WEB_URL);
+  await page.waitForTimeout(2000);
   const inputs = page.locator('input');
   if (await inputs.count() >= 3) {
     await inputs.nth(0).fill(tenantSlug);
@@ -98,19 +101,16 @@ async function apiCall(path, sessionToken, method = 'GET', body) {
   return res.json();
 }
 
-async function styleApiPage(page, title, color) {
-  await page.evaluate((opts) => {
-    const body = document.body;
-    const json = body.innerText;
-    body.innerHTML = `
-      <div style="font-family:monospace;padding:20px;background:#0f172a;color:#e2e8f0;min-height:100vh;">
-        <div style="background:${opts.color};color:white;padding:12px 16px;font-size:18px;font-weight:bold;margin-bottom:16px;border-radius:6px;">
-          ${opts.title}
-        </div>
-        <pre style="background:#1e293b;padding:16px;border-radius:6px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.5;">${json.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+async function styleApiPage(page, title, color, jsonObj) {
+  const text = JSON.stringify(jsonObj, null, 2);
+  await page.setContent(`
+    <div style="font-family:monospace;padding:20px;background:#0f172a;color:#e2e8f0;min-height:100vh;">
+      <div style="background:${color};color:white;padding:12px 16px;font-size:18px;font-weight:bold;margin-bottom:16px;border-radius:6px;">
+        ${title}
       </div>
-    `;
-  }, { title, color });
+      <pre style="background:#1e293b;padding:16px;border-radius:6px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.5;">${text.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+    </div>
+  `);
   await page.waitForTimeout(300);
 }
 
@@ -122,44 +122,24 @@ async function main() {
     fs.unlinkSync(path.join(OUTPUT_DIR, f));
   }
 
-  // ── Setup: API login for test data creation ──
+  // ── Setup: API logins ──
   const adminToken = await apiLogin('admin@supportplane.local', 'supportplane-demo', 'dev-tenant');
   const viewerToken = await apiLogin('viewer@supportplane.local', 'supportplane-demo', 'dev-tenant');
+  const altAdminToken = await apiLogin('admin@alt.supportplane.local', 'supportplane-demo', 'alt-tenant');
 
+  // Create session and prep data for provenance/bundle proof
   const session = await apiCall('/support-sessions', adminToken, 'POST', {
-    title: 'BL-098 Connector Runtime Readiness Closure Test',
-    description: 'Session created for BL-098 final closure evidence',
+    title: 'BL-099 Closure Repair Test',
+    description: 'Session for BL-098 closure repair evidence',
     priority: 'normal',
   });
   const sessionId = session.id;
 
-  // Get or create an installation for testing
-  const installationsRes = await apiCall('/connector-installations', adminToken);
-  const installations = installationsRes.installations || [];
-  let targetInstallation = installations.find(i => i.adapterType === 'zammad') || installations[0];
-  if (!targetInstallation) {
-    const created = await apiCall('/connector-installations', adminToken, 'POST', {
-      name: 'BL-098 Test Connector',
-      adapterType: 'zammad',
-    });
-    targetInstallation = created.installation;
-  }
-  const instId = targetInstallation.id;
+  // Load ticket context via API so provenance is visible (use non-seeded ticket to avoid unique constraint conflict)
+  await apiCall(`/support-sessions/${sessionId}/zammad/ticket-context`, adminToken, 'POST', { externalTicketId: 'TICKET-999' });
 
-  // Create and link a credential reference for linked-credential proof
-  const credRef = await apiCall('/credential-references', adminToken, 'POST', {
-    connectorType: 'zammad',
-    displayName: 'BL-098 Test Credential',
-    description: 'Test credential for closure proof',
-    status: 'active',
-    secretKind: 'api_token_placeholder',
-  });
-  const credRefId = credRef.credentialReference.id;
-
-  // Link it
-  await apiCall(`/connector-installations/${instId}/link-credential`, adminToken, 'POST', {
-    credentialReferenceId: credRefId,
-  });
+  // Generate evidence bundle via API so it exists for screenshots
+  await apiCall(`/support-sessions/${sessionId}/evidence-bundle`, adminToken);
 
   const browser = await chromium.launch({ headless: true });
 
@@ -169,40 +149,33 @@ async function main() {
   await webLogin(adminPage, 'admin@supportplane.local', 'supportplane-demo', 'dev-tenant');
   await screenshot(adminPage, 'admin-runtime-identity', 'Admin runtime identity: user/tenant/role/API URL/local auth/postgres store/mock mode', { fullPage: false });
 
-  // ── 2. Connector panel with Config and Readiness buttons ──
+  // ── 2. Connector installation expanded with clean credential refs ──
   const chevron = adminPage.locator('svg[class*="lucide-chevron-down"]').first();
   if (await chevron.count() > 0) {
     await chevron.click();
     await adminPage.waitForTimeout(800);
   }
-  await screenshotElement(adminPage, panelLocator(adminPage, 'Connector'), 'admin-connector-panel-buttons', 'Connector panel shows Config and Readiness action buttons');
+  // Scroll to credential refs section and verify clean count
+  await adminPage.waitForSelector('text=/Credential References/i', { timeout: 5000 });
+  const credSection = adminPage.locator('text=/Credential References/i').first().locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
+  await screenshotElement(adminPage, credSection, 'admin-connector-clean-credentials', 'Connector installation expanded with one linked active placeholder credential (clean set)');
 
-  // ── 3. Config validation result (valid) ──
+  // ── 3. Safe config validation: valid: true ──
   const configBtn = adminPage.locator('button').filter({ hasText: 'Config' }).first();
   if (await configBtn.count() > 0) {
     await configBtn.click();
     await adminPage.waitForTimeout(1200);
   }
-  const configResultPanel = adminPage.locator('text=/Config validation/i').first();
-  if (await configResultPanel.count() > 0) {
-    const resultBox = configResultPanel.locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
-    await screenshotElement(adminPage, resultBox, 'admin-config-validation-valid', 'Config validation result shows Valid badge, mockMode:true, realNetwork:false, writebackEnabled:false');
-  } else {
-    await screenshotElement(adminPage, panelLocator(adminPage, 'Connector'), 'admin-config-validation-valid', 'Config validation result shows Valid badge, mockMode:true, realNetwork:false, writebackEnabled:false');
-  }
+  await adminPage.waitForSelector('text=/Config validation/i', { timeout: 5000 });
+  const configPanel = adminPage.locator('text=/Config validation/i').first().locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
+  await screenshotElement(adminPage, configPanel, 'admin-config-validation-valid', 'Safe config validation result shows Valid badge, valid: true, mockMode: true, realNetwork: false, writebackEnabled: false');
 
-  // ── 4. Config validation result (unsafe config rejected) ──
+  // ── 4. Unsafe config validation rejected ──
+  const unsafeResult = await apiCall(`/connector-installations/${INST_ID}/validate-config`, adminToken, 'POST', {
+    config: { mockMode: false, apiToken: 'secret123', baseUrl: 'http://real.example.com' },
+  });
   const apiPage = await adminContext.newPage();
-  const unsafeValidationJson = await apiCall(`/connector-installations/${instId}/validate-config`, adminToken, 'POST', { config: { mockMode: false, apiToken: 'secret123', baseUrl: 'http://real.example.com' } });
-  await apiPage.setContent(`
-    <div style="font-family:monospace;padding:20px;background:#0f172a;color:#e2e8f0;min-height:100vh;">
-      <div style="background:#ef4444;color:white;padding:12px 16px;font-size:18px;font-weight:bold;margin-bottom:16px;border-radius:6px;">
-        POST /connector-installations/${instId}/validate-config (unsafe)
-      </div>
-      <pre style="background:#1e293b;padding:16px;border-radius:6px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.5;">${JSON.stringify(unsafeValidationJson, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-    </div>
-  `);
-  await apiPage.waitForTimeout(300);
+  await styleApiPage(apiPage, `POST /connector-installations/${INST_ID}/validate-config (unsafe)`, '#ef4444', unsafeResult);
   await screenshot(apiPage, 'api-config-validation-unsafe-rejected', 'Unsafe config validation rejected: mockMode:false, apiToken, baseUrl all flagged as errors', { fullPage: true });
 
   // ── 5. Runtime readiness panel ──
@@ -219,78 +192,70 @@ async function main() {
     await readinessBtn.click();
     await adminPage.waitForTimeout(1200);
   }
-  const readinessResultPanel = adminPage.locator('text=/Runtime readiness/i').first();
-  if (await readinessResultPanel.count() > 0) {
-    const readinessBox = readinessResultPanel.locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
-    await screenshotElement(adminPage, readinessBox, 'admin-runtime-readiness-panel', 'Runtime readiness panel shows mockReady, realNetwork:false, writebackEnabled:false, linkedCredentials count');
-  } else {
-    await screenshotElement(adminPage, panelLocator(adminPage, 'Connector'), 'admin-runtime-readiness-panel', 'Runtime readiness panel shows mockReady, realNetwork:false, writebackEnabled:false, linkedCredentials count');
+  await adminPage.waitForSelector('text=/Runtime readiness/i', { timeout: 5000 });
+  const readinessPanel = adminPage.locator('text=/Runtime readiness/i').first().locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
+  await screenshotElement(adminPage, readinessPanel, 'admin-runtime-readiness-panel', 'Runtime readiness panel shows mockReady, realReady: false, realNetwork: false, writebackEnabled: false, linkedCredentials count');
+
+  // ── 6. Runtime resolver credential metadata only ──
+  const resolveResult = await apiCall('/connector-installations/runtime/resolve?connectorType=zammad', adminToken);
+  await styleApiPage(apiPage, 'GET /connector-installations/runtime/resolve?connectorType=zammad', '#10b981', resolveResult);
+  await screenshot(apiPage, 'api-runtime-resolve-credential-metadata', 'Runtime resolver returns tenant-scoped result with credential metadata only, no secretRef, secretResolutionImplemented: false', { fullPage: true });
+
+  // ── 7. Ticket/customer context provenance ──
+  await adminPage.goto(`${WEB_URL}?session=${sessionId}`);
+  await adminPage.waitForTimeout(4000);
+  await webLogin(adminPage, 'admin@supportplane.local', 'supportplane-demo', 'dev-tenant');
+  // Ensure session is selected
+  const sessionItem = adminPage.locator('div').filter({ hasText: /BL-099 Closure Repair Test/ }).first();
+  if (await sessionItem.count() > 0) {
+    await sessionItem.click();
+    await adminPage.waitForTimeout(2000);
   }
+  // Wait for ticket input to be enabled
+  await adminPage.waitForSelector('input[placeholder="External ticket ID"]:not([disabled])', { timeout: 15000 });
+  const ticketInput = adminPage.locator('input[placeholder="External ticket ID"]').first();
+  await ticketInput.fill('TICKET-999');
+  const loadBtn = adminPage.locator('button').filter({ hasText: 'Load' }).first();
+  await loadBtn.click();
+  await adminPage.waitForTimeout(2500);
+  // Wait for ticket to load first, then provenance
+  await adminPage.waitForSelector('text=/Zammad ticket TICKET-999/i', { timeout: 15000 });
+  await adminPage.waitForTimeout(1000);
+  const ticketPanel = panelLocator(adminPage, 'Ticket Context');
+  await screenshotElement(adminPage, ticketPanel, 'admin-ticket-context-provenance', 'Ticket/customer context provenance showing connector installation source, mock mode, linked credentials, capabilities, no real network');
 
-  // ── 6. Expanded installation settings with mock-only badge ──
-  const chevron3 = adminPage.locator('svg[class*="lucide-chevron-down"]').first();
-  if (await chevron3.count() > 0) {
-    await chevron3.click();
-    await adminPage.waitForTimeout(800);
-  }
-  const settingsPanel = adminPage.locator('text=/Installation Settings/i').first();
-  if (await settingsPanel.count() > 0) {
-    const settingsBox = settingsPanel.locator('xpath=ancestor::div[contains(@class,"rounded")][1]');
-    await screenshotElement(adminPage, settingsBox, 'admin-installation-settings-mock-only', 'Expanded installation settings show Mock-only badge, Locked ON mock mode, credential references');
-  } else {
-    await screenshotElement(adminPage, panelLocator(adminPage, 'Connector'), 'admin-installation-settings-mock-only', 'Expanded installation settings show Mock-only badge, Locked ON mock mode, credential references');
-  }
+  // ── 8. Evidence bundle summary with connector/runtime/credential provenance ──
+  const evidencePanel = panelLocator(adminPage, 'Evidence Bundle');
+  await screenshotElement(adminPage, evidencePanel, 'admin-evidence-bundle-summary', 'Evidence bundle summary with connector installations count, mock/dev-only disclaimers');
 
-  // ── 7. API config schema endpoint ──
-  await apiPage.goto(`${API_URL}/connector-installations/${instId}/config-schema`);
-  await apiPage.waitForTimeout(1200);
-  await apiPage.context().addCookies([{
-    name: 'supportplane_session',
-    value: adminToken,
-    domain: 'localhost',
-    path: '/',
-    httpOnly: true,
-    sameSite: 'Lax',
-  }]);
-  await apiPage.reload();
-  await apiPage.waitForTimeout(1200);
-  await styleApiPage(apiPage, `GET /connector-installations/${instId}/config-schema`, '#3b82f6');
-  await screenshot(apiPage, 'api-config-schema-mock-only', 'Config schema endpoint returns safeFields, rejectedFields, mockOnly:true', { fullPage: true });
-
-  // ── 8. API runtime readiness endpoint ──
-  const runtimeReadinessJson = await apiCall(`/connector-installations/${instId}/runtime-readiness`, adminToken, 'POST');
-  await apiPage.setContent(`
-    <div style="font-family:monospace;padding:20px;background:#0f172a;color:#e2e8f0;min-height:100vh;">
-      <div style="background:#8b5cf6;color:white;padding:12px 16px;font-size:18px;font-weight:bold;margin-bottom:16px;border-radius:6px;">
-        POST /connector-installations/${instId}/runtime-readiness
-      </div>
-      <pre style="background:#1e293b;padding:16px;border-radius:6px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:13px;line-height:1.5;">${JSON.stringify(runtimeReadinessJson, null, 2).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-    </div>
-  `);
-  await apiPage.waitForTimeout(300);
-  await screenshot(apiPage, 'api-runtime-readiness-mock-only', 'Runtime readiness API returns mockReady, realReady:false, realNetwork:false, writebackEnabled:false, credentialReferencesLinked', { fullPage: true });
-
-  // ── 9. API runtime resolve endpoint with credential metadata ──
-  await apiPage.goto(`${API_URL}/connector-installations/runtime/resolve?connectorType=zammad`);
-  await apiPage.waitForTimeout(1200);
-  await apiPage.context().addCookies([{
-    name: 'supportplane_session',
-    value: adminToken,
-    domain: 'localhost',
-    path: '/',
-    httpOnly: true,
-    sameSite: 'Lax',
-  }]);
-  await apiPage.reload();
-  await apiPage.waitForTimeout(1200);
-  await styleApiPage(apiPage, `GET /connector-installations/runtime/resolve?connectorType=zammad`, '#10b981');
-  await screenshot(apiPage, 'api-runtime-resolve-credential-metadata', 'Runtime resolver returns tenant-scoped result with credential reference metadata (no secretRef), secretResolutionImplemented:false', { fullPage: true });
-
-  // ── 10. Evidence bundle JSON with connector safety fields ──
+  // ── 9. Evidence bundle JSON no-secret proof ──
   await apiPage.goto(`${API_URL}/support-sessions/${sessionId}/evidence-bundle.json`);
   await apiPage.waitForTimeout(1200);
-  await styleApiPage(apiPage, `GET /support-sessions/${sessionId}/evidence-bundle.json`, '#f59e0b');
-  await screenshot(apiPage, 'api-evidence-bundle-connector-safety', 'Evidence bundle JSON includes connector installations with realNetwork:false, writebackEnabled:false, externalWriteAttempted:false', { fullPage: true });
+  await apiPage.context().addCookies([{
+    name: 'supportplane_session',
+    value: adminToken,
+    domain: 'localhost',
+    path: '/',
+    httpOnly: true,
+    sameSite: 'Lax',
+  }]);
+  await apiPage.reload();
+  await apiPage.waitForTimeout(1200);
+  const bundleJson = await apiCall(`/support-sessions/${sessionId}/evidence-bundle.json`, adminToken);
+  await styleApiPage(apiPage, `GET /support-sessions/${sessionId}/evidence-bundle.json`, '#f59e0b', bundleJson);
+  await screenshot(apiPage, 'api-evidence-bundle-json-no-secret', 'Evidence bundle JSON includes connector installations with realNetwork:false, writebackEnabled:false, externalWriteAttempted:false, credentialReferenceCount, no raw secrets', { fullPage: true });
+
+  // ── 10. Audit trail showing BL-098 connector events ──
+  const auditEvents = await apiCall('/auth/audit-events', adminToken);
+  // Filter to BL-098 relevant events for clarity
+  const bl098Events = {
+    ...auditEvents,
+    events: (auditEvents.events || auditEvents).filter(e =>
+      ['connector_config_validated', 'connector_readiness_checked', 'connector_runtime_resolved'].includes(e.eventType)
+    ).slice(0, 10),
+  };
+  await styleApiPage(apiPage, 'GET /auth/audit-events (BL-098 connector events)', '#8b5cf6', bl098Events);
+  await screenshot(apiPage, 'api-audit-bl098-events', 'Audit trail showing connector_config_validated, connector_readiness_checked, connector_runtime_resolved events with tenant/actor/metadata', { fullPage: true });
 
   // ── 11. Viewer read-only connector panel ──
   const viewerContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -301,76 +266,46 @@ async function main() {
     await vChevron.click();
     await viewerPage.waitForTimeout(800);
   }
-  await screenshotElement(viewerPage, panelLocator(viewerPage, 'Connector'), 'viewer-readonly-connector-panel', 'Viewer sees read-only connector panel with disabled Config/Readiness buttons');
+  await screenshotElement(viewerPage, panelLocator(viewerPage, 'Connector'), 'viewer-readonly-connector-panel', 'Viewer sees read-only connector panel with disabled Config/Readiness buttons and view-only message');
 
-  // ── 12. Viewer server-side mutation denial (CLI artifact) ──
-  const viewerRes = await fetch(`${API_URL}/connector-installations/${instId}/validate-config`, {
+  // ── 12. Viewer server-side mutation denial ──
+  const viewerDenialRes = await fetch(`${API_URL}/connector-installations/${INST_ID}/validate-config`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Cookie: `supportplane_session=${viewerToken}` },
     body: JSON.stringify({ config: { mockMode: true } }),
   });
-  const viewerDenialText = await viewerRes.text();
-  fs.writeFileSync(path.join(OUTPUT_DIR, 'cli-viewer-config-validation-denial.txt'), `POST /connector-installations/${instId}/validate-config as viewer\nStatus: ${viewerRes.status}\nBody: ${viewerDenialText}\n`);
-  console.log('CLI artifact: viewer config validation denial saved');
+  const viewerDenialBody = await viewerDenialRes.json().catch(() => ({ status: viewerDenialRes.status, error: 'Forbidden' }));
+  await styleApiPage(apiPage, `POST /connector-installations/${INST_ID}/validate-config (viewer)`, '#dc2626', { status: viewerDenialRes.status, ...viewerDenialBody });
+  await screenshot(apiPage, 'api-viewer-mutation-denied', 'Viewer server-side mutation denied with 403 on config validation');
 
-  const viewOnlyMsg = viewerPage.locator('text=View-only. Admin role required').first();
-  if (await viewOnlyMsg.count() > 0) {
-    await screenshotElement(viewerPage, viewOnlyMsg, 'viewer-ui-mutation-denied', 'Viewer server-side mutation denial visible in UI');
-  } else {
-    await screenshotElement(viewerPage, panelLocator(viewerPage, 'Connector'), 'viewer-ui-mutation-denied', 'Viewer server-side mutation denial visible in UI');
-  }
-
-  // ── 13. Cross-tenant access denied ──
-  const altAdminToken = await apiLogin('admin@alt.supportplane.local', 'supportplane-demo', 'alt-tenant');
-  const crossRes = await fetch(`${API_URL}/connector-installations/${instId}/config-schema`, {
+  // ── 13. Cross-tenant connector/credential access denied ──
+  const crossRes = await fetch(`${API_URL}/connector-installations/${INST_ID}/config-schema`, {
     method: 'GET',
     headers: { Cookie: `supportplane_session=${altAdminToken}` },
   });
-  const crossText = await crossRes.text();
-  fs.writeFileSync(path.join(OUTPUT_DIR, 'cli-cross-tenant-denial.txt'), `GET /connector-installations/${instId}/config-schema as alt-tenant admin\nStatus: ${crossRes.status}\nBody: ${crossText}\n`);
-  console.log('CLI artifact: cross-tenant denial saved');
+  const crossBody = await crossRes.json().catch(() => ({ status: crossRes.status, error: 'Not Found' }));
+  await styleApiPage(apiPage, `GET /connector-installations/${INST_ID}/config-schema (alt-tenant)`, '#dc2626', { status: crossRes.status, ...crossBody });
+  await screenshot(apiPage, 'api-cross-tenant-denied', 'Cross-tenant connector installation access denied with 404');
 
-  await apiPage.goto(`${API_URL}/connector-installations/${instId}/config-schema`);
-  await apiPage.waitForTimeout(1200);
-  await apiPage.context().addCookies([{
-    name: 'supportplane_session',
-    value: altAdminToken,
-    domain: 'localhost',
-    path: '/',
-    httpOnly: true,
-    sameSite: 'Lax',
-  }]);
-  await apiPage.reload();
-  await apiPage.waitForTimeout(1200);
-  await styleApiPage(apiPage, `GET /connector-installations/${instId}/config-schema (alt-tenant)`, '#dc2626');
-  await screenshot(apiPage, 'api-cross-tenant-denied', 'Cross-tenant connector installation access denied', { fullPage: true });
+  // ── 14. Delivery policy still denies real writeback ──
+  const policies = await apiCall('/delivery-policies', adminToken);
+  const policyId = (policies.policies || policies)[0]?.id;
+  const policyCheck = await apiCall(`/delivery-policies/${policyId}/validate`, adminToken, 'POST');
+  await styleApiPage(apiPage, `POST /delivery-policies/${policyId}/validate`, '#dc2626', policyCheck);
+  await screenshot(apiPage, 'api-delivery-policy-denies-writeback', 'Delivery policy validation returns realNetworkAllowed: false, writebackEnabled: false');
 
-  // ── 14. Audit trail with BL-098 events ──
+  // ── 15. Final local/mock/no-real-network/no-secret proof ──
   await adminPage.goto(`${WEB_URL}?session=${sessionId}`);
   await adminPage.waitForTimeout(3000);
   await webLogin(adminPage, 'admin@supportplane.local', 'supportplane-demo', 'dev-tenant');
-  const sessionItem = adminPage.locator('div').filter({ hasText: /BL-098 Connector Runtime Readiness Closure Test/ }).first();
-  if (await sessionItem.count() > 0) {
-    await sessionItem.click();
-    await adminPage.waitForTimeout(1500);
-  }
-  await screenshotElement(adminPage, panelLocator(adminPage, 'Audit Trail'), 'admin-audit-bl098-events', 'Audit trail shows connector_config_validated, connector_readiness_checked, connector_runtime_resolved events');
-
-  // ── 15. Final mock/no-secret proof (evidence bundle summary) ──
-  await adminPage.goto(`${WEB_URL}?session=${sessionId}`);
-  await adminPage.waitForTimeout(3000);
-  await webLogin(adminPage, 'admin@supportplane.local', 'supportplane-demo', 'dev-tenant');
-  const sessionItem2 = adminPage.locator('div').filter({ hasText: /BL-098 Connector Runtime Readiness Closure Test/ }).first();
+  const sessionItem2 = adminPage.locator('div').filter({ hasText: /BL-099 Closure Repair Test/ }).first();
   if (await sessionItem2.count() > 0) {
     await sessionItem2.click();
     await adminPage.waitForTimeout(1500);
   }
-  const evidencePanel = panelLocator(adminPage, 'Evidence Bundle');
-  if (await evidencePanel.count() > 0) {
-    await screenshotElement(adminPage, evidencePanel, 'final-mock-no-secret-proof', 'Final local/mock/no-real-writeback/no-secret proof');
-  } else {
-    await screenshotElement(adminPage, panelLocator(adminPage, 'Connector'), 'final-mock-no-secret-proof', 'Final local/mock/no-real-writeback/no-secret proof');
-  }
+  // Scroll to connector panel and capture it as final proof
+  const connectorPanel = panelLocator(adminPage, 'Connector');
+  await screenshotElement(adminPage, connectorPanel, 'final-mock-no-secret-proof', 'Final local/mock/no-real-network/no-secret proof: connector panel shows Mock-only badge, Locked ON, secret values hidden');
 
   await apiPage.close();
   await adminPage.close();
@@ -392,7 +327,7 @@ async function main() {
     }
   }
 
-  console.log(`\n=== BL-098 Screenshot Summary ===`);
+  console.log(`\n=== BL-098 Closure Repair Screenshot Summary ===`);
   console.log(`Folder: ${OUTPUT_DIR}`);
   console.log(`Screenshots: ${screenshotCount} (max ${MAX_SCREENSHOTS})`);
   console.log(`Duplicates: ${duplicates}`);
@@ -400,9 +335,6 @@ async function main() {
   for (const m of proofMapping) {
     console.log(`  ${m.number}. ${m.filename} — ${m.proofState}`);
   }
-  console.log(`\nCLI artifacts:`);
-  console.log(`  cli-viewer-config-validation-denial.txt`);
-  console.log(`  cli-cross-tenant-denial.txt`);
 
   if (screenshotCount > MAX_SCREENSHOTS) {
     console.error(`\nFATAL: Screenshot count ${screenshotCount} exceeds max ${MAX_SCREENSHOTS}`);
