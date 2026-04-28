@@ -15,8 +15,11 @@ describe('action outbox contracts', () => {
       'review_required',
       'approved',
       'queued',
+      'processing',
       'mock_delivered',
       'failed',
+      'retry_scheduled',
+      'dead_lettered',
       'cancelled',
       'rejected',
     ]);

@@ -2,7 +2,7 @@
 
 **Product:** SupportPlane  
 **Scope:** Local Podman/Docker-compatible development topology and local auth
-**Last updated:** 2026-04-27
+**Last updated:** 2026-04-28
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@
 
 - PostgreSQL, NATS, and MinIO run in containers via `compose.yaml`.
 - The API (NestJS) and Web (Next.js) run on the host via `npm run dev`.
-- The Worker has no runtime yet; a placeholder container exists in compose so the slot is visible.
+- BL-093 adds a host-run local worker/process-once command that calls the API and uses PostgreSQL outbox state. The compose worker container may still be a placeholder; NATS is not consumed by BL-093.
 
 ## Port map
 
@@ -102,12 +102,25 @@ npm run dev
 
 The web app listens on `http://localhost:3200` by default.
 
-### 5. Full verification
+### 5. Optional local worker commands
+
+The worker is local/mock-only and API-driven:
+
+```bash
+npm run status --workspace @supportplane/worker
+npm run process-once --workspace @supportplane/worker
+```
+
+It reports `queueBackend: "postgres-local-outbox"` and does not use NATS or any
+external broker.
+
+### 6. Full verification
 
 With all services running:
 
 ```bash
 bash scripts/check_local_topology.sh
+bash scripts/verify_outbox_worker_retry_deadletter.sh
 ```
 
 ## Stop local topology

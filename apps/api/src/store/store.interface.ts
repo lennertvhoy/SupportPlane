@@ -86,6 +86,10 @@ export interface Store {
   saveActionOutboxItem(item: ActionOutboxItemShape): Promise<void> | void;
   getActionOutboxItem(tenantId: string, id: string): Promise<ActionOutboxItemShape | undefined> | ActionOutboxItemShape | undefined;
   listActionOutboxItems(tenantId: string, options?: { sessionId?: string; supportActionId?: string }): Promise<ActionOutboxItemShape[]> | ActionOutboxItemShape[];
+  claimNextActionOutboxItem(
+    tenantId: string,
+    options: { workerId: string; now: string; lockExpiresAt: string; outboxItemId?: string }
+  ): Promise<ActionOutboxItemShape | undefined> | ActionOutboxItemShape | undefined;
   saveActionOutboxAttempt(attempt: ActionOutboxAttemptShape): Promise<void> | void;
   listActionOutboxAttempts(tenantId: string, outboxItemId: string): Promise<ActionOutboxAttemptShape[]> | ActionOutboxAttemptShape[];
 }

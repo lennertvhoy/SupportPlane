@@ -35,7 +35,9 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'action:submit',
     'action:cancel',
     'outbox:read',
+    'outbox:retry',
     'outbox:mock_deliver',
+    'worker:read',
     'telephony:webhook',
   ],
   viewer: [
@@ -50,6 +52,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'ticket:read',
     'action:read',
     'outbox:read',
+    'worker:read',
   ],
   support_agent: [
     'support_session:read',
@@ -82,7 +85,9 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'action:submit',
     'action:cancel',
     'outbox:read',
+    'outbox:retry',
     'outbox:mock_deliver',
+    'worker:read',
     'telephony:webhook',
   ],
 };

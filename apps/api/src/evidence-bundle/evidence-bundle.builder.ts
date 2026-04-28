@@ -30,6 +30,7 @@ import type {
   InternalNoteDraft,
   SupportAction,
   ActionOutboxItem,
+  ActionOutboxAttempt,
 } from '@supportplane/contracts';
 import { redactSecrets, redactString } from './redaction.js';
 
@@ -50,6 +51,7 @@ export interface BuildEvidenceBundleInput {
   supportNoteDrafts?: InternalNoteDraft[];
   supportActions?: SupportAction[];
   actionOutboxItems?: ActionOutboxItem[];
+  actionOutboxAttempts?: ActionOutboxAttempt[];
   connectorMode?: string;
   storeType?: 'memory' | 'postgres';
 }
@@ -264,7 +266,8 @@ function toSupportNoteDraftSummaries(drafts: InternalNoteDraft[] | undefined): E
 
 function toActionOutboxSummaries(
   actions: SupportAction[] | undefined,
-  outboxItems: ActionOutboxItem[] | undefined
+  outboxItems: ActionOutboxItem[] | undefined,
+  attempts: ActionOutboxAttempt[] | undefined
 ): EvidenceBundleActionOutboxSummary[] {
   if (!actions) return [];
   return actions.map((action) => {
@@ -279,8 +282,37 @@ function toActionOutboxSummaries(
       reviewedBy: action.reviewedBy,
       queuedAt: action.queuedAt ?? item?.queuedAt,
       mockDeliveredAt: action.mockDeliveredAt ?? item?.mockDeliveredAt,
+      failedAt: item?.failedAt,
+      retryScheduledAt: item?.retryScheduledAt,
+      nextAttemptAt: item?.nextAttemptAt,
+      deadLetteredAt: item?.deadLetteredAt,
+      cancelledAt: item?.cancelledAt,
       attemptCount: item?.attemptCount ?? 0,
+      maxAttempts: item?.maxAttempts,
       latestAttemptState: item?.latestAttemptState,
+      deliveryMode: item?.deliveryMode,
+      workerLockId: item?.workerLockId,
+      lastErrorCode: item?.lastErrorCode,
+      lastErrorMessage: item?.lastErrorMessage,
+      lastErrorRedacted: item?.lastErrorRedacted,
+      deadLetterReason: item?.deadLetterReason,
+      attempts: item
+        ? (attempts ?? [])
+            .filter((attempt) => attempt.outboxItemId === item.id)
+            .map((attempt) => ({
+              attemptNumber: attempt.attemptNumber,
+              state: attempt.state,
+              errorCode: attempt.errorCode,
+              errorMessage: attempt.errorMessage ? redactString(attempt.errorMessage) : undefined,
+              errorRedacted: attempt.errorRedacted,
+              attemptedAt: attempt.attemptedAt,
+              completedAt: attempt.completedAt,
+              deliveryResult: redactSecrets(attempt.deliveryResult as Record<string, unknown>),
+              realNetwork: false as const,
+              externalWriteAttempted: false as const,
+              writebackEnabled: false as const,
+            }))
+        : [],
       payloadSummary: redactSecrets(action.payloadSummary as Record<string, unknown>),
       deliveryIntent: item ? redactSecrets(item.deliveryIntent as Record<string, unknown>) : undefined,
       safetyFlags: {
@@ -376,7 +408,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     customerReferences: toCustomerSummaries(input.customerReferences),
     connectorInstallations: toConnectorInstallationSummaries(input.connectorInstallations),
     supportNoteDrafts: toSupportNoteDraftSummaries(input.supportNoteDrafts),
-    actionOutbox: toActionOutboxSummaries(input.supportActions, input.actionOutboxItems),
+    actionOutbox: toActionOutboxSummaries(input.supportActions, input.actionOutboxItems, input.actionOutboxAttempts),
     greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
     mockDevOnlyDisclaimers: [
@@ -396,7 +428,7 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
       'Screen observations are mock metadata only. No real screen capture, raw pixels, clipboard access, or OCR was performed. Not surveillance or compliance-grade.',
       'Caller matching uses deterministic mock fixtures, not a real customer database.',
       'Support sessions may be auto-created from fake incoming calls. These are mock sessions for development only.',
-      'Action outbox deliveries are local mock records only. No real external writeback, email, telephony, AI, queue worker, or object storage is used.',
+      'Action outbox deliveries are local mock records processed by the local outbox worker/process-once path only. No real external writeback, email, telephony, AI, external broker, or object storage is used.',
     ],
     limitations: [
       'No cryptographic hash chain integrity guarantee.',
@@ -628,8 +660,16 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       lines.push(`- **Type:** ${action.actionType}`);
       lines.push(`- **Status:** ${action.status}`);
       if (action.outboxItemId) lines.push(`- **Outbox Item:** ${action.outboxItemId}`);
-      lines.push(`- **Attempts:** ${action.attemptCount}`);
+      lines.push(`- **Attempts:** ${action.attemptCount}/${action.maxAttempts ?? 'unknown'}`);
       if (action.latestAttemptState) lines.push(`- **Latest Attempt:** ${action.latestAttemptState}`);
+      if (action.nextAttemptAt) lines.push(`- **Next Attempt At:** ${action.nextAttemptAt}`);
+      if (action.deadLetteredAt) lines.push(`- **Dead-Lettered At:** ${action.deadLetteredAt}`);
+      if (action.deadLetterReason) lines.push(`- **Dead-Letter Reason:** ${action.deadLetterReason}`);
+      if (action.lastErrorCode) lines.push(`- **Last Error Code:** ${action.lastErrorCode}`);
+      if (action.lastErrorMessage) lines.push(`- **Last Error Message:** ${action.lastErrorMessage}`);
+      for (const attempt of action.attempts) {
+        lines.push(`  - Attempt #${attempt.attemptNumber}: ${attempt.state}, code ${attempt.errorCode ?? 'none'}, realNetwork ${attempt.realNetwork}, writebackEnabled ${attempt.writebackEnabled}`);
+      }
       lines.push(`- **Real Network:** ${action.realNetwork}`);
       lines.push(`- **External Write Attempted:** ${action.externalWriteAttempted}`);
       lines.push(`- **Writeback Enabled:** ${action.writebackEnabled}`);

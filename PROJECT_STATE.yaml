@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-28T10:35:00+02:00
+  updated_at: 2026-04-28T11:22:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -43,7 +43,7 @@ current_state:
     git_repository: true
     branch: main
     head: 4c7697de0f143cba09ec60c9f1de05725ec659c7
-    worktree_status: clean
+    worktree_status: dirty_until_bl_093_commit
     notes:
       - git repository initialized during BL-001
       - BL-002 contracts and schema committed
@@ -496,6 +496,38 @@ current_state:
         - backend now suppresses outbox items until queued/delivered/failed state
         - frontend now scopes attempt history to latest action's outbox item by supportActionId
         - verify_postgres_persistence.sh now auto-detects occupied port 4110 and uses next available port
+    bl_093_status:
+      completed: true
+      status: validation_passed_pending_final_commit
+      scope: background_outbox_worker_retry_deadletter_foundation
+      backlog_id: BL-093
+      contracts_package: packages/contracts
+      api_app: apps/api
+      web_app: apps/web
+      worker_app: apps/worker
+      prisma_schema: prisma/schema.prisma
+      migration: prisma/migrations/20260428120000_outbox_worker_retry_deadletter_foundation/
+      docs: [docs/OUTBOX_WORKER_OPERATIONS.md, docs/ACTION_OUTBOX_WORKFLOW.md, docs/PERSISTENCE.md, docs/EVIDENCE_BUNDLES.md, docs/LOCAL_DEVELOPMENT.md, docs/SUPPORT_CASE_WORKFLOW.md]
+      runtime:
+        store_mode: postgres
+        auth_mode: local
+        api_url: http://localhost:4110
+        web_url: http://localhost:3200
+        postgres: localhost:5434
+        worker_mode: local_mock_worker/process-once
+      new_api_endpoints: [GET /outbox/worker/status, POST /outbox/process-once, POST /outbox/:id/retry, POST /outbox/:id/cancel, POST /outbox/:id/dead-letter]
+      screenshot_folder: output/playwright/session-093-outbox-worker-retry-deadletter-foundation/
+      screenshot_count: 24
+      validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
+      final_closure_commit: pending_final_commit_recorded_in_handoff
+      notes:
+        - worker/process-once delivery mode is local mock only
+        - all delivery results include mode=mock, realNetwork=false, writebackEnabled=false, externalWriteAttempted=false
+        - retryable failures schedule retry; non-retryable or exhausted attempts move to dead_lettered
+        - viewer can inspect only; admin/owner can process, retry, cancel, and dead-letter
+        - forged role headers are ignored in local auth mode; cross-tenant outbox access is denied server-side
+        - evidence bundles include attempt provenance without secrets or raw media
+        - no real external writeback, email, telephony, AI provider, external broker, object storage, raw media storage, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment
     bl_091_status:
       completed: true
       scope: support_case_workflow_foundation

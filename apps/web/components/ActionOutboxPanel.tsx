@@ -109,7 +109,7 @@ export function ActionOutboxPanel({
     <Panel title="Action Center / Durable Outbox">
       <div className="space-y-3">
         <div className="rounded border border-amber-700/40 bg-amber-900/20 px-2 py-1.5 text-[11px] text-amber-300">
-          Local/mock delivery only. Human review required. No real Zammad writeback, email, telephony, AI provider, external queue worker, raw media, or compliance-grade evidence.
+          Local/mock delivery only. Human review required. No real Zammad writeback, email, telephony, AI provider, external broker, raw media, or compliance-grade evidence.
         </div>
 
         {!session && <div className="text-xs text-cockpit-500">Select a session to prepare a support action.</div>}

@@ -620,6 +620,16 @@ export class SupportSessionsService {
         [AuditEventType.enum.action_retry_requested]: 'Action retry requested',
         [AuditEventType.enum.outbox_item_created]: 'Outbox item created',
         [AuditEventType.enum.outbox_item_attempted]: 'Outbox item attempted',
+        [AuditEventType.enum.outbox_processing_started]: 'Outbox processing started',
+        [AuditEventType.enum.outbox_processing_succeeded]: 'Outbox processing succeeded',
+        [AuditEventType.enum.outbox_processing_failed]: 'Outbox processing failed',
+        [AuditEventType.enum.outbox_retry_scheduled]: 'Outbox retry scheduled',
+        [AuditEventType.enum.outbox_retry_requested]: 'Outbox retry requested',
+        [AuditEventType.enum.outbox_dead_lettered]: 'Outbox dead-lettered',
+        [AuditEventType.enum.outbox_cancelled]: 'Outbox cancelled',
+        [AuditEventType.enum.outbox_worker_status_checked]: 'Outbox worker status checked',
+        [AuditEventType.enum.outbox_access_denied]: 'Outbox access denied',
+        [AuditEventType.enum.outbox_process_once_requested]: 'Outbox process-once requested',
       };
       timeline.push({
         id: event.id,
@@ -679,6 +689,15 @@ export class SupportSessionsService {
         metadata: {
           supportActionId: item.supportActionId,
           attemptCount: item.attemptCount,
+          maxAttempts: item.maxAttempts,
+          latestAttemptState: item.latestAttemptState,
+          nextAttemptAt: item.nextAttemptAt,
+          retryScheduledAt: item.retryScheduledAt,
+          deadLetteredAt: item.deadLetteredAt,
+          deadLetterReason: item.deadLetterReason,
+          lastErrorCode: item.lastErrorCode,
+          lastErrorMessage: item.lastErrorMessage,
+          workerLockId: item.workerLockId,
           realNetwork: false,
           writebackEnabled: false,
           externalWriteAttempted: false,
@@ -1321,6 +1340,9 @@ export class SupportSessionsService {
     const supportNoteDrafts = await this.store.listInternalNoteDrafts(identity.tenantId, sessionId);
     const supportActions = await this.store.listSupportActions(identity.tenantId, { sessionId });
     const actionOutboxItems = await this.store.listActionOutboxItems(identity.tenantId, { sessionId });
+    const actionOutboxAttempts = (
+      await Promise.all(actionOutboxItems.map((item) => this.store.listActionOutboxAttempts(identity.tenantId, item.id)))
+    ).flat();
     const sessionAuditEvents = await this.store.getAuditEvents(identity.tenantId, sessionId);
     const callEventIds = new Set<string>(callEvents.map((call) => call.id));
     const externalCallIds = new Set(callEvents.map((call) => call.externalCallId));
@@ -1355,6 +1377,7 @@ export class SupportSessionsService {
       supportNoteDrafts,
       supportActions,
       actionOutboxItems,
+      actionOutboxAttempts,
       connectorMode: this.connectorsService.getMode(),
       storeType: storeType === 'postgres' ? 'postgres' : 'memory',
     });

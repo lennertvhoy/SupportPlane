@@ -1070,12 +1070,27 @@ export class PrismaStore implements Store {
         actionType: item.actionType,
         status: item.status,
         idempotencyKey: item.idempotencyKey,
+        deliveryMode: item.deliveryMode,
         deliveryIntent: json(item.deliveryIntent),
         attemptCount: item.attemptCount,
+        maxAttempts: item.maxAttempts,
         latestAttemptState: item.latestAttemptState ?? null,
         queuedAt: dateOrNow(item.queuedAt),
+        nextAttemptAt: item.nextAttemptAt ? new Date(item.nextAttemptAt) : null,
+        processingStartedAt: item.processingStartedAt ? new Date(item.processingStartedAt) : null,
+        workerLockId: item.workerLockId ?? null,
+        workerLockedAt: item.workerLockedAt ? new Date(item.workerLockedAt) : null,
+        workerLockExpiresAt: item.workerLockExpiresAt ? new Date(item.workerLockExpiresAt) : null,
         mockDeliveredAt: item.mockDeliveredAt ? new Date(item.mockDeliveredAt) : null,
+        failedAt: item.failedAt ? new Date(item.failedAt) : null,
+        retryScheduledAt: item.retryScheduledAt ? new Date(item.retryScheduledAt) : null,
+        deadLetteredAt: item.deadLetteredAt ? new Date(item.deadLetteredAt) : null,
+        cancelledAt: item.cancelledAt ? new Date(item.cancelledAt) : null,
         lastError: item.lastError ?? null,
+        lastErrorCode: item.lastErrorCode ?? null,
+        lastErrorMessage: item.lastErrorMessage ?? null,
+        lastErrorRedacted: item.lastErrorRedacted,
+        deadLetterReason: item.deadLetterReason ?? null,
         safetyFlags: json(item.safetyFlags),
         mockDevOnly: item.mockDevOnly,
         createdAt: dateOrNow(item.createdAt),
@@ -1083,11 +1098,26 @@ export class PrismaStore implements Store {
       },
       update: {
         status: item.status,
+        deliveryMode: item.deliveryMode,
         deliveryIntent: json(item.deliveryIntent),
         attemptCount: item.attemptCount,
+        maxAttempts: item.maxAttempts,
         latestAttemptState: item.latestAttemptState ?? null,
+        nextAttemptAt: item.nextAttemptAt ? new Date(item.nextAttemptAt) : null,
+        processingStartedAt: item.processingStartedAt ? new Date(item.processingStartedAt) : null,
+        workerLockId: item.workerLockId ?? null,
+        workerLockedAt: item.workerLockedAt ? new Date(item.workerLockedAt) : null,
+        workerLockExpiresAt: item.workerLockExpiresAt ? new Date(item.workerLockExpiresAt) : null,
         mockDeliveredAt: item.mockDeliveredAt ? new Date(item.mockDeliveredAt) : null,
+        failedAt: item.failedAt ? new Date(item.failedAt) : null,
+        retryScheduledAt: item.retryScheduledAt ? new Date(item.retryScheduledAt) : null,
+        deadLetteredAt: item.deadLetteredAt ? new Date(item.deadLetteredAt) : null,
+        cancelledAt: item.cancelledAt ? new Date(item.cancelledAt) : null,
         lastError: item.lastError ?? null,
+        lastErrorCode: item.lastErrorCode ?? null,
+        lastErrorMessage: item.lastErrorMessage ?? null,
+        lastErrorRedacted: item.lastErrorRedacted,
+        deadLetterReason: item.deadLetterReason ?? null,
         safetyFlags: json(item.safetyFlags),
         updatedAt: dateOrNow(item.updatedAt),
       },
@@ -1111,10 +1141,61 @@ export class PrismaStore implements Store {
     return rows.map((r) => this.mapActionOutboxItem(r));
   }
 
+  async claimNextActionOutboxItem(
+    tenantId: string,
+    options: { workerId: string; now: string; lockExpiresAt: string; outboxItemId?: string }
+  ): Promise<ActionOutboxItemShape | undefined> {
+    const now = new Date(options.now);
+    const lockExpiresAt = new Date(options.lockExpiresAt);
+    const claimed = await this.prisma.$transaction(async (tx) => {
+      const candidate = await tx.actionOutboxItem.findFirst({
+        where: {
+          tenantId,
+          ...(options.outboxItemId ? { id: options.outboxItemId } : {}),
+          status: { in: ['queued', 'retry_scheduled', 'processing'] },
+          OR: [{ nextAttemptAt: null }, { nextAttemptAt: { lte: now } }],
+        },
+        orderBy: [{ queuedAt: 'asc' }],
+      });
+      if (!candidate) return undefined;
+      if (candidate.attemptCount >= candidate.maxAttempts) return undefined;
+      if (candidate.status === 'processing' && candidate.workerLockExpiresAt && candidate.workerLockExpiresAt > now) {
+        return undefined;
+      }
+      const result = await tx.actionOutboxItem.updateMany({
+        where: {
+          id: candidate.id,
+          tenantId,
+          status: candidate.status,
+          OR:
+            candidate.status === 'processing'
+              ? [{ workerLockExpiresAt: null }, { workerLockExpiresAt: { lte: now } }]
+              : [{ workerLockExpiresAt: null }, { workerLockExpiresAt: { lte: now } }, { status: { not: 'processing' } }],
+        },
+        data: {
+          status: 'processing',
+          latestAttemptState: 'processing',
+          processingStartedAt: now,
+          workerLockId: options.workerId,
+          workerLockedAt: now,
+          workerLockExpiresAt: lockExpiresAt,
+          updatedAt: now,
+        },
+      });
+      if (result.count !== 1) return undefined;
+      return tx.actionOutboxItem.findFirst({ where: { tenantId, id: candidate.id } });
+    });
+    return claimed ? this.mapActionOutboxItem(claimed) : undefined;
+  }
+
   private mapActionOutboxItem(row: {
     id: string; tenantId: string; supportActionId: string; sessionId: string; connectorInstallationId: string | null;
-    actionType: string; status: string; idempotencyKey: string; deliveryIntent: unknown; attemptCount: number;
-    latestAttemptState: string | null; queuedAt: Date; mockDeliveredAt: Date | null; lastError: string | null;
+    actionType: string; status: string; idempotencyKey: string; deliveryMode: string; deliveryIntent: unknown; attemptCount: number;
+    maxAttempts: number; latestAttemptState: string | null; queuedAt: Date; nextAttemptAt: Date | null;
+    processingStartedAt: Date | null; workerLockId: string | null; workerLockedAt: Date | null; workerLockExpiresAt: Date | null;
+    mockDeliveredAt: Date | null; failedAt: Date | null; retryScheduledAt: Date | null; deadLetteredAt: Date | null;
+    cancelledAt: Date | null; lastError: string | null; lastErrorCode: string | null; lastErrorMessage: string | null;
+    lastErrorRedacted: boolean; deadLetterReason: string | null;
     safetyFlags: unknown; mockDevOnly: boolean; createdAt: Date; updatedAt: Date;
   }): ActionOutboxItemShape {
     return {
@@ -1126,13 +1207,28 @@ export class PrismaStore implements Store {
       actionType: row.actionType as ActionOutboxItemShape['actionType'],
       status: row.status as ActionOutboxItemShape['status'],
       idempotencyKey: row.idempotencyKey,
+      deliveryMode: row.deliveryMode as ActionOutboxItemShape['deliveryMode'],
       deliveryIntent: row.deliveryIntent as Record<string, unknown>,
       attemptCount: row.attemptCount,
+      maxAttempts: row.maxAttempts,
       latestAttemptState: row.latestAttemptState as ActionOutboxItemShape['latestAttemptState'],
       queuedAt: toISO(row.queuedAt)!,
+      nextAttemptAt: toISO(row.nextAttemptAt),
+      processingStartedAt: toISO(row.processingStartedAt),
+      workerLockId: row.workerLockId ?? undefined,
+      workerLockedAt: toISO(row.workerLockedAt),
+      workerLockExpiresAt: toISO(row.workerLockExpiresAt),
       mockDeliveredAt: toISO(row.mockDeliveredAt),
+      failedAt: toISO(row.failedAt),
+      retryScheduledAt: toISO(row.retryScheduledAt),
+      deadLetteredAt: toISO(row.deadLetteredAt),
+      cancelledAt: toISO(row.cancelledAt),
       lastError: row.lastError ?? undefined,
-      safetyFlags: row.safetyFlags as Record<string, unknown>,
+      lastErrorCode: row.lastErrorCode ?? undefined,
+      lastErrorMessage: row.lastErrorMessage ?? undefined,
+      lastErrorRedacted: row.lastErrorRedacted,
+      deadLetterReason: row.deadLetterReason ?? undefined,
+      safetyFlags: row.safetyFlags as ActionOutboxItemShape['safetyFlags'],
       mockDevOnly: row.mockDevOnly,
       createdAt: toISO(row.createdAt)!,
       updatedAt: toISO(row.updatedAt)!,
@@ -1150,14 +1246,20 @@ export class PrismaStore implements Store {
         attemptNumber: attempt.attemptNumber,
         state: attempt.state,
         deliveryResult: json(attempt.deliveryResult),
+        errorCode: attempt.errorCode ?? null,
         errorMessage: attempt.errorMessage ?? null,
+        errorRedacted: attempt.errorRedacted,
         attemptedAt: dateOrNow(attempt.attemptedAt),
+        completedAt: attempt.completedAt ? new Date(attempt.completedAt) : null,
         mockDevOnly: attempt.mockDevOnly,
       },
       update: {
         state: attempt.state,
         deliveryResult: json(attempt.deliveryResult),
+        errorCode: attempt.errorCode ?? null,
         errorMessage: attempt.errorMessage ?? null,
+        errorRedacted: attempt.errorRedacted,
+        completedAt: attempt.completedAt ? new Date(attempt.completedAt) : null,
       },
     });
   }
@@ -1175,8 +1277,11 @@ export class PrismaStore implements Store {
       attemptNumber: r.attemptNumber,
       state: r.state as ActionOutboxAttemptShape['state'],
       deliveryResult: r.deliveryResult as Record<string, unknown>,
+      errorCode: r.errorCode ?? undefined,
       errorMessage: r.errorMessage ?? undefined,
+      errorRedacted: r.errorRedacted,
       attemptedAt: toISO(r.attemptedAt)!,
+      completedAt: toISO(r.completedAt),
       mockDevOnly: r.mockDevOnly,
     }));
   }

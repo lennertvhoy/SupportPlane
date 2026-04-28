@@ -23,6 +23,29 @@ function preview(value: string): string {
     .slice(0, 480);
 }
 
+function redactedError(value: string): string {
+  return preview(value).replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[REDACTED_EMAIL]');
+}
+
+function addSeconds(iso: string, seconds: number): string {
+  return new Date(new Date(iso).getTime() + seconds * 1000).toISOString();
+}
+
+const MOCK_SAFETY_FLAGS = {
+  mode: 'mock' as const,
+  realNetwork: false as const,
+  writebackEnabled: false as const,
+  externalWriteAttempted: false as const,
+  noSecrets: true,
+  noRawMedia: true,
+  localMockOnly: true,
+};
+
+type DeliverySimulation =
+  | { outcome: 'success' }
+  | { outcome: 'retryable_failure'; errorCode: string; errorMessage: string }
+  | { outcome: 'non_retryable_failure'; errorCode: string; errorMessage: string };
+
 @Injectable()
 export class ActionsService {
   constructor(@Inject(InMemoryStore) private readonly store: Store) {}
@@ -72,6 +95,7 @@ export class ActionsService {
         subject: body.subject ?? 'Support note',
         bodyLength: body.body.length,
         redactedPreview: preview(body.body),
+        mockDeliveryScenario: body.mockDeliveryScenario ?? 'success',
         localOnly: true,
       },
       safeBodyPreview: preview(body.body),
@@ -157,17 +181,21 @@ export class ActionsService {
       actionType: action.actionType,
       status: 'queued',
       idempotencyKey: `${action.idempotencyKey}:outbox`,
+      deliveryMode: 'mock',
       deliveryIntent: {
         mode: 'mock',
         actionType: action.actionType,
         deliveryClaim: 'queued_for_mock_delivery',
+        mockDeliveryScenario: action.payloadSummary['mockDeliveryScenario'] ?? 'success',
         realNetwork: false,
         writebackEnabled: false,
         externalWriteAttempted: false,
       },
       attemptCount: 0,
+      maxAttempts: 3,
       queuedAt: at,
-      safetyFlags: { noSecrets: true, noRawMedia: true, localMockOnly: true },
+      lastErrorRedacted: true,
+      safetyFlags: MOCK_SAFETY_FLAGS,
       mockDevOnly: true,
       createdAt: at,
       updatedAt: at,
@@ -195,13 +223,30 @@ export class ActionsService {
     }
     const updated = { ...action, status: 'cancelled' as const, failureReason: body.reason, updatedAt: nowIso() };
     await this.store.saveSupportAction(updated);
+    const outboxItems = await this.store.listActionOutboxItems(identity.tenantId, { supportActionId: id });
+    for (const item of outboxItems.filter((candidate) => ['queued', 'processing', 'failed', 'retry_scheduled'].includes(candidate.status))) {
+      await this.store.saveActionOutboxItem({
+        ...item,
+        status: 'cancelled',
+        latestAttemptState: 'cancelled',
+        cancelledAt: updated.updatedAt,
+        lastErrorMessage: redactedError(body.reason ?? 'action_cancelled'),
+        lastErrorRedacted: true,
+        workerLockId: undefined,
+        workerLockedAt: undefined,
+        workerLockExpiresAt: undefined,
+        updatedAt: updated.updatedAt,
+      });
+      await this.audit(identity, 'outbox_cancelled', action.sessionId, 'action_outbox_item', item.id, { reason: body.reason ?? 'not_provided' });
+    }
     await this.audit(identity, 'action_cancelled', action.sessionId, 'support_action', action.id, { reason: body.reason ?? 'not_provided' });
     return { action: updated };
   }
 
   async listOutbox(identity: CurrentIdentity) {
     await this.assertPermission(identity, 'outbox:read');
-    return { outboxItems: await this.store.listActionOutboxItems(identity.tenantId) };
+    const outboxItems = await this.store.listActionOutboxItems(identity.tenantId);
+    return { outboxItems, summary: this.outboxSummary(outboxItems) };
   }
 
   async getOutbox(identity: CurrentIdentity, id: string) {
@@ -212,57 +257,339 @@ export class ActionsService {
   }
 
   async retryOutbox(identity: CurrentIdentity, id: string) {
-    await this.assertPermission(identity, 'outbox:mock_deliver');
+    await this.assertPermission(identity, 'outbox:retry');
     const item = await this.requireOutbox(identity, id);
-    if (item.status !== 'failed') throw new BadRequestException(`Cannot retry outbox item from ${item.status}`);
-    const updated = { ...item, status: 'queued' as const, latestAttemptState: 'retry_requested' as const, updatedAt: nowIso() };
+    if (!['failed', 'retry_scheduled', 'dead_lettered'].includes(item.status)) {
+      throw new BadRequestException(`Cannot retry outbox item from ${item.status}`);
+    }
+    const at = nowIso();
+    const updated = {
+      ...item,
+      status: 'queued' as const,
+      latestAttemptState: 'retry_requested' as const,
+      nextAttemptAt: undefined,
+      workerLockId: undefined,
+      workerLockedAt: undefined,
+      workerLockExpiresAt: undefined,
+      deadLetteredAt: undefined,
+      deadLetterReason: undefined,
+      updatedAt: at,
+    };
+    const action = await this.requireAction(identity, item.supportActionId);
     await this.store.saveActionOutboxItem(updated);
-    await this.audit(identity, 'action_retry_requested', item.sessionId, 'action_outbox_item', item.id, { supportActionId: item.supportActionId });
+    await this.store.saveSupportAction({ ...action, status: 'queued', failureReason: undefined, updatedAt: at });
+    await this.audit(identity, 'outbox_retry_requested', item.sessionId, 'action_outbox_item', item.id, {
+      supportActionId: item.supportActionId,
+      requestedBy: identity.userId,
+      mode: 'mock',
+      realNetwork: false,
+      writebackEnabled: false,
+      externalWriteAttempted: false,
+    });
     return { outboxItem: updated };
+  }
+
+  async cancelOutbox(identity: CurrentIdentity, id: string, body: { reason?: string }) {
+    await this.assertPermission(identity, 'outbox:cancel');
+    const item = await this.requireOutbox(identity, id);
+    if (!['queued', 'processing', 'failed', 'retry_scheduled'].includes(item.status)) {
+      throw new BadRequestException(`Cannot cancel outbox item from ${item.status}`);
+    }
+    const action = await this.requireAction(identity, item.supportActionId);
+    const at = nowIso();
+    const reason = redactedError(body.reason ?? 'cancelled_by_admin');
+    const updatedItem = {
+      ...item,
+      status: 'cancelled' as const,
+      latestAttemptState: 'cancelled' as const,
+      cancelledAt: at,
+      lastErrorMessage: reason,
+      lastErrorRedacted: true,
+      workerLockId: undefined,
+      workerLockedAt: undefined,
+      workerLockExpiresAt: undefined,
+      updatedAt: at,
+    };
+    const updatedAction = { ...action, status: 'cancelled' as const, failureReason: reason, updatedAt: at };
+    await this.store.saveActionOutboxItem(updatedItem);
+    await this.store.saveSupportAction(updatedAction);
+    await this.audit(identity, 'outbox_cancelled', item.sessionId, 'action_outbox_item', item.id, { reason, cancelledBy: identity.userId });
+    await this.audit(identity, 'action_cancelled', item.sessionId, 'support_action', action.id, { reason, cancelledBy: identity.userId });
+    return { action: updatedAction, outboxItem: updatedItem };
+  }
+
+  async deadLetterOutbox(identity: CurrentIdentity, id: string, body: { reason?: string }) {
+    await this.assertPermission(identity, 'outbox:dead_letter');
+    const item = await this.requireOutbox(identity, id);
+    if (!['failed', 'retry_scheduled', 'processing'].includes(item.status)) {
+      throw new BadRequestException(`Cannot dead-letter outbox item from ${item.status}`);
+    }
+    return this.markDeadLetter(identity, item, redactedError(body.reason ?? item.lastErrorMessage ?? item.lastError ?? 'manual_dead_letter'));
+  }
+
+  async getWorkerStatus(identity: CurrentIdentity) {
+    await this.assertPermission(identity, 'worker:read');
+    const items = await this.store.listActionOutboxItems(identity.tenantId);
+    const status = {
+      mode: 'local_mock_worker',
+      status: 'available',
+      consumerEnabled: true,
+      queueBackend: 'postgres-local-outbox',
+      storeMode: process.env['SUPPORTPLANE_STORE'] ?? 'memory',
+      deliveryMode: 'mock',
+      realNetwork: false,
+      writebackEnabled: false,
+      externalWriteAttempted: false,
+      summary: this.outboxSummary(items),
+      warnings: [
+        'Local PostgreSQL outbox worker foundation only.',
+        'No real Zammad writeback, email, telephony, AI provider call, external broker, or production queue semantics.',
+      ],
+      checkedAt: nowIso(),
+      mockDevOnly: true,
+    };
+    await this.audit(identity, 'outbox_worker_status_checked', undefined, 'worker', identity.tenantId, status);
+    return status;
+  }
+
+  async processOutboxOnce(identity: CurrentIdentity, body: { outboxItemId?: string; workerId?: string }) {
+    await this.assertPermission(identity, 'outbox:process_once');
+    const workerId = body.workerId ?? `api-process-once:${identity.userId}`;
+    const at = nowIso();
+    await this.audit(identity, 'outbox_process_once_requested', undefined, 'worker', identity.tenantId, {
+      workerId,
+      outboxItemId: body.outboxItemId ?? 'next_available',
+      mode: 'mock',
+      realNetwork: false,
+      writebackEnabled: false,
+      externalWriteAttempted: false,
+    });
+    const item = await this.store.claimNextActionOutboxItem(identity.tenantId, {
+      workerId,
+      now: at,
+      lockExpiresAt: addSeconds(at, 60),
+      outboxItemId: body.outboxItemId,
+    });
+    if (!item) return { processed: false, reason: 'no_eligible_outbox_item', workerId, mode: 'mock' };
+    await this.audit(identity, 'outbox_processing_started', item.sessionId, 'action_outbox_item', item.id, {
+      workerId,
+      attemptNumber: item.attemptCount + 1,
+      mode: 'mock',
+      realNetwork: false,
+      writebackEnabled: false,
+      externalWriteAttempted: false,
+    });
+    return this.processClaimedOutbox(identity, item, workerId);
   }
 
   async mockDeliverOutbox(identity: CurrentIdentity, id: string) {
     await this.assertPermission(identity, 'outbox:mock_deliver');
     const item = await this.requireOutbox(identity, id);
-    if (item.status !== 'queued') throw new BadRequestException(`Cannot mock deliver outbox item from ${item.status}`);
+    if (!['queued', 'retry_scheduled'].includes(item.status)) throw new BadRequestException(`Cannot mock deliver outbox item from ${item.status}`);
+    const claimed = await this.store.claimNextActionOutboxItem(identity.tenantId, {
+      workerId: `manual-mock-deliver:${identity.userId}`,
+      now: nowIso(),
+      lockExpiresAt: addSeconds(nowIso(), 60),
+      outboxItemId: item.id,
+    });
+    if (!claimed) throw new BadRequestException('Outbox item is not eligible for mock delivery');
+    return this.processClaimedOutbox(identity, claimed, `manual-mock-deliver:${identity.userId}`, { forceSuccess: true });
+  }
+
+  private async processClaimedOutbox(
+    identity: CurrentIdentity,
+    item: ActionOutboxItem,
+    workerId: string,
+    options?: { forceSuccess?: boolean }
+  ) {
     const action = await this.requireAction(identity, item.supportActionId);
     const at = nowIso();
+    const simulation = options?.forceSuccess ? { outcome: 'success' as const } : this.simulateDelivery(item);
+    if (simulation.outcome === 'success') {
+      const deliveryResult = {
+        mode: 'mock',
+        realNetwork: false,
+        writebackEnabled: false,
+        externalWriteAttempted: false,
+        deliveryClaim: 'mock_delivered',
+        externalReferenceId: null,
+        responseSummary: 'Mock delivery recorded locally. No external connector was contacted.',
+        workerId,
+        deliveredAt: at,
+      };
+      const attempt: ActionOutboxAttempt = {
+        id: randomUUID(),
+        tenantId: identity.tenantId as ActionOutboxAttempt['tenantId'],
+        outboxItemId: item.id,
+        supportActionId: action.id,
+        attemptNumber: item.attemptCount + 1,
+        state: 'mock_delivered',
+        deliveryResult,
+        errorRedacted: true,
+        attemptedAt: item.processingStartedAt ?? at,
+        completedAt: at,
+        mockDevOnly: true,
+      };
+      const updatedItem = {
+        ...item,
+        status: 'mock_delivered' as const,
+        attemptCount: item.attemptCount + 1,
+        latestAttemptState: 'mock_delivered' as const,
+        mockDeliveredAt: at,
+        workerLockId: undefined,
+        workerLockedAt: undefined,
+        workerLockExpiresAt: undefined,
+        updatedAt: at,
+      };
+      const updatedAction = { ...action, status: 'mock_delivered' as const, mockDeliveredAt: at, updatedAt: at };
+      await this.store.saveActionOutboxAttempt(attempt);
+      await this.store.saveActionOutboxItem(updatedItem);
+      await this.store.saveSupportAction(updatedAction);
+      await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
+      await this.audit(identity, 'outbox_processing_succeeded', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
+      await this.audit(identity, 'action_mock_delivered', item.sessionId, 'support_action', action.id, deliveryResult);
+      return { processed: true, action: updatedAction, outboxItem: updatedItem, attempt, delivery: deliveryResult, workerId };
+    }
+
+    const errorMessage = redactedError(simulation.errorMessage);
+    const attemptNumber = item.attemptCount + 1;
     const deliveryResult = {
       mode: 'mock',
       realNetwork: false,
       writebackEnabled: false,
       externalWriteAttempted: false,
-      deliveryClaim: 'mock_delivered',
-      externalReferenceId: null,
-      responseSummary: 'Mock delivery recorded locally. No external connector was contacted.',
-      deliveredAt: at,
+      deliveryClaim: 'mock_delivery_failed',
+      retryable: simulation.outcome === 'retryable_failure',
+      errorCode: simulation.errorCode,
+      errorMessage,
+      workerId,
+      failedAt: at,
     };
     const attempt: ActionOutboxAttempt = {
       id: randomUUID(),
       tenantId: identity.tenantId as ActionOutboxAttempt['tenantId'],
       outboxItemId: item.id,
       supportActionId: action.id,
-      attemptNumber: item.attemptCount + 1,
-      state: 'mock_delivered',
+      attemptNumber,
+      state: 'failed',
       deliveryResult,
-      attemptedAt: at,
+      errorCode: simulation.errorCode,
+      errorMessage,
+      errorRedacted: true,
+      attemptedAt: item.processingStartedAt ?? at,
+      completedAt: at,
       mockDevOnly: true,
     };
+    await this.store.saveActionOutboxAttempt(attempt);
+    await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
+    await this.audit(identity, 'outbox_processing_failed', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
+
+    if (simulation.outcome === 'non_retryable_failure' || attemptNumber >= item.maxAttempts) {
+      const result = await this.markDeadLetter(identity, { ...item, attemptCount: attemptNumber }, errorMessage, simulation.errorCode);
+      return { ...result, processed: true, attempt, delivery: deliveryResult, workerId };
+    }
+
+    const nextAttemptAt = addSeconds(at, Math.min(300, 5 * 2 ** (attemptNumber - 1)));
     const updatedItem = {
       ...item,
-      status: 'mock_delivered' as const,
-      attemptCount: item.attemptCount + 1,
-      latestAttemptState: 'mock_delivered' as const,
-      mockDeliveredAt: at,
+      status: 'retry_scheduled' as const,
+      attemptCount: attemptNumber,
+      latestAttemptState: 'retry_scheduled' as const,
+      nextAttemptAt,
+      failedAt: at,
+      retryScheduledAt: at,
+      lastError: errorMessage,
+      lastErrorCode: simulation.errorCode,
+      lastErrorMessage: errorMessage,
+      lastErrorRedacted: true,
+      workerLockId: undefined,
+      workerLockedAt: undefined,
+      workerLockExpiresAt: undefined,
       updatedAt: at,
     };
-    const updatedAction = { ...action, status: 'mock_delivered' as const, mockDeliveredAt: at, updatedAt: at };
-    await this.store.saveActionOutboxAttempt(attempt);
+    const updatedAction = { ...action, status: 'retry_scheduled' as const, failureReason: errorMessage, updatedAt: at };
     await this.store.saveActionOutboxItem(updatedItem);
     await this.store.saveSupportAction(updatedAction);
-    await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
-    await this.audit(identity, 'action_mock_delivered', item.sessionId, 'support_action', action.id, deliveryResult);
-    return { action: updatedAction, outboxItem: updatedItem, attempt, delivery: deliveryResult };
+    await this.audit(identity, 'outbox_retry_scheduled', item.sessionId, 'action_outbox_item', item.id, {
+      ...deliveryResult,
+      nextAttemptAt,
+      attemptNumber,
+    });
+    return { processed: true, action: updatedAction, outboxItem: updatedItem, attempt, delivery: deliveryResult, workerId };
+  }
+
+  private async markDeadLetter(identity: CurrentIdentity, item: ActionOutboxItem, reason: string, errorCode = 'MOCK_DEAD_LETTERED') {
+    const action = await this.requireAction(identity, item.supportActionId);
+    const at = nowIso();
+    const updatedItem = {
+      ...item,
+      status: 'dead_lettered' as const,
+      latestAttemptState: 'dead_lettered' as const,
+      deadLetteredAt: at,
+      deadLetterReason: reason,
+      lastError: reason,
+      lastErrorCode: errorCode,
+      lastErrorMessage: reason,
+      lastErrorRedacted: true,
+      workerLockId: undefined,
+      workerLockedAt: undefined,
+      workerLockExpiresAt: undefined,
+      updatedAt: at,
+    };
+    const updatedAction = { ...action, status: 'dead_lettered' as const, failureReason: reason, updatedAt: at };
+    await this.store.saveActionOutboxItem(updatedItem);
+    await this.store.saveSupportAction(updatedAction);
+    await this.audit(identity, 'outbox_dead_lettered', item.sessionId, 'action_outbox_item', item.id, {
+      reason,
+      errorCode,
+      supportActionId: item.supportActionId,
+      mode: 'mock',
+      realNetwork: false,
+      writebackEnabled: false,
+      externalWriteAttempted: false,
+    });
+    await this.audit(identity, 'action_failed', item.sessionId, 'support_action', action.id, { reason, errorCode, terminal: true });
+    return { action: updatedAction, outboxItem: updatedItem };
+  }
+
+  private simulateDelivery(item: ActionOutboxItem): DeliverySimulation {
+    const scenario = String(item.deliveryIntent['mockDeliveryScenario'] ?? 'success');
+    if (scenario === 'connector_unavailable') {
+      return { outcome: 'retryable_failure', errorCode: 'MOCK_CONNECTOR_UNAVAILABLE', errorMessage: 'Mock connector unavailable; retry scheduled. token=secret is redacted.' };
+    }
+    if (scenario === 'retryable_failure') {
+      return { outcome: 'retryable_failure', errorCode: 'MOCK_RETRYABLE_FAILURE', errorMessage: 'Mock retryable delivery failure. password=hidden is redacted.' };
+    }
+    if (scenario === 'retryable_failure_once' && item.attemptCount < 1) {
+      return { outcome: 'retryable_failure', errorCode: 'MOCK_TRANSIENT_TIMEOUT', errorMessage: 'Mock transient timeout; retry is safe.' };
+    }
+    if (scenario === 'validation_failure') {
+      return { outcome: 'non_retryable_failure', errorCode: 'MOCK_VALIDATION_FAILURE', errorMessage: 'Mock validation failure; payload rejected before any network write.' };
+    }
+    if (scenario === 'non_retryable_failure') {
+      return { outcome: 'non_retryable_failure', errorCode: 'MOCK_NON_RETRYABLE_FAILURE', errorMessage: 'Mock non-retryable delivery failure; no external write attempted.' };
+    }
+    return { outcome: 'success' };
+  }
+
+  private outboxSummary(items: ActionOutboxItem[]) {
+    return items.reduce(
+      (summary, item) => {
+        summary.total += 1;
+        summary[item.status] = (summary[item.status] ?? 0) + 1;
+        return summary;
+      },
+      {
+        total: 0,
+        queued: 0,
+        processing: 0,
+        mock_delivered: 0,
+        failed: 0,
+        retry_scheduled: 0,
+        dead_lettered: 0,
+        cancelled: 0,
+      } as Record<ActionOutboxItem['status'] | 'total', number>
+    );
   }
 
   private async requireSession(identity: CurrentIdentity, sessionId: string) {
@@ -285,7 +612,10 @@ export class ActionsService {
 
   private async assertPermission(identity: CurrentIdentity, permission: string, sessionId?: string) {
     if (hasPermission(identity, permission)) return;
-    await this.audit(identity, 'action_access_denied', sessionId, 'permission', permission, { permission });
+    const eventType = permission.startsWith('outbox:') || permission.startsWith('worker:')
+      ? 'outbox_access_denied'
+      : 'action_access_denied';
+    await this.audit(identity, eventType, sessionId, 'permission', permission, { permission });
     throw new ForbiddenException(`Forbidden: ${permission} requires a higher role`);
   }
 

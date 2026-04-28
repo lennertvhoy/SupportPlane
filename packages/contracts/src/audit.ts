@@ -101,6 +101,16 @@ export const AuditEventType = z.enum([
   'action_access_denied',
   'outbox_item_created',
   'outbox_item_attempted',
+  'outbox_processing_started',
+  'outbox_processing_succeeded',
+  'outbox_processing_failed',
+  'outbox_retry_scheduled',
+  'outbox_retry_requested',
+  'outbox_dead_lettered',
+  'outbox_cancelled',
+  'outbox_worker_status_checked',
+  'outbox_access_denied',
+  'outbox_process_once_requested',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

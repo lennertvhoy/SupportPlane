@@ -6,8 +6,11 @@ export const SupportActionStatus = z.enum([
   'review_required',
   'approved',
   'queued',
+  'processing',
   'mock_delivered',
   'failed',
+  'retry_scheduled',
+  'dead_lettered',
   'cancelled',
   'rejected',
 ]);
@@ -18,18 +21,39 @@ export type SupportActionType = z.infer<typeof SupportActionType>;
 
 export const ActionOutboxStatus = z.enum([
   'queued',
+  'processing',
   'mock_delivered',
   'failed',
+  'retry_scheduled',
+  'dead_lettered',
   'cancelled',
 ]);
 export type ActionOutboxStatus = z.infer<typeof ActionOutboxStatus>;
 
 export const ActionOutboxAttemptState = z.enum([
+  'processing',
   'mock_delivered',
   'failed',
+  'retry_scheduled',
   'retry_requested',
+  'dead_lettered',
+  'cancelled',
 ]);
 export type ActionOutboxAttemptState = z.infer<typeof ActionOutboxAttemptState>;
+
+export const ActionOutboxDeliveryMode = z.enum(['mock']);
+export type ActionOutboxDeliveryMode = z.infer<typeof ActionOutboxDeliveryMode>;
+
+export const ActionOutboxSafetyFlags = z.object({
+  mode: z.literal('mock').default('mock'),
+  realNetwork: z.literal(false).default(false),
+  writebackEnabled: z.literal(false).default(false),
+  externalWriteAttempted: z.literal(false).default(false),
+  noSecrets: z.boolean().default(true),
+  noRawMedia: z.boolean().default(true),
+  localMockOnly: z.boolean().default(true),
+});
+export type ActionOutboxSafetyFlags = z.infer<typeof ActionOutboxSafetyFlags>;
 
 export const SupportAction = z.object({
   id: EntityId,
@@ -68,13 +92,36 @@ export const ActionOutboxItem = z.object({
   actionType: SupportActionType,
   status: ActionOutboxStatus,
   idempotencyKey: z.string().min(8).max(160),
+  deliveryMode: ActionOutboxDeliveryMode.default('mock'),
   deliveryIntent: z.record(JsonValue).default({}),
   attemptCount: z.number().int().min(0).default(0),
+  maxAttempts: z.number().int().min(1).max(20).default(3),
   latestAttemptState: ActionOutboxAttemptState.optional(),
   queuedAt: Timestamp,
+  nextAttemptAt: Timestamp.optional(),
+  processingStartedAt: Timestamp.optional(),
+  workerLockId: z.string().max(160).optional(),
+  workerLockedAt: Timestamp.optional(),
+  workerLockExpiresAt: Timestamp.optional(),
   mockDeliveredAt: Timestamp.optional(),
+  failedAt: Timestamp.optional(),
+  retryScheduledAt: Timestamp.optional(),
+  deadLetteredAt: Timestamp.optional(),
+  cancelledAt: Timestamp.optional(),
   lastError: z.string().max(1000).optional(),
-  safetyFlags: z.record(JsonValue).default({}),
+  lastErrorCode: z.string().max(128).optional(),
+  lastErrorMessage: z.string().max(1000).optional(),
+  lastErrorRedacted: z.boolean().default(true),
+  deadLetterReason: z.string().max(1000).optional(),
+  safetyFlags: ActionOutboxSafetyFlags.default({
+    mode: 'mock',
+    realNetwork: false,
+    writebackEnabled: false,
+    externalWriteAttempted: false,
+    noSecrets: true,
+    noRawMedia: true,
+    localMockOnly: true,
+  }),
   mockDevOnly: z.boolean().default(true),
   createdAt: Timestamp,
   updatedAt: Timestamp,
@@ -89,8 +136,11 @@ export const ActionOutboxAttempt = z.object({
   attemptNumber: z.number().int().min(1),
   state: ActionOutboxAttemptState,
   deliveryResult: z.record(JsonValue).default({}),
+  errorCode: z.string().max(128).optional(),
   errorMessage: z.string().max(1000).optional(),
+  errorRedacted: z.boolean().default(true),
   attemptedAt: Timestamp,
+  completedAt: Timestamp.optional(),
   mockDevOnly: z.boolean().default(true),
 });
 export type ActionOutboxAttempt = z.infer<typeof ActionOutboxAttempt>;
@@ -105,6 +155,7 @@ export const SupportActionCreateRequest = z.object({
   body: z.string().min(1).max(8000),
   subject: z.string().max(240).optional(),
   idempotencyKey: z.string().min(8).max(160).optional(),
+  mockDeliveryScenario: z.enum(['success', 'retryable_failure_once', 'retryable_failure', 'non_retryable_failure', 'connector_unavailable', 'validation_failure']).optional(),
 });
 export type SupportActionCreateRequest = z.infer<typeof SupportActionCreateRequest>;
 

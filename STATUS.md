@@ -1,29 +1,26 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-28 10:35 CEST
+**Updated At:** 2026-04-28 11:22 CEST
 **Execution Mode:** operating
-**Project State:** bl_092_durable_action_outbox_workflow_closure_complete
+**Project State:** bl_093_outbox_worker_retry_deadletter_foundation_validated
 **Public URL:** not configured
 
 ## Snapshot
 
-- BL-092 Durable Action/Outbox Workflow closure is complete after repair: lifecycle contradiction fixed where UI showed `mock_delivered` attempt history on `draft`/`review_required` actions. Two independent bugs were fixed:
-  1. Backend `ActionsService.listSessionActions` now suppresses outbox items until at least one action reaches `queued`/`mock_delivered`/`failed` state.
-  2. Frontend `ActionOutboxPanel.refresh()` now scopes attempt history to the latest action's specific outbox item by `supportActionId` instead of blindly taking `outboxItems[0]`.
-- Closure repair commit: `5d0a9c54bd56e714da75bcfe84b8a809a417f6d8` (lifecycle contradiction fix).
-- Final accepted commit: `4c7697de0f143cba09ec60c9f1de05725ec659c7` (17-screenshot audit proof, persistence-script repair, full validation rerun, and final state/freeze cleanup).
-- Browser proof: `output/playwright/session-092-durable-action-outbox-workflow-final-closure/` with 17 screenshots covering full action/outbox lifecycle, evidence bundle, audit trail, RBAC, cross-tenant denial, logout/re-login, API restart persistence, and mock warnings.
+- BL-093 Background outbox worker retry/dead-letter foundation is implemented and validation-gate passed in local PostgreSQL/local-auth mode.
+- Worker behavior is local/mock-only: process-once and the worker CLI claim queued/retry-scheduled items, write attempts, schedule retry with backoff, and dead-letter terminal failures without real external writeback.
+- Browser proof: `output/playwright/session-093-outbox-worker-retry-deadletter-foundation/` with 24 screenshots covering login, cockpit identity/runtime proof, queue before worker, worker status, process-once, mock delivery flags, retry scheduling, admin retry/dead-letter/cancel controls, viewer/server RBAC denial, cross-tenant denial, timeline, audit, evidence bundle, logout/re-login, API restart persistence, local/mock warnings, and no-secret/no-raw-media proof.
 - PostgreSQL/local-auth baseline remains active: API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
-- Recent accepted foundations remain BL-018 local auth/RBAC/tenant boundaries, BL-020 ticket/customer/connector safety, BL-050 PostgreSQL persistence, BL-091 support case workflow foundation.
-- All user-facing action/outbox behavior is local/mock-only. No real Zammad writeback, email sending, telephony, AI provider, external queue worker, object storage, raw media storage, production audit immutability, compliance certification, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment is implemented.
+- Accepted prior foundations remain BL-018 local auth/RBAC/tenant boundaries, BL-020 ticket/customer/connector safety, BL-050 PostgreSQL persistence, BL-091 support case workflow foundation, and BL-092 durable action/outbox workflow.
+- All outbox worker behavior is local PostgreSQL-backed mock processing. No real Zammad writeback, email sending, telephony, AI provider, external broker-backed queue, object storage, raw media storage, production audit immutability, compliance certification, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment is implemented.
 
 ## Immediate Priorities
 
-1. BL-092 is CTO-accepted closure-grade. CTO review should select the next backlog slice.
+1. BL-093 is ready for CTO closure review. Next likely MVP slice is configurable connector/writeback readiness gates or operator-safe delivery policy hardening.
 
 ## Active Blockers
 
-- No queue consumers or real object storage usage yet; NATS and MinIO containers are available for future slices.
+- Worker foundation is local process/API driven only; no production queue semantics, external broker-backed queue, or real writeback exists.
 - No real external integrations exist yet.
 - Local MVP auth exists for PostgreSQL mode, but no production SSO/OAuth/SAML/OIDC, MFA, password reset, rate limiting, or hardened auth exists.
 - Mock AI draft and greeting generation are deterministic and dev-only; no real AI provider is connected.

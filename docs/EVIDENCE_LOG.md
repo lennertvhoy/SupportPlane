@@ -1362,3 +1362,32 @@
 - Proves: The persistence verification script can run honestly even when the development API is already serving on the default port.
 - Type: script-fix-verification
 - as_of: 2026-04-28T10:27:00+02:00
+
+## EV-2026-04-28-004: BL-093 Outbox worker retry/dead-letter browser proof
+
+- Files: `output/playwright/session-093-outbox-worker-retry-deadletter-foundation/01-login-local-auth.png` through `24-final-no-secret-no-raw-media-proof.png`
+- Source/System: visible Chromium via Playwright CLI against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - local login and authenticated cockpit runtime proof with worker/store/auth status
+  - approved action queued before worker processing
+  - local worker/process-once status and claim/result proof
+  - mock delivery success with `realNetwork: false`, `writebackEnabled: false`, and `externalWriteAttempted: false`
+  - retryable failure, retry scheduling, admin retry, and dead-letter behavior
+  - admin cancel/dead-letter controls and viewer read-only restrictions
+  - direct viewer mutation denial with forged role header ignored
+  - cross-tenant outbox access denied
+  - case timeline, audit trail, and evidence bundle worker/outbox provenance
+  - logout/re-login and API restart persistence
+  - local/mock/no-real-writeback warnings and no-secret/no-raw-media proof
+- Type: browser-runtime-verification
+- as_of: 2026-04-28T11:13:00+02:00
+
+## EV-2026-04-28-005: BL-093 outbox worker retry/dead-letter verification script
+
+- File: `scripts/verify_outbox_worker_retry_deadletter.sh`
+- Source/System: shell script against local-auth API and web runtime
+- Action: Logged in as operator, admin, viewer, and alt-tenant operator; created and queued local support actions; processed mock success; verified retryable failure scheduling and admin retry; verified non-retryable dead-letter, admin cancel, viewer mutation denial, forged-header ignore, cross-tenant denial, audit events, timeline entries, evidence bundle provenance, and no-secret checks.
+- Result: pass
+- Type: api-behavior-verification
+- as_of: 2026-04-28T11:17:00+02:00

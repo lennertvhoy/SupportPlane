@@ -57,7 +57,7 @@ All new endpoints return explicit mock indicators:
 - Connector validate/test: `mode: "mock"`, `realNetwork: false`, `writebackEnabled: false`
 - Support note drafts: UI shows "Local mock only — not sent to Zammad — requires human review"
 - Evidence bundle: Includes `mockDevOnly: true`, `notSentToZammad: true`, `requiresHumanReview: true`
-- Action outbox: UI shows local/mock delivery only, human review required, no real Zammad writeback, no external queue worker, and no raw media capture.
+- Action outbox: UI shows local/mock delivery only, human review required, local PostgreSQL worker/process-once state, no real Zammad writeback, no external broker-backed queue, and no raw media capture.
 
 ## Database Notes
 
@@ -74,3 +74,8 @@ BL-092 adds `docs/ACTION_OUTBOX_WORKFLOW.md`, durable local action/outbox
 persistence, review/approval APIs, mock delivery attempts, case timeline
 entries, and evidence bundle `actionOutbox` summaries. It remains local/mock
 only and does not perform real connector writeback.
+
+BL-093 adds `docs/OUTBOX_WORKER_OPERATIONS.md`, local worker/process-once
+processing, retry scheduling, dead-letter/cancel controls, operational audit
+events, and case timeline/evidence bundle worker provenance. It remains local
+PostgreSQL-backed mock processing, not production queue infrastructure.

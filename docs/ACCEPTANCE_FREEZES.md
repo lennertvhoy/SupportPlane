@@ -804,3 +804,53 @@ and must be protected from quiet regression.
   - Legacy BL-007 writeback route still exists but BL-092 workflow does not call it.
 - Explicit non-claims:
   - No real production Zammad writeback, real email sending, real telephony/PBX integration, real AI provider calls, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
+
+---
+
+## AF-2026-04-28-011: BL-093 Background Outbox Worker Retry/Dead-Letter Foundation
+
+- ID: AF-2026-04-28-011
+- Backlog ID: BL-093
+- Milestone: Background outbox worker retry/dead-letter foundation
+- Scope: Local PostgreSQL-backed mock outbox worker/process-once path, safe claim/lock fields, attempt history, retry scheduling, dead-letter/cancel controls, deterministic mock connector failure scenarios, worker status, RBAC/tenant boundaries, audit events, case timeline entries, evidence-bundle provenance, worker CLI, verification script, and cockpit Delivery Operations UI.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- final_closure_commit: recorded in final handoff after commit
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+  - Podman container `sp-postgres` on port 5434
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- worker_mode: local_mock_worker/process-once
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: true
+- migration: prisma/migrations/20260428120000_outbox_worker_retry_deadletter_foundation/
+- evidence_refs:
+  - EV-2026-04-28-004
+  - EV-2026-04-28-005
+- evidence_folder: output/playwright/session-093-outbox-worker-retry-deadletter-foundation/
+- screenshot_count: 24
+- validation_summary:
+  - `npm install` passed; npm reported 10 vulnerabilities (8 moderate, 2 high), treated as pre-existing audit debt.
+  - `npm run lint`, `npm run typecheck --workspaces --if-present`, `npm run validate`, and `npm run health` passed after replacing a stale ESLint suppression with a selected-item ref.
+  - `npx prisma validate`, `npx prisma generate`, `npx prisma migrate status`, and `npx prisma db seed` passed.
+  - `npx prisma migrate deploy` applied the BL-093 migration before final status reported schema up to date.
+  - `scripts/verify_postgres_persistence.sh`, `scripts/verify_local_auth_rbac.sh`, `scripts/verify_ticket_context_connector.sh`, `scripts/verify_support_case_workflow.sh`, `scripts/verify_durable_action_outbox.sh`, and `scripts/verify_outbox_worker_retry_deadletter.sh` passed.
+  - API tests: 114/114 pass.
+  - Contracts tests: 29/29 pass.
+  - Web tests: 15/15 pass.
+  - AI tests: 9/9 pass.
+  - Connectors build/test passed; connector tests: 16/16 pass.
+  - Worker build passed.
+  - Web build passed with existing Next ESLint-plugin warning.
+- known_limitations:
+  - Worker processing is local/mock-only and API/CLI driven; it is not production queue infrastructure.
+  - Claiming is sufficient for the local PostgreSQL MVP but not a distributed queue guarantee.
+  - No real connector writeback, email, telephony, AI provider call, external broker, object storage, raw media storage, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment was implemented.
+- explicit_non_claims:
+  - No real production Zammad writeback was implemented.
+  - No real email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.

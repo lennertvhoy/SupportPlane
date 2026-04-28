@@ -1,7 +1,7 @@
 # Persistence
 
-**Scope:** PostgreSQL persistence after BL-050, extended by BL-018 local auth  
-**Last updated:** 2026-04-27
+**Scope:** PostgreSQL persistence after BL-050, extended by BL-018 local auth and BL-093 outbox worker state
+**Last updated:** 2026-04-28
 
 SupportPlane supports two store modes:
 
@@ -35,6 +35,12 @@ BL-092 action/outbox persistence is represented by `support_actions`,
 are local/mock workflow state only; they are not a production queue and do not
 perform external writeback.
 
+BL-093 extends `action_outbox_items` and `action_outbox_attempts` through
+`prisma/migrations/20260428120000_outbox_worker_retry_deadletter_foundation/`.
+The added fields persist local worker claim locks, retry scheduling, max attempts,
+redacted error codes/messages, cancellation, and dead-letter state. The worker
+uses PostgreSQL rows only; NATS is not consumed by this slice.
+
 ## Auth persistence
 
 BL-018 added:
@@ -51,3 +57,4 @@ Passwords and session tokens are not returned in API responses, UI, screenshots,
 - Evidence bundles are generated on demand, not persisted as files or object-store artifacts.
 - No raw screenshots, raw audio, or media blobs are stored.
 - No production audit immutability or cryptographic hash chain is claimed.
+- BL-093 worker state is local MVP processing state, not production queue infrastructure.

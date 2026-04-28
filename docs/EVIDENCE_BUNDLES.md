@@ -38,7 +38,7 @@ Every bundle includes:
 | Greeting suggestions | Generated greeting text, tone, provider, model, prompt, context hash, mock/disabled flags |
 | Call lifecycle audit | Received, matched, linked, status-change, and greeting-related events through the audit timeline |
 | Connector operations | Ticket loads, drafts, writeback attempts/results |
-| Action outbox | Local support action review, queue, mock delivery, attempts, and safety flags |
+| Action outbox | Local support action review, queue, worker processing, retry/dead-letter state, attempts, and safety flags |
 | Telephony bridge events | Mock adapter status/test, webhook verification, and control intent audit summaries |
 | Audit timeline | Full event list with actor, resource, metadata, integrity hash |
 | Mock/dev-only disclaimers | Honest labels about in-memory/mock limitations |
@@ -98,6 +98,12 @@ Tests prove that `apiToken`, `ZAMMAD_API_TOKEN`, `secret`, `token=`, and `Bearer
 - **Pattern-based redaction:** Secret redaction uses pattern matching, not guaranteed zero-knowledge.
 - **Auto-created sessions:** Sessions created from mock incoming calls are development-only artifacts.
 - **Greeting suggestions:** Generated greetings are mock-AI suggestions only, not spoken or sent automatically.
+- **Outbox worker:** BL-093 worker evidence is local PostgreSQL process-once state, not production queue or external broker evidence.
+
+BL-093 action/outbox summaries include attempt history, `maxAttempts`, retry
+schedule, dead-letter reason, redacted error code/message, worker provenance,
+and `realNetwork=false`, `writebackEnabled=false`,
+`externalWriteAttempted=false` on delivery results.
 - **Call Console lifecycle:** BL-043 call status changes are mock lifecycle
   events only. They do not control a real phone, PBX, queue, or call center.
 - **Telephony bridge:** BL-044 telephony bridge events are adapter-boundary mock

@@ -358,12 +358,27 @@ export interface ActionOutboxItem {
   actionType: 'ticket_note';
   status: string;
   idempotencyKey: string;
+  deliveryMode?: 'mock';
   deliveryIntent: Record<string, unknown>;
   attemptCount: number;
+  maxAttempts: number;
   latestAttemptState?: string;
   queuedAt: string;
+  nextAttemptAt?: string;
+  processingStartedAt?: string;
+  workerLockId?: string;
+  workerLockedAt?: string;
+  workerLockExpiresAt?: string;
   mockDeliveredAt?: string;
+  failedAt?: string;
+  retryScheduledAt?: string;
+  deadLetteredAt?: string;
+  cancelledAt?: string;
   lastError?: string;
+  lastErrorCode?: string;
+  lastErrorMessage?: string;
+  lastErrorRedacted?: boolean;
+  deadLetterReason?: string;
   safetyFlags: Record<string, unknown>;
   mockDevOnly: boolean;
   createdAt: string;
@@ -378,9 +393,28 @@ export interface ActionOutboxAttempt {
   attemptNumber: number;
   state: string;
   deliveryResult: Record<string, unknown>;
+  errorCode?: string;
   errorMessage?: string;
+  errorRedacted?: boolean;
   attemptedAt: string;
+  completedAt?: string;
   mockDevOnly: boolean;
+}
+
+export interface OutboxWorkerStatus {
+  mode: string;
+  status: string;
+  consumerEnabled: boolean;
+  queueBackend: string;
+  storeMode: string;
+  deliveryMode: 'mock';
+  realNetwork: false;
+  writebackEnabled: false;
+  externalWriteAttempted: false;
+  summary: Record<string, number>;
+  warnings: string[];
+  checkedAt: string;
+  mockDevOnly: true;
 }
 
 export interface EvidenceBundleExportResponse {
@@ -1030,7 +1064,7 @@ export const api = {
 
   createSupportAction: (
     sessionId: string,
-    body: { actionType?: 'ticket_note'; externalTicketId?: string; ticketReferenceId?: string; body: string; subject?: string; idempotencyKey?: string },
+    body: { actionType?: 'ticket_note'; externalTicketId?: string; ticketReferenceId?: string; body: string; subject?: string; idempotencyKey?: string; mockDeliveryScenario?: string },
     identity?: DevIdentity
   ) =>
     apiFetch<{ action: SupportAction; idempotentReplay: boolean }>(
@@ -1056,6 +1090,36 @@ export const api = {
 
   getOutboxItem: (outboxId: string, identity?: DevIdentity) =>
     apiFetch<{ outboxItem: ActionOutboxItem; attempts: ActionOutboxAttempt[] }>(`/outbox/${outboxId}`, { method: 'GET' }, identity),
+
+  listOutbox: (identity?: DevIdentity) =>
+    apiFetch<{ outboxItems: ActionOutboxItem[]; summary: Record<string, number> }>('/outbox', { method: 'GET' }, identity),
+
+  retryOutboxItem: (outboxId: string, identity?: DevIdentity) =>
+    apiFetch<{ outboxItem: ActionOutboxItem }>(`/outbox/${outboxId}/retry`, { method: 'POST' }, identity),
+
+  cancelOutboxItem: (outboxId: string, reason?: string, identity?: DevIdentity) =>
+    apiFetch<{ action: SupportAction; outboxItem: ActionOutboxItem }>(
+      `/outbox/${outboxId}/cancel`,
+      { method: 'POST', body: JSON.stringify({ reason }) },
+      identity
+    ),
+
+  deadLetterOutboxItem: (outboxId: string, reason?: string, identity?: DevIdentity) =>
+    apiFetch<{ action: SupportAction; outboxItem: ActionOutboxItem }>(
+      `/outbox/${outboxId}/dead-letter`,
+      { method: 'POST', body: JSON.stringify({ reason }) },
+      identity
+    ),
+
+  processOutboxOnce: (outboxItemId?: string, identity?: DevIdentity) =>
+    apiFetch<Record<string, unknown>>(
+      '/outbox/process-once',
+      { method: 'POST', body: JSON.stringify({ outboxItemId }) },
+      identity
+    ),
+
+  getOutboxWorkerStatus: (identity?: DevIdentity) =>
+    apiFetch<OutboxWorkerStatus>('/outbox/worker/status', { method: 'GET' }, identity),
 
   // Connector installations
   listConnectorInstallations: (identity?: DevIdentity) =>

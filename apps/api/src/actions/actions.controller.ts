@@ -57,6 +57,11 @@ export class ActionsController {
     return this.service.listOutbox(getCurrentIdentity(req));
   }
 
+  @Get('outbox/worker/status')
+  workerStatus(@Req() req: Request) {
+    return this.service.getWorkerStatus(getCurrentIdentity(req));
+  }
+
   @Get('outbox/:id')
   getOutbox(@Req() req: Request, @Param('id') id: string) {
     return this.service.getOutbox(getCurrentIdentity(req), id);
@@ -65,6 +70,21 @@ export class ActionsController {
   @Post('outbox/:id/retry')
   retry(@Req() req: Request, @Param('id') id: string) {
     return this.service.retryOutbox(getCurrentIdentity(req), id);
+  }
+
+  @Post('outbox/:id/cancel')
+  cancelOutbox(@Req() req: Request, @Param('id') id: string, @Body() body: { reason?: string }) {
+    return this.service.cancelOutbox(getCurrentIdentity(req), id, body);
+  }
+
+  @Post('outbox/:id/dead-letter')
+  deadLetterOutbox(@Req() req: Request, @Param('id') id: string, @Body() body: { reason?: string }) {
+    return this.service.deadLetterOutbox(getCurrentIdentity(req), id, body);
+  }
+
+  @Post('outbox/process-once')
+  processOnce(@Req() req: Request, @Body() body: { outboxItemId?: string; workerId?: string }) {
+    return this.service.processOutboxOnce(getCurrentIdentity(req), body);
   }
 
   @Post('outbox/:id/mock-deliver')

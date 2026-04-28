@@ -1731,3 +1731,60 @@ CTO-identified closure blockers from prior handoff:
 - Durable action/outbox workflow is synchronous local PostgreSQL state and mock delivery only; not a production queue or worker.
 - Legacy BL-007 writeback route still exists but BL-092 does not use it.
 - No real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment implemented.
+
+## 2026-04-28: BL-093 Background Outbox Worker Retry/Dead-Letter Foundation
+
+### Scope
+
+- Added the canonical BL-093 backlog item for local outbox worker retry/dead-letter operations.
+- Implemented local PostgreSQL-backed mock worker/process-once delivery foundation without real external writeback.
+
+### Changes
+
+- Extended action/outbox contracts, Prisma schema, migration, `PrismaStore`, and `InMemoryStore` with processing/retry/dead-letter states, attempt limits, next-attempt scheduling, worker locks, redacted error fields, delivery mode, connector provenance, and safety flags.
+- Added API routes for worker status, process-once, retry, cancel, and dead-letter with local auth, tenant scoping, RBAC, forged-header ignore, typed errors, and audit events.
+- Added deterministic mock delivery scenarios for success, retryable failure, connector unavailable, validation failure, mock delivery failure, and non-retryable failure.
+- Added `apps/worker` CLI behavior for `status`, `process-once`, and `loop` against the local API.
+- Added cockpit Delivery Operations UI with worker status, queue counts, attempt history, mock safety flags, admin controls, and viewer read-only proof.
+- Extended case timeline and evidence bundles with outbox attempt provenance, retry/dead-letter state, connector safety flags, and redacted error details.
+- Added `scripts/verify_outbox_worker_retry_deadletter.sh`.
+- Added `docs/OUTBOX_WORKER_OPERATIONS.md` and updated local development, persistence, action outbox, evidence bundle, and support case workflow docs.
+
+### Verification
+
+- `npm install` — pass; npm reported 10 vulnerabilities (8 moderate, 2 high), treated as pre-existing audit debt.
+- `npm run lint` — initial fail on unknown `react-hooks/exhaustive-deps` suppression; fixed by using a selected-item ref; rerun pass.
+- `npm run typecheck --workspaces --if-present` — pass.
+- `npm run validate` — pass.
+- `npm run health` — pass.
+- `npx prisma validate` — pass.
+- `npx prisma generate` — pass.
+- `npx prisma migrate deploy` — pass; applied BL-093 migration.
+- `npx prisma migrate status` — pass after migration; schema up to date.
+- `npx prisma db seed` — pass.
+- `scripts/verify_postgres_persistence.sh` — pass.
+- `scripts/verify_local_auth_rbac.sh` — pass.
+- `scripts/verify_ticket_context_connector.sh` — pass.
+- `scripts/verify_support_case_workflow.sh` — pass.
+- `scripts/verify_durable_action_outbox.sh` — pass.
+- `scripts/verify_outbox_worker_retry_deadletter.sh` — pass.
+- `cd apps/api && npm test` — 114/114 pass.
+- `npm test --workspace @supportplane/contracts` — 29/29 pass.
+- `npm test --workspace @supportplane/web` — 15/15 pass.
+- `npm test --workspace @supportplane/ai` — 9/9 pass.
+- `npm run build --workspace @supportplane/connectors` — pass.
+- `npm test --workspace @supportplane/connectors` — 16/16 pass.
+- `npm run build --workspace @supportplane/web` — pass with existing Next ESLint-plugin warning.
+- `npm run build --workspace @supportplane/worker` — pass.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-093-outbox-worker-retry-deadletter-foundation/`
+- Screenshot count: 24
+- Evidence refs: EV-2026-04-28-004 and EV-2026-04-28-005
+
+### Remaining Risk
+
+- Worker/process-once behavior is local/mock-only and not production queue infrastructure.
+- Claim/lock behavior is designed for the local PostgreSQL MVP and does not claim distributed queue guarantees.
+- No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, password reset, or production deployment implemented.

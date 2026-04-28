@@ -237,6 +237,36 @@ export class InMemoryStore implements Store {
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
+  claimNextActionOutboxItem(
+    tenantId: string,
+    options: { workerId: string; now: string; lockExpiresAt: string; outboxItemId?: string }
+  ): ActionOutboxItemShape | undefined {
+    const nowTime = Date.parse(options.now);
+    const candidate = Array.from(this.actionOutboxItems.values())
+      .filter((item) => {
+        if (item.tenantId !== tenantId) return false;
+        if (options.outboxItemId && item.id !== options.outboxItemId) return false;
+        if (!['queued', 'retry_scheduled', 'processing'].includes(item.status)) return false;
+        if (item.status === 'processing' && item.workerLockExpiresAt && Date.parse(item.workerLockExpiresAt) > nowTime) return false;
+        if (item.nextAttemptAt && Date.parse(item.nextAttemptAt) > nowTime) return false;
+        return item.attemptCount < item.maxAttempts;
+      })
+      .sort((a, b) => a.queuedAt.localeCompare(b.queuedAt))[0];
+    if (!candidate) return undefined;
+    const updated: ActionOutboxItemShape = {
+      ...candidate,
+      status: 'processing',
+      latestAttemptState: 'processing',
+      processingStartedAt: options.now,
+      workerLockId: options.workerId,
+      workerLockedAt: options.now,
+      workerLockExpiresAt: options.lockExpiresAt,
+      updatedAt: options.now,
+    };
+    this.saveActionOutboxItem(updated);
+    return updated;
+  }
+
   saveActionOutboxAttempt(attempt: ActionOutboxAttemptShape): void {
     this.actionOutboxAttempts.set(`${attempt.tenantId}:${attempt.id}`, attempt);
   }

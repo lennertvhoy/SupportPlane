@@ -531,12 +531,27 @@ model ActionOutboxItem {
   actionType              String
   status                  String   @default("queued")
   idempotencyKey          String
+  deliveryMode            String   @default("mock")
   deliveryIntent          Json     @default("{}")
   attemptCount            Int      @default(0)
+  maxAttempts             Int      @default(3)
   latestAttemptState      String?
   queuedAt                DateTime @default(now())
+  nextAttemptAt           DateTime?
+  processingStartedAt     DateTime?
+  workerLockId            String?
+  workerLockedAt          DateTime?
+  workerLockExpiresAt     DateTime?
   mockDeliveredAt         DateTime?
+  failedAt                DateTime?
+  retryScheduledAt        DateTime?
+  deadLetteredAt          DateTime?
+  cancelledAt             DateTime?
   lastError               String?
+  lastErrorCode           String?
+  lastErrorMessage        String?
+  lastErrorRedacted       Boolean  @default(true)
+  deadLetterReason        String?
   safetyFlags             Json     @default("{}")
   mockDevOnly             Boolean  @default(true)
   createdAt               DateTime @default(now())
@@ -550,8 +565,11 @@ model ActionOutboxItem {
   @@unique([tenantId, idempotencyKey])
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([tenantId, status, nextAttemptAt])
   @@index([tenantId, sessionId])
   @@index([tenantId, supportActionId])
+  @@index([tenantId, workerLockExpiresAt])
+  @@index([tenantId, connectorInstallationId])
   @@index([queuedAt])
   @@map("action_outbox_items")
 }
@@ -564,8 +582,11 @@ model ActionOutboxAttempt {
   attemptNumber   Int
   state           String
   deliveryResult  Json     @default("{}")
+  errorCode       String?
   errorMessage    String?
+  errorRedacted   Boolean  @default(true)
   attemptedAt     DateTime @default(now())
+  completedAt     DateTime?
   mockDevOnly     Boolean  @default(true)
 
   tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -576,5 +597,6 @@ model ActionOutboxAttempt {
   @@index([tenantId, outboxItemId])
   @@index([tenantId, supportActionId])
   @@index([attemptedAt])
+  @@unique([tenantId, outboxItemId, attemptNumber])
   @@map("action_outbox_attempts")
 }
