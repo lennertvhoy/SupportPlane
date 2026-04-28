@@ -1724,7 +1724,7 @@ CTO-identified closure blockers from prior handoff:
 - Screenshot folder: `output/playwright/session-092-durable-action-outbox-workflow-final-closure/`
 - Screenshot count: 17
 - Evidence refs: EV-2026-04-27-096 through EV-2026-04-27-112, EV-2026-04-28-001, EV-2026-04-28-002
-- Final closure commit: `21f99dab30d3144ac437bf29b1c42d267fe8db64`
+- Final closure commit: `4c7697de0f143cba09ec60c9f1de05725ec659c7`
 
 ### Remaining Risk
 

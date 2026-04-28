@@ -42,7 +42,7 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 21f99dab30d3144ac437bf29b1c42d267fe8db64
+    head: 4c7697de0f143cba09ec60c9f1de05725ec659c7
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
@@ -479,7 +479,7 @@ current_state:
       validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
       implementation_commit: 6819301fa5af04a6b02bbe6af532ae669e7a880a
       closure_repair_commit: 5d0a9c54bd56e714da75bcfe84b8a809a417f6d8
-      final_closure_commit: 21f99dab30d3144ac437bf29b1c42d267fe8db64
+      final_closure_commit: 4c7697de0f143cba09ec60c9f1de05725ec659c7
       closure_repair_summary: >
         Fixed lifecycle contradiction where UI showed mock_delivered attempt history
         on draft/review_required actions. Two bugs: backend returned all session outbox

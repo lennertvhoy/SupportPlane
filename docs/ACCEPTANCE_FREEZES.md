@@ -737,7 +737,7 @@ and must be protected from quiet regression.
 - branch: main
 - implementation_commit: 6819301fa5af04a6b02bbe6af532ae669e7a880a
 - closure_repair_commit: 5d0a9c54bd56e714da75bcfe84b8a809a417f6d8
-- final_closure_commit: 21f99dab30d3144ac437bf29b1c42d267fe8db64
+- final_closure_commit: 4c7697de0f143cba09ec60c9f1de05725ec659c7
 - process_or_container:
   - node process (NestJS API via tsx) on port 4110
   - node process (Next.js dev) on port 3200

@@ -11,7 +11,7 @@
   1. Backend `ActionsService.listSessionActions` now suppresses outbox items until at least one action reaches `queued`/`mock_delivered`/`failed` state.
   2. Frontend `ActionOutboxPanel.refresh()` now scopes attempt history to the latest action's specific outbox item by `supportActionId` instead of blindly taking `outboxItems[0]`.
 - Closure repair commit: `5d0a9c54bd56e714da75bcfe84b8a809a417f6d8` (lifecycle contradiction fix).
-- Final closure commit: `21f99dab30d3144ac437bf29b1c42d267fe8db64` (17-screenshot audit proof + AGENTS.md closure repair rule).
+- Final accepted commit: `4c7697de0f143cba09ec60c9f1de05725ec659c7` (17-screenshot audit proof, persistence-script repair, full validation rerun, and final state/freeze cleanup).
 - Browser proof: `output/playwright/session-092-durable-action-outbox-workflow-final-closure/` with 17 screenshots covering full action/outbox lifecycle, evidence bundle, audit trail, RBAC, cross-tenant denial, logout/re-login, API restart persistence, and mock warnings.
 - PostgreSQL/local-auth baseline remains active: API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
 - Recent accepted foundations remain BL-018 local auth/RBAC/tenant boundaries, BL-020 ticket/customer/connector safety, BL-050 PostgreSQL persistence, BL-091 support case workflow foundation.
