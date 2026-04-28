@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-28T17:30:00+02:00
+  updated_at: 2026-04-28T19:30:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,7 +42,7 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 89a8590dacfff01646b2459228bf7734df6aefff
+    head: 36e51607bee95232bec4f7d49f3aea67b4937053
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
@@ -378,10 +378,10 @@ current_state:
         - connector_config_validated
         - connector_readiness_checked
         - connector_runtime_resolved
-      screenshot_folder: output/playwright/session-098-connector-runtime-readiness-final-closure/
+      screenshot_folder: output/playwright/session-099-bl098-closure-repair-final/
       screenshot_count: 15
       validation: full_gate_passed
-      final_closure_commit: 6b8e36676828ae70d6f1065128674d6fe50d38a9
+      final_closure_commit: 36e51607bee95232bec4f7d49f3aea67b4937053
       notes:
         - config validation enforces mock-only safety: rejects mockMode:false, rejects unsafe real-network fields
         - runtime readiness returns mockReady based on mockMode && enabled; realReady is always false
@@ -390,6 +390,9 @@ current_state:
         - viewer denied server-side on config validation and readiness mutations with 403
         - cross-tenant access returns 404 on all runtime endpoints
         - all behavior remains local/mock-only with visible UI warnings
+        - seed is idempotent via upsert with fixed IDs; exactly 1 credential ref linked to conn-inst-dev-001
+        - ticket context panel shows connector runtime provenance card (installation name, type, mode, network status, linked credential count, capabilities)
+        - old session-098 screenshot folder superseded and deleted per repair rules
         - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
     bl_093_status:
       completed: true

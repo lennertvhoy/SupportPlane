@@ -1,90 +1,71 @@
-# BL-098 Final Handoff — Connector Runtime Configuration + Credential Reference Readiness Foundation
+# BL-098 Final Handoff — Connector Runtime Configuration + Credential Reference Readiness Foundation (Closure Repair)
 
 ## Commits
 
-- `6b8e36676828ae70d6f1065128674d6fe50d38a9` — BL-098 implementation: contracts, service, controller, UI, tests, verification, screenshots
-- `129cbecdc3b846b09676d376084ef18b6013fcff` — chore: update BL-098 final commit hash in state docs and handoff
+- `36e51607bee95232bec4f7d49f3aea67b4937053` — BL-098 closure repair: idempotent seed, provenance wiring, screenshot script, docs
 
 ## Worktree
 
 ```
-## main...origin/main
- M BACKLOG.md
- M NEXT_ACTIONS.md
- M STATUS.md
- M PROJECT_STATE.yaml
- M WORKLOG.md
- M docs/ACCEPTANCE_FREEZES.md
- M docs/EVIDENCE_LOG.md
- M apps/api/src/connector-installations/connector-installations.controller.ts
- M apps/api/src/connector-installations/connector-installations.module.ts
- M apps/api/src/evidence-bundle/evidence-bundle.builder.ts
- M apps/api/src/support-sessions/support-sessions.service.ts
- M apps/api/test/api.test.ts
- M apps/web/components/ConnectorPanel.tsx
- M apps/web/lib/api.ts
- M packages/contracts/src/audit.ts
- M packages/contracts/src/evidence-bundle.ts
- M packages/contracts/src/index.ts
-?? apps/api/src/connector-installations/connector-runtime.service.ts
-?? output/playwright/session-098-connector-runtime-readiness-final-closure/
-?? packages/contracts/src/connector-runtime.ts
-?? scripts/bl098_screenshots.js
-?? scripts/verify_connector_runtime_readiness.sh
+## main
 ```
+(Clean worktree — no uncommitted changes.)
 
 ## What Changed
 
-- **Contracts:** `packages/contracts/src/connector-runtime.ts` with Zod schemas for runtime config, validation result, readiness result, resolver result, credential reference metadata, and config schema response.
-- **Audit:** Extended `AuditEventType` with `connector_config_validated`, `connector_readiness_checked`, `connector_runtime_resolved`.
-- **API Service:** `ConnectorRuntimeService` with `getConfigSchema`, `validateConfig`, `checkRuntimeReadiness`, `resolveRuntime` — all enforcing mock-only safety, secret redaction, tenant scoping, and audit event emission.
-- **API Controller:** Four new endpoints on `ConnectorInstallationsController`:
-  - `GET /connector-installations/:id/config-schema`
-  - `POST /connector-installations/:id/validate-config`
-  - `POST /connector-installations/:id/runtime-readiness`
-  - `GET /connector-installations/runtime/resolve?connectorType=...`
-- **Evidence Bundle:** Updated builder to include `realNetwork: false`, `writebackEnabled: false`, `externalWriteAttempted: false`, and `credentialReferenceCount` on connector installation summaries.
-- **Web UI:** `ConnectorPanel.tsx` updated with config validation result display, runtime readiness panel, mock-only badges, linked credential counts, and viewer read-only enforcement.
-- **Web API Client:** `apps/web/lib/api.ts` updated with methods for all new endpoints.
-- **Tests:** API tests updated with 6 new tests for config schema, safe validation, unsafe rejection, runtime readiness, and credential metadata.
-- **Verification:** `scripts/verify_connector_runtime_readiness.sh` with 12 checks (all passing).
-- **Screenshots:** `scripts/bl098_screenshots.js` with hard max-20 cap and duplicate detection; 15 screenshots captured.
+- **prisma/seed.ts:** Converted all demo entity creation to `upsert` with fixed IDs. Canonical credential references: `cred-ref-dev-001` (active) and `cred-ref-dev-002` (inactive). Only `cred-ref-dev-001` linked to `conn-inst-dev-001`. Eliminates prior credential pollution (15 duplicate test creds from non-idempotent seed).
+- **scripts/bl098_screenshots.js:** Complete rewrite.
+  - Outputs to `output/playwright/session-099-bl098-closure-repair-final/`
+  - Hard-fail on >20 screenshots and duplicate MD5 hashes
+  - Pre-creates session and ticket context via API so UI panels populate with real data
+  - Uses correct `POST /delivery-policies/{id}/validate` endpoint (fixed from prior 404 bug)
+  - Captures 15 screenshots covering all required proof states
+- **scripts/verify_connector_runtime_readiness.sh:** Updated step 10 to assert deterministic `len(creds)==1` after reset/seed.
+- **apps/web/components/TicketContextPanel.tsx:** Added optional `connectorInstallation` prop rendering "Connector Runtime Provenance" card with installation name, type, mock mode, network status, linked credential count, and capabilities.
+- **apps/web/app/page.tsx:** Added `connectorInstallations` state, `fetchConnectorInstallations` callback, and passes active installation to `TicketContextPanel`.
+- **apps/api/src/connector-installations/connector-runtime.service.ts:** Removed unused `ConnectorCredentialReferenceShape` import (lint fix).
+- **apps/api/test/api.test.ts:** Removed unused `installation` variable (lint fix).
+- **Deleted old screenshot folder:** `output/playwright/session-098-connector-runtime-readiness-final-closure/` superseded and removed per repair rules.
 
 ## Verification
 
+- `npm run lint` — passed
 - `npm run typecheck --workspaces --if-present` — passed (0 errors across 9 workspaces)
+- `npm run validate` — passed
+- `npm run health` — passed
 - `cd apps/api && npm test` — passed (142/142 tests, 14 suites)
+- `npm test --workspace @supportplane/contracts` — passed (29/29 tests, 6 suites)
+- `npm test --workspace @supportplane/web` — passed (15/15 tests, 1 suite)
+- `npm test --workspace @supportplane/connectors` — passed (16/16 tests, 6 suites)
 - `bash scripts/verify_connector_runtime_readiness.sh` — passed (12/12 checks)
 - API runtime: `http://localhost:4110` (NestJS, PostgreSQL store, local auth)
 - Web runtime: `http://localhost:3200` (Next.js)
 - Screenshot script: 15 screenshots, 0 duplicate MD5 hashes
+- Prisma validate/generate/migrate status: schema valid, client generated, database up to date
 
 ## Evidence Inventory
 
-- **Folder:** `output/playwright/session-098-connector-runtime-readiness-final-closure/`
+- **Folder:** `output/playwright/session-099-bl098-closure-repair-final/`
 - **Count:** 15 screenshots
+- **Duplicate MD5 hashes:** 0
 
 | # | Filename | Proof State |
 |---|----------|-------------|
-| 1 | `01-admin-runtime-identity.png` | Admin runtime identity |
-| 2 | `02-admin-connector-panel-buttons.png` | Connector panel shows Config and Readiness buttons |
-| 3 | `03-admin-config-validation-valid.png` | Config validation result: Valid badge, mockMode:true, realNetwork:false |
-| 4 | `04-api-config-validation-unsafe-rejected.png` | Unsafe config rejected: mockMode:false, apiToken, baseUrl errors |
-| 5 | `05-admin-runtime-readiness-panel.png` | Runtime readiness: mockReady, realNetwork:false, linkedCredentials |
-| 6 | `06-admin-installation-settings-mock-only.png` | Installation settings: Mock-only badge, Locked ON mock mode |
-| 7 | `07-api-config-schema-mock-only.png` | Config schema API: safeFields, rejectedFields, mockOnly:true |
-| 8 | `08-api-runtime-readiness-mock-only.png` | Runtime readiness API: mockReady, realReady:false |
-| 9 | `09-api-runtime-resolve-credential-metadata.png` | Runtime resolver: credential metadata, secretResolutionImplemented:false |
-| 10 | `10-api-evidence-bundle-connector-safety.png` | Evidence bundle JSON: connector safety fields |
-| 11 | `11-viewer-readonly-connector-panel.png` | Viewer read-only panel with disabled buttons |
-| 12 | `12-viewer-ui-mutation-denied.png` | Viewer mutation denial visible in UI |
-| 13 | `13-api-cross-tenant-denied.png` | Cross-tenant access denied |
-| 14 | `14-admin-audit-bl098-events.png` | Audit trail with BL-098 events |
-| 15 | `15-final-mock-no-secret-proof.png` | Final mock/no-secret proof |
-
-- **CLI Artifacts:**
-  - `cli-viewer-config-validation-denial.txt` — Viewer POST denied with 403
-  - `cli-cross-tenant-denial.txt` — Alt-tenant GET denied with 404
+| 1 | `01-admin-runtime-identity.png` | Admin runtime identity with tenant/role pill |
+| 2 | `02-admin-connector-clean-credentials.png` | Connector panel with exactly 1 linked credential reference |
+| 3 | `03-admin-config-validation-valid.png` | Config validation: valid=true, mock-only flags (label matches content) |
+| 4 | `04-api-config-validation-unsafe-rejected.png` | Unsafe config rejected via API |
+| 5 | `05-admin-runtime-readiness-panel.png` | Runtime readiness: mockReady, realNetwork:false, 1 linked credential |
+| 6 | `06-api-runtime-resolve-credential-metadata.png` | Runtime resolver: credential metadata, no secretRef |
+| 7 | `07-admin-ticket-context-provenance.png` | Ticket context panel: Connector Runtime Provenance card visible |
+| 8 | `08-admin-evidence-bundle-summary.png` | Evidence bundle summary with connector safety fields |
+| 9 | `09-api-evidence-bundle-json-no-secret.png` | Evidence bundle JSON (no secret leakage) |
+| 10 | `10-api-audit-bl098-events.png` | Audit trail with populated BL-098 events (not empty) |
+| 11 | `11-viewer-readonly-connector-panel.png` | Viewer read-only connector panel |
+| 12 | `12-api-viewer-mutation-denied.png` | Viewer mutation denial via API (403) |
+| 13 | `13-api-cross-tenant-denied.png` | Cross-tenant access denied (404) |
+| 14 | `14-api-delivery-policy-denies-writeback.png` | Delivery policy denies writeback |
+| 15 | `15-final-mock-no-secret-proof.png` | Final mock/no-secret proof with visible content |
 
 ## Risks and Limitations
 
@@ -101,4 +82,11 @@
 
 ## Handoff for CTO Lane
 
-BL-098 is closure-grade complete. All verification passed, 15 screenshots captured with 0 duplicates, state docs updated, and backlog reconciled. The connector runtime boundary is now a coherent mock-only foundation with schema validation, readiness checks, tenant-scoped resolution, and safe credential reference metadata. No real network calls or secret resolution is implemented. Ready for CTO review and next-slice assignment.
+BL-098 closure repair is closure-grade complete. All prior defects fixed:
+- Seed idempotency: exactly 1 credential ref linked, no pollution
+- Screenshot labels match visible content; no contradictions
+- Audit/evidence screenshots show populated data, not empty panels
+- Ticket/customer connector provenance card is visibly rendered in UI
+- All validation gates passed with exact counts
+- Worktree clean, full commit hash recorded, old folder deleted
+Ready for CTO review and next-slice assignment.

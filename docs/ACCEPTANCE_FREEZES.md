@@ -1066,37 +1066,44 @@ and must be protected from quiet regression.
 
 ---
 
-## AF-2026-04-28-015 — BL-098 Connector Runtime Configuration + Credential Reference Readiness Foundation
+## AF-2026-04-28-015 — BL-098 Connector Runtime Configuration + Credential Reference Readiness Foundation (Repaired)
 
 - backlog_id: BL-098
 - status: accepted
-- accepted_at: 2026-04-28T18:35:00+02:00
+- accepted_at: 2026-04-28T19:30:00+02:00
 - accepted_by: coding-agent
-- commit: 6b8e36676828ae70d6f1065128674d6fe50d38a9
+- commit: 36e51607bee95232bec4f7d49f3aea67b4937053
 - evidence_refs:
-  - EV-2026-04-28-064
-  - EV-2026-04-28-065
-  - EV-2026-04-28-066
-  - EV-2026-04-28-067
-  - EV-2026-04-28-068
-  - EV-2026-04-28-069
-  - EV-2026-04-28-070
-  - EV-2026-04-28-071
-  - EV-2026-04-28-072
-  - EV-2026-04-28-073
-  - EV-2026-04-28-074
-  - EV-2026-04-28-075
-  - EV-2026-04-28-076
-  - EV-2026-04-28-077
-  - EV-2026-04-28-078
-- evidence_folder: output/playwright/session-098-connector-runtime-readiness-final-closure/
+  - EV-2026-04-28-079
+  - EV-2026-04-28-080
+  - EV-2026-04-28-081
+  - EV-2026-04-28-082
+  - EV-2026-04-28-083
+  - EV-2026-04-28-084
+  - EV-2026-04-28-085
+  - EV-2026-04-28-086
+  - EV-2026-04-28-087
+  - EV-2026-04-28-088
+  - EV-2026-04-28-089
+  - EV-2026-04-28-090
+  - EV-2026-04-28-091
+  - EV-2026-04-28-092
+  - EV-2026-04-28-093
+- evidence_folder: output/playwright/session-099-bl098-closure-repair-final/
 - screenshot_count: 15
 - validation_summary:
-  - `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
-  - `cd apps/api && npm test` passed: 142/142 tests (14 suites).
-  - `scripts/verify_connector_runtime_readiness.sh` passed all 12/12 checks against `http://localhost:4110` with `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
-  - API runtime verified via curl: config-schema, validate-config (safe and unsafe), runtime-readiness, runtime-resolve all return correct mock-only safety fields.
-  - Web runtime verified via Playwright browser automation: 15 screenshots captured, 0 duplicate MD5 hashes.
+  - `npm run lint` passed
+  - `npm run typecheck --workspaces --if-present` passed for all 9 workspaces
+  - `npm run validate` passed
+  - `npm run health` passed
+  - `cd apps/api && npm test` passed: 142/142 tests (14 suites)
+  - `npm test --workspace @supportplane/contracts` passed: 29/29 tests (6 suites)
+  - `npm test --workspace @supportplane/web` passed: 15/15 tests (1 suite)
+  - `npm test --workspace @supportplane/connectors` passed: 16/16 tests (6 suites)
+  - `scripts/verify_connector_runtime_readiness.sh` passed all 12/12 checks against `http://localhost:4110` with `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+  - API runtime verified via curl: all new endpoints return correct mock-only safety fields
+  - Web runtime verified via Playwright browser automation: 15 screenshots captured in `session-099-bl098-closure-repair-final/`, 0 duplicate MD5 hashes
+  - Prisma validate/generate/migrate status: schema valid, client generated, database up to date
 - regression_guard:
   - `GET /connector-installations/:id/config-schema` must return `mockOnly: true`, `safeFields`, and `rejectedFields`.
   - `POST /connector-installations/:id/validate-config` must reject `mockMode: false` with error `MOCK_MODE_REQUIRED`.

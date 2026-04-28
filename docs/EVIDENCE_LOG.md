@@ -1656,3 +1656,34 @@
   - Tenant isolation returns 404 for cross-tenant access
 - Type: browser-runtime-verification
 - as_of: 2026-04-28T18:35:00+02:00
+
+
+## EV-2026-04-28-079 through EV-2026-04-28-093: BL-098 Closure Repair Evidence
+
+- Files: `output/playwright/session-099-bl098-closure-repair-final/01-admin-runtime-identity.png` through `15-final-mock-no-secret-proof.png`
+- Source/System: visible Chromium via Playwright CLI against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - admin runtime identity with tenant/role pill
+  - connector panel with exactly 1 linked credential reference (clean seed)
+  - config validation: valid=true, mock-only flags, no contradictions between label and content
+  - unsafe config rejected via API: mockMode:false, apiToken, baseUrl flagged as errors
+  - runtime readiness panel: mockReady, realNetwork:false, writebackEnabled:false, 1 linked credential
+  - API runtime resolve: tenant-scoped result with credential metadata, no secretRef, secretResolutionImplemented:false
+  - ticket context panel showing Connector Runtime Provenance card with installation name, type, mode, network status, linked credential count, capabilities
+  - evidence bundle summary with connector safety fields
+  - evidence bundle JSON (1.1MB) with no secret leakage
+  - audit trail with populated connector_config_validated, connector_readiness_checked, connector_runtime_resolved events (not empty)
+  - viewer read-only connector panel with disabled buttons
+  - viewer server-side mutation denial via API (403)
+  - cross-tenant access denied via API (404)
+  - delivery policy denies writeback via API
+  - final mock/no-secret/no-real-writeback proof with visible content (not empty)
+- Proves:
+  - BL-098 closure repair: all prior defects fixed
+  - Seed is idempotent: exactly 1 credential reference linked to conn-inst-dev-001
+  - Ticket/customer connector provenance is visibly rendered in UI
+  - No screenshot label contradicts visible content
+  - No empty panels in audit or evidence screenshots
+- Type: browser-runtime-verification
+- as_of: 2026-04-28T19:30:00+02:00
