@@ -7,9 +7,10 @@ Response:
   "version": "0.1.0",
   "status": "ok",
   "branch": "main",
-  "head": "6093cf00b2f7af7caa03a794697a8d8e89ed75ae",
-  "timestamp": "2026-04-29T17:54:06.436Z",
+  "head": "17592be3ea2b172a0262fd8ecfd37308fae21283",
+  "timestamp": "2026-04-29T18:08:42.684Z",
   "runtime": "NestJS",
   "storeMode": "postgres",
-  "authMode": "local"
+  "authMode": "local",
+  "note": "Mock-first ticket-aware API slice (BL-003)"
 }

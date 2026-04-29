@@ -5,6 +5,56 @@
 Use this when a screen, route, workflow, or other visible milestone is accepted
 and must be protected from quiet regression.
 
+## AF-2026-04-29-005: BL-107 Zammad Sandbox Read Connector
+
+- ID: AF-2026-04-29-005
+- Milestone: Zammad sandbox read connector
+- Scope: SupportPlane API reads real ticket/customer data from Zammad sandbox via HTTP. UI displays real sandbox data with explicit "Zammad sandbox", "Read-only", "Sandbox - No writeback - No production data" labels. Connector Runtime Provenance shows "real sandbox" mode. Audit trail records `zammad_ticket_loaded` event. Writeback remains blocked (`writebackEnabled=false`). Local MVP regression verified. Evidence committed with clean worktree.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: 17592be3ea2b172a0262fd8ecfd37308fae21283
+- process_or_container:
+  - Kind/Podman cluster `supportplane-local` with port-forwards
+  - SupportPlane API, Web, Worker in `supportplane-app`
+  - PostgreSQL StatefulSet in `supportplane-data`
+  - Zammad StatefulSet in `supportplane-integrations`
+- port_or_base_url:
+  - Cluster API http://localhost:4210
+  - Cluster Web http://localhost:3300
+  - Zammad http://localhost:8080
+  - Local MVP API http://localhost:4110
+  - Local MVP Web http://localhost:3200
+- routes:
+  - / (cluster web)
+  - /call-console (cluster web)
+  - /health (cluster API)
+  - POST /support-sessions/:id/zammad/ticket-context
+  - POST /connector-installations/:id/runtime-readiness
+  - / (local MVP web)
+  - /health (local MVP API)
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-29-099 through EV-2026-04-29-104
+- evidence_folder: output/playwright/session-108-bl107-zammad-sandbox-read-connector/
+- screenshot_count: 6
+- duplicate_screenshot_count: 0
+- regression_guard:
+  - Zammad sandbox ticket 2 and customer 5 must remain readable via SupportPlane API.
+  - UI must continue to display "Zammad sandbox", "Read-only", and "No writeback" labels for Zammad-loaded tickets.
+  - Connector runtime readiness must report `realReady=true` and `writebackEnabled=false` for sandbox mode.
+  - No real writeback, secrets, or production claims may be introduced without explicit backlog scope.
+  - Local MVP on localhost:4110/3200 must remain runnable unless explicitly superseded.
+  - Cluster app services must remain deployable via `kubectl apply -k infra/kubernetes/local-podman` and image build/load script.
+- known_limitations:
+  - Zammad writeback is blocked and not implemented.
+  - AI drafts/summaries remain mock-only.
+  - Telephony remains fake webhook/call simulator.
+  - Screen observation remains metadata-only mock.
+  - OpenBao resolver, NATS worker bridge, MinIO evidence, Mailpit notification remain planned.
+  - All topology services use local dev placeholder credentials.
+  - This is a local sandbox topology, not production infrastructure.
+
 ## AF-2026-04-29-004: BL-106 Self-Hosted Service Topology
 
 - ID: AF-2026-04-29-004

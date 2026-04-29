@@ -1,16 +1,21 @@
 === Validation Gate Results ===
 Command: npm run lint
-Result: PASSED
+Result: PASSED (0 errors, 0 warnings)
 
 Command: npm run typecheck --workspaces --if-present
-Result: PASSED (all workspaces)
+Result: PASSED (all workspaces: api, web, worker, ai, audit, connectors, contracts, policy, ui)
 
 Command: npm test --workspaces --if-present
 Result: PASSED (43 tests, 0 failures)
 
+Command: python3 scripts/check_state_docs.py
+Result: PASSED (all state documentation checks passed)
+
 Zammad sandbox reachable: YES (http://localhost:8080)
 Cluster API reachable: YES (http://localhost:4210)
 Cluster Web reachable: YES (http://localhost:3300)
+Local MVP API reachable: YES (http://localhost:4110)
+Local MVP Web reachable: YES (http://localhost:3200)
 Real Zammad ticket read: YES (ticket 2, customer 5)
 UI sandbox labels visible: YES
 Writeback blocked: YES (writebackEnabled=false)

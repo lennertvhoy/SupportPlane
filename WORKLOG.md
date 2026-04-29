@@ -4,6 +4,69 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-29 - BL-107 Closure Reconciliation
+
+**Type:** closure_repair
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 17592be3ea2b172a0262fd8ecfd37308fae21283
+**Worktree:** clean_after_final_commit
+
+### Why reconciliation was needed
+
+The BL-107 final handoff claimed acceptance, but:
+- `git-status-final.txt` showed a dirty worktree with modified source files and untracked evidence/scripts.
+- The cluster API was running a stale image (BL-106 head `6093cf0`) because the BL-107 image was not rebuilt and reloaded.
+- Local MVP regression was not run.
+- Screenshot script contained a hardcoded sandbox token.
+- Proof-state-mapping had a duplicate screenshot (03-ai-context-quality.png identical to 02).
+
+### What changed
+
+- Rebuilt and reloaded all three local K8s images (`localhost/supportplane-api:local-k8s`, `localhost/supportplane-web:local-k8s`, `localhost/supportplane-worker:local-k8s`) with current BL-107 code.
+- Restarted cluster Deployments; verified new API pod reports git head `17592be3ea2b172a0262fd8ecfd37308fae21283`.
+- Fixed stale `kubectl port-forward` for API (was connected to old pod).
+- Removed hardcoded Zammad API token from `scripts/bl107_screenshots_final.js`; token now read from env var `ZAMMAD_API_TOKEN`.
+- Regenerated browser screenshots (6 unique, 0 duplicates after removing duplicate 03).
+- Ran local MVP regression: local API on 4110 and local Web on 3200 both reachable and healthy.
+- Ran full validation gate: lint pass, typecheck pass, 43 tests pass, state docs check pass.
+- Updated all evidence artifacts with fresh cluster/runtime data.
+- Updated `STATUS.md`, `PROJECT_STATE.yaml`, `docs/WORKFLOW_TRUTH.md`, `docs/BOUNDARY_MATRIX.md` to reflect BL-107 truth.
+
+### What remains mocked or not implemented
+
+- AI drafts/summaries remain mock-only.
+- Zammad writeback remains blocked (`writebackEnabled=false`).
+- Telephony remains fake webhook/call simulator.
+- Screen observation remains metadata-only mock.
+- OpenBao resolver, NATS worker bridge, MinIO evidence, Mailpit notification remain planned.
+- No production auth, secrets, monitoring, or compliance claims exist.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-108-bl107-zammad-sandbox-read-connector/`
+- Screenshot count: 6
+- Duplicate count: 0
+- CLI artifacts: `zammad-seed-proof.txt`, `supportplane-api-zammad-read-proof.txt`, `connector-runtime-readiness.txt`, `boundary-proof.txt`, `supportplane-api-health.txt`, `validation-gate.txt`, `local-mvp-regression.txt`, `git-status-final.txt`, `proof-state-mapping.md`, `screenshot-md5s.txt`
+
+### Verification
+
+- `npm run lint` passed.
+- `npm run typecheck --workspaces --if-present` passed.
+- `npm test --workspaces --if-present` passed (43 tests, 0 failures).
+- `python3 scripts/check_state_docs.py` passed.
+- Cluster API `localhost:4210/health` returns ok with git head `17592be3ea2b172a0262fd8ecfd37308fae21283`.
+- Cluster Web `localhost:3300` reachable and renders SupportPlane cockpit.
+- Local MVP API `localhost:4110/health` returns ok with same git head.
+- Local MVP Web `localhost:3200` reachable and renders SupportPlane cockpit.
+- Zammad sandbox `localhost:8080/api/v1/tickets/2` returns real seeded ticket.
+- SupportPlane API POST `/support-sessions/{id}/zammad/ticket-context` with `externalTicketId: 2` returns real Zammad data.
+- Connector runtime readiness: `realReady=true`, `mockReady=false`, `writebackEnabled=false`.
+- Worktree clean at final commit.
+
+---
+
 ## 2026-04-29 - BL-106 Evidence Reconciliation
 
 **Type:** evidence_repair

@@ -1,7 +1,21 @@
 === Local MVP Regression ===
-Local MVP on localhost:3200 / localhost:4110: NOT RUNNING this session
+Local MVP API (localhost:4110): RUNNING and reachable
+Local MVP Web (localhost:3200): RUNNING and reachable
+Local Postgres (localhost:5434): RUNNING and healthy
 Cluster Web (localhost:3300): RUNNING and reachable
 Cluster API (localhost:4210): RUNNING and reachable
 
-Note: Cluster path is the acceptance target for BL-107. Local MVP regression
-was not required because the cluster deployment is the verified artifact.
+Local API health:
+- service: supportplane-api
+- head: 17592be3ea2b172a0262fd8ecfd37308fae21283
+- storeMode: memory
+- authMode: dev
+- status: ok
+
+Local Web health:
+- Returns HTML with SupportPlane title
+- Next.js dev server active
+
+Note: Local MVP storeMode is memory (local dev default), cluster is postgres.
+Both paths verified honest about their runtime identity.
+No regression from BL-107 cluster changes.

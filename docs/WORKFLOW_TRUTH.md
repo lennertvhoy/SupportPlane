@@ -1,12 +1,12 @@
 # Workflow Truth
 
 **Backlog:** BL-102  
-**Status:** BL-106 cluster topology deployed and verified. Integration connectors remain mock-only (BL-107+).
+**Status:** BL-106 cluster topology deployed and verified. BL-107 adds real Zammad sandbox read connector. Remaining integrations (AI, writeback, OpenBao, NATS, MinIO, Mailpit) remain mock-only or planned.
 
 | Capability | Current status | Current implementation truth | Target self-hosted service | Target milestone | Acceptance proof required | Risk level | Notes |
 |---|---|---|---|---|---|---|---|
-| Zammad connector | Mock/local only | Deterministic fixtures and runtime metadata; no real Zammad API. | Zammad sandbox | BL-107/BL-111 | Real sandbox read/write tests, browser provenance, idempotency proof. | High | Zammad is first real target. |
-| Ticket/customer lookup | Mock/local only | Loads seeded fixture data by ticket ID. | Zammad sandbox | BL-107 | Read deterministic customer/ticket from Zammad sandbox. | Medium | No production customer data. |
+| Zammad connector | Real sandbox read | SupportPlane API reads real ticket/customer from Zammad sandbox via HTTP; writeback remains blocked. | Zammad sandbox | BL-107 accepted / BL-111 planned | Real sandbox read/write tests, browser provenance, idempotency proof. | High | Zammad is first real target. |
+| Ticket/customer lookup | Real sandbox read | Reads deterministic customer/ticket from Zammad sandbox via real HTTP. | Zammad sandbox | BL-107 accepted | Read deterministic customer/ticket from Zammad sandbox. | Medium | No production customer data. |
 | AI draft generation | Mock/local only | Deterministic mock draft. | Ollama | BL-108 | Local model output with model/prompt/context hash/latency; no cloud call. | Medium | Test fallback must be labeled. |
 | AI summaries | Mock/local only | Deterministic mock summary behavior only. | Ollama | BL-108 | Local summary metadata and no cloud call proof. | Medium | Same provider boundary as drafts. |
 | Incoming call / telephony | Mock/local only | Fake webhook/call simulator. | None in core sandbox | Later | Internal event proof only if later scoped. | High | PBX waits until core E2E works. |

@@ -5,7 +5,8 @@ const path = require('path');
 const OUTPUT = path.resolve(__dirname, '../output/playwright/session-108-bl107-zammad-sandbox-read-connector');
 if (!fs.existsSync(OUTPUT)) fs.mkdirSync(OUTPUT, { recursive: true });
 
-const ZAMMAD_TOKEN = 'yk9RJPhOfO3Qkzut8C8bskyMd2cY87pYkpkOZ2NCYj8ffdsUNxSblJgjHYSvr970';
+// Do not hardcode secrets. Prefer env var or kubectl lookup for sandbox token.
+const ZAMMAD_TOKEN = process.env.ZAMMAD_API_TOKEN || '';
 
 async function renderJsonProof(page, title, data, filename) {
   const html = `<!doctype html><html><body style="background:#0f172a;color:#e2e8f0;font-family:monospace;padding:24px;"><h2>${title}</h2><pre>${JSON.stringify(data, null, 2).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre></body></html>`;
@@ -19,16 +20,20 @@ async function capture() {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1400 } });
   const page = await context.newPage();
 
-  // 1. Zammad API seeded ticket proof
-  const zammadTicketRes = await fetch('http://localhost:8080/api/v1/tickets/2', {
-    headers: { 'Authorization': `Token token=${ZAMMAD_TOKEN}` }
-  });
-  const zammadTicket = await zammadTicketRes.json();
-  const zammadUserRes = await fetch('http://localhost:8080/api/v1/users/5', {
-    headers: { 'Authorization': `Token token=${ZAMMAD_TOKEN}` }
-  });
-  const zammadUser = await zammadUserRes.json();
-  await renderJsonProof(page, 'Zammad Sandbox API — Seeded Ticket & Customer', { ticket: zammadTicket, customer: zammadUser }, '01-zammad-api-seeded-ticket.png');
+  // 1. Zammad API seeded ticket proof (token redacted; fetched via env or omitted)
+  let zammadTicket = { note: 'Token not available in env; fetch skipped for safety' };
+  let zammadUser = { note: 'Token not available in env; fetch skipped for safety' };
+  if (ZAMMAD_TOKEN) {
+    const zammadTicketRes = await fetch('http://localhost:8080/api/v1/tickets/2', {
+      headers: { 'Authorization': `Token token=${ZAMMAD_TOKEN}` }
+    });
+    zammadTicket = await zammadTicketRes.json();
+    const zammadUserRes = await fetch('http://localhost:8080/api/v1/users/5', {
+      headers: { 'Authorization': `Token token=${ZAMMAD_TOKEN}` }
+    });
+    zammadUser = await zammadUserRes.json();
+  }
+  await renderJsonProof(page, 'Zammad Sandbox API \u2014 Seeded Ticket & Customer', { ticket: zammadTicket, customer: zammadUser }, '01-zammad-api-seeded-ticket.png');
 
   // 2. Cockpit with loaded real Zammad ticket
   await page.goto('http://localhost:3300/?session=5de81b3e-2829-4029-979e-681643bb285d');

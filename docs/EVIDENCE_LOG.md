@@ -2,6 +2,48 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-29-099 through EV-2026-04-29-104: BL-107 Zammad Sandbox Read Connector (ACCEPTED)
+
+- Files: `output/playwright/session-108-bl107-zammad-sandbox-read-connector/01-zammad-api-seeded-ticket.png` through `07-boundary-proof.png`
+- Source/System: Chromium via Playwright against cluster Web (localhost:3300), cluster API (localhost:4210), Zammad (localhost:8080), and terminal composite proof pages.
+- Store/Auth mode for runtime screenshots: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Cluster proof:
+  - API Deployment `supportplane-api` in `supportplane-app` Running and Ready; image rebuilt and reloaded with BL-107 code; health returns git head `17592be3ea2b172a0262fd8ecfd37308fae21283`.
+  - Web Deployment `supportplane-web` in `supportplane-app` Running and Ready; image rebuilt with BL-107 UI changes.
+  - Worker Deployment `supportplane-worker` in `supportplane-app` Running and Ready.
+  - PostgreSQL StatefulSet `postgres` in `supportplane-data` Running and Ready with Bound PVC.
+  - Zammad StatefulSet `zammad` in `supportplane-integrations` Running and Ready; ticket 2 and customer 5 are deterministic seeded data.
+- Shows:
+  - Zammad API JSON for ticket 2 (VPN connection issue for remote office - TICKET-101) and customer 5 (Acme BVBA).
+  - SupportPlane cockpit with real Zammad sandbox ticket loaded, showing "Zammad Sandbox", "Zammad sandbox" badge, "Read-only", "Sandbox - No writeback - No production data" labels.
+  - Connector Runtime Provenance card showing "real sandbox" mode, "sandbox local cluster" network, "1 linked" credentials.
+  - AI Context Quality panel showing ticket loaded with customerName: Acme BVBA, connectorMode: zammad.
+  - Case Timeline showing "Ticket linked" event.
+  - Cluster API health JSON with storeMode=postgres, authMode=local, git head=17592be.
+  - Connector runtime readiness JSON with realReady=true, mockReady=false, writebackEnabled=false.
+  - Boundary proof JSON showing real sandbox read only, no production, no writeback.
+  - Local MVP regression proof showing local API and Web reachable with same git head.
+- CLI artifacts:
+  - `zammad-seed-proof.txt`
+  - `supportplane-api-zammad-read-proof.txt`
+  - `connector-runtime-readiness.txt`
+  - `boundary-proof.txt`
+  - `supportplane-api-health.txt`
+  - `validation-gate.txt`
+  - `local-mvp-regression.txt`
+  - `git-status-final.txt`
+  - `proof-state-mapping.md`
+  - `screenshot-md5s.txt`
+- Proves:
+  - BL-107 reads real Zammad sandbox ticket/customer data through SupportPlane API.
+  - UI displays real sandbox data with explicit provenance and safety labels.
+  - Connector readiness distinguishes real sandbox read from mock mode.
+  - Writeback remains disabled.
+  - 6 unique screenshots, 0 duplicates, max-20 cap respected.
+  - Worktree is clean at final commit.
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-04-29T20:17:00+02:00
+
 ## EV-2026-04-29-059 through EV-2026-04-29-078: BL-106 Self-hosted service topology proof (SUPERSEDED)
 
 - Status: **invalid/superseded** — evidence contained mismatched screenshots.

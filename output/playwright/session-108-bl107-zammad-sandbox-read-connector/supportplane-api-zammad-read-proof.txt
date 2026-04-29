@@ -1,12 +1,18 @@
-=== SupportPlane API Connector Runtime Readiness ===
-Endpoint: POST /connector-installations/conn-inst-dev-001/runtime-readiness
+=== SupportPlane API Real Zammad Read ===
+Endpoint: POST /support-sessions/{id}/zammad/ticket-context
+Request: {"externalTicketId":"2"}
+Auth: local login cookie
 
-Result:
-- mockReady: false
-- realReady: true
-- realNetwork: true
-- writebackEnabled: false
-- warnings:
-  - Real network mode is configured.
-  - Real writeback is not implemented (read-only for BL-107).
-  - Secret resolution is not implemented — env vars will be used.
+Response:
+- ticketReference.id: zammad-tr-2
+- ticketReference.subject: VPN connection issue for remote office - TICKET-101
+- ticketReference.status: open
+- ticketReference.priority: normal
+- ticketReference.customerName: Acme BVBA
+- ticketReference.customerEmail: support@acme.example
+- ticketReference.adapterId: zammad-adapter-001
+- contextPacket.provenance: ticket
+- contextPacket.payload.connectorMode: zammad
+- contextPacket.payload.connectorInstallationProvenance.realNetwork: true
+- contextPacket.payload.connectorInstallationProvenance.writebackEnabled: false
+- contextPacket.payload.connectorInstallationProvenance.noRealNetworkCall: false

@@ -39,6 +39,10 @@ current_state:
     final_head_after_bl_103: ce23d2d338fb94bff5086d6114e4210435c88eca
     head_before_bl_104_bl_105: ce23d2d338fb94bff5086d6114e4210435c88eca
     final_head_after_bl_104_bl_105: 955c057116f67545d7ac40e13ac91d9af7bdaf5f
+    head_before_bl_106: 955c057116f67545d7ac40e13ac91d9af7bdaf5f
+    final_head_after_bl_106: 6093cf00b2f7af7caa03a794697a8d8e89ed75ae
+    head_before_bl_107: 6093cf00b2f7af7caa03a794697a8d8e89ed75ae
+    final_head_after_bl_107: 17592be3ea2b172a0262fd8ecfd37308fae21283
     worktree_status_at_state_update: clean_after_final_commit
 
   current_product_truth:
