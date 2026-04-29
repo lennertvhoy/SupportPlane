@@ -38,7 +38,7 @@ current_state:
     head_before_bl_103: 919f7a944191295d0ff3283b659a35cb700b06e1
     final_head_after_bl_103: ce23d2d338fb94bff5086d6114e4210435c88eca
     head_before_bl_104_bl_105: ce23d2d338fb94bff5086d6114e4210435c88eca
-    final_head_after_bl_104_bl_105: placeholder_update_after_commit
+    final_head_after_bl_104_bl_105: 75e5a8b676e278597a3a4857ec47025fe920a606
     worktree_status_at_state_update: clean_after_final_commit
 
   current_product_truth:
