@@ -12,7 +12,7 @@ and must be protected from quiet regression.
   Scope: SupportPlane API, Web, Worker deployed in local Kind/Podman cluster with PostgreSQL StatefulSet+PVC; both local MVP and cluster paths runnable; no real integrations enabled.
   repo_path: /home/ff/Documents/Projects/SupportPlane
   branch: main
-  head: 11f1b5ad5e64ca612ff2836ab1ca06028fe67c55
+  head: 955c057116f67545d7ac40e13ac91d9af7bdaf5f
   process_or_container: Kind/Podman cluster `supportplane-local` with port-forwards
   port_or_base_url: Cluster API http://localhost:4210, Cluster Web http://localhost:3300, Local MVP API http://localhost:4110, Local MVP Web http://localhost:3200
   routes:
