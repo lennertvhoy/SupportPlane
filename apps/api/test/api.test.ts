@@ -1223,13 +1223,13 @@ describe('Connector runtime configuration and readiness (BL-098)', () => {
     assert.strictEqual(res.body.result.writebackEnabled, false);
   });
 
-  it('POST /connector-installations/:id/validate-config rejects unsafe real-network config', async () => {
+  it('POST /connector-installations/:id/validate-config accepts real sandbox config and warns on unknown fields', async () => {
     const created = await supertest(server)
       .post('/connector-installations')
       .set('x-tenant-id', 'tenant-runtime')
       .set('x-user-id', 'admin-1')
       .set('x-user-role', 'admin')
-      .send({ name: 'Validate Unsafe Test', adapterType: 'zammad' })
+      .send({ name: 'Validate Real Config Test', adapterType: 'zammad' })
       .expect(201);
 
     const res = await supertest(server)
@@ -1247,13 +1247,14 @@ describe('Connector runtime configuration and readiness (BL-098)', () => {
       })
       .expect(200);
 
-    assert.strictEqual(res.body.result.valid, false);
-    const errorIssues = res.body.result.issues.filter((i: { severity: string }) => i.severity === 'error');
-    assert.ok(errorIssues.length >= 3, `Expected at least 3 errors, got ${errorIssues.length}`);
-    const codes = errorIssues.map((i: { code: string }) => i.code);
-    assert.ok(codes.includes('MOCK_MODE_REQUIRED'));
-    assert.ok(codes.includes('UNSAFE_FIELD_REJECTED'));
-    assert.ok(codes.includes('REAL_NETWORK_FIELD_REJECTED'));
+    // Real mode (mockMode=false) allows baseUrl and apiToken for sandbox read.
+    assert.strictEqual(res.body.result.valid, true);
+    assert.strictEqual(res.body.result.mockMode, false);
+    assert.strictEqual(res.body.result.realNetwork, true);
+    // Unknown fields get warnings, not errors.
+    const warningIssues = res.body.result.issues.filter((i: { severity: string }) => i.severity === 'warning');
+    const codes = warningIssues.map((i: { code: string }) => i.code);
+    assert.ok(codes.includes('UNKNOWN_FIELD'), 'Expected UNKNOWN_FIELD warning for realEndpoint');
   });
 
   it('POST /connector-installations/:id/runtime-readiness returns mock-ready and real-ready false', async () => {
