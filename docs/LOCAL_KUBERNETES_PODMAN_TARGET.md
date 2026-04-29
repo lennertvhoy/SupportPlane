@@ -109,9 +109,11 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 
 ## Acceptance Gates: App And Data Foundation
 
-- PostgreSQL deploys with PVC and restarts without data loss.
-- SupportPlane API/Web/Worker deploy and report health from inside the cluster.
-- Browser proof shows SupportPlane Web reachable from localhost with runtime identity labels.
+- PostgreSQL deploys with PVC and restarts without data loss. Status: met in BL-105.
+- SupportPlane API/Web/Worker deploy and report health from inside the cluster. Status: met in BL-104.
+- Browser proof shows SupportPlane Web reachable from localhost with runtime identity labels. Status: met in BL-104.
+- Local image build/load strategy works for API, Web, and Worker. Status: met in BL-104 with `podman save` plus `kind load image-archive`.
+- Existing local/mock MVP on localhost:4110/3200 remains usable. Status: met in BL-104/BL-105.
 
 ## Acceptance Gates: Real Sandbox E2E Works
 

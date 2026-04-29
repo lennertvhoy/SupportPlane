@@ -1,0 +1,6 @@
+Probe table after restart:
+ id |         message          |         created_at         
+----+--------------------------+----------------------------
+  1 | BL-105 persistence probe | 2026-04-29 14:21:06.940953
+(1 row)
+

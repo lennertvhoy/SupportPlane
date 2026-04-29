@@ -1,0 +1,32 @@
+# Local sandbox image for SupportPlane Web
+# Not production-grade. Built from repo root to resolve workspace packages.
+# NEXT_PUBLIC_API_BASE_URL is baked at build time for the cluster port-forward plan.
+FROM docker.io/library/node:22-slim
+WORKDIR /app
+
+# Copy root and workspace package manifests for deterministic install
+COPY package.json package-lock.json ./
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY apps/worker/package.json apps/worker/
+COPY packages/contracts/package.json packages/contracts/
+COPY packages/policy/package.json packages/policy/
+COPY packages/connectors/package.json packages/connectors/
+COPY packages/ai/package.json packages/ai/
+COPY packages/audit/package.json packages/audit/
+COPY packages/ui/package.json packages/ui/
+
+# Install dependencies
+RUN npm ci
+
+# Copy full source and build all workspaces
+COPY . .
+ENV NEXT_PUBLIC_API_BASE_URL=http://localhost:4210
+RUN npm run build --workspaces --if-present
+
+# Runtime environment
+ENV NODE_ENV=production
+ENV PORT=3200
+EXPOSE 3200
+WORKDIR /app/apps/web
+CMD ["npx", "next", "start", "-p", "3200"]

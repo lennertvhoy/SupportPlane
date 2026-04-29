@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: supportplane-data
+  labels:
+    app.kubernetes.io/part-of: supportplane
+    supportplane.io/sandbox: local-podman
+data:
+  POSTGRES_DB: "supportplane"
+  POSTGRES_USER: "supportplane"

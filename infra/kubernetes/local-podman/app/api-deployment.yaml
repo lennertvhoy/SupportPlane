@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: supportplane-api
+  namespace: supportplane-app
+  labels:
+    app.kubernetes.io/name: supportplane-api
+    app.kubernetes.io/part-of: supportplane
+    supportplane.io/sandbox: local-podman
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: supportplane-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: supportplane-api
+        app.kubernetes.io/part-of: supportplane
+        supportplane.io/sandbox: local-podman
+    spec:
+      containers:
+        - name: api
+          image: localhost/supportplane-api:local-k8s
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 4110
+              name: http
+          envFrom:
+            - configMapRef:
+                name: app-config
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret-local
+                  key: DATABASE_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4110
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4110
+            initialDelaySeconds: 15
+            periodSeconds: 10

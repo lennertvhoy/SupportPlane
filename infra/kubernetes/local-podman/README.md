@@ -63,24 +63,65 @@ podman ps --format '{{.Names}} {{.Image}} {{.Status}}'
 
 Local image strategy for Kind/Podman:
 
-- Build local images with Podman, for example `podman build -t localhost/supportplane-api:local apps/api`.
-- Save the Podman-built image to an OCI/Docker archive with `podman save -o /tmp/<image>.tar <image>`.
-- Load the archive into the Kind node with `KIND_EXPERIMENTAL_PROVIDER=podman kind load image-archive /tmp/<image>.tar --name supportplane-local`.
-- BL-103 proves this path only with a tiny smoke image. API/Web/Worker images remain BL-104 work.
+- Build local images with Podman: `bash scripts/build_and_load_local_k8s_images.sh`.
+- Or manually: `podman build -f apps/api/Containerfile.local -t localhost/supportplane-api:local-k8s .`
+- Save: `podman save -o /tmp/api.tar localhost/supportplane-api:local-k8s`
+- Load: `KIND_EXPERIMENTAL_PROVIDER=podman kind load image-archive /tmp/api.tar --name supportplane-local`
+- BL-103 proved this path with a smoke image. BL-104 proved it with API/Web/Worker images.
 
-Verified BL-103 result:
+Deploy/verify runbook:
+
+```bash
+# 1. Verify cluster exists
+bash scripts/check_local_k8s_prereqs.sh
+bash scripts/create_local_k8s_cluster.sh
+
+# 2. Apply all manifests (namespaces + postgres + app)
+kubectl apply -k infra/kubernetes/local-podman
+
+# 3. Build and load images
+bash scripts/build_and_load_local_k8s_images.sh
+
+# 4. Verify postgres
+kubectl get pods -n supportplane-data
+kubectl get pvc -n supportplane-data
+
+# 5. Run Prisma migrate/seed against cluster DB
+API_POD=$(kubectl get pods -n supportplane-app -l app.kubernetes.io/name=supportplane-api -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -n supportplane-app "$API_POD" -- sh -c "cd /app && npx prisma migrate deploy"
+kubectl exec -n supportplane-app "$API_POD" -- sh -c "cd /app && DATABASE_URL=postgresql://supportplane:supportplane_dev@postgres.supportplane-data.svc.cluster.local:5432/supportplane npx prisma db seed"
+
+# 6. Verify app pods
+kubectl get pods -n supportplane-app
+
+# 7. Port-forward for local access
+kubectl -n supportplane-app port-forward svc/supportplane-api 4210:4110 &
+kubectl -n supportplane-app port-forward svc/supportplane-web 3300:3200 &
+
+# 8. Health checks
+curl -s http://localhost:4210/health
+curl -s http://localhost:3300/ | head
+```
+
+Verified BL-103/BL-104/BL-105 result:
 
 - `supportplane-local` exists as a Kind cluster backed by a Podman container named `supportplane-local-control-plane`.
 - `kubectl` context is `kind-supportplane-local`.
 - The single control-plane node reported `Ready`.
-- CoreDNS, kube-proxy, and local-path-provisioner reported running after the verified node image was used.
+- CoreDNS, kube-proxy, and local-path-provisioner reported running.
 - The four namespaces in `namespaces.yaml` were applied and listed as `Active`.
-- A disposable `localhost/supportplane-k8s-smoke:bl103` image was built by Podman, saved to an archive, loaded into the Kind node, and observed with `crictl images`.
-- No app service, database, ticketing, AI, credential, broker, email, object-storage, or observability workload is deployed by this directory.
+- PostgreSQL StatefulSet `postgres` runs in `supportplane-data` with Bound PVC `postgres-data-postgres-0`.
+- Prisma migrate (8 migrations) and seed succeeded against cluster PostgreSQL.
+- SupportPlane API, Web, and Worker Deployments run in `supportplane-app`.
+- Local images `localhost/supportplane-api:local-k8s`, `localhost/supportplane-web:local-k8s`, `localhost/supportplane-worker:local-k8s` are built and loaded.
+- API health verified via `localhost:4210/health`.
+- Web UI verified via `localhost:3300` with DEV/MOCK DATA/local auth/postgres badges.
+- Worker logs show `mode: mock`, `queueBackend: postgres-local-outbox`.
+- Existing local/mock MVP on `localhost:4110` and `localhost:3200` still works.
 
 Non-claims:
 
-- These manifests do not deploy SupportPlane API, Web, Worker, or PostgreSQL.
+- These manifests deploy local sandbox images only, not production-grade builds.
 - These manifests do not deploy Zammad, Ollama, OpenBao, NATS, Mailpit, MinIO, or observability.
 - No real Zammad writeback, real secrets, real AI provider, or production deployment is enabled.
 - This is a local sandbox foundation only, not a production cluster.

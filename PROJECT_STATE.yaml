@@ -36,7 +36,9 @@ current_state:
     head_before_bl_102: 8b4f0311878bf648fb9d945dcc816f7b0ec27bb3
     final_head_after_bl_102: recorded_in_final_handoff
     head_before_bl_103: 919f7a944191295d0ff3283b659a35cb700b06e1
-    final_head_after_bl_103: recorded_in_final_handoff
+    final_head_after_bl_103: ce23d2d338fb94bff5086d6114e4210435c88eca
+    head_before_bl_104_bl_105: ce23d2d338fb94bff5086d6114e4210435c88eca
+    final_head_after_bl_104_bl_105: placeholder_update_after_commit
     worktree_status_at_state_update: clean_after_final_commit
 
   current_product_truth:
@@ -52,7 +54,9 @@ current_state:
     database:
       engine: PostgreSQL
       local_port: 5434
-      current_runtime: Podman compose for local MVP
+      cluster_dns: postgres.supportplane-data.svc.cluster.local
+      cluster_port: 5432
+      current_runtime: Podman compose for local MVP AND Kubernetes StatefulSet for cluster
       canonical_store: postgres
     auth:
       current: local username/password demo auth
@@ -133,7 +137,7 @@ current_state:
 
   kubernetes_podman_target:
     target_cluster_name: supportplane-local
-    current_status: bl_103_foundation_verified
+    current_status: bl_104_bl_105_app_postgres_accepted
     recommended_default_path: Kind with Podman provider
     recommendation_status: verified_on_host_with_node_image_kindest_node_v1_31_4
     fallback_candidate: Minikube with Podman driver
@@ -155,6 +159,10 @@ current_state:
         status: verified
         method: podman_save_then_kind_load_image_archive
         smoke_image: localhost/supportplane-k8s-smoke:bl103
+        app_images:
+          - localhost/supportplane-api:local-k8s
+          - localhost/supportplane-web:local-k8s
+          - localhost/supportplane-worker:local-k8s
         direct_kind_load_docker_image: did_not_find_rootless_podman_image
       evidence_folder: output/playwright/session-104-bl103-local-k8s-podman-foundation-final/
       final_commit_hash: recorded_in_final_handoff
@@ -176,15 +184,17 @@ current_state:
       - supportplane-integrations
       - supportplane-observability
     app_image_tags:
-      supportplane_api: localhost/supportplane-api:local-dev
-      supportplane_web: localhost/supportplane-web:local-dev
-      supportplane_worker: localhost/supportplane-worker:local-dev
+      supportplane_api: localhost/supportplane-api:local-k8s
+      supportplane_web: localhost/supportplane-web:local-k8s
+      supportplane_worker: localhost/supportplane-worker:local-k8s
     networking:
-      localhost_access: ingress_or_port_forward
+      localhost_access: port_forward
       internal_dns: Kubernetes service DNS
+      cluster_api_port_forward: 4210:4110
+      cluster_web_port_forward: 3300:3200
       real_writeback_egress: disabled_until_sandbox_gates_pass
     storage:
-      postgres: PVC required
+      postgres: PVC_bound_1Gi_standard_in_supportplane_data
       zammad: PVCs required, exact mode TBD
       openbao: local sandbox storage required
       minio: PVC required
@@ -234,7 +244,7 @@ current_state:
       backlog_ids: [BL-101]
     - id: Phase 1
       title: Local Kubernetes/Podman Cluster Foundation
-      status: partially_accepted_bl_103_cluster_foundation_done_bl_104_bl_105_planned
+      status: accepted_bl_103_bl_104_bl_105
       backlog_ids: [BL-103, BL-104, BL-105]
     - id: Phase 2
       title: Self-Hosted Service Topology
@@ -284,11 +294,25 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-120
-    accepted_current_slice: BL-103
+    accepted_current_slice: BL-104_BL_105
     planned_real_e2e_items:
-      - BL-104
-      - BL-105
       - BL-106
+      - BL-107
+      - BL-108
+      - BL-109
+      - BL-110
+      - BL-111
+      - BL-112
+      - BL-113
+      - BL-114
+      - BL-115
+      - BL-116
+      - BL-117
+      - BL-118
+      - BL-119
+      - BL-120
+    active_queue_source: NEXT_ACTIONS.md
+    active_queue_items: [BL-106]
       - BL-107
       - BL-108
       - BL-109
@@ -335,6 +359,41 @@ current_state:
       - infra/kubernetes/local-podman/kustomization.yaml
     updated_in_bl_103:
       - scripts/check_local_k8s_prereqs.sh
+      - infra/kubernetes/local-podman/README.md
+      - BACKLOG.md
+      - NEXT_ACTIONS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - WORKLOG.md
+      - docs/EVIDENCE_LOG.md
+      - docs/ACCEPTANCE_FREEZES.md
+      - docs/LOCAL_KUBERNETES_PODMAN_TARGET.md
+      - docs/KUBERNETES_SERVICE_CATALOG.md
+      - docs/WORKFLOW_TRUTH.md
+      - docs/BOUNDARY_MATRIX.md
+      - docs/BACKLOG_REAL_E2E_ROADMAP.md
+      - docs/IMPLEMENTATION_PHASES_REAL_E2E.md
+    created_in_bl_104_bl_105:
+      - apps/api/Containerfile.local
+      - apps/web/Containerfile.local
+      - apps/worker/Containerfile.local
+      - scripts/build_and_load_local_k8s_images.sh
+      - infra/kubernetes/local-podman/postgres/postgres-secret.yaml
+      - infra/kubernetes/local-podman/postgres/postgres-configmap.yaml
+      - infra/kubernetes/local-podman/postgres/postgres-service.yaml
+      - infra/kubernetes/local-podman/postgres/postgres-statefulset.yaml
+      - infra/kubernetes/local-podman/postgres/postgres-migrate-job.yaml
+      - infra/kubernetes/local-podman/postgres/postgres-seed-job.yaml
+      - infra/kubernetes/local-podman/app/app-configmap.yaml
+      - infra/kubernetes/local-podman/app/app-secret.local.yaml
+      - infra/kubernetes/local-podman/app/api-deployment.yaml
+      - infra/kubernetes/local-podman/app/api-service.yaml
+      - infra/kubernetes/local-podman/app/web-deployment.yaml
+      - infra/kubernetes/local-podman/app/web-service.yaml
+      - infra/kubernetes/local-podman/app/worker-deployment.yaml
+      - scripts/bl104_bl105_screenshots.js
+    updated_in_bl_104_bl_105:
+      - infra/kubernetes/local-podman/kustomization.yaml
       - infra/kubernetes/local-podman/README.md
       - BACKLOG.md
       - NEXT_ACTIONS.md

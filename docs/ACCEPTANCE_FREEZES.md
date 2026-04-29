@@ -5,6 +5,34 @@
 Use this when a screen, route, workflow, or other visible milestone is accepted
 and must be protected from quiet regression.
 
+## AF-2026-04-29-002: BL-104/BL-105 Kubernetes App and PostgreSQL Persistence Foundation
+
+- ID: AF-2026-04-29-002
+  Milestone: Kubernetes app services and PostgreSQL persistence foundation
+  Scope: SupportPlane API, Web, Worker deployed in local Kind/Podman cluster with PostgreSQL StatefulSet+PVC; both local MVP and cluster paths runnable; no real integrations enabled.
+  repo_path: /home/ff/Documents/Projects/SupportPlane
+  branch: main
+  head: placeholder_update_after_commit
+  process_or_container: Kind/Podman cluster `supportplane-local` with port-forwards
+  port_or_base_url: Cluster API http://localhost:4210, Cluster Web http://localhost:3300, Local MVP API http://localhost:4110, Local MVP Web http://localhost:3200
+  routes:
+    - / (cluster web)
+    - /call-console (cluster web)
+    - /health (cluster API)
+    - / (local MVP web)
+    - /call-console (local MVP web)
+    - /health (local MVP API)
+  rebuilt_in_slice: true
+  duplicate_runtimes_checked: true
+  evidence_refs:
+    - EV-2026-04-29-044 through EV-2026-04-29-058
+  regression_guard:
+    - Local MVP on localhost:4110/3200 must remain runnable unless explicitly superseded.
+    - Cluster app services must remain deployable via `kubectl apply -k infra/kubernetes/local-podman` and image build/load script.
+    - PostgreSQL PVC must remain Bound after StatefulSet restart.
+    - No real writeback, secrets, or production claims may be introduced without explicit backlog scope.
+  Notes: This is a local Kubernetes app/PostgreSQL foundation only, not production deployment. Images are local sandbox builds (`localhost/supportplane-*:local-k8s`).
+
 ## Entry Format
 
 ```yaml

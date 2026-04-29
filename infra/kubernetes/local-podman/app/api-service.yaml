@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: supportplane-api
+  namespace: supportplane-app
+  labels:
+    app.kubernetes.io/name: supportplane-api
+    app.kubernetes.io/part-of: supportplane
+    supportplane.io/sandbox: local-podman
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: supportplane-api
+  ports:
+    - port: 4110
+      targetPort: 4110
+      name: http

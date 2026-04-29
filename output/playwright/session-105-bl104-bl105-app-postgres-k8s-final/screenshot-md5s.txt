@@ -1,0 +1,15 @@
+c7d92b088cf13b679ffa1e1728f7acf1  01-cluster-web-header.png
+5fe7118710a2415ee866d180e0f93eec  02-cluster-call-console.png
+0c8f5f081b82b8859d703048cdc6c08e  03-local-mvp-header.png
+1815c527bf30ed3b229b82a924745446  04-local-call-console.png
+1019933c98736d1f35d7ec9b4ca57b96  05-cluster-api-health-json.png
+44a32a19c55edfdb98ec3d25cda159d3  06-kubectl-data-namespace.png
+5f2c4f022bd427f3696c949566933a74  07-kubectl-app-namespace.png
+b5e8bb292b778a1d3744a63c08050eeb  08-postgres-persistence-probe.png
+774c8df60500d9e2c44e50f4898fbbb7  09-image-build-load-proof.png
+c0ca260af031accfd6f9d5940bc073fd  10-backlog-status.png
+5c363fc780840991abcd68497b04e28c  11-next-actions.png
+ac013d7e9e3dee431f344242a71e2e97  12-boundary-proof.png
+fb666c667ea1eed1a1510465a0db390b  13-infra-readme-runbook.png
+0caa6ef116d0b73725bfa23cbca26b63  14-worker-logs.png
+0491d5f7625ac9b67a08b74ad25c04c9  15-local-mvp-regression.png

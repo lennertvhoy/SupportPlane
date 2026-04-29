@@ -1,0 +1,30 @@
+# Local sandbox image for SupportPlane API
+# Not production-grade. Built from repo root to resolve workspace packages.
+FROM docker.io/library/node:22-slim
+WORKDIR /app
+
+# Copy root and workspace package manifests for deterministic install
+COPY package.json package-lock.json ./
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY apps/worker/package.json apps/worker/
+COPY packages/contracts/package.json packages/contracts/
+COPY packages/policy/package.json packages/policy/
+COPY packages/connectors/package.json packages/connectors/
+COPY packages/ai/package.json packages/ai/
+COPY packages/audit/package.json packages/audit/
+COPY packages/ui/package.json packages/ui/
+
+# Install dependencies
+RUN npm ci
+
+# Copy full source and build all workspaces
+COPY . .
+RUN npm run build --workspaces --if-present
+
+# Runtime environment
+ENV NODE_ENV=production
+ENV API_PORT=4110
+EXPOSE 4110
+WORKDIR /app/apps/api
+CMD ["node", "dist/src/main.js"]

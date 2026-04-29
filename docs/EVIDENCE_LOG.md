@@ -2,6 +2,62 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-29-044 through EV-2026-04-29-058: BL-104/BL-105 Kubernetes app and PostgreSQL persistence foundation proof
+
+- Files: `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/01-cluster-web-header.png` through `15-local-mvp-regression.png`
+- Source/System: Chromium via Playwright against cluster Web (localhost:3300), local MVP Web (localhost:3200), cluster API (localhost:4210), and terminal composite proof pages.
+- Store/Auth mode for runtime screenshots: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Cluster proof:
+  - API Deployment `supportplane-api` in `supportplane-app` Running and Ready.
+  - Web Deployment `supportplane-web` in `supportplane-app` Running and Ready.
+  - Worker Deployment `supportplane-worker` in `supportplane-app` Running and Ready.
+  - PostgreSQL StatefulSet `postgres` in `supportplane-data` Running and Ready.
+  - PVC `postgres-data-postgres-0` Bound 1Gi `standard` storage class.
+  - Prisma migrate deploy succeeded (8 migrations applied).
+  - Prisma db seed succeeded.
+  - PostgreSQL pod restart survival verified with `_supportplane_bl105_probe` table.
+  - Local images built with Podman and loaded via `kind load image-archive`:
+    - `localhost/supportplane-api:local-k8s`
+    - `localhost/supportplane-web:local-k8s`
+    - `localhost/supportplane-worker:local-k8s`
+- Shows:
+  - Cluster web header showing DEV/MOCK DATA, local auth, postgres store badges.
+  - Cluster call console page.
+  - Local MVP web header still working on localhost:3200.
+  - Local MVP call console page.
+  - Cluster API health JSON showing `storeMode: postgres`, `authMode: local`.
+  - `kubectl get all,pvc -n supportplane-data` showing postgres StatefulSet, Service, and Bound PVC.
+  - `kubectl get all -n supportplane-app` showing API, Web, Worker Deployments and Services.
+  - PostgreSQL persistence probe query result after pod deletion/restart.
+  - Podman and cluster node image lists showing supportplane images.
+  - `BACKLOG.md` showing BL-104 and BL-105 accepted.
+  - `NEXT_ACTIONS.md` showing BL-106 as active next step.
+  - Boundary proof table: cluster/app/Postgres YES; Zammad/Ollama/OpenBao/NATS/Mailpit/MinIO/writeback NO.
+  - `infra/kubernetes/local-podman/README.md` runbook proof.
+  - Worker logs showing `mode: mock`, `queueBackend: postgres-local-outbox`.
+  - Local MVP regression proof: API health on localhost:4110 still returns ok.
+- CLI artifacts:
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/cluster-proof.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/image-build-load-proof.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/postgres-k8s-proof.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/postgres-persistence-proof.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/app-k8s-proof.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/api-cluster-health-proof.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/web-cluster-proof.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/worker-cluster-proof.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/local-mvp-regression-proof.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/proof-state-mapping.md`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/screenshot-md5s.txt`
+  - `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/roadmap-summary.json`
+- Proves:
+  - BL-104 has real Kubernetes manifests for API, Web, and Worker with local sandbox images.
+  - BL-105 has real PostgreSQL Kubernetes persistence with PVC and restart survival.
+  - The current runtime remains local/mock and real writeback/secrets/production claims were not enabled.
+  - Existing local/mock MVP on localhost:4110/3200 still works.
+  - 15 unique screenshots, 0 duplicates, max-20 cap respected.
+- Type: infrastructure-and-browser-runtime-verification
+- as_of: 2026-04-29T16:30:00+02:00
+
 ## EV-2026-04-29-032 through EV-2026-04-29-043: BL-103 local Kubernetes/Podman cluster foundation proof
 
 - Files: `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/01-readme-status-roadmap.png` through `12-final-boundary-no-real-writeback-secrets-production.png`

@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-migrate
+  namespace: supportplane-data
+  labels:
+    app.kubernetes.io/part-of: supportplane
+    supportplane.io/sandbox: local-podman
+    supportplane.io/job-type: prisma-migrate
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: supportplane
+        supportplane.io/sandbox: local-podman
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrate
+          image: localhost/supportplane-api:local-k8s
+          imagePullPolicy: Never
+          command:
+            - npx
+            - prisma
+            - migrate
+            - deploy
+          env:
+            - name: DATABASE_URL
+              value: "postgresql://supportplane:supportplane_dev@postgres.supportplane-data.svc.cluster.local:5432/supportplane"

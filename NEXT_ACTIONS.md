@@ -1,27 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-29 15:55 CEST
+**Updated At:** 2026-04-29 16:30 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-104] SupportPlane API/Web/Worker manifests
+### P1 [BL-106] Self-hosted service topology
 
-- Owner: next coding-agent session after BL-103.
-- Next action: add app manifests or kustomize/Helm structure for API, Web, and Worker using the verified Kind/Podman cluster and image-archive load path.
-- Exit criteria: Web/API/Worker health is proven in cluster and the Web UI still shows local/mock runtime identity.
-
-### P2 [BL-105] PostgreSQL Kubernetes persistence foundation
-
-- Owner: next coding-agent session after BL-103.
-- Next action: deploy PostgreSQL with PVC and prove Prisma migrate/generate/seed plus restart survival.
-- Exit criteria: SupportPlane can use cluster PostgreSQL without losing demo data after pod restart.
-
-### P3 [BL-106] Self-hosted service topology
-
-- Owner: next coding-agent session after cluster foundation.
-- Next action: add Zammad/OpenBao/NATS JetStream/Mailpit/MinIO topology and decide whether Ollama runs in-cluster or as controlled host service.
+- Owner: next coding-agent session.
+- Next action: add Zammad, OpenBao, NATS JetStream, Mailpit, MinIO topology and decide whether Ollama runs in-cluster or as controlled host service.
 - Exit criteria: services are healthy as sandbox dependencies, with no SupportPlane real integration claim yet.
 
 ## Queue Rules

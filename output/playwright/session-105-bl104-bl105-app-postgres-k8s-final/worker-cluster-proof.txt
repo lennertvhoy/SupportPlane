@@ -1,0 +1,27 @@
+Worker logs:
+{"workerId":"local-worker-1","mode":"local_mock_worker","queueBackend":"postgres-local-outbox","apiUrl":"http://supportplane-api.supportplane-app.svc.cluster.local:4110"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
+{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"mock"}
