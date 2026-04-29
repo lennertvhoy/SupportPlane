@@ -95,7 +95,7 @@ export function DraftNotePanel({
               onChange={(e) => setOperatorInstructions(e.target.value)}
               placeholder="Add guidance for the mock draft..."
               rows={2}
-              className="w-full rounded border border-cockpit-600 bg-cockpit-950 px-3 py-2 text-xs text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+              className="w-full rounded border border-cockpit-600 bg-white px-3 py-2 text-xs text-black placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
             />
             <div className="mt-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-1.5 text-xs text-amber-300">
@@ -150,7 +150,7 @@ export function DraftNotePanel({
               value={externalTicketId}
               onChange={(e) => setExternalTicketId(e.target.value)}
               placeholder="TICKET-101"
-              className="w-full rounded border border-cockpit-600 bg-cockpit-950 px-3 py-2 text-xs text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+              className="w-full rounded border border-cockpit-600 bg-white px-3 py-2 text-xs text-black placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
             />
             <div className="mt-2 flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-xs text-cockpit-500">

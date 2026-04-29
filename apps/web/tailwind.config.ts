@@ -11,6 +11,7 @@ const config: Config = {
     extend: {
       colors: {
         cockpit: {
+          950: '#030712',
           900: '#0b0f19',
           800: '#111827',
           700: '#1f2937',

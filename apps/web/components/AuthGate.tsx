@@ -66,15 +66,15 @@ export function AuthGate({
           </div>
           <label className="mb-3 block text-xs text-cockpit-300">
             Tenant
-            <input className="mt-1 w-full rounded border border-cockpit-700 bg-cockpit-950 px-3 py-2 text-cockpit-100" value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)} />
+            <input className="mt-1 w-full rounded border border-cockpit-700 bg-white px-3 py-2 text-black" value={tenantSlug} onChange={(e) => setTenantSlug(e.target.value)} />
           </label>
           <label className="mb-3 block text-xs text-cockpit-300">
             Email
-            <input className="mt-1 w-full rounded border border-cockpit-700 bg-cockpit-950 px-3 py-2 text-cockpit-100" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input className="mt-1 w-full rounded border border-cockpit-700 bg-white px-3 py-2 text-black" value={email} onChange={(e) => setEmail(e.target.value)} />
           </label>
           <label className="mb-4 block text-xs text-cockpit-300">
             Password
-            <input type="password" className="mt-1 w-full rounded border border-cockpit-700 bg-cockpit-950 px-3 py-2 text-cockpit-100" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <input type="password" className="mt-1 w-full rounded border border-cockpit-700 bg-white px-3 py-2 text-black" value={password} onChange={(e) => setPassword(e.target.value)} />
           </label>
           {error && <div className="mb-3 rounded border border-red-700/50 bg-red-950/40 px-3 py-2 text-xs text-red-200">{error}</div>}
           <button type="submit" className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90">
