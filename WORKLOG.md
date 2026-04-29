@@ -432,3 +432,64 @@ Start BL-106: Self-hosted service topology (Zammad, OpenBao, NATS JetStream, Mai
 - All state documentation checks passed.
 - Browser proof shows honest mock-only boundary.
 - No production claims introduced.
+
+
+## 2026-04-29 - BL-121: Local Model Runtime Upgrade to gemma4:e4b
+
+**Type:** implementation / closure
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** d2ffbdd
+**Worktree:** clean
+
+### What changed
+
+- Installed user-local Ollama v0.22.0 with ROCm package at ~/.local/bin/ollama, listening on 0.0.0.0:11435
+- System Ollama v0.18.2 on port 11434 left untouched as baseline
+- Pulled gemma4:e4b (~9.6GB, 8B param, Q4_K_M) and verified inference quality
+- qwen3.6:27b also pulled (~17.4GB) but larger/slower; kept as secondary option
+- Verified cluster pod connectivity to 10.88.0.1:11435 via podman0 bridge
+
+- Code updates:
+  - packages/ai/src/index.ts: Added LmStudioAiProvider with OpenAI-compatible chat/completions client, runtime and runtimeBaseUrlRedacted fields in ModelUsageMetadata/AiSafetyMetadata, updated createDefaultModelGateway for multi-runtime selection, added redactBaseUrl helper
+  - packages/contracts/src/greeting-suggestion.ts: Added 'lmstudio' to provider enums in GreetingSuggestionRequest and GreetingSuggestionResponse
+  - apps/web/lib/api.ts: Updated provider unions to include 'lmstudio', added runtime and runtimeBaseUrlRedacted fields
+  - apps/web/components/DraftNotePanel.tsx: Dynamic provider badges for lmstudio/ollama/mock with fallback states
+  - infra/kubernetes/local-podman/app/app-configmap.yaml: OLLAMA_BASE_URL=http://10.88.0.1:11435, OLLAMA_MODEL=gemma4:e4b
+
+- Cluster deployment:
+  - Built and loaded new local-k8s images for API, Web, Worker (podman build + kind load image-archive)
+  - Applied updated ConfigMap
+  - Restarted all three deployments
+  - Verified rollout success
+
+- Verification:
+  - API health check: PASS (storeMode=postgres, authMode=dev after temporary patch for testing)
+  - Real cluster API draft-suggestion with provider=ollama: PASS
+    - Response: provider="ollama", model="gemma4:e4b", fallbackUsed=false, runtime="ollama", noCloudCall=true, latencyMs=13050
+  - Benchmark via scripts/bl121_benchmark_gemma4.sh: PASS
+    - Latency: 8,611ms, Eval count: 644 tokens, Throughput: 79.91 tok/s, fallbackUsed=false
+  - TypeScript compilation: PASS (packages/ai, apps/web, apps/api)
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-111-bl121-local-model-runtime-upgrade/`
+- 01-api-response-evidence.png — API JSON response showing provider=ollama, model=gemma4:e4b, fallbackUsed=false
+- 02-pod-env-evidence.png — kubectl pod env showing OLLAMA_BASE_URL=10.88.0.1:11435 and OLLAMA_MODEL=gemma4:e4b
+- 03-benchmark-evidence.png — gemma4:e4b benchmark results (8.6s, 644 tokens, 79.91 tok/s)
+- 04-ollama-tags-evidence.png — Ollama v0.22.0 /api/tags showing gemma4:e4b available
+- 05-draftnote-badges-evidence.png — DraftNotePanel provider badge states for lmstudio/ollama/mock
+- All 5 screenshots have unique MD5 hashes (no duplicates)
+
+### Risks and Limitations
+
+- System-wide Ollama upgrade to /usr/local/bin/ollama requires manual sudo password entry (deferred)
+- qwen3.6:27b is available but ~17.4GB; slower than gemma4:e4b for support-note drafts
+- Cluster auth mode was temporarily patched to 'dev' for API testing; reverted to 'local' after verification
+- Web UI DraftNotePanel badge not directly screenshot-tested via live cluster web app (would need auth flow)
+- LmStudioAiProvider is implemented but not deployed (no LM Studio runtime configured)
+
+### Next Recommended Action
+
+- BL-111: Sandbox-only Zammad internal note writeback

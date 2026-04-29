@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-29 21:50 CEST
+**Updated At:** 2026-04-29 23:05 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
@@ -9,7 +9,7 @@
 ### P1 [BL-111] Sandbox-only Zammad internal note writeback
 
 - Owner: next coding-agent session.
-- Next action: implement one approval-gated internal note writeback to the local Zammad sandbox only, after BL-108 host-call repair.
+- Next action: implement one approval-gated internal note writeback to the local Zammad sandbox only.
 - Exit criteria: allowed sandbox writeback, blocked/kill-switch path, idempotency, no-secret proof, browser evidence, and explicit no-production/non-public-reply boundary.
 
 ## Queue Rules
