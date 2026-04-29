@@ -10,8 +10,8 @@ Use this file for dated session notes, verification summaries, and references to
 **Status:** ACCEPTED (with model upgrade future work)
 **Repo Path:** /home/ff/Documents/Projects/SupportPlane
 **Git Branch:** main
-**Git Head:** to_be_recorded_after_final_commit
-**Worktree:** clean_after_final_commit
+**Git Head:** 4b771068ad666191e99f688065c457d098e26b7f
+**Worktree:** clean
 
 ### What changed
 
@@ -107,11 +107,11 @@ Start BL-111: Sandbox-only Zammad internal note writeback.
 ## 2026-04-29 - BL-108/109/110/115 Real Sandbox Enablement Gates
 
 **Type:** implementation
-**Status:** BL-108 PARTIAL; BL-109/BL-110/BL-115 ACCEPTED
+**Status:** BL-109/BL-110/BL-115 ACCEPTED (BL-108 was partial in this slice; repair accepted separately)
 **Repo Path:** /home/ff/Documents/Projects/SupportPlane
 **Git Branch:** main
-**Git Head:** recorded in final handoff for this slice
-**Worktree:** clean_after_final_commit
+**Git Head:** 4b771068ad666191e99f688065c457d098e26b7f
+**Worktree:** clean
 
 ### What changed
 

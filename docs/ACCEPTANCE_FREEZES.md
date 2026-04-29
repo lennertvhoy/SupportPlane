@@ -5,6 +5,57 @@
 Use this when a screen, route, workflow, or other visible milestone is accepted
 and must be protected from quiet regression.
 
+## AF-2026-04-29-007: BL-108 Repair — Real Host-Controlled Ollama Model Call (ACCEPTED)
+
+- ID: AF-2026-04-29-007
+- Milestone: Real host-controlled Ollama model call from cluster API with fallbackUsed=false
+- Scope: Cluster API performs a real Ollama generate call to host-controlled Ollama via podman0 bridge IP (10.88.0.1:11434). Model selected is llama3.1:8b. Response includes provider=ollama, providerMode=local, fallbackUsed=false, noCloudCall=true, autonomousSend=false, writebackAllowed=false, latencyMs, contextHash. Redaction applied before provider call. No secret leakage in API response, logs, or evidence. UI updated to show "Ollama local / real host call, review required" when fallbackUsed=false. Model upgrade to gemma4/qwen3.6 deferred to BL-121 (requires Ollama version upgrade).
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: 4b771068ad666191e99f688065c457d098e26b7f
+- process_or_container:
+  - Kind/Podman cluster `supportplane-local` with port-forwards
+  - SupportPlane API, Web, Worker in `supportplane-app`
+  - PostgreSQL StatefulSet in `supportplane-data`
+  - Zammad, OpenBao, and NATS in `supportplane-integrations`
+  - Host-controlled Ollama endpoint at 10.88.0.1:11434 (podman0 bridge IP)
+- port_or_base_url:
+  - Cluster API http://localhost:4210
+  - Cluster Web http://localhost:3300
+  - Local MVP API http://localhost:4110
+  - Local MVP Web http://localhost:3200
+- routes:
+  - / (cluster web)
+  - /health (cluster API)
+  - POST /support-sessions/:id/zammad/ticket-context
+  - POST /support-sessions/:id/draft-suggestion
+  - POST /support-sessions/:id/zammad/internal-note-writeback
+  - GET /outbox/worker/status
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-29-113 through EV-2026-04-29-120
+- evidence_folder: output/playwright/session-110-bl108-ollama-host-call-model-selection/
+- screenshot_count: 8
+- duplicate_screenshot_count: 0
+- regression_guard:
+  - Ollama provider must continue to return provider=ollama, providerMode=local when host is reachable.
+  - fallbackUsed must be false when host Ollama is reachable and model is available.
+  - noCloudCall must remain true for all Ollama provider responses.
+  - autonomousSend must remain false.
+  - Redaction must be applied before provider call.
+  - No raw secrets may appear in API response, logs, or evidence.
+  - UI must show "real host call" label when fallbackUsed=false, and "deterministic fallback" when fallbackUsed=true.
+  - All other AF-006 regression guards remain in force.
+- known_limitations:
+  - Model selection is limited to llama3.1:8b and qwen2.5:7b on Ollama 0.18.2.
+  - gemma4 and qwen3.6 families require Ollama upgrade (BL-121).
+  - Zammad internal-note writeback remains blocked until BL-111.
+  - OpenBao is local sandbox-only, not production secret management.
+  - NATS is local sandbox-only, not production broker HA/TLS/auth.
+  - MinIO evidence persistence and Mailpit notification capture remain planned.
+  - This remains a local sandbox topology, not production infrastructure.
+
 ## AF-2026-04-29-006: BL-109/110/115 Real Sandbox Enablement Gates and BL-108 Partial Provider Path
 
 - ID: AF-2026-04-29-006

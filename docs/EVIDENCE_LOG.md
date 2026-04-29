@@ -2,6 +2,45 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-29-113 through EV-2026-04-29-120: BL-108 Repair — Real Host-Controlled Ollama Model Call (ACCEPTED)
+
+- Files: `output/playwright/session-110-bl108-ollama-host-call-model-selection/01-cluster-api-health-current-head.png` through `08-next-actions-md.png`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus terminal-rendered JSON/text proof pages.
+- Store/Auth mode for runtime screenshots: cluster `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Cluster proof:
+  - API/Web/Worker deployments in `supportplane-app` rebuilt, reloaded, and rolled out from local images with BL-108 repair code.
+  - Host Ollama reachable from cluster pods via podman0 bridge IP `10.88.0.1:11434`.
+  - Ollama provider path returns `provider=ollama`, `providerMode=local`, `fallbackUsed=false`, `noCloudCall=true`, `model=llama3.1:8b`, `latencyMs=4694`.
+- Shows:
+  - Cluster API health JSON with git head `4b771068ad666191e99f688065c457d098e26b7f`.
+  - UI session with real Zammad sandbox ticket loaded and Ollama full-page panel.
+  - Audit trail with `draft_suggested` event from Ollama provider.
+  - AI Context Quality panel showing connector metadata.
+  - Writeback blocked response with delivery policy denial.
+  - `BACKLOG.md` showing BL-108 accepted and BL-121 added for future Ollama upgrade.
+  - `NEXT_ACTIONS.md` showing BL-111 as active P1.
+- CLI artifacts:
+  - `baseline-runtime.txt`
+  - `model-candidate-inventory.txt`
+  - `ollama-model-benchmark.json`
+  - `ollama-model-benchmark.txt`
+  - `ollama-cluster-connectivity-proof.txt`
+  - `supportplane-api-ollama-real-call-proof.txt`
+  - `ollama-no-secret-leak-proof.txt`
+  - `validation-gate.txt`
+  - `proof-state-mapping.md`
+  - `screenshot-md5s.txt`
+- Proves:
+  - BL-108 now accepted: real host-controlled Ollama model call from cluster API with `fallbackUsed=false`.
+  - Model selected: `llama3.1:8b` after candidate discovery (gemma4 and qwen3.6 blocked by Ollama 0.18.2).
+  - No cloud AI call, no autonomous send, redaction before provider call.
+  - No secret leakage in API response, logs, or evidence.
+  - Cluster network path documented: podman0 bridge IP `10.88.0.1` (not `host.containers.internal`).
+  - 8 unique screenshots, 0 duplicates, max-20 cap respected.
+  - Worktree clean at final commit `4b771068ad666191e99f688065c457d098e26b7f`.
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-04-29T21:55:00+02:00
+
 ## EV-2026-04-29-105 through EV-2026-04-29-112: BL-108/109/110/115 Real Sandbox Enablement Gates (BL-108 PARTIAL; BL-109/110/115 ACCEPTED)
 
 - Files: `output/playwright/session-109-bl108-109-110-115-real-sandbox-enablement/01-cluster-api-health-current-head.png` through `08-state-docs-backlog-next-actions.png`

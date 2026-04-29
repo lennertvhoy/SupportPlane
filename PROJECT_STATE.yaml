@@ -44,7 +44,7 @@ current_state:
     head_before_bl_107: 6093cf00b2f7af7caa03a794697a8d8e89ed75ae
     final_head_after_bl_107: 17592be3ea2b172a0262fd8ecfd37308fae21283
     head_before_bl_108_repair: b1225ba206e88025594a698c6c30e2b7ddff70dc
-    final_head_after_bl_108_repair: to_be_recorded_after_final_commit
+    final_head_after_bl_108_repair: 4b771068ad666191e99f688065c457d098e26b7f
     worktree_status_at_state_update: clean_after_final_commit
 
   current_product_truth:
