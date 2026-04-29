@@ -1,0 +1,90 @@
+=== Cluster Baseline ===
+SupportPlane local Kubernetes prerequisite check
+Status: informational only; this script does not install, create, or mutate anything.
+
+found: podman at /usr/bin/podman - podman version 5.8.2
+found: kubectl at /usr/bin/kubectl 
+found: kind at /usr/local/bin/kind - kind version 0.27.0
+missing: minikube
+missing: helm
+missing: kustomize
+
+Podman host details:
+  host.os=linux arch=amd64 kernel=6.19.13-200.fc43.x86_64 cgroup=systemd cgroupVersion=v2 rootless=true network=pasta
+  Name        URI         Identity    Default     ReadWrite
+
+kubectl current context:
+  kind-supportplane-local
+
+Kind clusters visible with KIND_EXPERIMENTAL_PROVIDER=podman:
+  supportplane-local
+
+Minikube profiles: unavailable because minikube is missing
+
+No cluster was created. This prerequisite check is read-only.
+
+kind-supportplane-local
+
+Kubernetes control plane is running at https://127.0.0.1:33567
+CoreDNS is running at https://127.0.0.1:33567/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+NAME                               STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION            CONTAINER-RUNTIME
+supportplane-local-control-plane   Ready    control-plane   78m   v1.31.4   10.89.3.3     <none>        Debian GNU/Linux 12 (bookworm)   6.19.13-200.fc43.x86_64   containerd://1.7.24
+
+NAME                         STATUS   AGE
+default                      Active   78m
+kube-node-lease              Active   78m
+kube-public                  Active   78m
+kube-system                  Active   78m
+local-path-storage           Active   78m
+supportplane-app             Active   77m
+supportplane-data            Active   77m
+supportplane-integrations    Active   77m
+supportplane-observability   Active   77m
+
+NAME                                      READY   STATUS    RESTARTS      AGE
+pod/supportplane-api-df49dcbc4-nrmr9      1/1     Running   0             57m
+pod/supportplane-web-8469974fd-ff6qq      1/1     Running   0             57m
+pod/supportplane-worker-7bc45586f-tkw4g   1/1     Running   2 (48m ago)   49m
+
+NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/supportplane-api   ClusterIP   10.96.243.132   <none>        4110/TCP   57m
+service/supportplane-web   ClusterIP   10.96.241.89    <none>        3200/TCP   57m
+
+NAME                                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/supportplane-api      1/1     1            1           57m
+deployment.apps/supportplane-web      1/1     1            1           57m
+deployment.apps/supportplane-worker   1/1     1            1           57m
+
+NAME                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/supportplane-api-df49dcbc4       1         1         1       57m
+replicaset.apps/supportplane-web-8469974fd       1         1         1       57m
+replicaset.apps/supportplane-worker-6f9b4c7448   0         0         0       57m
+replicaset.apps/supportplane-worker-7bc45586f    1         1         1       49m
+
+NAME                         READY   STATUS    RESTARTS   AGE
+pod/minio-855cfdc549-grxrr   1/1     Running   0          19m
+pod/postgres-0               1/1     Running   0          48m
+
+NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+service/minio      ClusterIP   10.96.155.116   <none>        9000/TCP,9001/TCP   19m
+service/postgres   ClusterIP   10.96.244.246   <none>        5432/TCP            57m
+
+NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/minio   1/1     1            1           19m
+
+NAME                               DESIRED   CURRENT   READY   AGE
+replicaset.apps/minio-855cfdc549   1         1         1       19m
+
+NAME                        READY   AGE
+statefulset.apps/postgres   1/1     57m
+
+NAMESPACE                   NAME                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+supportplane-data           minio-data                 Bound    pvc-64d936df-cadc-488d-aaea-f34eaea08c0c   1Gi        RWO            standard       <unset>                 19m
+supportplane-data           postgres-data-postgres-0   Bound    pvc-716f6c7b-8617-4138-b4f0-85360a4e4c18   1Gi        RWO            standard       <unset>                 57m
+supportplane-integrations   nats-jetstream-data        Bound    pvc-d1b13e35-d9f0-45be-aec8-d7b0cd032f4f   512Mi      RWO            standard       <unset>                 19m
+supportplane-integrations   openbao-data               Bound    pvc-a64edaea-5235-4146-98b2-fa357bf6be96   256Mi      RWO            standard       <unset>                 19m
+supportplane-integrations   zammad-postgres-data       Bound    pvc-c343618e-99b9-4888-8764-db93dc780f14   512Mi      RWO            standard       <unset>                 19m
+supportplane-integrations   zammad-storage-zammad-0    Bound    pvc-723541df-734e-41e1-973a-52a3a686613b   512Mi      RWO            standard       <unset>                 19m

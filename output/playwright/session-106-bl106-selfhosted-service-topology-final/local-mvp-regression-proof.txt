@@ -1,0 +1,3 @@
+=== Local MVP Regression Proof ===
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"9ae112e5cfdf8446f4f8c014ab97d92c37078147","timestamp":"2026-04-29T15:10:02.160Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","note":"Mock-first ticket-aware API slice (BL-003)"}
+Local Web HTTP status: 200

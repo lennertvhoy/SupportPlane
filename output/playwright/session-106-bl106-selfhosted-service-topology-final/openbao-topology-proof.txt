@@ -1,0 +1,8 @@
+=== OpenBao Topology ===
+pod/openbao-5bc456ddfc-ks44c       1/1     Running   0          19m
+service/openbao           ClusterIP   10.96.35.167    <none>        8200/TCP            19m
+deployment.apps/openbao        1/1     1            1           19m
+replicaset.apps/openbao-5bc456ddfc       1         1         1       19m
+persistentvolumeclaim/openbao-data              Bound    pvc-a64edaea-5235-4146-98b2-fa357bf6be96   256Mi      RWO            standard       <unset>                 19m
+
+{"initialized":true,"sealed":false,"standby":false,"performance_standby":false,"replication_performance_mode":"disabled","replication_dr_mode":"disabled","server_time_utc":1777475392,"version":"2.2.0","cluster_name":"vault-cluster-4ca84b1d","cluster_id":"724cb342-a34d-59f0-ea95-9f3d6e9043a2"}

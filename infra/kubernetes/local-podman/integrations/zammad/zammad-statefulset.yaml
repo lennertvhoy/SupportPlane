@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: zammad
+  namespace: supportplane-integrations
+  labels:
+    app.kubernetes.io/name: zammad
+    app.kubernetes.io/part-of: supportplane
+spec:
+  serviceName: zammad
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zammad
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zammad
+        app.kubernetes.io/part-of: supportplane
+    spec:
+      initContainers:
+        - name: zammad-init
+          image: zammad/zammad:6.4.1-1
+          envFrom:
+            - configMapRef:
+                name: zammad-config
+            - secretRef:
+                name: zammad-db
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              set -e
+              echo "Running Zammad init..."
+              /docker-entrypoint.sh zammad-init || {
+                echo "zammad-init exited with code $?"
+                exit 1
+              }
+              echo "Zammad init completed"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+      containers:
+        - name: zammad-railsserver
+          image: zammad/zammad:6.4.1-1
+          envFrom:
+            - configMapRef:
+                name: zammad-config
+            - secretRef:
+                name: zammad-db
+          command: ["/docker-entrypoint.sh"]
+          args: ["zammad-railsserver"]
+          ports:
+            - containerPort: 3000
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            failureThreshold: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            failureThreshold: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "300m"
+            limits:
+              memory: "2Gi"
+              cpu: "1500m"
+          volumeMounts:
+            - name: zammad-storage
+              mountPath: /opt/zammad/storage
+      volumes:
+        - name: zammad-storage
+          persistentVolumeClaim:
+            claimName: zammad-storage
+  volumeClaimTemplates:
+    - metadata:
+        name: zammad-storage
+        labels:
+          app.kubernetes.io/name: zammad
+          app.kubernetes.io/part-of: supportplane
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 512Mi
+        storageClassName: standard

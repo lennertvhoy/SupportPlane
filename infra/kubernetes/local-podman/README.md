@@ -1,13 +1,11 @@
 # Local Podman Kubernetes Foundation
 
-**Status:** BL-103 implementation target. This directory contains only the
-verified local namespace foundation for the future self-hosted sandbox.
+**Status:** BL-103 cluster foundation, BL-104/BL-105 app/PostgreSQL, BL-106 self-hosted service topology. This directory contains the complete local sandbox manifests.
 
 The local sandbox cluster is named `supportplane-local` and uses Kind with the
 Podman provider. BL-103 verified `kindest/node:v1.31.4` on this Fedora/Podman
 host; the Kind v0.27.0 default `kindest/node:v1.32.2` started but left
-`kube-proxy` crash-looping with `failed complete: too many open files`. These
-manifests intentionally create only the namespace boundary for future phases:
+`kube-proxy` crash-looping with `failed complete: too many open files`. All four namespaces are deployed along with their workloads:
 
 - `supportplane-app`
 - `supportplane-data`
@@ -30,22 +28,15 @@ infra/kubernetes/local-podman/
   README.md
   namespaces.yaml
   kustomization.yaml
-```
-
-Future layout may add these directories after separate backlog items implement
-and verify them:
-
-```text
-infra/kubernetes/local-podman/
-  app/
-  postgres/
-  zammad/
-  ollama/
-  openbao/
-  nats/
-  mailpit/
-  minio/
-  observability/
+  app/           # SupportPlane API, Web, Worker + ConfigMap/Secret
+  postgres/      # PostgreSQL StatefulSet + Service + Secret + ConfigMap
+  integrations/
+    zammad/      # Zammad StatefulSet + Redis + dedicated PostgreSQL
+    openbao/     # OpenBao Deployment + Service + Secret
+    nats/        # NATS StatefulSet with JetStream + Service + ConfigMap
+    mailpit/     # Mailpit Deployment + Service
+    minio/       # MinIO Deployment + PVC + Service + Secret
+  observability/ # Placeholder for future BL-114
 ```
 
 Verification commands for BL-103:

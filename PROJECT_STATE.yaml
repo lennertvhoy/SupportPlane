@@ -248,7 +248,7 @@ current_state:
       backlog_ids: [BL-103, BL-104, BL-105]
     - id: Phase 2
       title: Self-Hosted Service Topology
-      status: planned
+      status: accepted_bl_106
       backlog_ids: [BL-106]
     - id: Phase 3
       title: Zammad Sandbox Read Connector
@@ -294,7 +294,7 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-120
-    accepted_current_slice: BL-104_BL_105
+    accepted_current_slice: BL-106
     planned_real_e2e_items:
       - BL-106
       - BL-107
@@ -312,8 +312,7 @@ current_state:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-106]
-    active_queue_items: [BL-104, BL-105, BL-106]
+    active_queue_items: [BL-107]
 
   documentation:
     primary_user_guide: README.md
@@ -393,21 +392,67 @@ current_state:
       - docs/BOUNDARY_MATRIX.md
       - docs/BACKLOG_REAL_E2E_ROADMAP.md
       - docs/IMPLEMENTATION_PHASES_REAL_E2E.md
+    created_in_bl_106:
+      - infra/kubernetes/local-podman/data/minio/minio-secret.yaml
+      - infra/kubernetes/local-podman/data/minio/minio-pvc.yaml
+      - infra/kubernetes/local-podman/data/minio/minio-deployment.yaml
+      - infra/kubernetes/local-podman/data/minio/minio-service.yaml
+      - infra/kubernetes/local-podman/integrations/openbao/openbao-secret.yaml
+      - infra/kubernetes/local-podman/integrations/openbao/openbao-pvc.yaml
+      - infra/kubernetes/local-podman/integrations/openbao/openbao-deployment.yaml
+      - infra/kubernetes/local-podman/integrations/openbao/openbao-service.yaml
+      - infra/kubernetes/local-podman/integrations/nats/nats-configmap.yaml
+      - infra/kubernetes/local-podman/integrations/nats/nats-pvc.yaml
+      - infra/kubernetes/local-podman/integrations/nats/nats-statefulset.yaml
+      - infra/kubernetes/local-podman/integrations/nats/nats-service.yaml
+      - infra/kubernetes/local-podman/integrations/mailpit/mailpit-deployment.yaml
+      - infra/kubernetes/local-podman/integrations/mailpit/mailpit-service.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-postgres-secret.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-postgres-pvc.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-postgres-statefulset.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-postgres-service.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-redis-deployment.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-redis-service.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-configmap.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-secret.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-statefulset.yaml
+      - infra/kubernetes/local-podman/integrations/zammad/zammad-service.yaml
+      - scripts/bl106_screenshots.js
+    updated_in_bl_106:
+      - infra/kubernetes/local-podman/kustomization.yaml
+      - BACKLOG.md
+      - NEXT_ACTIONS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - WORKLOG.md
+      - docs/EVIDENCE_LOG.md
+      - docs/ACCEPTANCE_FREEZES.md
+      - docs/SELF_HOSTED_STACK.md
+      - docs/LOCAL_KUBERNETES_PODMAN_TARGET.md
+      - docs/KUBERNETES_SERVICE_CATALOG.md
+      - docs/WORKFLOW_TRUTH.md
+      - docs/BOUNDARY_MATRIX.md
+      - infra/kubernetes/local-podman/README.md
 
   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-104-bl103-local-k8s-podman-foundation-final/
-    latest_screenshot_count: 12
+    latest_folder: output/playwright/session-106-bl106-selfhosted-service-topology-final/
+    latest_screenshot_count: 20
     latest_duplicate_count: 0
     cli_artifacts:
-      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/proof-state-mapping.md
-      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/screenshot-md5s.txt
-      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/cluster-proof.txt
-      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/namespace-proof.txt
-      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/podman-proof.txt
-      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/local-image-strategy-proof.txt
-      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/roadmap-summary.json
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/proof-state-mapping.md
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/screenshot-md5s.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/cluster-baseline-proof.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/zammad-topology-proof.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/openbao-topology-proof.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/nats-jetstream-proof.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/mailpit-topology-proof.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/minio-topology-proof.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/ollama-placement-decision.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/supportplane-non-integration-proof.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/local-mvp-regression-proof.txt
+      - output/playwright/session-106-bl106-selfhosted-service-topology-final/roadmap-summary.json
 
   environment:
     host:

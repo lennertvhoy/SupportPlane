@@ -2,6 +2,54 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-29-059 through EV-2026-04-29-078: BL-106 Self-hosted service topology proof
+
+- Files: `output/playwright/session-106-bl106-selfhosted-service-topology-final/01-readme-status-proof.png` through `20-local-mvp-regression.png`
+- Source/System: Chromium via Playwright against cluster Web (localhost:3300), local MVP Web (localhost:3200), Zammad (localhost:8080), OpenBao (localhost:8200), Mailpit (localhost:8025), and terminal composite proof pages.
+- Store/Auth mode for runtime screenshots: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Cluster proof:
+  - OpenBao Deployment `openbao` in `supportplane-integrations` Running and Ready; health returns `initialized: true, sealed: false, version: 2.2.0`.
+  - NATS StatefulSet `nats` in `supportplane-integrations` Running and Ready; JetStream file-backed stream `TEST_STREAM` and consumer `TEST_CONSUMER` created, message published and consumed.
+  - Mailpit Deployment `mailpit` in `supportplane-integrations` Running and Ready; SMTP port 1025 captures local test messages; web UI shows captured message.
+  - MinIO Deployment `minio` in `supportplane-data` Running and Ready; bucket `bl106-bucket` and object `topology-proof.txt` created and retrieved.
+  - Zammad StatefulSet `zammad` in `supportplane-integrations` Running and Ready; separate PostgreSQL and Redis dependencies healthy; HTTP 200 reachable on port 3000.
+  - SupportPlane API, Web, Worker in `supportplane-app` remain Running and Ready.
+  - PostgreSQL StatefulSet `postgres` in `supportplane-data` remains Running and Ready with Bound PVC.
+- Shows:
+  - README local/mock MVP plus cluster topology direction.
+  - `kubectl get all,pvc` for `supportplane-integrations` and `supportplane-data`.
+  - Zammad login/setup page reachable.
+  - OpenBao health JSON.
+  - Mailpit UI with captured local test email.
+  - MinIO bucket/object proof.
+  - Ollama host placement decision with GPU reasoning.
+  - `BACKLOG.md` showing BL-106 accepted and BL-107+ planned.
+  - `NEXT_ACTIONS.md` active-only queue with BL-107 as next.
+  - Cluster Web header showing DEV/MOCK DATA/local auth/postgres.
+  - Call console and evidence bundle panels.
+  - `WORKFLOW_TRUTH.md` and `BOUNDARY_MATRIX.md` showing services deployed but not integrated.
+  - `KUBERNETES_SERVICE_CATALOG.md` updated.
+  - Final boundary proof: no real SupportPlane integration, no writeback, no real secrets, no production claims.
+  - Local MVP regression proof: API and Web still healthy.
+- CLI artifacts:
+  - `cluster-baseline-proof.txt`
+  - `zammad-topology-proof.txt`
+  - `openbao-topology-proof.txt`
+  - `nats-jetstream-proof.txt`
+  - `mailpit-topology-proof.txt`
+  - `minio-topology-proof.txt`
+  - `ollama-placement-decision.txt`
+  - `supportplane-non-integration-proof.txt`
+  - `local-mvp-regression-proof.txt`
+  - `roadmap-summary.json`
+- Proves:
+  - BL-106 has real Kubernetes manifests for OpenBao, NATS JetStream, Mailpit, MinIO, and Zammad topology.
+  - The current runtime remains local/mock and real writeback/secrets/production claims were not enabled.
+  - Existing local/mock MVP on localhost:4110/3200 still works.
+  - 20 unique screenshots, 0 duplicates, max-20 cap respected.
+- Type: infrastructure-and-browser-runtime-verification
+- as_of: 2026-04-29T17:15:00+02:00
+
 ## EV-2026-04-29-044 through EV-2026-04-29-058: BL-104/BL-105 Kubernetes app and PostgreSQL persistence foundation proof
 
 - Files: `output/playwright/session-105-bl104-bl105-app-postgres-k8s-final/01-cluster-web-header.png` through `15-local-mvp-regression.png`

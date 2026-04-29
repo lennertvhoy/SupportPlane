@@ -1,7 +1,7 @@
 # Kubernetes Service Catalog
 
-**Backlog:** BL-102  
-**Status:** BL-104/BL-105 verified app workloads and PostgreSQL persistence. Remaining services (Zammad, Ollama, OpenBao, NATS, Mailpit, MinIO, observability) are planned for BL-106+.
+**Backlog:** BL-102
+**Status:** BL-104/BL-105 verified app workloads and PostgreSQL persistence. BL-106 verified self-hosted service topology. Observability remains planned for BL-114.
 
 | Workload/service | Namespace | Kind | Container image source | Local/upstream | Ports | Env vars | Secrets/configmaps | PVCs | Health checks | Startup dependencies | Phase | Acceptance test |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -9,14 +9,14 @@
 | `supportplane-api` | `supportplane-app` | Deployment + Service | Local build `localhost/supportplane-api:local-k8s` | Local | 4110 | `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`, `DATABASE_URL` | Secret for local DB password; ConfigMap for mode | None | HTTP `/health` | PostgreSQL | Phase 1 | `/health` returns ok via port-forward 4210:4110 with cluster runtime identity. |
 | `supportplane-worker` | `supportplane-app` | Deployment | Local build `localhost/supportplane-worker:local-k8s` | Local | None | `DATABASE_URL`, `SUPPORTPLANE_API_URL`, future `NATS_URL`, `OPENBAO_ADDR` | Secret/ConfigMap TBD | None | Log-based readiness (no HTTP endpoint yet) | PostgreSQL; later NATS/OpenBao | Phase 1/6 | Worker logs show `mode: mock`, `queueBackend: postgres-local-outbox`. |
 | `postgres` | `supportplane-data` | StatefulSet + Service | Upstream `docker.io/postgres:16-alpine` | Upstream | 5432 | `POSTGRES_DB`, `POSTGRES_USER` | Secret for local password | `postgres-data` | `pg_isready` | None | Phase 1 | Prisma migrate/seed works against cluster DB; data survives pod restart. |
-| `zammad-web/app` | `supportplane-integrations` | Deployment or upstream Helm release TBD | Upstream Zammad image/chart TBD - verify before implementation | Upstream | TBD | Zammad app config TBD | Secret for local sandbox token/admin password | Zammad data PVCs TBD | HTTP health/login | PostgreSQL/search dependencies TBD | Phase 2/3 | Deterministic customer/ticket can be read from Zammad sandbox. |
-| `zammad-scheduler/worker` | `supportplane-integrations` | Deployment/CronJob TBD | Upstream Zammad image/chart TBD | Upstream | None | Zammad worker config TBD | Same Zammad config | Shared Zammad PVCs if required | Process health TBD | Zammad app/db/search | Phase 2 | Zammad background jobs healthy enough for demo data. |
-| `zammad-elasticsearch/opensearch` | `supportplane-integrations` | StatefulSet TBD | Upstream OpenSearch/Elasticsearch image TBD | Upstream | 9200 TBD | Search config TBD | Secret/config TBD | Search PVC | HTTP cluster health | None | Phase 2 | Zammad search dependency healthy if selected deployment mode requires it. |
-| `ollama` | `supportplane-integrations` | Deployment + Service or controlled host service | Upstream Ollama image or host binary TBD | Upstream/host | 11434 | Model/cache config TBD | ConfigMap for model name | Model cache PVC optional | HTTP `/api/tags` or equivalent | GPU/CPU host capability TBD | Phase 2/4 | Local draft generated; no cloud AI call. |
-| `openbao` | `supportplane-integrations` | StatefulSet/Deployment + Service | Upstream OpenBao image TBD | Upstream | 8200 | Dev/local storage config TBD | Local dev init/unseal placeholders; never production secrets | OpenBao data PVC | HTTP health | None | Phase 2/5 | Server-side resolver returns local placeholder secret and API response hides it. |
-| `nats` | `supportplane-integrations` | StatefulSet/Deployment + Service | Upstream NATS image with JetStream TBD | Upstream | 4222, 8222 | JetStream enabled config | ConfigMap/Secret for local auth if used | JetStream data PVC | `/healthz` or monitor endpoint | None | Phase 2/6 | Durable stream/consumer survives restart and supports retry/dead-letter proof. |
-| `mailpit` | `supportplane-integrations` | Deployment + Service | Upstream Mailpit image TBD | Upstream | 1025, 8025 | Mailpit config TBD | None/local config | Optional | HTTP UI health | None | Phase 2/9 | Captures local SMTP message; no internet email sent. |
-| `minio` | `supportplane-data` | StatefulSet/Deployment + Service | Upstream MinIO image TBD | Upstream | 9000, 9001 | Bucket/console config | Local access key/secret placeholder | `minio-data` | `/minio/health/live` | None | Phase 2/8 | Evidence JSON/Markdown stored with key/checksum. |
+| `zammad` | `supportplane-integrations` | StatefulSet + Service | Upstream `zammad/zammad:6.4.1-1` | Upstream | 3000 | `RAILS_ENV=production`, `ELASTICSEARCH_ENABLED=false`, `REDIS_URL`, `POSTGRESQL_*` | Secret for DB password; ConfigMap for app config | `zammad-storage` | HTTP `/` | Zammad PostgreSQL, Zammad Redis | Phase 2/3 | HTTP 200 reachable via port-forward 8080:3000; init completed with migrations/seed. |
+| `zammad-postgres` | `supportplane-integrations` | StatefulSet + Service | Upstream `postgres:16-alpine` | Upstream | 5432 | `POSTGRES_DB=zammad`, `POSTGRES_USER=zammad` | Secret for local password | `zammad-postgres-data` | `pg_isready` | None | Phase 2 | Zammad database initialized and accepting connections. |
+| `zammad-redis` | `supportplane-integrations` | Deployment + Service | Upstream `redis:7-alpine` | Upstream | 6379 | None | None | None | `redis-cli ping` | None | Phase 2 | Redis responds to ping; used by Zammad ActionCable. |
+| `ollama` | Host-controlled | Host service | Host binary `ollama` version 0.18.2 | Host | 11434 | None | None | None | `ollama list` | GPU/CPU host capability | Phase 2/4 | Local draft generated; no cloud AI call. Host has AMD GPU. |
+| `openbao` | `supportplane-integrations` | Deployment + Service | Upstream `openbao/openbao:2.2.0` | Upstream | 8200 | `BAO_ADDR=http://0.0.0.0:8200` | Secret for local dev root token placeholder | `openbao-data` | HTTP `/v1/sys/health` | None | Phase 2/5 | Health returns `initialized: true, sealed: false, version: 2.2.0`. |
+| `nats` | `supportplane-integrations` | StatefulSet + Service | Upstream `nats:2.10.24-alpine` | Upstream | 4222, 8222 | JetStream enabled via ConfigMap | ConfigMap `nats-config` | `nats-jetstream-data` | HTTP `/healthz` on monitor port | None | Phase 2/6 | Durable stream `TEST_STREAM` and consumer `TEST_CONSUMER` created; message pub/consume verified. |
+| `mailpit` | `supportplane-integrations` | Deployment + Service | Upstream `axllent/mailpit:v1.21` | Upstream | 1025, 8025 | None | None | None | HTTP `/api/v1/messages` on web port | None | Phase 2/9 | Captures local SMTP message; no internet email sent. Web UI shows captured messages. |
+| `minio` | `supportplane-data` | Deployment + Service | Upstream `minio/minio:RELEASE.2025-04-22T22-12-26Z` | Upstream | 9000, 9001 | `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` | Secret for local access key/secret placeholder | `minio-data` | `/minio/health/live`, `/minio/health/ready` | None | Phase 2/8 | Bucket `bl106-bucket` and object `topology-proof.txt` created and retrieved. |
 | `otel-collector` | `supportplane-observability` | Deployment | Upstream collector image TBD | Upstream | 4317, 4318 | Collector pipeline config | ConfigMap | None | Collector health endpoint TBD | Loki/Prometheus optional | Phase 10 | Receives basic API/worker traces or logs with correlation ID. |
 | `grafana` | `supportplane-observability` | Deployment + Service | Upstream Grafana image TBD | Upstream | 3000 mapped locally to 3001 | Datasource config | Local admin password placeholder | Optional dashboard PVC | HTTP `/api/health` | Loki/Prometheus | Phase 10 | Dashboard shows service health/log/metric source. |
 | `loki` | `supportplane-observability` | StatefulSet/Deployment | Upstream Loki image TBD | Upstream | 3100 | Loki config | ConfigMap | Optional log storage PVC | `/ready` | None | Phase 10 | Logs query by correlation ID. |
@@ -24,7 +24,9 @@
 
 ## Notes
 
-- Exact image names and versions are intentionally `TBD` where not verified.
+- Exact image names and versions are pinned where deployed; observability images remain TBD for BL-114.
 - BL-103 selected Kind with the Podman provider for the local foundation using `kindest/node:v1.31.4`.
 - BL-103 proved local image loading by building a Podman smoke image, saving it to an archive, and loading it with `kind load image-archive`; direct `kind load docker-image` did not see the rootless Podman image.
-- BL-104/BL-105 committed manifests deploy API, Web, Worker, and PostgreSQL into the cluster. Remaining catalog items are planned for BL-106+.
+- BL-104/BL-105 committed manifests deploy API, Web, Worker, and PostgreSQL into the cluster.
+- BL-106 committed manifests deploy OpenBao, NATS JetStream, Mailpit, MinIO, and Zammad into the cluster.
+- Ollama is host-controlled, not in-cluster, due to AMD GPU availability and Kind/Podman GPU pass-through complexity.

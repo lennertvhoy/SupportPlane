@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openbao-data
+  namespace: supportplane-integrations
+  labels:
+    app.kubernetes.io/name: openbao
+    app.kubernetes.io/part-of: supportplane
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+  storageClassName: standard

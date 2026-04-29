@@ -1,7 +1,7 @@
 # Workflow Truth
 
 **Backlog:** BL-102  
-**Status:** current-vs-target truth matrix.
+**Status:** BL-106 cluster topology deployed and verified. Integration connectors remain mock-only (BL-107+).
 
 | Capability | Current status | Current implementation truth | Target self-hosted service | Target milestone | Acceptance proof required | Risk level | Notes |
 |---|---|---|---|---|---|---|---|
@@ -21,7 +21,7 @@
 | Endpoint agent | Future only | No agent app. | osquery/future agent | BL-118 | Read-only diagnostics and no arbitrary shell. | High | Later only. |
 | Tauri/operator companion | Future only | Web mock screen panels only; no Tauri. | Tauri app later | BL-119 | Explicit sharing state in desktop app. | High | Later only. |
 | Screen monitoring/OCR/remote desktop observation | Future only | No raw pixels, OCR, clipboard, or monitoring. | Tesseract/PaddleOCR or remote tool later | BL-120 future | Consent-gated proof, redaction, no ambient surveillance. | Critical | Do not build before privacy design. |
-| Local Kubernetes/Podman cluster | Foundation real | Kind/Podman cluster `supportplane-local` and four namespaces are verified; SupportPlane apps/PostgreSQL are not deployed there yet. | Kind on Podman | BL-103 accepted; BL-104/105 next | Cluster starts, namespaces exist, provider proof captured; app/Postgres health remains BL-104/105. | Medium | Verified with `kindest/node:v1.31.4`; default v1.32.2 was not accepted due kube-proxy crash loop. |
+| Local Kubernetes/Podman cluster | Deployed and verified | Kind/Podman cluster `supportplane-local` and four namespaces; SupportPlane apps/PostgreSQL and self-hosted services deployed. | Kind on Podman | BL-103/104/105/106 accepted | Cluster starts, namespaces exist, all workloads healthy. | Low | Verified with `kindest/node:v1.31.4`; Ollama host-controlled. |
 | SupportPlane API in cluster | Deployed and verified | API Deployment + Service in `supportplane-app`; health via port-forward `localhost:4210`. | Same | BL-104 accepted | `/health` returns ok with postgres/local auth runtime identity. | Low | Built from `localhost/supportplane-api:local-k8s`. |
 | SupportPlane Web in cluster | Deployed and verified | Web Deployment + Service in `supportplane-app`; reachable via port-forward `localhost:3300`. | Same | BL-104 accepted | Browser loads, header shows DEV/MOCK DATA/local auth/postgres. | Low | Built from `localhost/supportplane-web:local-k8s`; `NEXT_PUBLIC_API_BASE_URL=http://localhost:4210`. |
 | SupportPlane Worker in cluster | Deployed and verified | Worker Deployment in `supportplane-app`; logs in mock-only mode. | Same | BL-104 accepted | Worker logs show `mode: mock`, `queueBackend: postgres-local-outbox`. | Low | Built from `localhost/supportplane-worker:local-k8s`. |

@@ -2,10 +2,12 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
   - namespaces.yaml
+  # PostgreSQL (SupportPlane canonical store)
   - postgres/postgres-secret.yaml
   - postgres/postgres-configmap.yaml
   - postgres/postgres-service.yaml
   - postgres/postgres-statefulset.yaml
+  # SupportPlane app services
   - app/app-configmap.yaml
   - app/app-secret.local.yaml
   - app/api-deployment.yaml
@@ -13,3 +15,29 @@ resources:
   - app/web-deployment.yaml
   - app/web-service.yaml
   - app/worker-deployment.yaml
+  # Data services
+  - data/minio/minio-secret.yaml
+  - data/minio/minio-pvc.yaml
+  - data/minio/minio-deployment.yaml
+  - data/minio/minio-service.yaml
+  # Integration services
+  - integrations/openbao/openbao-secret.yaml
+  - integrations/openbao/openbao-pvc.yaml
+  - integrations/openbao/openbao-deployment.yaml
+  - integrations/openbao/openbao-service.yaml
+  - integrations/nats/nats-configmap.yaml
+  - integrations/nats/nats-pvc.yaml
+  - integrations/nats/nats-statefulset.yaml
+  - integrations/nats/nats-service.yaml
+  - integrations/mailpit/mailpit-deployment.yaml
+  - integrations/mailpit/mailpit-service.yaml
+  - integrations/zammad/zammad-postgres-secret.yaml
+  - integrations/zammad/zammad-postgres-pvc.yaml
+  - integrations/zammad/zammad-postgres-statefulset.yaml
+  - integrations/zammad/zammad-postgres-service.yaml
+  - integrations/zammad/zammad-redis-deployment.yaml
+  - integrations/zammad/zammad-redis-service.yaml
+  - integrations/zammad/zammad-configmap.yaml
+  - integrations/zammad/zammad-secret.yaml
+  - integrations/zammad/zammad-statefulset.yaml
+  - integrations/zammad/zammad-service.yaml

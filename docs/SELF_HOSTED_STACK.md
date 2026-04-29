@@ -1,11 +1,21 @@
 # Self-Hosted Stack
 
 **Backlog:** BL-102  
-**Status:** architecture and roadmap only. No cluster or real integration is implemented by this document.
+**Status:** BL-106 topology deployed and verified. SupportPlane real integration with these services remains planned (BL-107+).
 
 ## Current Truth
 
-SupportPlane is currently a local/mock MVP. API runs on `localhost:4110`, Web on `localhost:3200`, PostgreSQL on `localhost:5434` through Podman, auth is local username/password, connectors are mock/local only, AI is deterministic mock/local only, writeback is mock-only with real network locked off, and credential references are metadata placeholders only.
+SupportPlane is currently a local/mock MVP with cluster topology deployed. API runs on `localhost:4110` (local) and `localhost:4210` (cluster), Web on `localhost:3200` (local) and `localhost:3300` (cluster), PostgreSQL on `localhost:5434` (local) and in-cluster (cluster). The local Kubernetes cluster `supportplane-local` now runs:
+- SupportPlane API/Web/Worker in `supportplane-app`
+- PostgreSQL in `supportplane-data`
+- OpenBao in `supportplane-integrations`
+- NATS JetStream in `supportplane-integrations`
+- Mailpit in `supportplane-integrations`
+- MinIO in `supportplane-data`
+- Zammad in `supportplane-integrations` (with separate PostgreSQL and Redis)
+- Ollama is host-controlled (not in-cluster)
+
+Connectors remain mock/local only, AI is deterministic mock/local only, writeback is mock-only with real network locked off, and credential references are metadata placeholders only.
 
 ## Target Direction
 

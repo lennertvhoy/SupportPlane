@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zammad-postgres
+  namespace: supportplane-integrations
+  labels:
+    app.kubernetes.io/name: zammad-postgres
+    app.kubernetes.io/part-of: supportplane
+spec:
+  selector:
+    app.kubernetes.io/name: zammad-postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  type: ClusterIP

@@ -5,6 +5,64 @@
 Use this when a screen, route, workflow, or other visible milestone is accepted
 and must be protected from quiet regression.
 
+## AF-2026-04-29-004: BL-106 Self-Hosted Service Topology
+
+- ID: AF-2026-04-29-004
+- Milestone: Self-hosted service topology (Zammad, OpenBao, NATS JetStream, Mailpit, MinIO, Ollama placement)
+- Scope: Local sandbox topology only. This freeze accepts Kubernetes manifests and running workloads for OpenBao, NATS JetStream, Mailpit, MinIO, and Zammad in the local Kind/Podman cluster, plus the documented decision to keep Ollama as a host-controlled service. It does not accept any SupportPlane real integration with these services.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: to_be_recorded_after_final_commit
+- process_or_container:
+  - Kind/Podman cluster `supportplane-local` with port-forwards
+  - OpenBao pod in `supportplane-integrations`
+  - NATS pod in `supportplane-integrations`
+  - Mailpit pod in `supportplane-integrations`
+  - MinIO pod in `supportplane-data`
+  - Zammad pod in `supportplane-integrations`
+  - Zammad-PostgreSQL pod in `supportplane-integrations`
+  - Zammad-Redis pod in `supportplane-integrations`
+  - Existing SupportPlane API/Web/Worker in `supportplane-app`
+  - Existing PostgreSQL in `supportplane-data`
+- port_or_base_url:
+  - Cluster API http://localhost:4210
+  - Cluster Web http://localhost:3300
+  - OpenBao health http://localhost:8200/v1/sys/health
+  - Mailpit web http://localhost:8025
+  - Zammad http://localhost:8080
+  - Local MVP API http://localhost:4110
+  - Local MVP Web http://localhost:3200
+- routes:
+  - / (cluster web)
+  - /call-console (cluster web)
+  - /health (cluster API)
+  - / (local MVP web)
+  - /call-console (local MVP web)
+  - /health (local MVP API)
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-29-059 through EV-2026-04-29-078
+- evidence_folder: output/playwright/session-106-bl106-selfhosted-service-topology-final/
+- screenshot_count: 20
+- duplicate_screenshot_count: 0
+- regression_guard:
+  - OpenBao must remain reachable in dev mode with health endpoint returning initialized/unsealed.
+  - NATS JetStream must remain enabled with file storage and reachable on ports 4222/8222.
+  - Mailpit must remain reachable on SMTP 1025 and web UI 8025.
+  - MinIO must remain reachable on API 9000 and console 9001 with healthy readiness probes.
+  - Zammad must remain reachable on HTTP 3000 with working PostgreSQL and Redis dependencies.
+  - No SupportPlane real integration with any topology service may be enabled without explicit backlog scope (BL-107+).
+  - No real writeback, secrets, or production claims may be introduced without explicit backlog scope.
+  - Existing local MVP on localhost:4110/3200 must remain runnable unless explicitly superseded.
+  - Cluster app services must remain deployable via `kubectl apply -k infra/kubernetes/local-podman`.
+- known_limitations:
+  - Zammad scheduler, worker, and websocket services are not deployed; only railsserver is running.
+  - Zammad Elasticsearch is disabled; database search is used instead.
+  - Ollama is host-controlled, not in-cluster.
+  - All topology services use local dev placeholder credentials.
+  - This is a local sandbox topology, not production infrastructure.
+
 ## AF-2026-04-29-002: BL-104/BL-105 Kubernetes App and PostgreSQL Persistence Foundation
 
 - ID: AF-2026-04-29-002

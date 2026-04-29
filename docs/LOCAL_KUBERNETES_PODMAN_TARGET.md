@@ -1,7 +1,7 @@
 # Local Kubernetes Podman Target
 
 **Backlog:** BL-102  
-**Status:** BL-103 verified the cluster foundation. App, database, and integration workloads remain future backlog work.
+**Status:** BL-103 verified the cluster foundation. BL-104/BL-105 deployed app and PostgreSQL. BL-106 deployed self-hosted service topology. Observability remains future backlog work.
 
 ## Target
 
@@ -73,15 +73,16 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 
 ## Storage Strategy
 
-| Component | Storage target |
-|---|---|
-| PostgreSQL | PVC for canonical SupportPlane state. |
-| Zammad | PVCs for application data plus chosen search/index dependency. |
-| OpenBao | PVC or development storage backend for local sandbox secrets only. |
-| MinIO | PVC for evidence artifacts. |
-| NATS JetStream | PVC or ephemeral storage depending on Phase 6 durability test. |
-| Mailpit | Optional persistence; acceptable to start ephemeral in Phase 2. |
-| Observability | Local retention PVCs optional; production retention not claimed. |
+| Component | Storage target | Status |
+|---|---|---|
+| PostgreSQL | PVC `postgres-data` 1Gi in `supportplane-data` | Bound, restart survival verified in BL-105. |
+| Zammad | PVC `zammad-storage` 512Mi in `supportplane-integrations`; PVC `zammad-postgres-data` 512Mi | Bound. |
+| Zammad search | Disabled (`ELASTICSEARCH_ENABLED=false`) | Database search used for sandbox. |
+| OpenBao | PVC `openbao-data` 256Mi in `supportplane-integrations` | Bound. |
+| MinIO | PVC `minio-data` 1Gi in `supportplane-data` | Bound. |
+| NATS JetStream | PVC `nats-jetstream-data` 512Mi in `supportplane-integrations` | Bound. |
+| Mailpit | No PVC (ephemeral) | Acceptable for local sandbox. |
+| Observability | Local retention PVCs optional | Planned for BL-114. |
 
 ## Secret Strategy
 
@@ -114,6 +115,17 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 - Browser proof shows SupportPlane Web reachable from localhost with runtime identity labels. Status: met in BL-104.
 - Local image build/load strategy works for API, Web, and Worker. Status: met in BL-104 with `podman save` plus `kind load image-archive`.
 - Existing local/mock MVP on localhost:4110/3200 remains usable. Status: met in BL-104/BL-105.
+
+## Acceptance Gates: Self-Hosted Service Topology (BL-106)
+
+- OpenBao deploys in `supportplane-integrations` and health returns initialized/unsealed. Status: met in BL-106.
+- NATS JetStream deploys with PVC and supports durable streams/consumers. Status: met in BL-106.
+- Mailpit deploys and captures local SMTP without internet email. Status: met in BL-106.
+- MinIO deploys with PVC and supports bucket/object operations. Status: met in BL-106.
+- Zammad deploys with dedicated PostgreSQL + Redis and railsserver serves HTTP 200. Status: met in BL-106.
+- Ollama remains host-controlled with AMD GPU access; no in-cluster GPU passthrough attempted. Status: documented in BL-106.
+- All PVCs across namespaces are Bound. Status: met in BL-106.
+- Root kustomization cleanly applies all resources. Status: met in BL-106.
 
 ## Acceptance Gates: Real Sandbox E2E Works
 
