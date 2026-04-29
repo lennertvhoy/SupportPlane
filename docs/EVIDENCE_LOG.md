@@ -2,6 +2,46 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-29-032 through EV-2026-04-29-043: BL-103 local Kubernetes/Podman cluster foundation proof
+
+- Files: `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/01-readme-status-roadmap.png` through `12-final-boundary-no-real-writeback-secrets-production.png`
+- Source/System: Chromium via Playwright against rendered repo markdown/terminal proof pages plus running SupportPlane local Web/API for boundary proof.
+- Cluster proof:
+  - Kind with Podman provider.
+  - Cluster `supportplane-local`.
+  - Context `kind-supportplane-local`.
+  - Node image `kindest/node:v1.31.4`.
+  - Podman backing container `supportplane-local-control-plane`.
+  - Namespaces `supportplane-app`, `supportplane-data`, `supportplane-integrations`, and `supportplane-observability` active.
+- Store/Auth mode for runtime screenshots: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - README still states local/mock MVP plus self-hosted sandbox roadmap.
+  - Terminal proof of provider, cluster name, context, cluster-info, and Ready node.
+  - `kubectl get nodes -o wide` proof.
+  - Namespace proof showing all four target namespaces active.
+  - `infra/kubernetes/local-podman/README.md` with verified Kind/Podman instructions.
+  - `BACKLOG.md` showing BL-103 accepted while BL-104+ remain planned.
+  - `NEXT_ACTIONS.md` showing active-only next implementation items.
+  - Running SupportPlane header still showing DEV/MOCK DATA, local auth, postgres store, and localhost API.
+  - Connector panel still showing mock-only boundary.
+  - Delivery policy still showing real network locked off.
+  - Evidence bundle still showing local/mock boundary.
+  - Final proof that no real writeback, real credentials, production claims, or real integrations were enabled.
+- CLI artifacts:
+  - `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/cluster-proof.txt`
+  - `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/namespace-proof.txt`
+  - `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/podman-proof.txt`
+  - `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/local-image-strategy-proof.txt`
+  - `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/proof-state-mapping.md`
+  - `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/screenshot-md5s.txt`
+  - `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/roadmap-summary.json`
+- Proves:
+  - BL-103 has a real Podman-backed local Kubernetes cluster foundation.
+  - The current runtime remains local/mock and real writeback/secrets/production claims were not enabled.
+  - 12 unique screenshots, 0 duplicates, max-20 cap respected.
+- Type: infrastructure-and-browser-runtime-verification
+- as_of: 2026-04-29T15:55:00+02:00
+
 ## EV-2026-04-29-015 through EV-2026-04-29-031: BL-102 local Kubernetes self-hosted sandbox roadmap proof
 
 - Files: `output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/01-readme-md.png` through `17-final-no-real-writeback-credentials-production-claims.png`

@@ -1,7 +1,7 @@
 # Local Kubernetes Podman Target
 
 **Backlog:** BL-102  
-**Status:** target architecture only. Host verification is still required.
+**Status:** BL-103 verified the cluster foundation. App, database, and integration workloads remain future backlog work.
 
 ## Target
 
@@ -17,8 +17,8 @@ The local cluster is a development and proof environment. It is not a production
 
 | Candidate | Why it is a candidate | Verification status |
 |---|---|---|
-| Kind with Podman provider | Common local Kubernetes workflow; good local image-load ergonomics; can avoid Docker Desktop. | To verify on host. |
-| Minikube with Podman driver | Explicit local-driver workflow; supports add-ons, ingress, storage classes, and local image strategies. | To verify on host. |
+| Kind with Podman provider | Common local Kubernetes workflow; good local image-load ergonomics; can avoid Docker Desktop. | Verified in BL-103 with `kindest/node:v1.31.4`. |
+| Minikube with Podman driver | Explicit local-driver workflow; supports add-ons, ingress, storage classes, and local image strategies. | Not attempted in BL-103 because Kind/Podman succeeded; `minikube` was missing on the host. |
 | Kubernetes-in-Podman alternatives | Possible if Kind/Minikube fail with rootless Podman or host networking constraints. | To evaluate only if primary candidates fail. |
 
 ## Decision Criteria
@@ -33,9 +33,16 @@ The local cluster is a development and proof environment. It is not a production
 
 ## Recommended Default Path
 
-Recommended starting path: **Kind with Podman provider**, marked **to verify on host**. If Kind/Podman fails on rootless networking, storage, or image loading, evaluate **Minikube with Podman driver** next.
+Recommended starting path: **Kind with Podman provider**, now verified on this host for the BL-103 foundation.
 
-No cluster has been created or verified in BL-102.
+Verified BL-103 path:
+
+```bash
+SUPPORTPLANE_KIND_NODE_IMAGE=kindest/node:v1.31.4 bash scripts/create_local_k8s_cluster.sh
+kubectl apply -k infra/kubernetes/local-podman
+```
+
+Disposition: Kind v0.27.0's default `kindest/node:v1.32.2` started under Podman but left `kube-proxy` crash-looping with `failed complete: too many open files`, which also kept CoreDNS unready. Recreating the same cluster name with `kindest/node:v1.31.4` produced a healthy control plane, CoreDNS, kube-proxy, and local-path-provisioner.
 
 ## Namespace Plan
 
@@ -50,11 +57,11 @@ No cluster has been created or verified in BL-102.
 
 | Image | Suggested local tag | Load strategy |
 |---|---|---|
-| SupportPlane API | `localhost/supportplane-api:local-dev` | Kind image load or local registry; verify in Phase 1. |
-| SupportPlane Web | `localhost/supportplane-web:local-dev` | Kind image load or local registry; verify in Phase 1. |
-| SupportPlane Worker | `localhost/supportplane-worker:local-dev` | Kind image load or local registry; verify in Phase 1. |
+| SupportPlane API | `localhost/supportplane-api:local-dev` | Podman build, `podman save`, then `kind load image-archive`; app image build remains BL-104. |
+| SupportPlane Web | `localhost/supportplane-web:local-dev` | Podman build, `podman save`, then `kind load image-archive`; app image build remains BL-104. |
+| SupportPlane Worker | `localhost/supportplane-worker:local-dev` | Podman build, `podman save`, then `kind load image-archive`; app image build remains BL-104. |
 
-Local image build/load must be proven before app manifests are accepted. Tags are local-dev only and must not imply production release.
+BL-103 proved the archive load path with disposable image `localhost/supportplane-k8s-smoke:bl103`. The direct `kind load docker-image` command did not find the rootless Podman image and should not be the default for BL-104 unless reverified.
 
 ## Networking Strategy
 
@@ -92,12 +99,16 @@ Local image build/load must be proven before app manifests are accepted. Tags ar
 - No uncontrolled real network egress for writeback until gates pass.
 - Zammad writeback target is sandbox-only internal notes, not public replies or production tickets.
 
-## Acceptance Gates: Cluster Exists
+## Acceptance Gates: BL-103 Cluster Foundation
 
-- Local Kubernetes cluster named `supportplane-local` starts on Podman.
-- `kubectl cluster-info` and `kubectl get nodes` succeed.
-- Namespaces exist: `supportplane-app`, `supportplane-data`, `supportplane-integrations`, `supportplane-observability`.
-- Local image build/load strategy is documented and works for one SupportPlane image.
+- Local Kubernetes cluster named `supportplane-local` starts on Podman. Status: met in BL-103.
+- `kubectl cluster-info` and `kubectl get nodes` succeed. Status: met in BL-103.
+- CoreDNS, kube-proxy, and local-path-provisioner are running. Status: met in BL-103 with `kindest/node:v1.31.4`.
+- Namespaces exist: `supportplane-app`, `supportplane-data`, `supportplane-integrations`, `supportplane-observability`. Status: met in BL-103.
+- Local image build/load strategy is documented and works for one smoke image. Status: met in BL-103 with `podman save` plus `kind load image-archive`.
+
+## Acceptance Gates: App And Data Foundation
+
 - PostgreSQL deploys with PVC and restarts without data loss.
 - SupportPlane API/Web/Worker deploy and report health from inside the cluster.
 - Browser proof shows SupportPlane Web reachable from localhost with runtime identity labels.

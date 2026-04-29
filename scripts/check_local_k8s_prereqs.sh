@@ -26,4 +26,37 @@ check_cmd helm
 check_cmd kustomize
 
 echo
-echo "No cluster was created. Local Kubernetes implementation is not implemented yet."
+if command -v podman >/dev/null 2>&1; then
+  echo "Podman host details:"
+  podman info --format '  host.os={{.Host.OS}} arch={{.Host.Arch}} kernel={{.Host.Kernel}} cgroup={{.Host.CgroupManager}} cgroupVersion={{.Host.CgroupsVersion}} rootless={{.Host.Security.Rootless}} network={{.Host.RootlessNetworkCmd}}' 2>/dev/null || echo "  unavailable: podman info failed"
+  podman system connection list 2>/dev/null | sed 's/^/  /' || true
+else
+  echo "Podman host details: unavailable because podman is missing"
+fi
+
+echo
+if command -v kubectl >/dev/null 2>&1; then
+  echo "kubectl current context:"
+  kubectl config current-context 2>/dev/null | sed 's/^/  /' || echo "  not currently set"
+else
+  echo "kubectl current context: unavailable because kubectl is missing"
+fi
+
+echo
+if command -v kind >/dev/null 2>&1; then
+  echo "Kind clusters visible with KIND_EXPERIMENTAL_PROVIDER=podman:"
+  KIND_EXPERIMENTAL_PROVIDER=podman kind get clusters 2>/dev/null | sed 's/^/  /' || echo "  none or kind provider check failed"
+else
+  echo "Kind clusters: unavailable because kind is missing"
+fi
+
+echo
+if command -v minikube >/dev/null 2>&1; then
+  echo "Minikube profiles:"
+  minikube profile list 2>/dev/null | sed 's/^/  /' || echo "  none or minikube profile check failed"
+else
+  echo "Minikube profiles: unavailable because minikube is missing"
+fi
+
+echo
+echo "No cluster was created. This prerequisite check is read-only."

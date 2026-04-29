@@ -29,6 +29,58 @@ and must be protected from quiet regression.
   Notes: optional
 ```
 
+## AF-2026-04-29-003: BL-103 Local Kubernetes/Podman Cluster Foundation
+
+- ID: AF-2026-04-29-003
+- Milestone: Local Kubernetes/Podman Cluster Foundation
+- Scope: Local sandbox cluster foundation only. This freeze accepts a Podman-backed Kind cluster named `supportplane-local`, the four namespace manifests, and a verified smoke-image archive load path. It is not a SupportPlane app deployment and does not implement real integrations.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded_in_final_handoff
+- process_or_container:
+  - Podman container `supportplane-local-control-plane` for Kind Kubernetes
+  - node process (NestJS API via tsx) on port 4110 for local/mock runtime boundary proof
+  - node process (Next.js dev) on port 3200 for browser proof
+  - Podman PostgreSQL on localhost:5434 for local MVP state when runtime proof was captured
+- port_or_base_url:
+  - Kubernetes API via context `kind-supportplane-local`
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- routes:
+  - /
+  - docs and terminal proof pages rendered by `scripts/bl103_screenshots.js`
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: false
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-29-032 through EV-2026-04-29-043
+- evidence_folder: output/playwright/session-104-bl103-local-k8s-podman-foundation-final/
+- screenshot_count: 12
+- duplicate_screenshot_count: 0
+- cluster:
+  - provider: Kind with Podman provider
+  - name: supportplane-local
+  - context: kind-supportplane-local
+  - node_image: kindest/node:v1.31.4
+  - namespaces: supportplane-app, supportplane-data, supportplane-integrations, supportplane-observability
+- regression_guard:
+  - Future work must preserve the truth that BL-103 only creates the cluster and namespace foundation.
+  - SupportPlane API/Web/Worker are not deployed into Kubernetes until BL-104 is implemented and verified.
+  - PostgreSQL-in-cluster is not accepted until BL-105 is implemented and verified.
+  - The direct `kind load docker-image` path must not be assumed for rootless Podman; BL-103 verified `podman save` plus `kind load image-archive`.
+  - No real writeback may be enabled without approval gates, kill switch, credential resolution, egress guardrails, idempotency proof, audit/evidence proof, and sandbox-only boundaries.
+  - No real credentials may be stored in repo files, API responses, browser storage, evidence bundles, logs, screenshots, or Kubernetes manifests.
+  - Zammad, Ollama, OpenBao, NATS, Mailpit, MinIO, and observability remain undeployed by this freeze.
+- known_limitations:
+  - This is a local sandbox cluster foundation, not a production cluster.
+  - Kind v0.27.0 default `kindest/node:v1.32.2` was not accepted because kube-proxy crash-looped with `failed complete: too many open files`.
+  - No real writeback was enabled.
+  - No real credentials were stored.
+  - No production claims were introduced.
+  - Next milestone is BL-104/BL-105: SupportPlane app manifests plus PostgreSQL Kubernetes persistence.
+
 ## AF-2026-04-29-002: BL-102 Local Kubernetes Self-Hosted Sandbox Architecture and Roadmap
 
 - ID: AF-2026-04-29-002

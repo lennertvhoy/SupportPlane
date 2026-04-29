@@ -161,7 +161,7 @@ packages/
   ui/                  Shared UI components
 infra/
   docker-compose/      Podman-compatible compose file
-  kubernetes/          Future K8s manifests (not implemented)
+  kubernetes/          Local Podman/Kubernetes namespace foundation; workloads still planned
 docs/
   MVP_COMPLETION_AUDIT.md   Current product truth and boundaries
   DEMO_GUIDE.md             Scripted demo walkthrough
@@ -170,6 +170,8 @@ docs/
   ACCEPTANCE_FREEZES.md     Accepted milestone ledger
 scripts/
   reset_demo_data.sh        Deterministic demo database reset
+  create_local_k8s_cluster.sh   BL-103 Kind/Podman local cluster helper
+  check_local_k8s_prereqs.sh    Read-only local Kubernetes prerequisite check
   verify_*.sh               Feature-specific verification scripts
   health.js                 Runtime health check
   check_state_docs.py       Documentation hygiene gate

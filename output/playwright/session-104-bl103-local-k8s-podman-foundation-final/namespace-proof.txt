@@ -1,0 +1,24 @@
+$ kubectl apply -k infra/kubernetes/local-podman
+namespace/supportplane-app created
+namespace/supportplane-data created
+namespace/supportplane-integrations created
+namespace/supportplane-observability created
+
+$ kubectl get namespaces
+NAME                         STATUS   AGE
+default                      Active   68s
+kube-node-lease              Active   68s
+kube-public                  Active   68s
+kube-system                  Active   68s
+local-path-storage           Active   63s
+supportplane-app             Active   1s
+supportplane-data            Active   1s
+supportplane-integrations    Active   1s
+supportplane-observability   Active   1s
+
+$ kubectl get namespaces supportplane-app supportplane-data supportplane-integrations supportplane-observability
+NAME                         STATUS   AGE
+supportplane-app             Active   1s
+supportplane-data            Active   1s
+supportplane-integrations    Active   1s
+supportplane-observability   Active   1s

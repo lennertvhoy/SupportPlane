@@ -1,7 +1,7 @@
 # Backlog Real E2E Roadmap
 
 **Backlog:** BL-102  
-**Status:** roadmap mapping. No implementation.
+**Status:** roadmap mapping. BL-103 cluster foundation is now accepted; application and integration workloads remain planned.
 
 ## Accepted Baseline
 
@@ -15,13 +15,13 @@
 - **BL-026/027/028/029:** AI provider, chat, summaries, drafts are deterministic mock only.
 - **BL-046/051/052/053:** operator companion and screen context are web/mock only; no Tauri, raw pixels, OCR, or desktop monitoring.
 - **BL-078:** evidence viewer/export exists, but object storage and compliance-grade artifact storage do not.
-- **BL-084/085/088:** production secrets, OpenTelemetry, and Kubernetes were planned but not implemented.
+- **BL-084/085/088:** production secrets and OpenTelemetry remain planned; Kubernetes is superseded by the accepted BL-103 foundation plus planned BL-104/BL-105 workload work.
 
 ## New Roadmap Groups
 
 | Group | Backlog IDs | Purpose |
 |---|---|---|
-| Kubernetes foundation | BL-103, BL-104, BL-105 | Local Kubernetes/Podman cluster, app manifests, PostgreSQL PVC. |
+| Kubernetes foundation | BL-103 accepted; BL-104, BL-105 planned | Local Kubernetes/Podman cluster is verified; app manifests and PostgreSQL PVC remain next. |
 | Self-hosted service topology | BL-106 | Zammad, OpenBao, NATS JetStream, Mailpit, MinIO, Ollama placement. |
 | Zammad real sandbox read | BL-107 | Deterministic Zammad sandbox data and real read connector. |
 | Ollama provider | BL-108 | Local AI drafts/summaries with metadata and no cloud calls. |

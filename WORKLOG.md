@@ -4,6 +4,53 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-29 - BL-103 Local Kubernetes/Podman Cluster Foundation
+
+**Type:** infrastructure_foundation
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Created the real local Kubernetes foundation for the self-hosted sandbox using Kind with the Podman provider.
+- Added `scripts/create_local_k8s_cluster.sh`, extended `scripts/check_local_k8s_prereqs.sh`, and added `infra/kubernetes/local-podman/namespaces.yaml` plus `kustomization.yaml`.
+- Verified cluster `supportplane-local`, context `kind-supportplane-local`, one Ready control-plane node, healthy CoreDNS/kube-proxy/local-path-provisioner, and the four target namespaces.
+- Proved local image loading with a Podman-built smoke image saved to an archive and loaded via `kind load image-archive`.
+
+### Provider disposition
+
+- Kind/Podman succeeded with `kindest/node:v1.31.4`.
+- Kind v0.27.0's default `kindest/node:v1.32.2` was not accepted because kube-proxy crash-looped with `failed complete: too many open files` and CoreDNS stayed unready.
+- Minikube/Podman was not attempted because Kind/Podman succeeded; `minikube` was not installed on the host.
+
+### What remains mocked or not implemented
+
+- SupportPlane API/Web/Worker are not deployed into Kubernetes.
+- PostgreSQL is not deployed with a Kubernetes PVC.
+- Zammad, Ollama, OpenBao, NATS JetStream, Mailpit, MinIO, and observability are not deployed by this slice.
+- No real writeback, real credentials, production auth, production deployment, or compliance claim exists.
+
+### Next implementation move
+
+Start a bundled BL-104/BL-105 slice: add SupportPlane API/Web/Worker manifests, local image build/archive-load path, services/health checks, and PostgreSQL Kubernetes persistence with PVC/migrate/seed proof.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/`
+- Screenshot count: 12
+- Duplicate count: 0
+- CLI artifacts: `cluster-proof.txt`, `namespace-proof.txt`, `podman-proof.txt`, `local-image-strategy-proof.txt`, `proof-state-mapping.md`, `screenshot-md5s.txt`, `roadmap-summary.json`
+
+### Verification
+
+- Full validation gate was run in the BL-103 final handoff.
+- No real writeback, real secrets, Zammad/Ollama/OpenBao/NATS/Mailpit/MinIO integration, telephony/PBX, endpoint agent, Tauri companion, or screen/OCR implementation was started.
+
+---
+
 ## 2026-04-29 - BL-102 Local Kubernetes Self-Hosted Sandbox Architecture and Roadmap
 
 **Type:** planning_backlog_state_integration

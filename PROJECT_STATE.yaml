@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-29T16:30:00+02:00
+  updated_at: 2026-04-29T15:53:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -35,6 +35,8 @@ current_state:
     branch: main
     head_before_bl_102: 8b4f0311878bf648fb9d945dcc816f7b0ec27bb3
     final_head_after_bl_102: recorded_in_final_handoff
+    head_before_bl_103: 919f7a944191295d0ff3283b659a35cb700b06e1
+    final_head_after_bl_103: recorded_in_final_handoff
     worktree_status_at_state_update: clean_after_final_commit
 
   current_product_truth:
@@ -131,10 +133,43 @@ current_state:
 
   kubernetes_podman_target:
     target_cluster_name: supportplane-local
-    current_status: planned_not_verified
+    current_status: bl_103_foundation_verified
     recommended_default_path: Kind with Podman provider
-    recommendation_status: to_verify_on_host
+    recommendation_status: verified_on_host_with_node_image_kindest_node_v1_31_4
     fallback_candidate: Minikube with Podman driver
+    fallback_status: not_attempted_because_kind_podman_succeeded; minikube_missing_on_host
+    verified_cluster:
+      backlog_id: BL-103
+      acceptance_status: accepted
+      provider: kind_with_podman
+      provider_verified: true
+      cluster_created: true
+      name: supportplane-local
+      context: kind-supportplane-local
+      node_image: kindest/node:v1.31.4
+      default_kind_image_disposition: kindest/node:v1.32.2 started but kube-proxy crash-looped with too_many_open_files
+      node_count: 1
+      podman_backing_container: supportplane-local-control-plane
+      namespaces_applied: true
+      local_image_strategy:
+        status: verified
+        method: podman_save_then_kind_load_image_archive
+        smoke_image: localhost/supportplane-k8s-smoke:bl103
+        direct_kind_load_docker_image: did_not_find_rootless_podman_image
+      evidence_folder: output/playwright/session-104-bl103-local-k8s-podman-foundation-final/
+      final_commit_hash: recorded_in_final_handoff
+      verified_commands:
+        - bash scripts/check_local_k8s_prereqs.sh
+        - bash scripts/create_local_k8s_cluster.sh
+        - kubectl config current-context
+        - kubectl cluster-info
+        - kubectl get nodes -o wide
+        - kubectl apply -k infra/kubernetes/local-podman
+        - kubectl get namespaces
+        - kubectl get all -A
+        - kubectl auth can-i get pods -A
+        - KIND_EXPERIMENTAL_PROVIDER=podman kind get clusters
+        - podman ps --format '{{.Names}} {{.Image}} {{.Status}}'
     namespaces:
       - supportplane-app
       - supportplane-data
@@ -199,7 +234,7 @@ current_state:
       backlog_ids: [BL-101]
     - id: Phase 1
       title: Local Kubernetes/Podman Cluster Foundation
-      status: planned
+      status: partially_accepted_bl_103_cluster_foundation_done_bl_104_bl_105_planned
       backlog_ids: [BL-103, BL-104, BL-105]
     - id: Phase 2
       title: Self-Hosted Service Topology
@@ -249,9 +284,8 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-120
-    accepted_current_slice: BL-102
+    accepted_current_slice: BL-103
     planned_real_e2e_items:
-      - BL-103
       - BL-104
       - BL-105
       - BL-106
@@ -270,7 +304,7 @@ current_state:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-103, BL-104, BL-105, BL-106]
+    active_queue_items: [BL-104, BL-105, BL-106]
 
   documentation:
     primary_user_guide: README.md
@@ -294,17 +328,42 @@ current_state:
       - WORKLOG.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
+    created_in_bl_103:
+      - scripts/create_local_k8s_cluster.sh
+      - scripts/bl103_screenshots.js
+      - infra/kubernetes/local-podman/namespaces.yaml
+      - infra/kubernetes/local-podman/kustomization.yaml
+    updated_in_bl_103:
+      - scripts/check_local_k8s_prereqs.sh
+      - infra/kubernetes/local-podman/README.md
+      - BACKLOG.md
+      - NEXT_ACTIONS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - WORKLOG.md
+      - docs/EVIDENCE_LOG.md
+      - docs/ACCEPTANCE_FREEZES.md
+      - docs/LOCAL_KUBERNETES_PODMAN_TARGET.md
+      - docs/KUBERNETES_SERVICE_CATALOG.md
+      - docs/WORKFLOW_TRUTH.md
+      - docs/BOUNDARY_MATRIX.md
+      - docs/BACKLOG_REAL_E2E_ROADMAP.md
+      - docs/IMPLEMENTATION_PHASES_REAL_E2E.md
 
   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/
-    latest_screenshot_count: 17
+    latest_folder: output/playwright/session-104-bl103-local-k8s-podman-foundation-final/
+    latest_screenshot_count: 12
     latest_duplicate_count: 0
     cli_artifacts:
-      - output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/proof-state-mapping.md
-      - output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/screenshot-md5s.txt
-      - output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/roadmap-summary.json
+      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/proof-state-mapping.md
+      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/screenshot-md5s.txt
+      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/cluster-proof.txt
+      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/namespace-proof.txt
+      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/podman-proof.txt
+      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/local-image-strategy-proof.txt
+      - output/playwright/session-104-bl103-local-k8s-podman-foundation-final/roadmap-summary.json
 
   environment:
     host:
@@ -313,7 +372,7 @@ current_state:
     container_tooling:
       current_verified_local_mvp: Podman compose
       podman_version_previous_observation: 5.8.2
-      kubernetes_on_podman_status: planned_not_verified
+      kubernetes_on_podman_status: verified_kind_podman_bl_103
 
   repository_structure:
     apps: [apps/web, apps/api, apps/worker]
@@ -329,4 +388,4 @@ current_state:
       - packages/ui
     infra:
       current: infra/docker-compose
-      planned: infra/kubernetes/local-podman
+      verified_foundation: infra/kubernetes/local-podman

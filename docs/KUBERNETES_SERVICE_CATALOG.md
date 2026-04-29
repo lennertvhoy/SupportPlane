@@ -1,7 +1,7 @@
 # Kubernetes Service Catalog
 
 **Backlog:** BL-102  
-**Status:** catalog and planning only. Exact images and manifests are not implemented in this slice.
+**Status:** catalog and planning only for workloads. BL-103 verified only the Kind/Podman cluster, namespace foundation, and smoke-image archive load path.
 
 | Workload/service | Namespace | Kind | Container image source | Local/upstream | Ports | Env vars | Secrets/configmaps | PVCs | Health checks | Startup dependencies | Phase | Acceptance test |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -25,5 +25,6 @@
 ## Notes
 
 - Exact image names and versions are intentionally `TBD` where not verified.
-- The first Kubernetes implementation slice should choose Kind/Podman or Minikube/Podman and prove the image load, namespace, PVC, health-check, and localhost access paths.
-- No manifest in this catalog is claimed to deploy today.
+- BL-103 selected Kind with the Podman provider for the local foundation using `kindest/node:v1.31.4`.
+- BL-103 proved local image loading by building a Podman smoke image, saving it to an archive, and loading it with `kind load image-archive`; direct `kind load docker-image` did not see the rootless Podman image.
+- The current committed manifests create namespaces only. No workload manifest in this catalog is claimed to deploy today.

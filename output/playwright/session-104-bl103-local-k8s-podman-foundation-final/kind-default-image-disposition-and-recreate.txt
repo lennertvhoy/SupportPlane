@@ -1,0 +1,35 @@
+$ KIND_EXPERIMENTAL_PROVIDER=podman kind delete cluster --name supportplane-local
+using podman due to KIND_EXPERIMENTAL_PROVIDER
+enabling experimental podman provider
+Deleting cluster "supportplane-local" ...
+Deleted nodes: ["supportplane-local-control-plane"]
+
+$ KIND_EXPERIMENTAL_PROVIDER=podman kind create cluster --name supportplane-local --image kindest/node:v1.31.4
+using podman due to KIND_EXPERIMENTAL_PROVIDER
+enabling experimental podman provider
+Creating cluster "supportplane-local" ...
+ • Ensuring node image (kindest/node:v1.31.4) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.31.4) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+Set kubectl context to "kind-supportplane-local"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-supportplane-local
+
+Thanks for using kind! 😊
+
+$ kubectl wait --for=condition=Ready node/supportplane-local-control-plane --timeout=180s
+node/supportplane-local-control-plane condition met
+
+$ kubectl get nodes -o wide
+NAME                               STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION            CONTAINER-RUNTIME
+supportplane-local-control-plane   Ready    control-plane   22s   v1.31.4   10.89.3.3     <none>        Debian GNU/Linux 12 (bookworm)   6.19.13-200.fc43.x86_64   containerd://1.7.24
