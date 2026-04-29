@@ -4,7 +4,7 @@ Total: 20
 
 1. 01-readme-status-proof.png
 2. 02-cluster-web-header.png
-3. 03-zammad-page-proof.png
+3. 03-zammad-topology-proof.png
 4. 04-openbao-health-json.png
 5. 05-mailpit-ui-proof.png
 6. 06-backlog-status.png

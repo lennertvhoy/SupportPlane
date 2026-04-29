@@ -1,0 +1,7 @@
+{
+  "bl106_status": "evidence_reconciled",
+  "bl106_date": "2026-04-29T15:45:56.936Z",
+  "cluster_web_cors_fixed": true,
+  "zammad_note": "railsserver-only; assets not served; API healthy",
+  "next": "BL-107"
+}

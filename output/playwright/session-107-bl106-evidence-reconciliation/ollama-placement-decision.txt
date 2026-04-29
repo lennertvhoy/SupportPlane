@@ -1,12 +1,11 @@
-=== Ollama Placement Decision ===
-Placement: Host-controlled service
+Ollama Placement Decision: Host-Controlled Service
 
 Reasoning:
 - Ollama is already installed on the host (version 0.18.2)
 - Host has AMD GPU: Radeon RX 7700 XT / 7800 XT
-- Kind/Podman GPU pass-through for AMD is complex and not verified for this sandbox
-- In-cluster CPU-only Ollama would waste the available GPU and perform poorly
-- Host-controlled Ollama can be reached from the cluster via host network if needed in BL-108
+- Kind/Podman GPU pass-through for AMD is complex and not verified
+- In-cluster CPU-only Ollama would waste the available GPU
+- Host-controlled Ollama can be reached from cluster if needed
 
 Models available on host:
 NAME                       ID              SIZE      MODIFIED    

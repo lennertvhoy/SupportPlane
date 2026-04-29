@@ -2,9 +2,18 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
-## EV-2026-04-29-059 through EV-2026-04-29-078: BL-106 Self-hosted service topology proof
+## EV-2026-04-29-059 through EV-2026-04-29-078: BL-106 Self-hosted service topology proof (SUPERSEDED)
 
-- Files: `output/playwright/session-106-bl106-selfhosted-service-topology-final/01-readme-status-proof.png` through `20-local-mvp-regression.png`
+- Status: **invalid/superseded** — evidence contained mismatched screenshots.
+- Old files: `output/playwright/session-106-bl106-selfhosted-service-topology-final/01-readme-status-proof.png` through `20-local-mvp-regression.png`
+- Issues found:
+  - `02-cluster-web-header.png` showed a failed login screen, not the cluster web header.
+  - `03-zammad-page-proof.png` showed a generic `Loading...` page without actual Zammad proof.
+  - Folder deleted during reconciliation; replaced by EV-2026-04-29-079 through EV-2026-04-29-098.
+
+## EV-2026-04-29-079 through EV-2026-04-29-098: BL-106 Self-hosted service topology proof (RECONCILED)
+
+- Files: `output/playwright/session-107-bl106-evidence-reconciliation/01-readme-status-proof.png` through `20-local-mvp-regression.png`
 - Source/System: Chromium via Playwright against cluster Web (localhost:3300), local MVP Web (localhost:3200), Zammad (localhost:8080), OpenBao (localhost:8200), Mailpit (localhost:8025), and terminal composite proof pages.
 - Store/Auth mode for runtime screenshots: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
 - Cluster proof:
@@ -18,14 +27,14 @@
 - Shows:
   - README local/mock MVP plus cluster topology direction.
   - `kubectl get all,pvc` for `supportplane-integrations` and `supportplane-data`.
-  - Zammad login/setup page reachable.
+  - Zammad pod status and API JSON (`/api/v1/getting_started`), with honest note that railsserver-only deployment does not serve web UI assets.
   - OpenBao health JSON.
   - Mailpit UI with captured local test email.
   - MinIO bucket/object proof.
   - Ollama host placement decision with GPU reasoning.
   - `BACKLOG.md` showing BL-106 accepted and BL-107+ planned.
   - `NEXT_ACTIONS.md` active-only queue with BL-107 as next.
-  - Cluster Web header showing DEV/MOCK DATA/local auth/postgres.
+  - Cluster Web header showing DEV/MOCK DATA/local auth/postgres (CORS fix applied and API rebuilt).
   - Call console and evidence bundle panels.
   - `WORKFLOW_TRUTH.md` and `BOUNDARY_MATRIX.md` showing services deployed but not integrated.
   - `KUBERNETES_SERVICE_CATALOG.md` updated.
@@ -48,7 +57,7 @@
   - Existing local/mock MVP on localhost:4110/3200 still works.
   - 20 unique screenshots, 0 duplicates, max-20 cap respected.
 - Type: infrastructure-and-browser-runtime-verification
-- as_of: 2026-04-29T17:15:00+02:00
+- as_of: 2026-04-29T17:45:00+02:00
 
 ## EV-2026-04-29-044 through EV-2026-04-29-058: BL-104/BL-105 Kubernetes app and PostgreSQL persistence foundation proof
 

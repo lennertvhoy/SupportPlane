@@ -12,7 +12,7 @@ and must be protected from quiet regression.
 - Scope: Local sandbox topology only. This freeze accepts Kubernetes manifests and running workloads for OpenBao, NATS JetStream, Mailpit, MinIO, and Zammad in the local Kind/Podman cluster, plus the documented decision to keep Ollama as a host-controlled service. It does not accept any SupportPlane real integration with these services.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
-- head: to_be_recorded_after_final_commit
+- head: to_be_recorded_after_reconciliation_commit
 - process_or_container:
   - Kind/Podman cluster `supportplane-local` with port-forwards
   - OpenBao pod in `supportplane-integrations`
@@ -42,8 +42,8 @@ and must be protected from quiet regression.
 - rebuilt_in_slice: true
 - duplicate_runtimes_checked: true
 - evidence_refs:
-  - EV-2026-04-29-059 through EV-2026-04-29-078
-- evidence_folder: output/playwright/session-106-bl106-selfhosted-service-topology-final/
+  - EV-2026-04-29-079 through EV-2026-04-29-098 (reconciled)
+- evidence_folder: output/playwright/session-107-bl106-evidence-reconciliation/
 - screenshot_count: 20
 - duplicate_screenshot_count: 0
 - regression_guard:
@@ -58,6 +58,7 @@ and must be protected from quiet regression.
   - Cluster app services must remain deployable via `kubectl apply -k infra/kubernetes/local-podman`.
 - known_limitations:
   - Zammad scheduler, worker, and websocket services are not deployed; only railsserver is running.
+  - Zammad web UI assets are not served in railsserver-only deployment (no nginx); API endpoints are reachable.
   - Zammad Elasticsearch is disabled; database search is used instead.
   - Ollama is host-controlled, not in-cluster.
   - All topology services use local dev placeholder credentials.

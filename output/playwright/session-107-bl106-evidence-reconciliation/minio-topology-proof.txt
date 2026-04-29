@@ -1,10 +1,3 @@
-=== MinIO Topology ===
-pod/minio-855cfdc549-grxrr   1/1     Running   0          19m
-service/minio      ClusterIP   10.96.155.116   <none>        9000/TCP,9001/TCP   19m
-deployment.apps/minio   1/1     1            1           19m
-replicaset.apps/minio-855cfdc549   1         1         1       19m
-persistentvolumeclaim/minio-data                 Bound    pvc-64d936df-cadc-488d-aaea-f34eaea08c0c   1Gi        RWO            standard       <unset>                 19m
-
 If you don't see a command prompt, try pressing enter.
 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
 

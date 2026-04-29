@@ -1,7 +1,1 @@
-=== Mailpit Topology ===
-pod/mailpit-6bc6cdfb55-4c26r       1/1     Running   0          19m
-service/mailpit           ClusterIP   10.96.180.37    <none>        1025/TCP,8025/TCP   19m
-deployment.apps/mailpit        1/1     1            1           19m
-replicaset.apps/mailpit-6bc6cdfb55       1         1         1       19m
-
 {"total":1,"unread":1,"count":1,"messages_count":1,"start":0,"tags":[],"messages":[{"ID":"GNgBfpUMa9B6P3M8VNh2x6","MessageID":"b366E6aufwNkM5GmTZS8q4@mailpit","Read":false,"From":{"Name":"","Address":"test@supportplane.local"},"To":[{"Name":"","Address":"recipient@supportplane.local"}],"Cc":[],"Bcc":[],"ReplyTo":[],"Subject":"BL-106 Topology Test","Created":"2026-04-29T15:05:56.519Z","Tags":[],"Size":518,"Attachments":0,"Snippet":"This is a BL-106 topology proof message."}]}

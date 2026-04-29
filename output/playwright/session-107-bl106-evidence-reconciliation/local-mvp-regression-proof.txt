@@ -1,0 +1,4 @@
+Local MVP API health:
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"2f4101ef6a18f094d8eba63d01d0c62c645b89e1","timestamp":"2026-04-29T15:45:47.944Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","note":"Mock-first ticket-aware API slice (BL-003)"}
+Local MVP Web (curl -I):
+200

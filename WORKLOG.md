@@ -4,6 +4,45 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-29 - BL-106 Evidence Reconciliation
+
+**Type:** evidence_repair
+**Status:** RECONCILED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** to_be_recorded_after_reconciliation_commit
+**Worktree:** clean_after_reconciliation_commit
+
+### Why reconciliation was needed
+
+The BL-106 final handoff claimed a clean evidence folder, but two screenshots were mismatched:
+- `02-cluster-web-header.png` showed a failed login screen instead of the cluster web header.
+- `03-zammad-page-proof.png` showed a generic `Loading...` page without actual Zammad proof.
+
+### What changed
+
+- Added `http://localhost:3300` to API CORS origins in `apps/api/src/main.ts`.
+- Rebuilt cluster API image `localhost/supportplane-api:local-k8s` with the CORS fix.
+- Loaded new image into Kind cluster `supportplane-local` and restarted API Deployment.
+- Verified cluster web login now succeeds and header shows DEV/MOCK DATA badge.
+- Captured fresh evidence in `output/playwright/session-107-bl106-evidence-reconciliation/`:
+  - 20 unique screenshots, 0 duplicates.
+  - Zammad proof now shows pod status + API JSON with honest note about railsserver-only asset limitation.
+  - Cluster web header now correctly shows logged-in state.
+- Deleted stale evidence folder `output/playwright/session-106-bl106-selfhosted-service-topology-final/`.
+- Updated `docs/EVIDENCE_LOG.md` to mark old entry superseded and add reconciled entry.
+
+### Verification
+
+- `curl -s http://localhost:4210/health` returns ok with current git head.
+- Browser login to `http://localhost:3300` succeeds as `operator@supportplane.local`.
+- Cluster web header shows DEV/MOCK DATA, API: localhost:4110, Auth: local · Store: postgres, Mock mode.
+- Zammad API `/api/v1/getting_started` returns JSON with `setup_done: false`.
+- All other topology services (OpenBao, NATS, Mailpit, MinIO) remain healthy.
+- Local MVP on localhost:4110/3200 still works.
+
+---
+
 ## 2026-04-29 - BL-106 Self-Hosted Service Topology
 
 **Type:** infrastructure_foundation

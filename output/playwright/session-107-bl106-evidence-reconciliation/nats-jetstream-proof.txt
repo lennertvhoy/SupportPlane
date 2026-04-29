@@ -1,9 +1,3 @@
-=== NATS JetStream Topology ===
-pod/nats-0                         1/1     Running   0          19m
-service/nats              ClusterIP   10.96.241.45    <none>        4222/TCP,8222/TCP   19m
-statefulset.apps/nats              1/1     19m
-persistentvolumeclaim/nats-jetstream-data       Bound    pvc-d1b13e35-d9f0-45be-aec8-d7b0cd032f4f   512Mi      RWO            standard       <unset>                 19m
-
 Information for Stream TEST_STREAM created 2026-04-29 15:05:37
 
               Subjects: test.*
@@ -55,8 +49,8 @@ Configuration:
 
 State:
 
-  Last Delivered Message: Consumer sequence: 1 Stream sequence: 1 Last delivery: 4m15s ago
-    Acknowledgment Floor: Consumer sequence: 1 Stream sequence: 1 Last Ack: 4m15s ago
+  Last Delivered Message: Consumer sequence: 1 Stream sequence: 1 Last delivery: 40m12s ago
+    Acknowledgment Floor: Consumer sequence: 1 Stream sequence: 1 Last Ack: 40m12s ago
         Outstanding Acks: 0 out of maximum 1,000
     Redelivered Messages: 0
     Unprocessed Messages: 0

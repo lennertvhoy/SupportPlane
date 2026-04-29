@@ -437,22 +437,22 @@ current_state:
   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-106-bl106-selfhosted-service-topology-final/
+    latest_folder: output/playwright/session-107-bl106-evidence-reconciliation/
     latest_screenshot_count: 20
     latest_duplicate_count: 0
     cli_artifacts:
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/proof-state-mapping.md
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/screenshot-md5s.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/cluster-baseline-proof.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/zammad-topology-proof.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/openbao-topology-proof.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/nats-jetstream-proof.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/mailpit-topology-proof.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/minio-topology-proof.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/ollama-placement-decision.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/supportplane-non-integration-proof.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/local-mvp-regression-proof.txt
-      - output/playwright/session-106-bl106-selfhosted-service-topology-final/roadmap-summary.json
+      - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md
+      - output/playwright/session-107-bl106-evidence-reconciliation/screenshot-md5s.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/cluster-baseline-proof.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/zammad-topology-proof.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/openbao-topology-proof.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/nats-jetstream-proof.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/mailpit-topology-proof.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/minio-topology-proof.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/ollama-placement-decision.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/supportplane-non-integration-proof.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/local-mvp-regression-proof.txt
+      - output/playwright/session-107-bl106-evidence-reconciliation/roadmap-summary.json
 
   environment:
     host:

@@ -1,0 +1,43 @@
+NAME                               READY   STATUS    RESTARTS   AGE
+pod/mailpit-6bc6cdfb55-4c26r       1/1     Running   0          55m
+pod/nats-0                         1/1     Running   0          55m
+pod/openbao-5bc456ddfc-ks44c       1/1     Running   0          55m
+pod/zammad-0                       1/1     Running   0          46m
+pod/zammad-postgres-0              1/1     Running   0          55m
+pod/zammad-redis-bb685c5fb-zrxz2   1/1     Running   0          55m
+
+NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+service/mailpit           ClusterIP   10.96.180.37    <none>        1025/TCP,8025/TCP   55m
+service/nats              ClusterIP   10.96.241.45    <none>        4222/TCP,8222/TCP   55m
+service/openbao           ClusterIP   10.96.35.167    <none>        8200/TCP            55m
+service/zammad            ClusterIP   10.96.245.120   <none>        3000/TCP            55m
+service/zammad-postgres   ClusterIP   10.96.68.79     <none>        5432/TCP            55m
+service/zammad-redis      ClusterIP   10.96.42.201    <none>        6379/TCP            55m
+
+NAME                           READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/mailpit        1/1     1            1           55m
+deployment.apps/openbao        1/1     1            1           55m
+deployment.apps/zammad-redis   1/1     1            1           55m
+
+NAME                                     DESIRED   CURRENT   READY   AGE
+replicaset.apps/mailpit-6bc6cdfb55       1         1         1       55m
+replicaset.apps/openbao-5bc456ddfc       1         1         1       55m
+replicaset.apps/zammad-redis-bb685c5fb   1         1         1       55m
+
+NAME                               READY   AGE
+statefulset.apps/nats              1/1     55m
+statefulset.apps/zammad            1/1     55m
+statefulset.apps/zammad-postgres   1/1     55m
+
+NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/nats-jetstream-data       Bound    pvc-d1b13e35-d9f0-45be-aec8-d7b0cd032f4f   512Mi      RWO            standard       <unset>                 55m
+persistentvolumeclaim/openbao-data              Bound    pvc-a64edaea-5235-4146-98b2-fa357bf6be96   256Mi      RWO            standard       <unset>                 55m
+persistentvolumeclaim/zammad-postgres-data      Bound    pvc-c343618e-99b9-4888-8764-db93dc780f14   512Mi      RWO            standard       <unset>                 55m
+persistentvolumeclaim/zammad-storage-zammad-0   Bound    pvc-723541df-734e-41e1-973a-52a3a686613b   512Mi      RWO            standard       <unset>                 55m
+
+---
+Zammad API /api/v1/getting_started:
+{"setup_done":false,"import_mode":false,"import_backend":"","system_online_service":false}
+---
+Zammad HTTP status (curl -I):
+200

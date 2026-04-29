@@ -1,0 +1,26 @@
+BL-106 Final Boundary Proof
+
+Kubernetes cluster: YES (kind-supportplane-local)
+API in cluster: YES (rebuilt with CORS fix for localhost:3300)
+Web in cluster: YES
+Worker in cluster: YES
+PostgreSQL in cluster: YES (PVC Bound)
+Zammad topology: YES (Running, HTTP 200, API reachable)
+Zammad read connector: NO (BL-107)
+Zammad writeback: NO (mock-only)
+Ollama topology/placement: Host-controlled (documented)
+Ollama SupportPlane provider: NO (BL-108)
+OpenBao topology: YES (Running, health OK)
+OpenBao credential resolver: NO (BL-109)
+NATS JetStream topology: YES (stream+consumer verified)
+NATS worker bridge: NO (BL-110)
+Mailpit topology: YES (SMTP capture verified)
+SupportPlane email sending: NO
+MinIO topology: YES (bucket+object verified)
+MinIO evidence persistence: NO (BL-112)
+Real secrets: NO (local placeholders only)
+Real network egress: BLOCKED
+PBX/CTI: NO
+Endpoint/Tauri/OCR: NO
+
+No SupportPlane real integration with any topology service is enabled.
