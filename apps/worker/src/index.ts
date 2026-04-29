@@ -4,6 +4,7 @@ const API_URL = process.env['SUPPORTPLANE_API_URL'] ?? 'http://localhost:4110';
 const WORKER_ID = process.env['SUPPORTPLANE_WORKER_ID'] ?? `local-worker-${process.pid}`;
 const ADMIN_EMAIL = process.env['SUPPORTPLANE_WORKER_EMAIL'] ?? 'admin@supportplane.local';
 const ADMIN_PASSWORD = process.env['SUPPORTPLANE_WORKER_PASSWORD'] ?? 'supportplane-demo';
+const SERVICE_TOKEN = process.env['SUPPORTPLANE_INTERNAL_SERVICE_TOKEN'];
 const QUEUE_BACKEND = process.env['SUPPORTPLANE_QUEUE_BACKEND'] ?? 'postgres-local-outbox';
 const NATS_STREAM = process.env['NATS_OUTBOX_STREAM'] ?? 'SUPPORTPLANE_OUTBOX';
 const NATS_SUBJECT = process.env['NATS_OUTBOX_SUBJECT'] ?? 'supportplane.outbox.ready';
@@ -11,7 +12,21 @@ const NATS_CONSUMER = process.env['NATS_OUTBOX_CONSUMER'] ?? 'SUPPORTPLANE_WORKE
 
 type Command = 'process-once' | 'loop' | 'status';
 
+function getHeaders(tenantId?: string): Record<string, string> {
+  const headers: Record<string, string> = { 'content-type': 'application/json' };
+  if (SERVICE_TOKEN && SERVICE_TOKEN.length >= 16) {
+    headers['x-supportplane-service-token'] = SERVICE_TOKEN;
+    headers['x-service-actor'] = WORKER_ID;
+    headers['x-tenant-id'] = tenantId ?? 'dev-tenant';
+  }
+  return headers;
+}
+
 async function login(): Promise<string> {
+  // Prefer service token auth; fall back to local auth login only if no service token.
+  if (SERVICE_TOKEN && SERVICE_TOKEN.length >= 16) {
+    return 'service-token-auth';
+  }
   const response = await fetch(`${API_URL}/auth/local/login`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -25,10 +40,14 @@ async function login(): Promise<string> {
   return cookie;
 }
 
-async function apiPost<T>(path: string, cookie: string, body?: Record<string, unknown>): Promise<T> {
+async function apiPost<T>(path: string, _cookie: string, body?: Record<string, unknown>, tenantId?: string): Promise<T> {
+  const headers = getHeaders(tenantId);
+  if (!_cookie.startsWith('service-token-auth')) {
+    headers['cookie'] = _cookie;
+  }
   const response = await fetch(`${API_URL}${path}`, {
     method: 'POST',
-    headers: { 'content-type': 'application/json', cookie },
+    headers,
     body: JSON.stringify(body ?? {}),
   });
   const text = await response.text();
@@ -36,8 +55,12 @@ async function apiPost<T>(path: string, cookie: string, body?: Record<string, un
   return JSON.parse(text) as T;
 }
 
-async function apiGet<T>(path: string, cookie: string): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, { headers: { cookie } });
+async function apiGet<T>(path: string, _cookie: string, tenantId?: string): Promise<T> {
+  const headers = getHeaders(tenantId);
+  if (!_cookie.startsWith('service-token-auth')) {
+    headers['cookie'] = _cookie;
+  }
+  const response = await fetch(`${API_URL}${path}`, { headers });
   const text = await response.text();
   if (!response.ok) throw new Error(`${path} failed with HTTP ${response.status}: ${text}`);
   return JSON.parse(text) as T;

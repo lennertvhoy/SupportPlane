@@ -42,17 +42,18 @@ export const ActionOutboxAttemptState = z.enum([
 ]);
 export type ActionOutboxAttemptState = z.infer<typeof ActionOutboxAttemptState>;
 
-export const ActionOutboxDeliveryMode = z.enum(['mock']);
+export const ActionOutboxDeliveryMode = z.enum(['mock', 'sandbox']);
 export type ActionOutboxDeliveryMode = z.infer<typeof ActionOutboxDeliveryMode>;
 
 export const ActionOutboxSafetyFlags = z.object({
-  mode: z.literal('mock').default('mock'),
-  realNetwork: z.literal(false).default(false),
-  writebackEnabled: z.literal(false).default(false),
-  externalWriteAttempted: z.literal(false).default(false),
+  mode: z.enum(['mock', 'sandbox']).default('mock'),
+  realNetwork: z.boolean().default(false),
+  writebackEnabled: z.boolean().default(false),
+  externalWriteAttempted: z.boolean().default(false),
   noSecrets: z.boolean().default(true),
   noRawMedia: z.boolean().default(true),
   localMockOnly: z.boolean().default(true),
+  sandboxOnly: z.boolean().default(false),
 });
 export type ActionOutboxSafetyFlags = z.infer<typeof ActionOutboxSafetyFlags>;
 

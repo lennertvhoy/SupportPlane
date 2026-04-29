@@ -1,3 +1,4 @@
+import type { InternalNoteWritebackResult as InternalNoteWritebackResultShape } from '@supportplane/contracts';
 export {
   TicketingAdapter,
   TicketingAdapterType,
@@ -27,7 +28,6 @@ export {
   type ConnectorTestResult as ConnectorTestResultShape,
   type ConnectorError as ConnectorErrorShape,
   type InternalNoteDraft as InternalNoteDraftShape,
-  type InternalNoteWritebackResult as InternalNoteWritebackResultShape,
 } from '@supportplane/contracts';
 
 /**
@@ -38,7 +38,7 @@ export interface TicketingAdapterDriver {
   readonly adapterType: string;
   connect(config: Record<string, unknown>): Promise<void>;
   getTicket(tenantId: string, externalId: string): Promise<unknown>;
-  writeInternalNote(ticketId: string, body: string): Promise<unknown>;
+  writeInternalNote(ticketId: string, body: string): Promise<InternalNoteWritebackResultShape>;
   getAdapterMetadata?(): Record<string, unknown>;
 }
 

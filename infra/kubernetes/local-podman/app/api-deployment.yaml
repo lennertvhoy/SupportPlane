@@ -40,6 +40,11 @@ spec:
                 secretKeyRef:
                   name: app-secret-local
                   key: OPENBAO_TOKEN
+            - name: SUPPORTPLANE_INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret-local
+                  key: SUPPORTPLANE_INTERNAL_SERVICE_TOKEN
           readinessProbe:
             httpGet:
               path: /health

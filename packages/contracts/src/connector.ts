@@ -92,7 +92,7 @@ export const InternalNoteWritebackResult = z.object({
   success: z.boolean(),
   externalArticleId: z.string().max(256).optional(),
   error: ConnectorError.optional(),
-  metadata: z.record(JsonValue).default({}),
+  metadata: z.record(JsonValue).optional(),
 });
 export type InternalNoteWritebackResult = z.infer<typeof InternalNoteWritebackResult>;
 

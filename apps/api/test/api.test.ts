@@ -3371,7 +3371,7 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       updatedAt: new Date().toISOString(),
       policyVersion: 1,
       lastValidationStatus: 'valid' as const,
-      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true },
+      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true, sandboxOnly: false },
       createdAt: new Date().toISOString(),
     };
     store.saveDeliveryPolicy(policy);
@@ -3466,7 +3466,7 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       updatedAt: new Date().toISOString(),
       policyVersion: 1,
       lastValidationStatus: 'valid' as const,
-      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true },
+      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true, sandboxOnly: false },
       createdAt: new Date().toISOString(),
     };
     store.saveDeliveryPolicy(policy);

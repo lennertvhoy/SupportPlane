@@ -6,6 +6,7 @@ export const DeliveryPolicySafetyFlags = z.object({
   externalWriteAllowed: z.boolean().default(false),
   mockOnly: z.boolean().default(true),
   localDevOnly: z.boolean().default(true),
+  sandboxOnly: z.boolean().default(false),
 });
 
 export const RetryPolicyConfig = z.object({
@@ -68,9 +69,10 @@ export const DeliveryPolicyDecision = z.object({
     'blocked_by_writeback_disabled',
     'blocked_by_external_write_disallowed',
     'mock_only_allowed',
+    'sandbox_allowed',
   ]),
   reason: z.string(),
-  mode: z.enum(['mock', 'dry_run', 'real']).default('mock'),
+  mode: z.enum(['mock', 'dry_run', 'real', 'sandbox']).default('mock'),
   realNetworkAllowed: z.boolean().default(false),
   writebackEnabled: z.boolean().default(false),
   externalWriteAllowed: z.boolean().default(false),
@@ -105,7 +107,7 @@ export const DeliveryPolicyUpdateRequest = z.object({
 export type DeliveryPolicyUpdateRequest = z.infer<typeof DeliveryPolicyUpdateRequest>;
 
 export const ConnectorReadinessResult = z.object({
-  mode: z.enum(['mock', 'real']).default('mock'),
+  mode: z.enum(['mock', 'real', 'sandbox']).default('mock'),
   readyForMockDelivery: z.boolean(),
   readyForRealWriteback: z.boolean().default(false),
   realNetwork: z.boolean().default(false),

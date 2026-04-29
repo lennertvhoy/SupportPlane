@@ -24,11 +24,45 @@ function readBearer(req: Request): string | undefined {
   return authorization.slice('Bearer '.length);
 }
 
+function readServiceToken(req: Request): string | undefined {
+  const header = req.headers['x-supportplane-service-token'];
+  return typeof header === 'string' ? header : undefined;
+}
+
+function serviceTokenMatches(token: string | undefined): boolean {
+  const expected = process.env['SUPPORTPLANE_INTERNAL_SERVICE_TOKEN'];
+  if (!expected || expected.length < 16) return false;
+  if (!token || token.length < 16) return false;
+  // Constant-time comparison is not required for local sandbox; length check is basic guard.
+  return token === expected;
+}
+
 @Injectable()
 export class CurrentIdentityMiddleware implements NestMiddleware {
   constructor(@Inject(AuthService) private readonly authService: AuthService) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
+    const serviceToken = readServiceToken(req);
+    if (serviceToken && serviceTokenMatches(serviceToken)) {
+      const tenantId = req.headers['x-tenant-id'];
+      const serviceActor = req.headers['x-service-actor'];
+      const serviceUserId = req.headers['x-service-user-id'];
+      const effectiveTenantId = typeof tenantId === 'string' ? tenantId : 'dev-tenant';
+      // Use a seeded admin user for audit FK compatibility; allow override via header.
+      const effectiveUserId = typeof serviceUserId === 'string' ? serviceUserId : (effectiveTenantId === 'dev-tenant' ? 'dev-admin' : 'dev-admin');
+      (req as Request & { currentIdentity: CurrentIdentity }).currentIdentity = {
+        tenantId: effectiveTenantId,
+        userId: effectiveUserId,
+        userRole: 'admin',
+        roles: ['admin'],
+        permissions: permissionsForRoles(['admin']),
+        authMode: 'service',
+        serviceActor: typeof serviceActor === 'string' ? serviceActor : 'supportplane-worker',
+      };
+      next();
+      return;
+    }
+
     if (authMode() === 'dev') {
       const tenantId = req.headers['x-tenant-id'];
       const userId = req.headers['x-user-id'];

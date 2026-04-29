@@ -103,6 +103,7 @@ export const AuditEventType = z.enum([
   'outbox_item_attempted',
   'outbox_processing_started',
   'outbox_processing_succeeded',
+  'outbox_sandbox_writeback_succeeded',
   'outbox_processing_failed',
   'outbox_retry_scheduled',
   'outbox_retry_requested',

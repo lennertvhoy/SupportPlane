@@ -39,5 +39,10 @@ spec:
                 secretKeyRef:
                   name: app-secret-local
                   key: SUPPORTPLANE_WORKER_PASSWORD
+            - name: SUPPORTPLANE_INTERNAL_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret-local
+                  key: SUPPORTPLANE_INTERNAL_SERVICE_TOKEN
           # Readiness probe omitted: worker has no HTTP health endpoint yet.
           # The pod is considered ready when the container starts.

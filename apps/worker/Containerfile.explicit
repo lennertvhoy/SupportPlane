@@ -1,0 +1,43 @@
+# Explicit-copy local sandbox image for SupportPlane Worker
+# Copies only files needed at runtime to avoid huge COPY . .
+FROM docker.io/library/node:22-slim
+WORKDIR /app
+
+# Copy root and workspace package manifests for deterministic install
+COPY package.json package-lock.json ./
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY apps/worker/package.json apps/worker/
+COPY packages/contracts/package.json packages/contracts/
+COPY packages/policy/package.json packages/policy/
+COPY packages/connectors/package.json packages/connectors/
+COPY packages/ai/package.json packages/ai/
+COPY packages/audit/package.json packages/audit/
+COPY packages/ui/package.json packages/ui/
+
+# Install dependencies (layer cache hit when package.json unchanged)
+RUN npm ci
+
+# Copy pre-built dist and essential source/config files only
+COPY apps/api/dist apps/api/dist
+COPY apps/worker/dist apps/worker/dist
+COPY apps/worker/package.json apps/worker/package.json
+COPY packages/contracts/dist packages/contracts/dist
+COPY packages/contracts/package.json packages/contracts/package.json
+COPY packages/policy/dist packages/policy/dist
+COPY packages/policy/package.json packages/policy/package.json
+COPY packages/connectors/dist packages/connectors/dist
+COPY packages/connectors/package.json packages/connectors/package.json
+COPY packages/ai/dist packages/ai/dist
+COPY packages/ai/package.json packages/ai/package.json
+COPY packages/audit/dist packages/audit/dist
+COPY packages/audit/package.json packages/audit/package.json
+COPY packages/ui/dist packages/ui/dist
+COPY packages/ui/package.json packages/ui/package.json
+COPY prisma prisma
+COPY tsconfig.json ./
+
+# Runtime environment
+ENV NODE_ENV=production
+WORKDIR /app/apps/worker
+CMD ["node", "dist/src/index.js", "loop"]

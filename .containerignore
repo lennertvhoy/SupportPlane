@@ -1,0 +1,34 @@
+# Exclude large directories not needed inside the container
+node_modules
+!node_modules/.prisma
+.git
+.gitignore
+.playwright-cli
+.playwright-mcp
+output
+infra
+scripts
+fixtures
+docs
+prompts
+handoffs
+*.md
+!README.md
+!AGENTS.md
+
+# Exclude local env files
+.env
+.env.*
+
+# Exclude test files (unless needed)
+*.test.ts
+*.test.js
+*.test.tsx
+
+# Do not exclude dist — pre-built artifacts are required when skipping RUN npm run build
+# dist
+
+# Exclude large tar archives and extracted artifacts
+*.tar
+*.tar.zst
+ollama-*

@@ -1,4 +1,4 @@
-export type AuthMode = 'dev' | 'local';
+export type AuthMode = 'dev' | 'local' | 'service';
 
 export interface CurrentIdentity {
   tenantId: string;
@@ -11,6 +11,7 @@ export interface CurrentIdentity {
   roles: string[];
   permissions: string[];
   authMode: AuthMode;
+  serviceActor?: string;
 }
 
 export type DevIdentity = CurrentIdentity;

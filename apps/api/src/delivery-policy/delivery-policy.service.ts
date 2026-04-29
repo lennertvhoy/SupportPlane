@@ -47,6 +47,7 @@ const HARDCODED_DEFAULT_DECISION: DeliveryPolicyDecision = {
     externalWriteAllowed: false,
     mockOnly: true,
     localDevOnly: true,
+    sandboxOnly: false,
   },
 };
 
@@ -204,12 +205,14 @@ export class DeliveryPolicyService {
     actionIsApproved = false,
     actionIsReviewed = false
   ): DeliveryPolicyDecision {
+    const sandboxEnabled = process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true';
     const safetyFlags = {
       realNetworkAllowed: false,
       writebackEnabled: false,
       externalWriteAllowed: false,
       mockOnly: true,
       localDevOnly: true,
+      sandboxOnly: false,
     };
 
     if (policy.killSwitch) {
@@ -341,6 +344,29 @@ export class DeliveryPolicyService {
     }
 
     // All gates passed
+    const allowSandbox = sandboxEnabled && !policy.mockOnlyEnforced;
+    if (allowSandbox) {
+      return {
+        allowed: true,
+        decision: 'sandbox_allowed',
+        reason: 'Sandbox delivery allowed under current policy. No production writeback.',
+        mode: 'sandbox',
+        realNetworkAllowed: true,
+        writebackEnabled: true,
+        externalWriteAllowed: false,
+        requiredApproverRole: null,
+        policyVersion: policy.policyVersion,
+        policyId: policy.id,
+        safetyFlags: {
+          ...safetyFlags,
+          realNetworkAllowed: true,
+          writebackEnabled: true,
+          mockOnly: false,
+          sandboxOnly: true,
+        },
+      };
+    }
+
     return {
       allowed: true,
       decision: policy.mockOnlyEnforced ? 'mock_only_allowed' : 'allowed',
