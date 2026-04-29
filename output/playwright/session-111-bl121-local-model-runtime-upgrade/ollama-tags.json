@@ -1,0 +1,38 @@
+{
+    "models": [
+        {
+            "name": "qwen3.6:27b",
+            "model": "qwen3.6:27b",
+            "modified_at": "2026-04-29T22:27:56.205586181+02:00",
+            "size": 17420432739,
+            "digest": "a50eda8ed977ab48a12431878896b27ffd5cef552c17af3317d9623b939a7f1e",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": "qwen35",
+                "families": [
+                    "qwen35"
+                ],
+                "parameter_size": "27.8B",
+                "quantization_level": "Q4_K_M"
+            }
+        },
+        {
+            "name": "gemma4:e4b",
+            "model": "gemma4:e4b",
+            "modified_at": "2026-04-29T22:21:28.839193008+02:00",
+            "size": 9608350718,
+            "digest": "c6eb396dbd5992bbe3f5cdb947e8bbc0ee413d7c17e2beaae69f5d569cf982eb",
+            "details": {
+                "parent_model": "",
+                "format": "gguf",
+                "family": "gemma4",
+                "families": [
+                    "gemma4"
+                ],
+                "parameter_size": "8.0B",
+                "quantization_level": "Q4_K_M"
+            }
+        }
+    ]
+}

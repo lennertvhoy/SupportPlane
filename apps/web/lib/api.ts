@@ -98,7 +98,7 @@ export interface TicketReference {
 
 export interface DraftSuggestionResponse {
   draft: string;
-  provider: 'mock' | 'ollama';
+  provider: 'mock' | 'ollama' | 'lmstudio';
   model: string;
   prompt: {
     id: string;
@@ -114,6 +114,8 @@ export interface DraftSuggestionResponse {
     latencyMs?: number;
     placeholder: boolean;
     providerMode?: 'mock' | 'local';
+    runtime?: 'mock' | 'ollama' | 'lmstudio';
+    runtimeBaseUrlRedacted?: string;
     fallbackUsed?: boolean;
     noCloudCall?: true;
   };
@@ -128,6 +130,7 @@ export interface DraftSuggestionResponse {
     writebackAllowed: false;
     autonomousSend?: false;
     redactionApplied?: boolean;
+    runtime?: 'mock' | 'ollama' | 'lmstudio';
   };
   generatedAt: string;
 }
@@ -158,7 +161,7 @@ export interface GreetingSuggestionResponse {
       generatedAt: string;
     };
   };
-  provider: 'mock' | 'ollama';
+  provider: 'mock' | 'ollama' | 'lmstudio';
   model: string;
   prompt: {
     id: string;
@@ -1020,7 +1023,7 @@ export const api = {
     sessionId: string,
     body: {
       operatorInstructions?: string;
-      modelSelection?: { provider?: 'mock' | 'ollama'; model?: string };
+      modelSelection?: { provider?: 'mock' | 'ollama' | 'lmstudio'; model?: string };
     } = {},
     identity?: DevIdentity
   ) =>
@@ -1035,7 +1038,7 @@ export const api = {
     body: {
       callEventId?: string;
       tone?: 'professional' | 'friendly' | 'concise';
-      modelSelection?: { provider?: 'mock' | 'ollama'; model?: string };
+      modelSelection?: { provider?: 'mock' | 'ollama' | 'lmstudio'; model?: string };
     } = {},
     identity?: DevIdentity
   ) =>

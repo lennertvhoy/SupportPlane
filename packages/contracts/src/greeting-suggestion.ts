@@ -58,7 +58,7 @@ export const GreetingSuggestionRequest = z.object({
   sessionTitle: z.string().optional(),
   modelSelection: z
     .object({
-      provider: z.enum(['mock', 'ollama']).default('mock'),
+      provider: z.enum(['mock', 'ollama', 'lmstudio']).default('mock'),
       model: z.string().min(1).max(128).default('mock-greeting-v1'),
     })
     .optional(),
@@ -69,7 +69,7 @@ export type GreetingSuggestionRequest = z.infer<
 
 export const GreetingSuggestionResponse = z.object({
   suggestion: GreetingSuggestion,
-  provider: z.enum(['mock', 'ollama']),
+  provider: z.enum(['mock', 'ollama', 'lmstudio']),
   model: z.string().min(1).max(128),
   prompt: z.object({
     id: z.string().min(1).max(128),

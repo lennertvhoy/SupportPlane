@@ -100,9 +100,17 @@ export function DraftNotePanel({
             <div className="mt-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-1.5 text-xs text-amber-300">
                 <Bot size={13} />
-                {suggestion?.usage.fallbackUsed
-                  ? 'Ollama local / deterministic fallback, review required'
-                  : 'Ollama local / real host call, review required'}
+                {suggestion?.provider === 'lmstudio'
+                  ? suggestion.usage.fallbackUsed
+                    ? 'LM Studio local / deterministic fallback, review required'
+                    : 'LM Studio local / real host call, review required'
+                  : suggestion?.provider === 'ollama'
+                    ? suggestion.usage.fallbackUsed
+                      ? 'Ollama local / deterministic fallback, review required'
+                      : 'Ollama local / real host call, review required'
+                    : suggestion?.usage.fallbackUsed
+                      ? 'Mock / deterministic fallback, review required'
+                      : 'Mock / no real call, review required'}
               </div>
               <button
                 type="button"

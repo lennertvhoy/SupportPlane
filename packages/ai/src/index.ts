@@ -19,7 +19,7 @@ export type { GreetingSuggestionRequestShape, GreetingSuggestionResponseShape };
 
 export const AI_VERSION = '0.1.0';
 
-export const AiProviderId = z.enum(['mock', 'ollama']);
+export const AiProviderId = z.enum(['mock', 'ollama', 'lmstudio']);
 export type AiProviderId = z.infer<typeof AiProviderId>;
 
 export const ModelSelection = z.object({
@@ -49,6 +49,8 @@ export const ModelUsageMetadata = z.object({
   latencyMs: z.number().int().nonnegative().optional(),
   placeholder: z.boolean().default(true),
   providerMode: z.enum(['mock', 'local']).default('mock'),
+  runtime: z.enum(['mock', 'ollama', 'lmstudio']).default('mock'),
+  runtimeBaseUrlRedacted: z.string().optional(),
   fallbackUsed: z.boolean().default(false),
   noCloudCall: z.literal(true).default(true),
 });
@@ -65,6 +67,7 @@ export const AiSafetyMetadata = z.object({
   writebackAllowed: z.literal(false),
   autonomousSend: z.literal(false).default(false),
   redactionApplied: z.boolean().default(true),
+  runtime: z.enum(['mock', 'ollama', 'lmstudio']).default('mock'),
 });
 export type AiSafetyMetadata = z.infer<typeof AiSafetyMetadata>;
 
@@ -178,6 +181,7 @@ export class MockAiProvider implements AiProvider {
         latencyMs: 0,
         placeholder: true,
         providerMode: 'mock',
+        runtime: 'mock',
         fallbackUsed: false,
         noCloudCall: true,
       },
@@ -192,6 +196,7 @@ export class MockAiProvider implements AiProvider {
         writebackAllowed: false,
         autonomousSend: false,
         redactionApplied: true,
+        runtime: 'mock',
       },
       generatedAt: new Date().toISOString(),
     });
@@ -338,6 +343,8 @@ export class OllamaAiProvider implements AiProvider {
           latencyMs: Date.now() - start,
           placeholder: false,
           providerMode: 'local',
+          runtime: 'ollama',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
           fallbackUsed: false,
           noCloudCall: true,
         },
@@ -352,6 +359,7 @@ export class OllamaAiProvider implements AiProvider {
           writebackAllowed: false,
           autonomousSend: false,
           redactionApplied: true,
+          runtime: 'ollama',
         },
         generatedAt: requestedAt,
       });
@@ -369,6 +377,8 @@ export class OllamaAiProvider implements AiProvider {
           latencyMs: Date.now() - start,
           placeholder: true,
           providerMode: 'local',
+          runtime: 'ollama',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
           fallbackUsed: true,
           noCloudCall: true,
         },
@@ -383,6 +393,7 @@ export class OllamaAiProvider implements AiProvider {
           writebackAllowed: false,
           autonomousSend: false,
           redactionApplied: true,
+          runtime: 'ollama',
         },
         generatedAt: requestedAt,
       });
@@ -426,19 +437,199 @@ class FetchOllamaClient implements OllamaClient {
   }
 }
 
+export interface LmStudioClient {
+  generate(input: { baseUrl: string; model: string; prompt: string; timeoutMs: number }): Promise<string>;
+}
+
+export interface LmStudioAiProviderOptions {
+  baseUrl: string;
+  model: string;
+  timeoutMs?: number;
+  fallbackEnabled?: boolean;
+  client?: LmStudioClient;
+}
+
+class FetchLmStudioClient implements LmStudioClient {
+  async generate(input: { baseUrl: string; model: string; prompt: string; timeoutMs: number }): Promise<string> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), input.timeoutMs);
+    try {
+      const response = await fetch(`${input.baseUrl.replace(/\/$/, '')}/chat/completions`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: input.model,
+          messages: [
+            { role: 'system', content: 'You are SupportPlane local AI. Draft concise internal support notes only.' },
+            { role: 'user', content: input.prompt },
+          ],
+          stream: false,
+        }),
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new Error(`LM Studio HTTP ${response.status}`);
+      }
+      const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+      const content = data.choices?.[0]?.message?.content?.trim();
+      if (!content) {
+        throw new Error('LM Studio returned an empty response');
+      }
+      return content;
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+}
+
+export class LmStudioAiProvider implements AiProvider {
+  readonly id = 'lmstudio' as const;
+  private readonly prompt: PromptTemplate = {
+    id: 'support-note-draft',
+    version: 'lmstudio-local-v1',
+    purpose: 'Draft a reviewable internal support note from redacted local SupportPlane context via LM Studio.',
+  };
+  private readonly baseUrl: string;
+  private readonly model: string;
+  private readonly timeoutMs: number;
+  private readonly fallbackEnabled: boolean;
+  private readonly client: LmStudioClient;
+
+  constructor(options: LmStudioAiProviderOptions) {
+    this.baseUrl = options.baseUrl.replace(/\/$/, '');
+    this.model = options.model;
+    this.timeoutMs = options.timeoutMs ?? 15000;
+    this.fallbackEnabled = options.fallbackEnabled ?? true;
+    this.client = options.client ?? new FetchLmStudioClient();
+  }
+
+  async generateDraft(input: GenerateDraftRequest): Promise<GenerateDraftResponse> {
+    const request = GenerateDraftRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const selectedModel = selection.model === 'mock-support-note-v1' ? this.model : selection.model;
+    const redactedContext = redactAiContext({
+      session: request.session,
+      ticketReferences: request.ticketReferences,
+      contextPackets: request.contextPackets,
+      operatorInstructions: request.operatorInstructions ?? '',
+    });
+    const contextHash = computeContextHash({ ...redactedContext, prompt: this.prompt });
+    const requestedAt = new Date().toISOString();
+    const start = Date.now();
+
+    try {
+      const draft = await this.client.generate({
+        baseUrl: this.baseUrl,
+        model: selectedModel,
+        prompt: buildOllamaPrompt(redactedContext),
+        timeoutMs: this.timeoutMs,
+      });
+      return GenerateDraftResponse.parse({
+        draft: labelLmStudioDraft(draft, false),
+        provider: this.id,
+        model: selectedModel,
+        prompt: this.prompt,
+        contextHash,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: false,
+          providerMode: 'local',
+          runtime: 'lmstudio',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: false,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: false,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: true,
+          fallbackUsed: false,
+          policyChecks: ['lmstudio_local_provider', 'redaction_before_provider_call', 'review_required', 'writeback_disabled'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'lmstudio',
+        },
+        generatedAt: requestedAt,
+      });
+    } catch (error) {
+      if (!this.fallbackEnabled) {
+        throw error;
+      }
+      return GenerateDraftResponse.parse({
+        draft: labelLmStudioDraft(buildMockDraft(request.session, request.ticketReferences, request.contextPackets, request.operatorInstructions), true),
+        provider: this.id,
+        model: selectedModel,
+        prompt: this.prompt,
+        contextHash,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: true,
+          providerMode: 'local',
+          runtime: 'lmstudio',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: true,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: true,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: false,
+          fallbackUsed: true,
+          policyChecks: ['lmstudio_unavailable_deterministic_fallback', 'redaction_before_provider_call', 'review_required', 'writeback_disabled'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'lmstudio',
+        },
+        generatedAt: requestedAt,
+      });
+    }
+  }
+
+  async generateGreeting(input: GreetingSuggestionRequest): Promise<GreetingSuggestionResponse> {
+    return new MockAiProvider().generateGreeting({
+      ...input,
+      modelSelection: { provider: 'mock', model: 'mock-greeting-v1' },
+    });
+  }
+}
+
 export function createDefaultModelGateway(): ModelGateway {
   const providers: AiProvider[] = [new MockAiProvider()];
-  const enabled = process.env['OLLAMA_ENABLED'] === 'true';
-  const baseUrl = process.env['OLLAMA_BASE_URL'];
-  const model = process.env['OLLAMA_MODEL'] ?? 'llama3.1:8b';
-  if (enabled && baseUrl) {
-    providers.push(new OllamaAiProvider({
-      baseUrl,
-      model,
-      timeoutMs: Number(process.env['OLLAMA_TIMEOUT_MS'] ?? '15000'),
-      fallbackEnabled: process.env['OLLAMA_FALLBACK_ENABLED'] !== 'false',
-    }));
+  const providerEnv: string = process.env['SUPPORTPLANE_AI_PROVIDER'] ?? (process.env['OLLAMA_ENABLED'] === 'true' ? 'ollama' : 'mock');
+  const localRuntime: string = process.env['SUPPORTPLANE_AI_LOCAL_RUNTIME'] ?? providerEnv;
+
+  if (localRuntime === 'ollama' || providerEnv === 'ollama') {
+    const baseUrl = process.env['OLLAMA_BASE_URL'];
+    const model = process.env['OLLAMA_MODEL'] ?? 'llama3.1:8b';
+    if (baseUrl) {
+      providers.push(new OllamaAiProvider({
+        baseUrl,
+        model,
+        timeoutMs: Number(process.env['OLLAMA_TIMEOUT_MS'] ?? '15000'),
+        fallbackEnabled: process.env['OLLAMA_FALLBACK_ENABLED'] !== 'false',
+      }));
+    }
   }
+
+  if (localRuntime === 'lmstudio' || providerEnv === 'lmstudio') {
+    const baseUrl = process.env['LMSTUDIO_BASE_URL'];
+    const model = process.env['LMSTUDIO_MODEL'] ?? 'local-model';
+    if (baseUrl) {
+      providers.push(new LmStudioAiProvider({
+        baseUrl,
+        model,
+        timeoutMs: Number(process.env['LMSTUDIO_TIMEOUT_MS'] ?? '15000'),
+        fallbackEnabled: process.env['LMSTUDIO_FALLBACK_ENABLED'] !== 'false',
+      }));
+    }
+  }
+
   return new ModelGateway(providers);
 }
 
@@ -489,6 +680,22 @@ function labelOllamaDraft(draft: string, fallbackUsed: boolean): string {
     ? '[OLLAMA LOCAL FALLBACK - deterministic mock/test fallback - review required before any writeback]'
     : '[OLLAMA LOCAL DRAFT - no cloud AI - review required before any writeback]';
   return `${label}\n${draft}`;
+}
+
+function labelLmStudioDraft(draft: string, fallbackUsed: boolean): string {
+  const label = fallbackUsed
+    ? '[LM STUDIO LOCAL FALLBACK - deterministic mock/test fallback - review required before any writeback]'
+    : '[LM STUDIO LOCAL DRAFT - no cloud AI - review required before any writeback]';
+  return `${label}\n${draft}`;
+}
+
+function redactBaseUrl(baseUrl: string): string {
+  try {
+    const u = new URL(baseUrl);
+    return `${u.protocol}//${u.hostname}/...`;
+  } catch {
+    return '[REDACTED_URL]';
+  }
 }
 
 function redactAiContext<T>(value: T): T {
