@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   MockAiProvider,
+  OllamaAiProvider,
   ModelGateway,
   computeContextHash,
   type GenerateDraftRequest,
@@ -97,6 +98,86 @@ describe('@supportplane/ai mock gateway', () => {
       computeContextHash({ b: 2, a: 1 }),
       computeContextHash({ a: 1, b: 2 })
     );
+  });
+});
+
+describe('@supportplane/ai Ollama local provider', () => {
+  it('returns local provider metadata with no cloud call on success', async () => {
+    const provider = new OllamaAiProvider({
+      baseUrl: 'http://host.containers.internal:11434',
+      model: 'llama3.1:8b',
+      client: {
+        async generate(input) {
+          assert.equal(input.model, 'llama3.1:8b');
+          assert.ok(!input.prompt.includes('secret-token-value'));
+          assert.match(input.prompt, /REDACTED_EMAIL/);
+          return 'Customer reported VPN issues. Next step is to verify tunnel status.';
+        },
+      },
+    });
+    const response = await provider.generateDraft({
+      ...baseRequest,
+      ticketReferences: [{
+        ...baseRequest.ticketReferences[0],
+        customerEmail: 'person@example.com',
+        rawData: { apiToken: 'secret-token-value' },
+      }],
+      modelSelection: { provider: 'ollama', model: 'llama3.1:8b' },
+    });
+
+    assert.equal(response.provider, 'ollama');
+    assert.equal(response.model, 'llama3.1:8b');
+    assert.equal(response.prompt.version, 'ollama-local-v1');
+    assert.equal(response.usage.providerMode, 'local');
+    assert.equal(response.usage.fallbackUsed, false);
+    assert.equal(response.usage.noCloudCall, true);
+    assert.equal(response.safety.cloudCallMade, false);
+    assert.equal(response.safety.localProviderCallMade, true);
+    assert.equal(response.safety.autonomousSend, false);
+    assert.match(response.draft, /OLLAMA LOCAL DRAFT/);
+  });
+
+  it('uses deterministic labeled fallback when Ollama is unreachable', async () => {
+    const provider = new OllamaAiProvider({
+      baseUrl: 'http://host.containers.internal:11434',
+      model: 'llama3.1:8b',
+      client: {
+        async generate() {
+          throw new Error('connect ECONNREFUSED');
+        },
+      },
+    });
+    const first = await provider.generateDraft({
+      ...baseRequest,
+      modelSelection: { provider: 'ollama', model: 'llama3.1:8b' },
+    });
+    const second = await provider.generateDraft({
+      ...baseRequest,
+      modelSelection: { provider: 'ollama', model: 'llama3.1:8b' },
+    });
+
+    assert.equal(first.contextHash, second.contextHash);
+    assert.equal(first.usage.fallbackUsed, true);
+    assert.equal(first.safety.fallbackUsed, true);
+    assert.equal(first.safety.localProviderCallMade, false);
+    assert.match(first.draft, /OLLAMA LOCAL FALLBACK/);
+  });
+
+  it('can be selected through the model gateway', async () => {
+    const gateway = new ModelGateway([
+      new MockAiProvider(),
+      new OllamaAiProvider({
+        baseUrl: 'http://host.containers.internal:11434',
+        model: 'llama3.1:8b',
+        client: { async generate() { return 'Local Ollama output.'; } },
+      }),
+    ]);
+    const response = await gateway.generateDraft({
+      ...baseRequest,
+      modelSelection: { provider: 'ollama', model: 'llama3.1:8b' },
+    });
+    assert.equal(response.provider, 'ollama');
+    assert.equal(response.safety.writebackAllowed, false);
   });
 });
 

@@ -260,19 +260,19 @@ current_state:
       backlog_ids: [BL-107]
     - id: Phase 4
       title: Ollama Local AI Provider
-      status: planned
+      status: partial_bl_108_fallback_only
       backlog_ids: [BL-108]
     - id: Phase 5
       title: OpenBao Credential Resolver
-      status: planned
+      status: accepted_bl_109
       backlog_ids: [BL-109]
     - id: Phase 6
       title: NATS JetStream Worker Semantics
-      status: planned
+      status: accepted_bl_110
       backlog_ids: [BL-110]
     - id: Phase 7
       title: Sandbox-Only Zammad Internal Note Writeback
-      status: planned
+      status: safety_gates_accepted_bl_115_writeback_planned_bl_111
       backlog_ids: [BL-111, BL-115]
     - id: Phase 8
       title: MinIO Evidence Artifact Persistence
@@ -298,23 +298,19 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-120
-    accepted_current_slice: BL-107
+    accepted_current_slice: BL-109_BL-110_BL-115
     planned_real_e2e_items:
-      - BL-108
-      - BL-109
-      - BL-110
       - BL-111
       - BL-112
       - BL-113
       - BL-114
-      - BL-115
       - BL-116
       - BL-117
       - BL-118
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-108]
+    active_queue_items: [BL-108, BL-111]
 
   documentation:
     primary_user_guide: README.md

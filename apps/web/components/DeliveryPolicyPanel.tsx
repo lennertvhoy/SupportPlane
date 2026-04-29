@@ -239,6 +239,9 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
                       <Lock size={10} /> Locked OFF
                     </span>
                   </div>
+                  <div className="rounded border border-cockpit-700 bg-cockpit-900/50 px-2 py-1.5 text-[10px] text-cockpit-300">
+                    Sandbox allowlist permits read-only local Zammad sandbox egress. Uncontrolled egress is denied. Writeback route is blocked until BL-111.
+                  </div>
 
                   {/* Allowed Action Types */}
                   <div className="flex items-center justify-between">

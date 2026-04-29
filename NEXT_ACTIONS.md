@@ -1,28 +1,22 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-29 19:55 CEST
+**Updated At:** 2026-04-29 21:05 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-108] Ollama local AI provider integration
+### P1 [BL-108] Ollama host-call repair
 
 - Owner: next coding-agent session.
-- Next action: integrate host-controlled Ollama as local provider for drafts/summaries with model metadata and no cloud calls.
-- Exit criteria: local provider metadata visible, deterministic test fallback labeled.
+- Next action: make the cluster API complete a host-controlled Ollama model call through `OLLAMA_BASE_URL`, or document the exact host/network/model blocker with repair evidence.
+- Exit criteria: provider metadata shows `provider=ollama`, `providerMode=local`, `fallbackUsed=false`, `noCloudCall=true`, and `autonomousSend=false` from the running cluster.
 
-### P2 [BL-109] OpenBao credential resolver foundation
-
-- Owner: future coding-agent session.
-- Next action: server-side placeholder resolution through OpenBao with disable path and no raw secret exposure.
-- Exit criteria: resolver returns metadata only, no token in API/UI/evidence/logs.
-
-### P3 [BL-110] NATS JetStream durable worker/outbox bridge
+### P2 [BL-111] Sandbox-only Zammad internal note writeback
 
 - Owner: future coding-agent session.
-- Next action: bridge outbox processing to durable streams/consumers with idempotency, retry, dead-letter.
-- Exit criteria: durable stream, restart survival, worker status UI proof.
+- Next action: implement one approval-gated internal note writeback to the local Zammad sandbox only, after BL-108 host-call repair or an explicit CTO decision to proceed with fallback-only AI.
+- Exit criteria: allowed sandbox writeback, blocked/kill-switch path, idempotency, no-secret proof, browser evidence, and explicit no-production/non-public-reply boundary.
 
 ## Queue Rules
 

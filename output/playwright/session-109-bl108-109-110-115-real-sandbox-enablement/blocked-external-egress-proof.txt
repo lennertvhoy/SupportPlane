@@ -1,0 +1,67 @@
+{
+  "allowedLocalRead": {
+    "url": "http://zammad.supportplane-integrations.svc.cluster.local:3000",
+    "connectorType": "zammad",
+    "operation": "read",
+    "tenantId": "dev-tenant",
+    "sandboxAllowlisted": true,
+    "writebackEnabled": false,
+    "killSwitchEnabled": false,
+    "secretExposed": false,
+    "allowed": true,
+    "decision": "allowed_local_zammad_sandbox_read",
+    "reason": "Read-only Zammad sandbox egress is allowed by the local sandbox allowlist."
+  },
+  "blockedExternal": {
+    "url": "https://example.com",
+    "connectorType": "zammad",
+    "operation": "read",
+    "tenantId": "dev-tenant",
+    "sandboxAllowlisted": false,
+    "writebackEnabled": false,
+    "killSwitchEnabled": false,
+    "secretExposed": false,
+    "allowed": false,
+    "decision": "blocked_external_url",
+    "reason": "Connector egress is deny-by-default and this URL is not on the sandbox allowlist."
+  },
+  "blockedProduction": {
+    "url": "https://support.example.zammad.com",
+    "connectorType": "zammad",
+    "operation": "read",
+    "tenantId": "dev-tenant",
+    "sandboxAllowlisted": false,
+    "writebackEnabled": false,
+    "killSwitchEnabled": false,
+    "secretExposed": false,
+    "allowed": false,
+    "decision": "blocked_production_like_url",
+    "reason": "Production-looking connector URLs are blocked in the local sandbox."
+  },
+  "blockedKillSwitch": {
+    "url": "http://zammad.supportplane-integrations.svc.cluster.local:3000",
+    "connectorType": "zammad",
+    "operation": "read",
+    "tenantId": "dev-tenant",
+    "sandboxAllowlisted": true,
+    "writebackEnabled": false,
+    "killSwitchEnabled": true,
+    "secretExposed": false,
+    "allowed": false,
+    "decision": "blocked_by_kill_switch",
+    "reason": "Network operation is blocked by the tenant kill switch."
+  },
+  "blockedWriteback": {
+    "url": "http://zammad.supportplane-integrations.svc.cluster.local:3000",
+    "connectorType": "zammad",
+    "operation": "writeback",
+    "tenantId": "dev-tenant",
+    "sandboxAllowlisted": true,
+    "writebackEnabled": false,
+    "killSwitchEnabled": false,
+    "secretExposed": false,
+    "allowed": false,
+    "decision": "blocked_writeback_disabled",
+    "reason": "Real writeback is blocked until the BL-111 sandbox-only writeback gate is implemented."
+  }
+}

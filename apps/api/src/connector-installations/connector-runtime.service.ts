@@ -18,6 +18,7 @@ import { computeIntegrityHash } from '@supportplane/audit';
 import type { DevIdentity } from '../auth/auth.types.js';
 import { requirePermission } from '../auth/rbac.js';
 import { randomUUID } from 'crypto';
+import { CredentialResolverService } from '../credential-references/credential-resolver.service.js';
 
 const UNSAFE_CONFIG_KEYS = [
   'apiToken',
@@ -58,7 +59,9 @@ const ALLOWED_CONFIG_KEYS_REAL = [
 export class ConnectorRuntimeService {
   constructor(
     @Inject(InMemoryStore)
-    private readonly store: Store
+    private readonly store: Store,
+    @Inject(CredentialResolverService)
+    private readonly credentialResolver: CredentialResolverService
   ) {}
 
   async getConfigSchema(
@@ -343,7 +346,11 @@ export class ConnectorRuntimeService {
           kind: cred.secretKind,
           status: cred.status,
           lastValidatedAt: cred.lastValidatedAt,
-          secretResolutionImplemented: false,
+          secretResolutionImplemented: process.env['OPENBAO_RESOLVER_ENABLED'] === 'true',
+          resolver: process.env['OPENBAO_RESOLVER_ENABLED'] === 'true' ? 'openbao' : 'disabled',
+          resolverMode: process.env['OPENBAO_RESOLVER_ENABLED'] === 'true' ? 'local-sandbox' : 'disabled',
+          resolved: process.env['OPENBAO_RESOLVER_ENABLED'] === 'true' && cred.status === 'active',
+          secretExposed: false,
         });
       }
     }

@@ -1,7 +1,7 @@
 # Local Kubernetes Podman Target
 
 **Backlog:** BL-102  
-**Status:** BL-103 verified the cluster foundation. BL-104/BL-105 deployed app and PostgreSQL. BL-106 deployed self-hosted service topology. Observability remains future backlog work.
+**Status:** BL-103 verified the cluster foundation. BL-104/BL-105 deployed app and PostgreSQL. BL-106 deployed self-hosted service topology. BL-108/109/110/115 wire local Ollama/OpenBao/NATS and sandbox egress gates into the app runtime. Observability remains future backlog work.
 
 ## Target
 
@@ -68,8 +68,10 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 - Web and API should be reachable from localhost through ingress or port-forwarding.
 - Cluster-internal calls should use Kubernetes service DNS, for example `supportplane-api.supportplane-app.svc.cluster.local`.
 - Zammad, OpenBao, NATS, Mailpit, MinIO, and observability UIs should be exposed only through explicit local ports needed for the demo.
-- Real writeback egress stays disabled by default until the relevant phase adds explicit network guardrails.
-- Network egress policy target: block uncontrolled connector egress, then allow only the local Zammad sandbox endpoint during writeback acceptance.
+- Real writeback egress stays disabled by default until BL-111.
+- Connector network egress is deny-by-default; the current allowlist permits local Zammad sandbox read only and blocks uncontrolled external or production-looking URLs.
+- Ollama is reached through the explicit host-controlled `OLLAMA_BASE_URL` setting; it is not deployed in-cluster.
+- OpenBao and NATS JetStream are local sandbox services only, not production secret/broker infrastructure.
 
 ## Storage Strategy
 

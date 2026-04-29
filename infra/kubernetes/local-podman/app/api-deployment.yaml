@@ -35,11 +35,11 @@ spec:
                 secretKeyRef:
                   name: app-secret-local
                   key: DATABASE_URL
-            - name: ZAMMAD_API_TOKEN
+            - name: OPENBAO_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: app-secret-local
-                  key: ZAMMAD_API_TOKEN
+                  key: OPENBAO_TOKEN
           readinessProbe:
             httpGet:
               path: /health

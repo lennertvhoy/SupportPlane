@@ -19,7 +19,7 @@ export type { GreetingSuggestionRequestShape, GreetingSuggestionResponseShape };
 
 export const AI_VERSION = '0.1.0';
 
-export const AiProviderId = z.enum(['mock']);
+export const AiProviderId = z.enum(['mock', 'ollama']);
 export type AiProviderId = z.infer<typeof AiProviderId>;
 
 export const ModelSelection = z.object({
@@ -47,16 +47,24 @@ export const ModelUsageMetadata = z.object({
   totalTokens: z.number().int().nonnegative().optional(),
   costEstimateUsd: z.number().nonnegative().optional(),
   latencyMs: z.number().int().nonnegative().optional(),
-  placeholder: z.literal(true).default(true),
+  placeholder: z.boolean().default(true),
+  providerMode: z.enum(['mock', 'local']).default('mock'),
+  fallbackUsed: z.boolean().default(false),
+  noCloudCall: z.literal(true).default(true),
 });
 export type ModelUsageMetadata = z.infer<typeof ModelUsageMetadata>;
 
 export const AiSafetyMetadata = z.object({
-  mockOnly: z.literal(true),
+  mockOnly: z.boolean(),
   externalCallMade: z.literal(false),
+  cloudCallMade: z.literal(false).default(false),
+  localProviderCallMade: z.boolean().default(false),
+  fallbackUsed: z.boolean().default(false),
   policyChecks: z.array(z.string()).default([]),
   reviewRequired: z.literal(true),
   writebackAllowed: z.literal(false),
+  autonomousSend: z.literal(false).default(false),
+  redactionApplied: z.boolean().default(true),
 });
 export type AiSafetyMetadata = z.infer<typeof AiSafetyMetadata>;
 
@@ -169,13 +177,21 @@ export class MockAiProvider implements AiProvider {
         costEstimateUsd: undefined,
         latencyMs: 0,
         placeholder: true,
+        providerMode: 'mock',
+        fallbackUsed: false,
+        noCloudCall: true,
       },
       safety: {
         mockOnly: true,
         externalCallMade: false,
+        cloudCallMade: false,
+        localProviderCallMade: false,
+        fallbackUsed: false,
         policyChecks: ['mock_provider_only', 'review_required', 'writeback_disabled'],
         reviewRequired: true,
         writebackAllowed: false,
+        autonomousSend: false,
+        redactionApplied: true,
       },
       generatedAt: new Date().toISOString(),
     });
@@ -238,10 +254,16 @@ export class MockAiProvider implements AiProvider {
         costEstimateUsd: undefined,
         latencyMs: 0,
         placeholder: true,
+        providerMode: 'mock',
+        fallbackUsed: false,
+        noCloudCall: true,
       },
       safety: {
         mockOnly: true,
         externalCallMade: false,
+        cloudCallMade: false,
+        localProviderCallMade: false,
+        fallbackUsed: false,
         policyChecks: ['mock_provider_only', 'review_required', 'auto_send_disabled', 'voice_disabled'],
         reviewRequired: true,
         autoSend: false,
@@ -252,8 +274,172 @@ export class MockAiProvider implements AiProvider {
   }
 }
 
+export interface OllamaClient {
+  generate(input: { baseUrl: string; model: string; prompt: string; timeoutMs: number }): Promise<string>;
+}
+
+export interface OllamaAiProviderOptions {
+  baseUrl: string;
+  model: string;
+  timeoutMs?: number;
+  fallbackEnabled?: boolean;
+  client?: OllamaClient;
+}
+
+export class OllamaAiProvider implements AiProvider {
+  readonly id = 'ollama' as const;
+  private readonly prompt: PromptTemplate = {
+    id: 'support-note-draft',
+    version: 'ollama-local-v1',
+    purpose: 'Draft a reviewable internal support note from redacted local SupportPlane context.',
+  };
+  private readonly baseUrl: string;
+  private readonly model: string;
+  private readonly timeoutMs: number;
+  private readonly fallbackEnabled: boolean;
+  private readonly client: OllamaClient;
+
+  constructor(options: OllamaAiProviderOptions) {
+    this.baseUrl = options.baseUrl.replace(/\/$/, '');
+    this.model = options.model;
+    this.timeoutMs = options.timeoutMs ?? 15000;
+    this.fallbackEnabled = options.fallbackEnabled ?? true;
+    this.client = options.client ?? new FetchOllamaClient();
+  }
+
+  async generateDraft(input: GenerateDraftRequest): Promise<GenerateDraftResponse> {
+    const request = GenerateDraftRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const selectedModel = selection.model === 'mock-support-note-v1' ? this.model : selection.model;
+    const redactedContext = redactAiContext({
+      session: request.session,
+      ticketReferences: request.ticketReferences,
+      contextPackets: request.contextPackets,
+      operatorInstructions: request.operatorInstructions ?? '',
+    });
+    const contextHash = computeContextHash({ ...redactedContext, prompt: this.prompt });
+    const requestedAt = new Date().toISOString();
+    const start = Date.now();
+
+    try {
+      const draft = await this.client.generate({
+        baseUrl: this.baseUrl,
+        model: selectedModel,
+        prompt: buildOllamaPrompt(redactedContext),
+        timeoutMs: this.timeoutMs,
+      });
+      return GenerateDraftResponse.parse({
+        draft: labelOllamaDraft(draft, false),
+        provider: this.id,
+        model: selectedModel,
+        prompt: this.prompt,
+        contextHash,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: false,
+          providerMode: 'local',
+          fallbackUsed: false,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: false,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: true,
+          fallbackUsed: false,
+          policyChecks: ['ollama_local_provider', 'redaction_before_provider_call', 'review_required', 'writeback_disabled'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+        },
+        generatedAt: requestedAt,
+      });
+    } catch (error) {
+      if (!this.fallbackEnabled) {
+        throw error;
+      }
+      return GenerateDraftResponse.parse({
+        draft: labelOllamaDraft(buildMockDraft(request.session, request.ticketReferences, request.contextPackets, request.operatorInstructions), true),
+        provider: this.id,
+        model: selectedModel,
+        prompt: this.prompt,
+        contextHash,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: true,
+          providerMode: 'local',
+          fallbackUsed: true,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: true,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: false,
+          fallbackUsed: true,
+          policyChecks: ['ollama_unavailable_deterministic_fallback', 'redaction_before_provider_call', 'review_required', 'writeback_disabled'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+        },
+        generatedAt: requestedAt,
+      });
+    }
+  }
+
+  async generateGreeting(input: GreetingSuggestionRequest): Promise<GreetingSuggestionResponse> {
+    return new MockAiProvider().generateGreeting({
+      ...input,
+      modelSelection: { provider: 'mock', model: 'mock-greeting-v1' },
+    });
+  }
+}
+
+class FetchOllamaClient implements OllamaClient {
+  async generate(input: { baseUrl: string; model: string; prompt: string; timeoutMs: number }): Promise<string> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), input.timeoutMs);
+    try {
+      const response = await fetch(`${input.baseUrl}/api/generate`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: input.model,
+          prompt: input.prompt,
+          stream: false,
+        }),
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        throw new Error(`Ollama HTTP ${response.status}`);
+      }
+      const data = (await response.json()) as { response?: string };
+      if (!data.response?.trim()) {
+        throw new Error('Ollama returned an empty response');
+      }
+      return data.response.trim();
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+}
+
 export function createDefaultModelGateway(): ModelGateway {
-  return new ModelGateway([new MockAiProvider()]);
+  const providers: AiProvider[] = [new MockAiProvider()];
+  const enabled = process.env['OLLAMA_ENABLED'] === 'true';
+  const baseUrl = process.env['OLLAMA_BASE_URL'];
+  const model = process.env['OLLAMA_MODEL'] ?? 'llama3.1:8b';
+  if (enabled && baseUrl) {
+    providers.push(new OllamaAiProvider({
+      baseUrl,
+      model,
+      timeoutMs: Number(process.env['OLLAMA_TIMEOUT_MS'] ?? '15000'),
+      fallbackEnabled: process.env['OLLAMA_FALLBACK_ENABLED'] !== 'false',
+    }));
+  }
+  return new ModelGateway(providers);
 }
 
 export function computeContextHash(value: unknown): ContextHash {
@@ -287,6 +473,43 @@ function buildMockDraft(
     instructionLine,
     'Suggested internal note: Reviewed the available mock SupportPlane context, captured the customer issue, and prepared next-step guidance for a human operator to verify before any ticket update.',
   ].join('\n');
+}
+
+function buildOllamaPrompt(context: unknown): string {
+  return [
+    'You are SupportPlane local AI running through host-controlled Ollama.',
+    'Draft a concise internal support note only. Do not claim the note was sent.',
+    'Use only the redacted JSON context below.',
+    stableStringify(context),
+  ].join('\n\n');
+}
+
+function labelOllamaDraft(draft: string, fallbackUsed: boolean): string {
+  const label = fallbackUsed
+    ? '[OLLAMA LOCAL FALLBACK - deterministic mock/test fallback - review required before any writeback]'
+    : '[OLLAMA LOCAL DRAFT - no cloud AI - review required before any writeback]';
+  return `${label}\n${draft}`;
+}
+
+function redactAiContext<T>(value: T): T {
+  if (value === null || typeof value !== 'object') {
+    if (typeof value === 'string') {
+      return value.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[REDACTED_EMAIL]') as T;
+    }
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => redactAiContext(item)) as T;
+  }
+  const output: Record<string, unknown> = {};
+  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+    if (/(token|secret|password|apikey|api_key|credential|bearer)/i.test(key)) {
+      output[key] = '[REDACTED]';
+    } else {
+      output[key] = redactAiContext(child);
+    }
+  }
+  return output as T;
 }
 
 function buildMockGreeting(request: GreetingSuggestionRequestShape): string {

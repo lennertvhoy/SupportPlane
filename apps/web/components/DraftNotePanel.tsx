@@ -100,7 +100,7 @@ export function DraftNotePanel({
             <div className="mt-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-1.5 text-xs text-amber-300">
                 <Bot size={13} />
-                Mock AI only, review required
+                Ollama local / deterministic fallback, review required
               </div>
               <button
                 type="button"
@@ -109,7 +109,7 @@ export function DraftNotePanel({
                 className="inline-flex items-center gap-1.5 rounded bg-accent px-3 py-1.5 text-xs font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? <Loader2 size={12} className="animate-spin" /> : <Bot size={12} />}
-                Generate mock draft
+                Generate local draft
               </button>
             </div>
             {error && (
@@ -123,7 +123,7 @@ export function DraftNotePanel({
             <div className="rounded border border-amber-700/40 bg-amber-950/30 p-3 text-xs">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="font-semibold text-amber-200">
-                  Mock/dev-only model metadata
+                  Local AI model metadata
                 </span>
                 <Badge variant="warning">Review before writeback</Badge>
               </div>
@@ -134,6 +134,14 @@ export function DraftNotePanel({
                 <dd className="break-all text-cockpit-100">{suggestion.model}</dd>
                 <dt>Prompt version</dt>
                 <dd className="text-cockpit-100">{suggestion.prompt.version}</dd>
+                <dt>Provider mode</dt>
+                <dd className="text-cockpit-100">{suggestion.usage.providerMode ?? 'mock'}</dd>
+                <dt>No cloud AI</dt>
+                <dd className="text-cockpit-100">{String(suggestion.usage.noCloudCall ?? true)}</dd>
+                <dt>Fallback used</dt>
+                <dd className="text-cockpit-100">{String(suggestion.usage.fallbackUsed ?? suggestion.safety.fallbackUsed ?? false)}</dd>
+                <dt>Latency</dt>
+                <dd className="text-cockpit-100">{suggestion.usage.latencyMs ?? 0}ms</dd>
                 <dt>Context hash</dt>
                 <dd className="break-all font-mono text-[10px] text-cockpit-100">
                   {suggestion.contextHash}

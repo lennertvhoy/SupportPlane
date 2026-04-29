@@ -15,5 +15,17 @@ data:
   # Zammad sandbox connector configuration (BL-107)
   ZAMMAD_CONNECTOR_MODE: "zammad"
   ZAMMAD_BASE_URL: "http://zammad.supportplane-integrations.svc.cluster.local:3000"
+  OPENBAO_RESOLVER_ENABLED: "true"
+  OPENBAO_ADDR: "http://openbao.supportplane-integrations.svc.cluster.local:8200"
+  SUPPORTPLANE_QUEUE_BACKEND: "nats-jetstream"
+  NATS_URL: "nats://nats.supportplane-integrations.svc.cluster.local:4222"
+  NATS_OUTBOX_STREAM: "SUPPORTPLANE_OUTBOX"
+  NATS_OUTBOX_SUBJECT: "supportplane.outbox.ready"
+  NATS_OUTBOX_CONSUMER: "SUPPORTPLANE_WORKER"
+  OLLAMA_ENABLED: "true"
+  OLLAMA_BASE_URL: "http://host.containers.internal:11434"
+  OLLAMA_MODEL: "llama3.1:8b"
+  OLLAMA_TIMEOUT_MS: "15000"
+  OLLAMA_FALLBACK_ENABLED: "true"
   # Web build-time API base URL for cluster access
   NEXT_PUBLIC_API_BASE_URL: "http://localhost:4210"

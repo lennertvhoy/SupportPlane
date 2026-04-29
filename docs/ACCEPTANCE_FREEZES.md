@@ -5,6 +5,54 @@
 Use this when a screen, route, workflow, or other visible milestone is accepted
 and must be protected from quiet regression.
 
+## AF-2026-04-29-006: BL-109/110/115 Real Sandbox Enablement Gates and BL-108 Partial Provider Path
+
+- ID: AF-2026-04-29-006
+- Milestone: Real sandbox enablement gates before BL-111 writeback
+- Scope: Local OpenBao sandbox credential resolver for Zammad read, NATS JetStream local outbox bridge, sandbox egress/writeback safety gates, and a partial Ollama provider path with deterministic fallback. BL-108 is not accepted because runtime proof used fallback rather than a successful host model call. Real Zammad internal-note writeback remains blocked and was not implemented.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: recorded in final handoff for this slice
+- process_or_container:
+  - Kind/Podman cluster `supportplane-local` with port-forwards
+  - SupportPlane API, Web, Worker in `supportplane-app`
+  - PostgreSQL StatefulSet in `supportplane-data`
+  - Zammad, OpenBao, and NATS in `supportplane-integrations`
+  - Host-controlled Ollama endpoint configured by `OLLAMA_BASE_URL`
+- port_or_base_url:
+  - Cluster API http://localhost:4210
+  - Cluster Web http://localhost:3300
+  - Local MVP API http://localhost:4110
+  - Local MVP Web http://localhost:3200
+- routes:
+  - / (cluster web)
+  - /health (cluster API)
+  - POST /support-sessions/:id/zammad/ticket-context
+  - POST /support-sessions/:id/draft-suggestion
+  - POST /support-sessions/:id/zammad/internal-note-writeback
+  - GET /outbox/worker/status
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-29-105 through EV-2026-04-29-112
+- evidence_folder: output/playwright/session-109-bl108-109-110-115-real-sandbox-enablement/
+- screenshot_count: 8
+- duplicate_screenshot_count: 0
+- regression_guard:
+  - UI must continue to label local AI as Ollama local/no cloud AI and fallback when fallback is used.
+  - BL-108 cannot be accepted until cluster runtime proves `fallbackUsed=false` for host-controlled Ollama.
+  - UI/API must continue to show OpenBao sandbox resolver and server-side secret resolution without raw token exposure.
+  - Worker status must continue to show NATS JetStream/local durable worker mode when enabled.
+  - Egress policy must block uncontrolled external URLs, production-looking Zammad URLs, kill-switch paths, and all writeback until BL-111.
+  - Zammad sandbox read must continue to work through OpenBao resolver.
+- known_limitations:
+  - Zammad internal-note writeback remains blocked until BL-111.
+  - Ollama fallback is deterministic and labeled when host Ollama/model access is unavailable.
+  - OpenBao is local sandbox-only, not production secret management.
+  - NATS is local sandbox-only, not production broker HA/TLS/auth.
+  - MinIO evidence persistence and Mailpit notification capture remain planned.
+  - This remains a local sandbox topology, not production infrastructure.
+
 ## AF-2026-04-29-005: BL-107 Zammad Sandbox Read Connector
 
 - ID: AF-2026-04-29-005

@@ -230,8 +230,13 @@ function toAiUsageSummaries(auditEvents: AuditEvent[]): EvidenceBundleAiUsageSum
       contextHash: (e.metadata.contextHash as string) ?? undefined,
       mockOnly: (e.metadata.mockOnly as boolean) ?? true,
       externalCallMade: false,
+      cloudCallMade: (e.metadata.cloudCallMade as boolean) ?? false,
+      providerMode: (e.metadata.providerMode as string) ?? undefined,
+      fallbackUsed: (e.metadata.fallbackUsed as boolean) ?? undefined,
+      noCloudCall: (e.metadata.noCloudCall as boolean) ?? true,
+      latencyMs: (e.metadata.latencyMs as number) ?? undefined,
       reviewRequired: true,
-      writebackAllowed: false,
+      writebackAllowed: (e.metadata.writebackAllowed as boolean) ?? false,
       generatedAt: e.createdAt,
     }));
 }

@@ -1,0 +1,8 @@
+01f0a83c7cfa38719f879dea622faea3  07-local-mvp-regression-proof.png
+340b33956ba5d075889a8176970820ef  06-egress-safety-writeback-blocked.png
+38187805529b103af7e2b78939567a18  02-ui-real-zammad-sandbox-read.png
+85e6fcfe6b1f7d3d55f14a2414b36b03  05-nats-jetstream-worker-mode.png
+885223537f6e3c832c36bd8099c79771  01-cluster-api-health-current-head.png
+9aa715a085d8ba1a36c53fbba3a46c40  08-state-docs-backlog-next-actions.png
+aa31a5f7914ab36464afef048415604d  04-ollama-local-no-cloud-metadata.png
+eedf6c9285f91eeeb0e947cf4de6cd22  03-openbao-resolver-no-secret.png

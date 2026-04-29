@@ -246,13 +246,13 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
       try {
         const response = await api.generateDraftSuggestion(selectedSession.id, {
           operatorInstructions,
-          modelSelection: { provider: 'mock', model: 'mock-support-note-v1' },
+          modelSelection: { provider: 'ollama', model: 'llama3.1:8b' },
         });
         setDraftSuggestion(response);
         await fetchSessionDetails(selectedSession);
         return response;
       } catch (err) {
-        setDraftError(err instanceof ApiClientError ? err.message : 'Failed to generate mock draft');
+        setDraftError(err instanceof ApiClientError ? err.message : 'Failed to generate local AI draft');
         return undefined;
       } finally {
         setDraftLoading(false);

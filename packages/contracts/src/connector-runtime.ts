@@ -53,6 +53,10 @@ export const ConnectorRuntimeCredentialReferenceMetadata = z.object({
   status: z.string(),
   lastValidatedAt: z.string().optional(),
   secretResolutionImplemented: z.boolean(),
+  resolver: z.enum(['openbao', 'disabled']).optional(),
+  resolverMode: z.enum(['local-sandbox', 'disabled']).optional(),
+  resolved: z.boolean().optional(),
+  secretExposed: z.literal(false).optional(),
 });
 export type ConnectorRuntimeCredentialReferenceMetadata = z.infer<typeof ConnectorRuntimeCredentialReferenceMetadata>;
 

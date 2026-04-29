@@ -98,7 +98,7 @@ export interface TicketReference {
 
 export interface DraftSuggestionResponse {
   draft: string;
-  provider: 'mock';
+  provider: 'mock' | 'ollama';
   model: string;
   prompt: {
     id: string;
@@ -112,14 +112,22 @@ export interface DraftSuggestionResponse {
     totalTokens?: number;
     costEstimateUsd?: number;
     latencyMs?: number;
-    placeholder: true;
+    placeholder: boolean;
+    providerMode?: 'mock' | 'local';
+    fallbackUsed?: boolean;
+    noCloudCall?: true;
   };
   safety: {
-    mockOnly: true;
+    mockOnly: boolean;
     externalCallMade: false;
+    cloudCallMade?: false;
+    localProviderCallMade?: boolean;
+    fallbackUsed?: boolean;
     policyChecks: string[];
     reviewRequired: true;
     writebackAllowed: false;
+    autonomousSend?: false;
+    redactionApplied?: boolean;
   };
   generatedAt: string;
 }
@@ -150,7 +158,7 @@ export interface GreetingSuggestionResponse {
       generatedAt: string;
     };
   };
-  provider: 'mock';
+  provider: 'mock' | 'ollama';
   model: string;
   prompt: {
     id: string;
@@ -1012,7 +1020,7 @@ export const api = {
     sessionId: string,
     body: {
       operatorInstructions?: string;
-      modelSelection?: { provider?: 'mock'; model?: string };
+      modelSelection?: { provider?: 'mock' | 'ollama'; model?: string };
     } = {},
     identity?: DevIdentity
   ) =>
@@ -1027,7 +1035,7 @@ export const api = {
     body: {
       callEventId?: string;
       tone?: 'professional' | 'friendly' | 'concise';
-      modelSelection?: { provider?: 'mock'; model?: string };
+      modelSelection?: { provider?: 'mock' | 'ollama'; model?: string };
     } = {},
     identity?: DevIdentity
   ) =>

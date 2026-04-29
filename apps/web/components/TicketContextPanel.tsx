@@ -114,6 +114,16 @@ export function TicketContextPanel({
                   </span>
                 )}
               </div>
+              {connectorMode === 'zammad' && (
+                <div className="grid grid-cols-2 gap-2 rounded border border-emerald-700/30 bg-emerald-950/20 px-2 py-1.5 text-[10px] text-emerald-200">
+                  <span>Sandbox allowlist</span>
+                  <span>Read operation allowed by sandbox allowlist</span>
+                  <span>OpenBao sandbox resolver</span>
+                  <span>Secrets resolved server-side</span>
+                  <span>No cloud AI</span>
+                  <span>Writeback blocked</span>
+                </div>
+              )}
 
               {/* Connector Runtime Provenance */}
               {connectorInstallation && (
@@ -156,7 +166,7 @@ export function TicketContextPanel({
                       )}
                     </div>
                     <div className="text-cockpit-500">Credentials:</div>
-                    <div className="text-cockpit-200">{connectorInstallation.secretReferenceIds.length} linked</div>
+                    <div className="text-cockpit-200">{connectorInstallation.secretReferenceIds.length} linked · server-side only</div>
                     <div className="text-cockpit-500">Capabilities:</div>
                     <div className="text-cockpit-200">{connectorInstallation.capabilities.join(', ')}</div>
                   </div>

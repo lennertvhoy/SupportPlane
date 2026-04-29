@@ -2,6 +2,57 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-29-105 through EV-2026-04-29-112: BL-108/109/110/115 Real Sandbox Enablement Gates (BL-108 PARTIAL; BL-109/110/115 ACCEPTED)
+
+- Files: `output/playwright/session-109-bl108-109-110-115-real-sandbox-enablement/01-cluster-api-health-current-head.png` through `08-state-docs-backlog-next-actions.png`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus terminal-rendered JSON/text proof pages.
+- Store/Auth mode for runtime screenshots: cluster `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Cluster proof:
+  - API/Web/Worker deployments in `supportplane-app` rebuilt, reloaded, and rolled out from local images.
+  - OpenBao seeded with local sandbox Zammad credential; raw token intentionally not printed.
+  - Zammad sandbox read succeeds through server-side OpenBao credential resolution.
+  - NATS JetStream stream `SUPPORTPLANE_OUTBOX` persists after NATS pod restart.
+  - Ollama provider path returns `provider=ollama`, `providerMode=local`, `noCloudCall=true`, and labeled fallback when host/model access is unavailable.
+- Shows:
+  - Cluster API health JSON.
+  - UI still loads real Zammad sandbox read with sandbox/read-only/no-writeback labels.
+  - OpenBao sandbox resolver metadata with `secretExposed=false`.
+  - Ollama local/fallback provider metadata with prompt version, context hash, latency, no-cloud marker, and `autonomousSend=false`.
+  - NATS JetStream worker/outbox mode.
+  - Writeback blocked response with no external write attempt.
+  - Local MVP reachability proof.
+  - State docs showing BL-108 partial, BL-109/110/115 accepted, and BL-108 repair before BL-111.
+- CLI artifacts:
+  - `baseline-runtime.txt`
+  - `runtime-predeploy.txt`
+  - `openbao-secret-seed-proof.txt`
+  - `openbao-resolver-proof.txt`
+  - `openbao-no-secret-leak-proof.txt`
+  - `egress-policy-proof.txt`
+  - `blocked-external-egress-proof.txt`
+  - `ollama-provider-proof.txt`
+  - `ollama-no-cloud-proof.txt`
+  - `ollama-fallback-proof.txt`
+  - `nats-stream-consumer-proof.txt`
+  - `nats-worker-bridge-proof.txt`
+  - `nats-restart-or-durable-proof.txt`
+  - `supportplane-api-health.txt`
+  - `supportplane-worker-status.txt`
+  - `supportplane-ui-label-proof.txt`
+  - `local-mvp-regression.txt`
+  - `validation-gate.txt`
+  - `boundary-proof.txt`
+  - `proof-state-mapping.md`
+  - `screenshot-md5s.txt`
+- Proves:
+  - BL-108 local Ollama provider/fallback path is implemented without cloud AI or autonomous send, but runtime proof used fallback and does not accept the host model-call gate.
+  - BL-109 OpenBao resolver is server-side only and no raw secret is exposed in API/evidence/browser proof.
+  - BL-110 NATS JetStream product stream/consumer bridge is present and survives NATS restart while PostgreSQL remains canonical truth.
+  - BL-115 egress deny-by-default and writeback block are enforced with clear denial metadata.
+  - 8 unique screenshots, 0 duplicates, max-20 cap respected.
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-04-29T21:05:00+02:00
+
 ## EV-2026-04-29-099 through EV-2026-04-29-104: BL-107 Zammad Sandbox Read Connector (ACCEPTED)
 
 - Files: `output/playwright/session-108-bl107-zammad-sandbox-read-connector/01-zammad-api-seeded-ticket.png` through `07-boundary-proof.png`

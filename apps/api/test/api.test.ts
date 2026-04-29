@@ -628,7 +628,7 @@ describe('Zammad connector endpoints', () => {
     assert.strictEqual(draftEvent.metadata.externalTicketId, 'Z-1');
   });
 
-  it('POST /support-sessions/:id/zammad/internal-note-writeback is mock-safe by default', async () => {
+  it('POST /support-sessions/:id/zammad/internal-note-writeback is blocked by default', async () => {
     const created = await supertest(server)
       .post('/support-sessions')
       .set('x-tenant-id', 'tenant-a')
@@ -650,8 +650,12 @@ describe('Zammad connector endpoints', () => {
       .send({ draftId: draft.body.id, externalTicketId: 'Z-2', body: 'Draft for writeback' })
       .expect(201);
 
-    assert.strictEqual(res.body.success, true);
-    assert.ok(res.body.externalArticleId);
+    assert.strictEqual(res.body.success, false);
+    assert.strictEqual(res.body.externalArticleId, undefined);
+    assert.strictEqual(res.body.error.code, 'NOTEBACK_WRITE_FAILED');
+    assert.strictEqual(res.body.metadata.writebackEnabled, false);
+    assert.strictEqual(res.body.metadata.externalWriteAttempted, false);
+    assert.strictEqual(res.body.metadata.egressDecision, 'blocked_writeback_disabled');
 
     const audit = await supertest(server)
       .get(`/support-sessions/${created.body.id}/audit-events`)
@@ -664,10 +668,11 @@ describe('Zammad connector endpoints', () => {
     );
     assert.ok(attemptEvent, 'writeback attempted audit event should exist');
 
-    const successEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'internal_note_writeback_succeeded'
+    const failedEvent = audit.body.find(
+      (e: { eventType: string }) => e.eventType === 'internal_note_writeback_failed'
     );
-    assert.ok(successEvent, 'writeback succeeded audit event should exist');
+    assert.ok(failedEvent, 'writeback failed audit event should exist');
+    assert.strictEqual(failedEvent.metadata.egressDecision, 'blocked_writeback_disabled');
   });
 
   it('connector endpoints enforce tenant isolation', async () => {

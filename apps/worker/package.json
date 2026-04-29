@@ -13,8 +13,9 @@
     "test": "echo 'No tests yet'"
   },
   "dependencies": {
+    "@supportplane/audit": "*",
     "@supportplane/contracts": "*",
-    "@supportplane/audit": "*"
+    "nats": "^2.29.3"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

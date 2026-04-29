@@ -284,6 +284,11 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                 No real writeback unless configured. Credentials not stored in browser.
               </div>
             )}
+            {!isMock && (
+              <div className="rounded border border-emerald-700/30 bg-emerald-950/20 px-2 py-1.5 text-[10px] text-emerald-200">
+                Egress policy: sandbox allowlist only. Allowed destination: local Zammad sandbox. OpenBao sandbox resolver; secrets resolved server-side. Writeback blocked.
+              </div>
+            )}
 
             <div className="flex items-center gap-2 pt-1">
               <button
@@ -489,6 +494,7 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                             <div>writebackEnabled: {String(readiness?.writebackEnabled ?? false)}</div>
                             <div>externalWriteAttempted: {String(readiness?.externalWriteAttempted ?? false)}</div>
                             <div>linkedCredentials: {String(readiness?.linkedCredentialReferenceCount ?? 0)}</div>
+                            <div>Secrets resolved server-side: {String(Number(readiness?.linkedCredentialReferenceCount ?? 0) > 0)}</div>
                             {(() => {
                               const warnings = readiness?.warnings;
                               if (!Array.isArray(warnings)) return null;

@@ -1,9 +1,11 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { AckPolicy, connect, StorageType, StringCodec } from 'nats';
 import {
   ActionOutboxAttempt,
   ActionOutboxItem,
   AuditEvent,
+  NatsOutboxEnvelope,
   SupportAction,
   SupportActionCreateRequest,
   type DeliveryPolicyDecision,
@@ -42,6 +44,10 @@ const MOCK_SAFETY_FLAGS = {
   noRawMedia: true,
   localMockOnly: true,
 };
+
+const NATS_STREAM = process.env['NATS_OUTBOX_STREAM'] ?? 'SUPPORTPLANE_OUTBOX';
+const NATS_SUBJECT = process.env['NATS_OUTBOX_SUBJECT'] ?? 'supportplane.outbox.ready';
+const NATS_CONSUMER = process.env['NATS_OUTBOX_CONSUMER'] ?? 'SUPPORTPLANE_WORKER';
 
 type DeliverySimulation =
   | { outcome: 'success' }
@@ -238,6 +244,7 @@ export class ActionsService {
     };
     await this.store.saveSupportAction(updated);
     await this.store.saveActionOutboxItem(outboxItem);
+    await this.publishOutboxEnvelope(outboxItem);
     await this.audit(identity, 'action_queued', action.sessionId, 'support_action', action.id, { outboxItemId: outboxItem.id });
     await this.audit(identity, 'outbox_item_created', action.sessionId, 'action_outbox_item', outboxItem.id, outboxItem.deliveryIntent);
     return { action: updated, outboxItem, idempotentReplay: false };
@@ -369,7 +376,16 @@ export class ActionsService {
       mode: 'local_mock_worker',
       status: 'available',
       consumerEnabled: true,
-      queueBackend: 'postgres-local-outbox',
+      queueBackend: process.env['SUPPORTPLANE_QUEUE_BACKEND'] === 'nats-jetstream' ? 'nats-jetstream' : 'postgres-local-outbox',
+      fallbackQueueBackend: 'postgres-local-outbox',
+      nats: {
+        enabled: process.env['SUPPORTPLANE_QUEUE_BACKEND'] === 'nats-jetstream',
+        urlConfigured: Boolean(process.env['NATS_URL']),
+        streamName: NATS_STREAM,
+        subject: NATS_SUBJECT,
+        consumerName: NATS_CONSUMER,
+        bridgeMode: 'postgres-canonical-jetstream-bridge',
+      },
       storeMode: process.env['SUPPORTPLANE_STORE'] ?? 'memory',
       deliveryMode: 'mock',
       realNetwork: false,
@@ -377,8 +393,10 @@ export class ActionsService {
       externalWriteAttempted: false,
       summary: this.outboxSummary(items),
       warnings: [
-        'Local PostgreSQL outbox worker foundation only.',
-        'No real Zammad writeback, email, telephony, AI provider call, external broker, or production queue semantics.',
+        process.env['SUPPORTPLANE_QUEUE_BACKEND'] === 'nats-jetstream'
+          ? 'NATS JetStream bridge is local sandbox only; PostgreSQL remains canonical outbox truth.'
+          : 'Local PostgreSQL outbox worker foundation only.',
+        'No real Zammad writeback, email, telephony, cloud AI, production broker HA, or production queue semantics.',
       ],
       checkedAt: nowIso(),
       mockDevOnly: true,
@@ -708,6 +726,64 @@ export class ActionsService {
         cancelled: 0,
       } as Record<ActionOutboxItem['status'] | 'total', number>
     );
+  }
+
+  private async publishOutboxEnvelope(item: ActionOutboxItem): Promise<void> {
+    if (process.env['SUPPORTPLANE_QUEUE_BACKEND'] !== 'nats-jetstream' || !process.env['NATS_URL']) {
+      return;
+    }
+    const envelope = NatsOutboxEnvelope.parse({
+      envelopeVersion: 'supportplane.outbox.v1',
+      stream: 'SUPPORTPLANE_OUTBOX',
+      subject: NATS_SUBJECT,
+      tenantId: item.tenantId,
+      outboxItemId: item.id,
+      supportActionId: item.supportActionId,
+      sessionId: item.sessionId,
+      actionType: item.actionType,
+      idempotencyKey: item.idempotencyKey,
+      deliveryMode: 'mock',
+      retry: {
+        attemptCount: item.attemptCount,
+        maxAttempts: item.maxAttempts,
+        deadLetterSubject: 'supportplane.outbox.deadletter',
+      },
+      safety: {
+        realNetwork: false,
+        writebackEnabled: false,
+        externalWriteAttempted: false,
+        noSecrets: true,
+      },
+      createdAt: new Date().toISOString(),
+    });
+    let nc: Awaited<ReturnType<typeof connect>> | undefined;
+    try {
+      nc = await connect({ servers: process.env['NATS_URL'] });
+      const jsm = await nc.jetstreamManager();
+      try {
+        await jsm.streams.info(NATS_STREAM);
+      } catch {
+        await jsm.streams.add({
+          name: NATS_STREAM,
+          subjects: ['supportplane.outbox.*'],
+          storage: StorageType.File,
+        });
+      }
+      try {
+        await jsm.consumers.info(NATS_STREAM, NATS_CONSUMER);
+      } catch {
+        await jsm.consumers.add(NATS_STREAM, {
+          durable_name: NATS_CONSUMER,
+          ack_policy: AckPolicy.Explicit,
+          filter_subject: NATS_SUBJECT,
+        });
+      }
+      await nc.jetstream().publish(NATS_SUBJECT, StringCodec().encode(JSON.stringify(envelope)), {
+        msgID: item.idempotencyKey,
+      });
+    } finally {
+      await nc?.drain().catch(() => undefined);
+    }
   }
 
   private async requireSession(identity: CurrentIdentity, sessionId: string) {

@@ -1,0 +1,43 @@
+$ kubectl rollout restart deployments
+deployment.apps/supportplane-api restarted
+deployment.apps/supportplane-web restarted
+deployment.apps/supportplane-worker restarted
+$ rollout status api
+Waiting for deployment "supportplane-api" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "supportplane-api" rollout to finish: 1 old replicas are pending termination...
+deployment "supportplane-api" successfully rolled out
+$ rollout status web
+deployment "supportplane-web" successfully rolled out
+$ rollout status worker
+deployment "supportplane-worker" successfully rolled out
+$ migrate deploy
+Loaded Prisma config from prisma.config.ts.
+
+prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+Prisma schema loaded from prisma/schema.prisma.
+Datasource "db": PostgreSQL database "supportplane", schema "public" at "postgres.supportplane-data.svc.cluster.local:5432"
+
+8 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+$ db seed
+Loaded Prisma config from prisma.config.ts.
+
+prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+prisma:warn Prisma failed to detect the libssl/openssl version to use, and may not work as expected. Defaulting to "openssl-1.1.x".
+Please manually install OpenSSL via `apt-get update -y && apt-get install -y openssl` and try installing Prisma again. If you're running Prisma on Docker, add this command to your Dockerfile, or switch to an image that already has OpenSSL installed.
+Running seed command `tsx prisma/seed.ts` ...
+Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, credential references, and delivery policies
+
+🌱  The seed command has been executed.
+$ kubectl get pods -n supportplane-app
+NAME                                  READY   STATUS        RESTARTS   AGE
+supportplane-api-65767967c9-bwr29     1/1     Terminating   0          3m51s
+supportplane-api-685fccdbc6-nljkr     1/1     Running       0          13s
+supportplane-web-54dcbc9664-wh4zc     1/1     Running       0          13s
+supportplane-worker-bcd5d48c9-8kr2c   1/1     Running       0          13s

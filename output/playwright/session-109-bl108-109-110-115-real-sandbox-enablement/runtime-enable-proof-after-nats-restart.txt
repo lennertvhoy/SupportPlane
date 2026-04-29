@@ -1,0 +1,23 @@
+=== BL-108/109/110/115 real sandbox enablement verification ===
+API: http://localhost:4210
+Web: http://localhost:3300
+Artifacts: output/playwright/session-109-bl108-109-110-115-real-sandbox-enablement
+1. API health
+PASS
+2. Login operator/admin
+PASS
+3. OpenBao resolver + Zammad sandbox read
+PASS
+4. No raw secret leak in connector/API/evidence summaries
+PASS
+5. Ollama local provider or deterministic fallback
+PASS
+6. Egress policy decisions
+PASS
+7. Writeback blocked API result
+PASS
+8. NATS JetStream bridge publish/status
+PASS
+9. UI label proof
+PASS
+=== BL-108/109/110/115 verification passed ===

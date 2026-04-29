@@ -8,6 +8,7 @@ import {
   AIContextProvenance,
   AuditEventType,
   AuditActorType,
+  ConnectorErrorCode,
   ConnectorMode,
   InternalNoteWritebackResult,
   EvidenceBundleFormat,
@@ -36,6 +37,7 @@ import {
   createZammadAdapter,
   type TicketingAdapterDriver,
 } from '@supportplane/connectors';
+import { evaluateEgressPolicy } from '@supportplane/policy';
 import {
   createDefaultModelGateway,
   GenerateDraftResponse,
@@ -47,6 +49,7 @@ import {
 import { type DevIdentity } from '../auth/auth.types.js';
 import { requirePermission } from '../auth/rbac.js';
 import { ConnectorsService } from '../connectors/connectors.service.js';
+import { CredentialResolverService } from '../credential-references/credential-resolver.service.js';
 import {
   buildEvidenceBundle,
   bundleToMarkdown,
@@ -64,12 +67,50 @@ export class SupportSessionsService {
   constructor(
     @Inject(ConnectorsService)
     private readonly connectorsService: ConnectorsService,
+    @Inject(CredentialResolverService)
+    private readonly credentialResolver: CredentialResolverService,
     @Inject(InMemoryStore)
     private readonly store: Store
   ) {}
 
-  private getAdapter(): TicketingAdapterDriver {
-    return this.connectorsService.getZammadAdapter() ?? this.fallbackAdapter;
+  private async getAdapter(identity: DevIdentity, installation?: { id: string; secretReferenceIds: string[] }): Promise<{
+    adapter: TicketingAdapterDriver;
+    credentialResolution?: Record<string, unknown>;
+    egressDecision?: ReturnType<typeof evaluateEgressPolicy>;
+  }> {
+    const mode = this.connectorsService.getMode();
+    if (mode !== ConnectorMode.enum.zammad) {
+      return { adapter: this.connectorsService.getZammadAdapter() ?? this.fallbackAdapter };
+    }
+
+    const baseUrl = process.env['ZAMMAD_BASE_URL'];
+    const egressDecision = evaluateEgressPolicy({
+      tenantId: identity.tenantId,
+      connectorType: 'zammad',
+      operation: 'read',
+      url: baseUrl,
+    });
+    if (!egressDecision.allowed) {
+      throw new ForbiddenException({ message: egressDecision.reason, egressDecision });
+    }
+    if (!baseUrl || !installation) {
+      throw new BadRequestException('Zammad sandbox read is not configured with an active installation.');
+    }
+
+    const resolved = await this.credentialResolver.resolveZammadApiToken(
+      identity.tenantId,
+      installation as never
+    );
+    const adapter = await this.connectorsService.createResolvedZammadAdapter({
+      baseUrl,
+      apiToken: resolved.apiToken,
+      timeoutMs: 10000,
+    });
+    return {
+      adapter,
+      credentialResolution: resolved.metadata,
+      egressDecision,
+    };
   }
 
   async createSession(
@@ -134,14 +175,13 @@ export class SupportSessionsService {
   }> {
     requirePermission(identity, 'ticket_context:load');
     const session = await this.getSession(identity, sessionId);
-    const adapter = this.getAdapter();
     const mode = this.connectorsService.getMode();
 
     // Resolve connector installation provenance
     const installations = await this.store.listConnectorInstallations(identity.tenantId);
     const activeInstallation = installations.find(
-      (i) => i.adapterType === adapter.adapterType && i.enabled
-    ) ?? installations.find((i) => i.adapterType === adapter.adapterType);
+      (i) => i.adapterType === 'zammad' && i.enabled
+    ) ?? installations.find((i) => i.adapterType === 'zammad');
     const credentialRefs = activeInstallation
       ? await Promise.all(
           (activeInstallation.secretReferenceIds ?? []).map((cid) =>
@@ -150,6 +190,8 @@ export class SupportSessionsService {
         )
       : [];
     const linkedCredentialRefs = credentialRefs.filter((c): c is NonNullable<typeof c> => c != null);
+
+    const { adapter, credentialResolution, egressDecision } = await this.getAdapter(identity, activeInstallation);
 
     const ticket = await adapter.getTicket(
       identity.tenantId as TenantId,
@@ -193,6 +235,13 @@ export class SupportSessionsService {
               realNetwork: isRealNetwork,
               writebackEnabled: false,
               noRealNetworkCall: !isRealNetwork,
+              credentialResolver: credentialResolution ?? {
+                resolver: 'disabled',
+                resolverMode: 'disabled',
+                status: 'disabled',
+                secretExposed: false,
+              },
+              egressDecision: egressDecision?.decision ?? 'not_applicable_mock_mode',
             }
           : null,
       },
@@ -232,7 +281,22 @@ export class SupportSessionsService {
       AuditEventType.enum.zammad_ticket_loaded,
       'ticket_reference',
       (ticket as { id: string }).id,
-      { externalTicketId, connectorMode: mode, connectorType: adapter.adapterType, connectorInstallationId: activeInstallation?.id, noRealNetworkCall: true }
+      {
+        externalTicketId,
+        connectorMode: mode,
+        connectorType: adapter.adapterType,
+        connectorInstallationId: activeInstallation?.id,
+        noRealNetworkCall: !isRealNetwork,
+        egressDecision: egressDecision?.decision,
+        credentialResolver: credentialResolution
+          ? {
+              resolver: credentialResolution.resolver,
+              resolverMode: credentialResolution.resolverMode,
+              status: credentialResolution.status,
+              secretExposed: false,
+            }
+          : undefined,
+      }
     );
 
     return { ticketReference: ticket, contextPacket: packet, session: updatedSession };
@@ -285,6 +349,14 @@ export class SupportSessionsService {
         promptVersion: response.prompt.version,
         contextHash: response.contextHash,
         mockOnly: response.safety.mockOnly,
+        providerMode: response.usage.providerMode,
+        fallbackUsed: response.usage.fallbackUsed,
+        noCloudCall: response.usage.noCloudCall,
+        cloudCallMade: response.safety.cloudCallMade,
+        localProviderCallMade: response.safety.localProviderCallMade,
+        latencyMs: response.usage.latencyMs,
+        autonomousSend: response.safety.autonomousSend,
+        writebackAllowed: response.safety.writebackAllowed,
       }
     );
 
@@ -408,13 +480,20 @@ export class SupportSessionsService {
   ): Promise<unknown> {
     requirePermission(identity, 'ticket:write');
     await this.getSession(identity, sessionId);
-    const adapter = this.getAdapter();
     const mode = this.connectorsService.getMode();
 
     const draft = await this.store.getInternalNoteDraft(identity.tenantId, dto.draftId);
     if (!draft) {
       throw new NotFoundException(`Draft ${dto.draftId} not found`);
     }
+
+    const egressDecision = evaluateEgressPolicy({
+      tenantId: identity.tenantId,
+      connectorType: 'zammad',
+      operation: 'writeback',
+      url: process.env['ZAMMAD_BASE_URL'],
+      writebackEnabled: false,
+    });
 
     await this.appendAuditEvent(
       identity,
@@ -425,57 +504,44 @@ export class SupportSessionsService {
       {
         externalTicketId: dto.externalTicketId,
         connectorMode: mode,
-        connectorType: adapter.adapterType,
+        connectorType: 'zammad',
+        egressDecision: egressDecision.decision,
+        writebackEnabled: false,
+        externalWriteAttempted: false,
       }
     );
 
-    const result = await adapter.writeInternalNote(dto.externalTicketId, dto.body);
-    const typedResult = result as { success: boolean; externalArticleId?: string; error?: { code: string; message: string } };
-
-    if (typedResult.success) {
-      await this.appendAuditEvent(
-        identity,
-        sessionId,
-        AuditEventType.enum.internal_note_writeback_succeeded,
-        'internal_note_draft',
-        dto.draftId,
-        {
-          externalTicketId: dto.externalTicketId,
-          externalArticleId: typedResult.externalArticleId,
-          connectorMode: mode,
-          connectorType: adapter.adapterType,
-        }
-      );
-    } else {
-      await this.appendAuditEvent(
-        identity,
-        sessionId,
-        AuditEventType.enum.internal_note_writeback_failed,
-        'internal_note_draft',
-        dto.draftId,
-        {
-          externalTicketId: dto.externalTicketId,
-          connectorMode: mode,
-          connectorType: adapter.adapterType,
-          errorCode: typedResult.error?.code,
-          errorMessage: typedResult.error?.message,
-        }
-      );
-    }
+    await this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.internal_note_writeback_failed,
+      'internal_note_draft',
+      dto.draftId,
+      {
+        externalTicketId: dto.externalTicketId,
+        connectorMode: mode,
+        connectorType: 'zammad',
+        errorCode: 'WRITEBACK_BLOCKED',
+        errorMessage: egressDecision.reason,
+        egressDecision: egressDecision.decision,
+        writebackEnabled: false,
+        externalWriteAttempted: false,
+      }
+    );
 
     return InternalNoteWritebackResult.parse({
-      success: typedResult.success,
-      externalArticleId: typedResult.externalArticleId,
-      error: typedResult.error
-        ? {
-            code: typedResult.error.code as never,
-            message: typedResult.error.message,
-            safeToDisplay: true,
-          }
-        : undefined,
+      success: false,
+      error: {
+        code: ConnectorErrorCode.enum.NOTEBACK_WRITE_FAILED,
+        message: egressDecision.reason,
+        safeToDisplay: true,
+      },
       metadata: {
         connectorMode: mode,
-        connectorType: adapter.adapterType,
+        connectorType: 'zammad',
+        egressDecision: egressDecision.decision,
+        writebackEnabled: false,
+        externalWriteAttempted: false,
       },
     });
   }

@@ -4,6 +4,39 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-29 - BL-108/109/110/115 Real Sandbox Enablement Gates
+
+**Type:** implementation
+**Status:** BL-108 PARTIAL; BL-109/BL-110/BL-115 ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** recorded in final handoff for this slice
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Added host-controlled Ollama provider path with local provider metadata, deterministic fallback, redaction before provider call, no-cloud marker, and no-autonomous-send marker. Runtime proof used fallback, so BL-108 remains partial.
+- Added local sandbox OpenBao credential resolver for linked Zammad credential references; raw Zammad token stays backend-only and API/UI/evidence surfaces show metadata only.
+- Preserved PostgreSQL outbox as canonical truth and added NATS JetStream product stream/subject/consumer bridge for approved outbox envelopes with idempotency key preservation.
+- Added deny-by-default connector egress policy, local Zammad sandbox read allowlist, production/external URL denial, kill-switch denial, and default writeback denial.
+- Updated Kubernetes local config for OpenBao, NATS, and host-controlled Ollama access; BL-111 writeback was not implemented.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-109-bl108-109-110-115-real-sandbox-enablement/`
+- Screenshot count: 8
+- CLI artifacts: baseline/runtime, OpenBao, Ollama, NATS, egress, validation, boundary, local MVP, screenshot hashes, and final git status proofs.
+
+### What remains mocked or not implemented
+
+- Zammad internal-note writeback remains blocked until BL-111.
+- Ollama fallback is deterministic and labeled if host-controlled Ollama or the configured model is unavailable.
+- OpenBao is local sandbox-only, not production secret management.
+- NATS is local sandbox-only, not production broker HA/TLS/auth.
+- MinIO evidence persistence and Mailpit notification capture remain future work.
+
+---
+
 ## 2026-04-29 - BL-107 Closure Reconciliation
 
 **Type:** closure_repair

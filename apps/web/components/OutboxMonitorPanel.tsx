@@ -86,7 +86,7 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
     >
       <div className="space-y-3">
         <div className="rounded border border-amber-700/40 bg-amber-900/20 px-2 py-1.5 text-[11px] text-amber-300">
-          Local PostgreSQL worker foundation. Delivery mode is mock only. No real writeback, email, telephony, AI provider call, external broker, object storage, raw media, or production queue semantics.
+          NATS JetStream local sandbox bridge with durable local worker. PostgreSQL remains canonical outbox truth. No real writeback, email, telephony, cloud AI, object storage, raw media, or production queue semantics.
         </div>
 
         {worker && (
@@ -97,6 +97,12 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
             <div><span className="text-cockpit-500">Store</span><div>{worker.storeMode}</div></div>
             <div><span className="text-cockpit-500">Auth</span><div>{identity.authMode}</div></div>
             <div><span className="text-cockpit-500">Safety</span><div>realNetwork: false</div></div>
+          </div>
+        )}
+        {worker && (
+          <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2 text-[11px] text-cockpit-300">
+            <div className="font-medium text-cockpit-100">NATS JetStream</div>
+            <div>Durable local worker · fallback: postgres-local-outbox · writeback blocked</div>
           </div>
         )}
 

@@ -58,7 +58,7 @@ export const GreetingSuggestionRequest = z.object({
   sessionTitle: z.string().optional(),
   modelSelection: z
     .object({
-      provider: z.enum(['mock']).default('mock'),
+      provider: z.enum(['mock', 'ollama']).default('mock'),
       model: z.string().min(1).max(128).default('mock-greeting-v1'),
     })
     .optional(),
@@ -69,7 +69,7 @@ export type GreetingSuggestionRequest = z.infer<
 
 export const GreetingSuggestionResponse = z.object({
   suggestion: GreetingSuggestion,
-  provider: z.enum(['mock']),
+  provider: z.enum(['mock', 'ollama']),
   model: z.string().min(1).max(128),
   prompt: z.object({
     id: z.string().min(1).max(128),
@@ -83,7 +83,7 @@ export const GreetingSuggestionResponse = z.object({
     totalTokens: z.number().int().nonnegative().optional(),
     costEstimateUsd: z.number().nonnegative().optional(),
     latencyMs: z.number().int().nonnegative().optional(),
-    placeholder: z.literal(true).default(true),
+    placeholder: z.boolean().default(true),
   }),
   safety: z.object({
     mockOnly: z.literal(true),

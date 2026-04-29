@@ -7,6 +7,7 @@ export * from './ticket.js';
 export * from './connector-installation.js';
 export * from './ai-context.js';
 export * from './screen-observation.js';
+export * from './sandbox-enablement.js';
 export * from './policy.js';
 export * from './audit.js';
 export * from './connector.js';

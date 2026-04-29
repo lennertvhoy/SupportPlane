@@ -239,17 +239,31 @@ async function main() {
     {
       id: 'conn-inst-dev-001',
       tenantId: 'dev-tenant',
-      name: 'Local Zammad Mock',
-      displayName: 'Local Zammad Mock',
-      description: 'Mock Zammad connector for local development and testing. No real network calls.',
+      name: 'Local Zammad Sandbox',
+      displayName: 'Local Zammad Sandbox',
+      description: 'Real local Zammad sandbox read connector. Read-only; writeback remains blocked.',
       adapterType: 'zammad',
       capabilities: ['read_tickets', 'read_customers', 'write_notes'],
-      config: { mockMode: true, enabled: true, validateBeforeWrite: true, timeoutMs: 5000, capabilities: ['read_tickets'], baseUrlPlaceholder: 'mock-zammad' },
+      config: {
+        mockMode: false,
+        enabled: true,
+        validateBeforeWrite: true,
+        timeoutMs: 10000,
+        capabilities: ['read_tickets', 'read_customers'],
+        baseUrlPlaceholder: 'zammad.supportplane-integrations.svc.cluster.local',
+      },
       status: 'active',
-      mockMode: true,
+      mockMode: false,
       enabled: true,
-      safetyFlags: { validateBeforeWrite: true, maxRetries: 3, allowRealCalls: false },
-      timeoutMs: 5000,
+      safetyFlags: {
+        validateBeforeWrite: true,
+        maxRetries: 3,
+        allowRealCalls: true,
+        sandboxAllowlistOnly: true,
+        writebackEnabled: false,
+        secretsResolvedServerSide: true,
+      },
+      timeoutMs: 10000,
     },
     {
       id: 'conn-inst-alt-001',
@@ -272,7 +286,20 @@ async function main() {
     await prisma.connectorInstallation.upsert({
       where: { id: inst.id },
       create: inst,
-      update: inst,
+      update: {
+        tenantId: inst.tenantId,
+        name: inst.name,
+        displayName: inst.displayName,
+        description: inst.description,
+        adapterType: inst.adapterType,
+        capabilities: inst.capabilities,
+        config: inst.config,
+        status: inst.status,
+        mockMode: inst.mockMode,
+        enabled: inst.enabled,
+        safetyFlags: inst.safetyFlags,
+        timeoutMs: inst.timeoutMs,
+      },
     });
   }
 
@@ -297,11 +324,11 @@ async function main() {
       id: 'cred-ref-dev-001',
       tenantId: 'dev-tenant',
       connectorType: 'zammad',
-      displayName: 'Dev Zammad API Token (Placeholder)',
-      description: 'Local dev placeholder credential reference. No real secret stored.',
+      displayName: 'OpenBao Zammad Sandbox API Token',
+      description: 'Local sandbox OpenBao credential reference. Raw token is resolved server-side only.',
       status: 'active',
       secretKind: 'api_token_placeholder',
-      secretRef: 'local-dev-placeholder',
+      secretRef: 'secret/data/supportplane/dev/zammad',
       createdByUserId: 'dev-admin',
     },
     {
@@ -332,7 +359,16 @@ async function main() {
     await prisma.connectorCredentialReference.upsert({
       where: { id: cred.id },
       create: cred,
-      update: cred,
+      update: {
+        tenantId: cred.tenantId,
+        connectorType: cred.connectorType,
+        displayName: cred.displayName,
+        description: cred.description,
+        status: cred.status,
+        secretKind: cred.secretKind,
+        secretRef: cred.secretRef,
+        createdByUserId: cred.createdByUserId,
+      },
     });
   }
 
