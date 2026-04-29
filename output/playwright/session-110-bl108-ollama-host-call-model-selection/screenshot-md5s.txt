@@ -1,0 +1,8 @@
+c27282880f500ae66f452e8b8c9a37e9  01-cluster-api-health-current-head.png
+6b65821ac2137c3eb2db1a0fc3441f86  02-session-selected-zammad-loaded.png
+a1ed61b6f5c6d3527f2a99e045d6dcb7  03-ollama-full-page.png
+2132a2ad5caa5d1c4825afd6034a6518  04-audit-trail-ollama-draft-event.png
+3440f02ba3e07ed51ef8b229e63d7997  05-ai-context-quality-panel.png
+f441a9bb4151a8887fa399e75e19465b  06-writeback-blocked-delivery-policy.png
+fdecdaae5f9115df8299e0b4b3e94bb0  07-backlog-md-bl108-partial.png
+e7bfd248634a3467de085af47427aad4  08-next-actions-md.png

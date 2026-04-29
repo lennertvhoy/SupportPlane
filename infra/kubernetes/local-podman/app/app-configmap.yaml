@@ -23,7 +23,10 @@ data:
   NATS_OUTBOX_SUBJECT: "supportplane.outbox.ready"
   NATS_OUTBOX_CONSUMER: "SUPPORTPLANE_WORKER"
   OLLAMA_ENABLED: "true"
-  OLLAMA_BASE_URL: "http://host.containers.internal:11434"
+  # BL-108: host-controlled Ollama reachable via podman0 bridge (10.88.0.1)
+  # host.containers.internal does not resolve in this Kind/Podman rootless setup.
+  # The host Ollama was reconfigured to listen on 0.0.0.0 so cluster pods can reach it.
+  OLLAMA_BASE_URL: "http://10.88.0.1:11434"
   OLLAMA_MODEL: "llama3.1:8b"
   OLLAMA_TIMEOUT_MS: "15000"
   OLLAMA_FALLBACK_ENABLED: "true"

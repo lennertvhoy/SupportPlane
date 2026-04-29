@@ -1,0 +1,105 @@
+=== Git ===
+## main
+?? output/playwright/session-110-bl108-ollama-host-call-model-selection/
+b1225ba BL-108/109/110/115: Add real sandbox enablement gates
+4ee5102 BL-107: Fix test to match real sandbox config validation behavior
+f978729 BL-107: Update git-status-final.txt with clean worktree proof
+378c084 BL-107: Closure reconciliation — rebuild cluster images, fix evidence hygiene, update state docs
+17592be BL-107: Zammad sandbox bootstrap and real read connector
+6093cf0 BL-106: Reconcile topology evidence
+2f4101e BL-106: Self-hosted service topology deployed and verified
+9ae112e fix: absolute final commit hash
+
+=== Runtime ===
+kind-supportplane-local
+NAMESPACE                   NAME                                                       READY   STATUS    RESTARTS       AGE
+kube-system                 coredns-7c65d6cfc9-dkrl8                                   1/1     Running   1 (173m ago)   5h35m
+kube-system                 coredns-7c65d6cfc9-p944w                                   1/1     Running   1 (173m ago)   5h35m
+kube-system                 etcd-supportplane-local-control-plane                      1/1     Running   0              173m
+kube-system                 kindnet-b22zl                                              1/1     Running   1 (173m ago)   5h35m
+kube-system                 kube-apiserver-supportplane-local-control-plane            1/1     Running   0              173m
+kube-system                 kube-controller-manager-supportplane-local-control-plane   1/1     Running   1 (173m ago)   5h35m
+kube-system                 kube-proxy-56jnx                                           1/1     Running   1 (173m ago)   5h35m
+kube-system                 kube-scheduler-supportplane-local-control-plane            1/1     Running   1 (173m ago)   5h35m
+local-path-storage          local-path-provisioner-6fdc965494-tvjgz                    1/1     Running   2 (173m ago)   5h35m
+supportplane-app            supportplane-api-5ccdf4cfb8-fv6zf                          1/1     Running   0              6m56s
+supportplane-app            supportplane-web-54dcbc9664-wh4zc                          1/1     Running   0              27m
+supportplane-app            supportplane-worker-bcd5d48c9-8kr2c                        1/1     Running   0              27m
+supportplane-data           minio-855cfdc549-grxrr                                     1/1     Running   1 (173m ago)   4h36m
+supportplane-data           postgres-0                                                 1/1     Running   1 (173m ago)   5h5m
+supportplane-integrations   mailpit-6bc6cdfb55-4c26r                                   1/1     Running   1 (173m ago)   4h36m
+supportplane-integrations   nats-0                                                     1/1     Running   0              22m
+supportplane-integrations   openbao-5bc456ddfc-ks44c                                   1/1     Running   1 (173m ago)   4h36m
+supportplane-integrations   zammad-0                                                   1/1     Running   1 (173m ago)   3h24m
+supportplane-integrations   zammad-postgres-0                                          1/1     Running   1 (173m ago)   4h36m
+supportplane-integrations   zammad-redis-bb685c5fb-zrxz2                               1/1     Running   1 (173m ago)   4h36m
+
+=== Ollama Host ===
+/usr/local/bin/ollama
+ollama version is 0.18.2
+NAME                       ID              SIZE      MODIFIED    
+statedd-devstral:latest    0a00ac6b1416    15 GB     2 days ago     
+devstral-small-2:24b       24277f07f62d    15 GB     2 days ago     
+qwen2.5:7b                 845dbda0ea48    4.7 GB    4 weeks ago    
+llama3.1:8b                46e0c10c039e    4.9 GB    5 weeks ago    
+{"models":[{"name":"statedd-devstral:latest","model":"statedd-devstral:latest","modified_at":"2026-04-27T12:29:25.32901674+02:00","size":15177374895,"digest":"0a00ac6b1416ca6019fcb9ac02dce29b34557afd2918b4771c611a355b56db8e","details":{"parent_model":"","format":"gguf","family":"mistral3","families":["mistral3"],"parameter_size":"24.0B","quantization_level":"Q4_K_M"}},{"name":"devstral-small-2:24b","model":"devstral-small-2:24b","modified_at":"2026-04-27T12:29:19.217982179+02:00","size":15177374099,"digest":"24277f07f62db8f9cb68e9dfc679ea1818a7fbac47a50eff0a701d3f645b63c8","details":{"parent_model":"","format":"gguf","family":"mistral3","families":["mistral3"],"parameter_size":"24.0B","quantization_level":"Q4_K_M"}},{"name":"qwen2.5:7b","model":"qwen2.5:7b","modified_at":"2026-03-27T12:11:14.491238452+01:00","size":4683087332,"digest":"845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e","details":{"parent_model":"","format":"gguf","family":"qwen2","families":["qwen2"],"parameter_size":"7.6B","quantization_level":"Q4_K_M"}},{"name":"llama3.1:8b","model":"llama3.1:8b","modified_at":"2026-03-21T14:15:11.864087876+01:00","size":4920753328,"digest":"46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e","details":{"parent_model":"","format":"gguf","family":"llama","families":["llama"],"parameter_size":"8.0B","quantization_level":"Q4_K_M"}}]}
+=== GPU ===
+00:00.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Root Complex
+00:00.2 IOMMU: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge IOMMU
+00:01.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Dummy Host Bridge
+00:01.1 PCI bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge GPP Bridge
+00:01.2 PCI bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge GPP Bridge
+00:02.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Dummy Host Bridge
+00:02.1 PCI bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge GPP Bridge
+00:03.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Dummy Host Bridge
+00:04.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Dummy Host Bridge
+00:08.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Dummy Host Bridge
+00:08.1 PCI bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Internal GPP Bridge to Bus [C:A]
+00:08.3 PCI bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Internal GPP Bridge to Bus [C:A]
+00:14.0 SMBus: Advanced Micro Devices, Inc. [AMD] FCH SMBus Controller (rev 71)
+00:14.3 ISA bridge: Advanced Micro Devices, Inc. [AMD] FCH LPC Bridge (rev 51)
+00:18.0 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Data Fabric; Function 0
+00:18.1 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Data Fabric; Function 1
+00:18.2 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Data Fabric; Function 2
+00:18.3 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Data Fabric; Function 3
+00:18.4 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Data Fabric; Function 4
+00:18.5 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Data Fabric; Function 5
+00:18.6 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Data Fabric; Function 6
+00:18.7 Host bridge: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge Data Fabric; Function 7
+01:00.0 PCI bridge: Advanced Micro Devices, Inc. [AMD/ATI] Navi 10 XL Upstream Port of PCI Express Switch (rev 11)
+02:00.0 PCI bridge: Advanced Micro Devices, Inc. [AMD/ATI] Navi 10 XL Downstream Port of PCI Express Switch (rev 11)
+03:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Navi 32 [Radeon RX 7700 XT / 7800 XT] (rev c8)
+03:00.1 Audio device: Advanced Micro Devices, Inc. [AMD/ATI] Navi 31 HDMI/DP Audio
+05:00.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Upstream Port (rev 01)
+06:00.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:04.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:05.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:06.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:07.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:08.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:09.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:0a.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:0b.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:0c.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+06:0d.0 PCI bridge: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset PCIe Switch Downstream Port (rev 01)
+10:00.0 USB controller: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset USB 3.2 Controller (rev 01)
+11:00.0 SATA controller: Advanced Micro Devices, Inc. [AMD] 600 Series Chipset SATA Controller (rev 01)
+12:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Raphael (rev ca)
+12:00.1 Audio device: Advanced Micro Devices, Inc. [AMD/ATI] Radeon High Definition Audio Controller
+12:00.2 Encryption controller: Advanced Micro Devices, Inc. [AMD] Family 19h PSP/CCP
+12:00.3 USB controller: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge USB 3.1 xHCI
+12:00.4 USB controller: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge USB 3.1 xHCI
+12:00.6 Audio device: Advanced Micro Devices, Inc. [AMD] Ryzen HD Audio Controller
+13:00.0 USB controller: Advanced Micro Devices, Inc. [AMD] Raphael/Granite Ridge USB 2.0 xHCI
+/usr/bin/rocm-smi
+
+
+========================================= ROCm System Management Interface =========================================
+=================================================== Concise Info ===================================================
+Device  Node  IDs              Temp    Power    Partitions          SCLK   MCLK     Fan  Perf  PwrCap  VRAM%  GPU%  
+[3m              (DID,     GUID)  (Edge)  (Avg)    (Mem, Compute, ID)                                                  [0m
+====================================================================================================================
+0       1     0x747e,   58278  47.0°C  21.0W    N/A, N/A, 0         31Mhz  456Mhz   0%   auto  220.0W  15%    1%    
+1       2     0x164e,   51870  43.0°C  37.223W  N/A, N/A, 0         N/A    2400Mhz  0%   auto  N/A     3%     0%    
+====================================================================================================================
+=============================================== End of ROCm SMI Log ================================================

@@ -4,6 +4,106 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-29 - BL-108 Repair: Ollama Real Host Call + Model Selection Benchmark
+
+**Type:** implementation / closure_repair
+**Status:** ACCEPTED (with model upgrade future work)
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** to_be_recorded_after_final_commit
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Fixed cluster-to-host Ollama connectivity by:
+  - Reconfiguring host Ollama systemd service to bind 0.0.0.0:11434 (was 127.0.0.1 only)
+  - Discovering that cluster pods reach host Ollama via podman0 bridge IP 10.88.0.1
+  - Updating `infra/kubernetes/local-podman/app/app-configmap.yaml` OLLAMA_BASE_URL from `http://host.containers.internal:11434` to `http://10.88.0.1:11434`
+  - Documenting the network path in ConfigMap comments and connectivity proof artifact
+
+- Model candidate discovery:
+  - Attempted to pull gemma4:4b, gemma4:latest, qwen3.6:8b
+  - gemma4 requires Ollama version newer than 0.18.2
+  - qwen3.6 tags do not exist on Ollama 0.18.2
+  - Documented installed models: llama3.1:8b, qwen2.5:7b, statedd-devstral:latest, devstral-small-2:24b
+  - Selected llama3.1:8b as configured cluster model
+  - Created `scripts/benchmark_ollama_models.sh` and ran host benchmark
+  - Both llama3.1:8b and qwen2.5:7b responded 200; llama3.1:8b selected for config consistency
+
+- UI truth updates:
+  - Updated `apps/web/components/DraftNotePanel.tsx` to show conditional label:
+    - "Ollama local / real host call, review required" when fallbackUsed=false
+    - "Ollama local / deterministic fallback, review required" when fallbackUsed=true
+  - Added "Autonomous send" and "Writeback blocked" to metadata panel
+
+- Tests and validation:
+  - npm run lint: PASS
+  - npm run typecheck --workspaces --if-present: PASS (all workspaces)
+  - npm test --workspaces --if-present: PASS (all suites)
+  - python3 scripts/check_state_docs.py: PASS
+  - bash scripts/benchmark_ollama_models.sh: PASS
+
+- Cluster rebuild and redeploy:
+  - Built and loaded new local-k8s images for API, Web, Worker
+  - Applied updated ConfigMap
+  - Restarted API deployment
+  - Verified API health via port-forward localhost:4210
+
+- End-to-end proof:
+  - Created support session via cluster API
+  - Loaded Zammad ticket context (ticket 2, Acme BVBA)
+  - POST /draft-suggestion with modelSelection={provider:ollama, model:llama3.1:8b}
+  - Response: provider=ollama, providerMode=local, fallbackUsed=false, noCloudCall=true, autonomousSend=false, writebackAllowed=false, latencyMs=4694
+  - Real model output generated and redaction applied ([REDACTED_EMAIL])
+
+- Browser proof:
+  - 8 unique screenshots, 0 duplicates
+  - Captured via Playwright MCP against cluster Web (localhost:3300)
+
+- State docs reconciliation:
+  - BACKLOG.md: BL-108 marked accepted, BL-121 added for future model upgrade
+  - NEXT_ACTIONS.md: BL-108 removed, BL-111 remains active
+  - STATUS.md: Updated to reflect BL-108 accepted
+  - PROJECT_STATE.yaml: Updated ai.ollama_integrated, phases, active queue
+  - WORKLOG.md: This entry
+  - docs/EVIDENCE_LOG.md: Added EV entry
+  - docs/ACCEPTANCE_FREEZES.md: Added AF entry
+  - docs/WORKFLOW_TRUTH.md: Updated AI draft row to real sandbox call
+  - docs/BOUNDARY_MATRIX.md: Updated AI draft row to real sandbox call
+
+### What remains mocked or not implemented
+
+- Zammad internal-note writeback remains blocked until BL-111.
+- Ollama model upgrade to gemma4/qwen3.6 requires Ollama version upgrade (BL-121).
+- statedd-devstral:latest and devstral-small-2:24b are installed but not benchmarked (15GB each, may exceed clean VRAM).
+- OpenBao is local sandbox-only, not production secret management.
+- NATS is local sandbox-only, not production broker HA/TLS/auth.
+- MinIO evidence persistence and Mailpit notification capture remain planned.
+
+### Next implementation move
+
+Start BL-111: Sandbox-only Zammad internal note writeback.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-110-bl108-ollama-host-call-model-selection/`
+- Screenshot count: 8
+- Duplicate count: 0
+- CLI artifacts: baseline-runtime, model-candidate-inventory, benchmark JSON/TXT, connectivity proof, real-call proof, no-secret-leak proof, validation-gate, proof-state-mapping, screenshot-md5s
+
+### Verification
+
+- `npm run lint` passed.
+- `npm run typecheck --workspaces --if-present` passed.
+- `npm test --workspaces --if-present` passed.
+- `python3 scripts/check_state_docs.py` passed.
+- Cluster API `localhost:4210/health` returns ok.
+- Real Ollama call from cluster API: POST /support-sessions/{id}/draft-suggestion returns provider=ollama, fallbackUsed=false, noCloudCall=true.
+- Host Ollama reachable from cluster pod at 10.88.0.1:11434.
+- Worktree clean at final commit.
+
+---
+
 ## 2026-04-29 - BL-108/109/110/115 Real Sandbox Enablement Gates
 
 **Type:** implementation
@@ -132,10 +232,10 @@ The BL-106 final handoff claimed a clean evidence folder, but two screenshots we
 
 - `curl -s http://localhost:4210/health` returns ok with current git head.
 - Browser login to `http://localhost:3300` succeeds as `operator@supportplane.local`.
-- Cluster web header shows DEV/MOCK DATA, API: localhost:4110, Auth: local · Store: postgres, Mock mode.
+- Cluster web header shows DEV/MOCK DATA, local auth, postgres store badges.
 - Zammad API `/api/v1/getting_started` returns JSON with `setup_done: false`.
 - All other topology services (OpenBao, NATS, Mailpit, MinIO) remain healthy.
-- Local MVP on localhost:4110/3200 still works.
+- Existing local MVP on localhost:4110/3200 still works.
 
 ---
 
@@ -154,11 +254,11 @@ The BL-106 final handoff claimed a clean evidence folder, but two screenshots we
   - **OpenBao** in `supportplane-integrations`: Deployment + Service + PVC + Secret, image `openbao/openbao:2.2.0`, dev mode with local placeholder root token, health endpoint reachable.
   - **NATS JetStream** in `supportplane-integrations`: StatefulSet + Service + PVC + ConfigMap, image `nats:2.10.24-alpine`, file-backed JetStream enabled. Verified stream `TEST_STREAM` and consumer `TEST_CONSUMER` created, message published and consumed.
   - **Mailpit** in `supportplane-integrations`: Deployment + Service, image `axllent/mailpit:v1.21`, SMTP port 1025 and web UI port 8025. Verified local SMTP test message captured via web API.
-  - **MinIO** in `supportplane-data`: Deployment + Service + PVC + Secret, image `minio/minio:RELEASE.2025-04-22T22-12-26Z`. Verified bucket `bl106-bucket` created and object `topology-proof.txt` stored/retrieved.
+  - **MinIO** in `supportplane-data`: Deployment + Service + PVC + Secret, image `minio/minio:RELEASE.2025-04-22T22-12-26Z`. Verified bucket `bl106-bucket` and object `topology-proof.txt` stored/retrieved.
   - **Zammad** in `supportplane-integrations`: StatefulSet + Service + PVCs + ConfigMap + Secret, image `zammad/zammad:6.4.1-1`, with separate PostgreSQL (`postgres:16-alpine`) and Redis (`redis:7-alpine`) dependencies. Zammad init succeeded (migrations, seed, settings). Railsserver running and responding HTTP 200.
 - Documented **Ollama placement decision**: host-controlled service, not in-cluster. Host has AMD GPU (Radeon RX 7700 XT / 7800 XT) and Ollama 0.18.2 with models already installed. In-cluster deployment would waste GPU and complicate AMD pass-through.
 - Updated `infra/kubernetes/local-podman/kustomization.yaml` to include all new resources.
-- Updated `STATUS.md`, `NEXT_ACTIONS.md`, `BACKLOG.md`, `PROJECT_STATE.yaml`, `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`, `docs/SELF_HOSTED_STACK.md`, `docs/LOCAL_KUBERNETES_PODMAN_TARGET.md`, `docs/KUBERNETES_SERVICE_CATALOG.md`, `docs/WORKFLOW_TRUTH.md`, `docs/BOUNDARY_MATRIX.md`, `infra/kubernetes/local-podman/README.md`.
+- Updated `STATUS.md`, `NEXT_ACTIONS.md`, `BACKLOG.md`, `PROJECT_STATE.yaml`, `WORKLOG.md`, `docs/EVIDENCE_LOG.md`, `docs/ACCEPTANCE_FREEZES.md`, `docs/SELF_HOSTED_STACK.md`, `docs/LOCAL_KUBERNETES_PODMAN_TARGET.md`, `docs/KUBERNETES_SERVICE_CATALOG.md`, `docs/WORKFLOW_TRUTH.md`, `docs/BOUNDARY_MATRIX.md`, `infra/kubernetes/local-podman/README.md`.
 - Created `scripts/bl106_screenshots.js` and canonical evidence folder `output/playwright/session-106-bl106-selfhosted-service-topology-final/` with exactly 20 unique screenshots and 0 duplicates.
 
 ### What remains mocked or not implemented
@@ -270,3 +370,65 @@ Start BL-106: Self-hosted service topology (Zammad, OpenBao, NATS JetStream, Mai
 - No real writeback, real secrets, Zammad/Ollama/OpenBao/NATS/Mailpit/MinIO integration, telephony/PBX, endpoint agent, Tauri companion, or screen/OCR implementation was started.
 
 ---
+
+## 2026-04-29 - BL-103 Local Kubernetes/Podman Cluster Foundation
+
+**Type:** infrastructure_foundation
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** ce23d2d338fb94bff5086d6114e4210435c88eca
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Created local Kubernetes cluster using Kind with Podman provider.
+- Verified `kindest/node:v1.31.4` works on Fedora/Podman; default `kindest/node:v1.32.2` caused kube-proxy crash-loops.
+- Created four namespaces: `supportplane-app`, `supportplane-data`, `supportplane-integrations`, `supportplane-observability`.
+- Verified local image loading strategy: `podman save` + `kind load image-archive` works for rootless Podman.
+- Updated state files and created evidence with 12 screenshots.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-104-bl103-local-k8s-podman-foundation-final/`
+- Screenshot count: 12
+- Duplicate count: 0
+
+### Verification
+
+- `bash scripts/check_local_k8s_prereqs.sh` passed.
+- `bash scripts/create_local_k8s_cluster.sh` passed.
+- `kubectl config current-context` = `kind-supportplane-local`.
+- `kubectl cluster-info` succeeded.
+- `kubectl get nodes` shows Ready control-plane node.
+- `kubectl get namespaces` shows four target namespaces.
+
+---
+
+## 2026-04-29 - BL-102 Local Kubernetes Self-Hosted Sandbox Architecture and Roadmap
+
+**Type:** architecture_foundation
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** to_be_recorded_after_final_commit
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Integrated the strategic target that SupportPlane evolves from local/mock MVP to a local Kubernetes-on-Podman sandbox.
+- Created canonical docs for stack, cluster target, E2E flow, service catalog, acceptance gates, phases, workflow truth, and boundary matrix.
+- Updated backlog, state, and active plan.
+- Created evidence with 17 screenshots.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/`
+- Screenshot count: 17
+- Duplicate count: 0
+
+### Verification
+
+- All state documentation checks passed.
+- Browser proof shows honest mock-only boundary.
+- No production claims introduced.

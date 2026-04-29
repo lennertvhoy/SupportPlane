@@ -1,0 +1,70 @@
+=== Model Candidate Inventory for BL-108 ===
+Generated: 2026-04-29T21:30:00+02:00
+Host: Fedora Linux 43, AMD Radeon RX 7800 XT (16GB VRAM)
+Ollama Version: 0.18.2
+
+=== Disk Space Before ===
+Filesystem Size Used Avail Use%
+/dev/dm-0 1.9T 761G 1.1T 41%
+
+=== Installed Models ===
+NAME                    ID              SIZE    MODIFIED
+statedd-devstral:latest 0a00ac6b1416    15 GB   2 days ago
+devstral-small-2:24b    24277f07f62d    15 GB   2 days ago
+qwen2.5:7b              845dbda0ea48    4.7 GB  4 weeks ago
+llama3.1:8b             46e0c10c039e    4.9 GB  5 weeks ago
+
+=== Pull Attempts ===
+
+1. gemma4:4b
+   Result: FAILED - "file does not exist"
+   Note: This exact tag is not available.
+
+2. gemma4:latest
+   Result: FAILED - "The model you are attempting to pull requires a newer version of Ollama"
+   Note: Gemma 4 exists on Ollama.com but requires Ollama > 0.18.2.
+
+3. gemma4:e4b (user-requested safe target, ~9.6GB)
+   Result: NOT ATTEMPTED - gemma4 family requires Ollama upgrade.
+   Blocker: Ollama version 0.18.2 is too old for Gemma 4.
+
+4. qwen3.6:8b
+   Result: FAILED - "file does not exist"
+   Note: qwen3.6 tag variants are not available on this Ollama version.
+
+5. qwen3.6:27b (user-requested stretch target, ~17GB)
+   Result: NOT ATTEMPTED - qwen3.6 family not available.
+   Blocker: Tag does not exist on Ollama 0.18.2 registry.
+
+6. qwen3.6:35b-a3b (user-requested, ~24GB)
+   Result: NOT ATTEMPTED - qwen3.6 family not available.
+   Blocker: Same as above.
+
+=== Selected Candidate ===
+Primary: llama3.1:8b
+- Already installed
+- Proven working from cluster pod via 10.88.0.1:11434
+- 4.9GB, fits comfortably in 16GB VRAM
+- Reliable baseline
+
+Secondary tested: qwen2.5:7b
+- Already installed
+- 4.7GB, fits comfortably
+- Available as alternative
+
+Stretch (not feasible now): statedd-devstral:latest / devstral-small-2:24b
+- 15GB each, may exceed clean single-GPU VRAM headroom
+- Not tested to avoid long load times
+
+=== Rejected Candidates ===
+gemma4:* — Rejected: requires Ollama version newer than 0.18.2
+qwen3.6:* — Rejected: tags do not exist on Ollama 0.18.2 registry
+
+=== Disk Space After ===
+No change (no new models pulled successfully)
+/dev/dm-0 1.9T 761G 1.1T 41%
+
+=== Recommendation ===
+Use llama3.1:8b as the configured cluster model for BL-108 closure.
+Document that gemma4 and qwen3.6 require Ollama upgrade and remain future optimization.
+Create follow-up backlog item for model selection benchmarking after Ollama upgrade.

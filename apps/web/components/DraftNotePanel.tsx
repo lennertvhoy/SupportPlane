@@ -100,7 +100,9 @@ export function DraftNotePanel({
             <div className="mt-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-1.5 text-xs text-amber-300">
                 <Bot size={13} />
-                Ollama local / deterministic fallback, review required
+                {suggestion?.usage.fallbackUsed
+                  ? 'Ollama local / deterministic fallback, review required'
+                  : 'Ollama local / real host call, review required'}
               </div>
               <button
                 type="button"
@@ -140,6 +142,10 @@ export function DraftNotePanel({
                 <dd className="text-cockpit-100">{String(suggestion.usage.noCloudCall ?? true)}</dd>
                 <dt>Fallback used</dt>
                 <dd className="text-cockpit-100">{String(suggestion.usage.fallbackUsed ?? suggestion.safety.fallbackUsed ?? false)}</dd>
+                <dt>Autonomous send</dt>
+                <dd className="text-cockpit-100">{String(suggestion.safety.autonomousSend ?? false)}</dd>
+                <dt>Writeback blocked</dt>
+                <dd className="text-cockpit-100">{String(!suggestion.safety.writebackAllowed)}</dd>
                 <dt>Latency</dt>
                 <dd className="text-cockpit-100">{suggestion.usage.latencyMs ?? 0}ms</dd>
                 <dt>Context hash</dt>

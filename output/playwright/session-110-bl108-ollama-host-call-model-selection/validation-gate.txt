@@ -1,0 +1,46 @@
+=== Validation Gate ===
+Timestamp: 2026-04-29T21:40:00+02:00
+
+1. npm run lint
+   Result: PASS (no errors)
+
+2. npm run typecheck --workspaces --if-present
+   Result: PASS
+   - apps/api: PASS
+   - apps/web: PASS
+   - apps/worker: PASS
+   - packages/ai: PASS
+   - packages/audit: PASS
+   - packages/connectors: PASS
+   - packages/contracts: PASS
+   - packages/policy: PASS
+   - packages/ui: PASS
+
+3. npm test --workspaces --if-present
+   Result: PASS (all suites)
+   - @supportplane/contracts: PASS
+   - @supportplane/ai: PASS
+   - @supportplane/connectors: PASS
+   - @supportplane/audit: PASS
+   - @supportplane/policy: PASS (5 tests)
+   - @supportplane/ui: No tests yet
+
+4. python3 scripts/check_state_docs.py
+   Result: PASS
+   - AGENTS.md: PASS
+   - STATUS.md: PASS
+   - PROJECT_STATE.yaml: PASS
+   - PROJECT_DNA.yaml: PASS
+   - NEXT_ACTIONS.md: PASS
+   - BACKLOG.md: PASS
+   - cross_file_rules: PASS
+
+5. bash scripts/benchmark_ollama_models.sh
+   Result: PASS (both models responded 200)
+   - llama3.1:8b: 200, 1288ms, 82 tokens, 77.11 tok/s
+   - qwen2.5:7b: 200, 4545ms, 103 tokens, 83.07 tok/s
+
+6. Cluster pod to host Ollama connectivity:
+   Result: PASS
+   - 10.88.0.1:11434 reachable from supportplane-api pod
+   - POST /api/generate responded with real model output

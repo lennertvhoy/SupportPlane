@@ -1,0 +1,60 @@
+=== SupportPlane API Real Ollama Host Call Proof ===
+Timestamp: 2026-04-29T19:39:45Z
+Session: f48850eb-ab6f-4203-a5e4-b73cb2c01b17
+Endpoint: POST /support-sessions/{id}/draft-suggestion
+
+Request:
+{
+  "operatorInstructions": "Summarize the VPN issue in 2 sentences.",
+  "modelSelection": {
+    "provider": "ollama",
+    "model": "llama3.1:8b"
+  }
+}
+
+Response (key fields):
+{
+  "provider": "ollama",
+  "providerMode": "local",
+  "model": "llama3.1:8b",
+  "fallbackUsed": false,
+  "noCloudCall": true,
+  "autonomousSend": false,
+  "writebackEnabled": false,
+  "promptVersion": "ollama-local-v1",
+  "contextHash": "5d866378493ef3074fa76b223d6f0d0feb5ad5df4499dbd981b7990e62e7f462",
+  "latencyMs": 4694,
+  "localProviderCallMade": true,
+  "cloudCallMade": false,
+  "externalCallMade": false,
+  "redactionApplied": true,
+  "reviewRequired": true,
+  "generatedText": "[OLLAMA LOCAL DRAFT - no cloud AI - review required before any writeback]\n**Internal Support Note**\nTicket ID: zammad-tr-2\nCustomer: Acme BVBA ( [REDACTED_EMAIL] )\nIssue: VPN connection issue for remote office (TICKET-101)\nSummary:\nThe customer is experiencing a VPN connection issue at their remote office. The issue has been open since April 29, 2026, and the priority is set to normal."
+}
+
+=== Verification ===
+- provider=ollama: YES
+- providerMode=local: YES
+- model=llama3.1:8b: YES
+- fallbackUsed=false: YES
+- noCloudCall=true: YES
+- autonomousSend=false: YES
+- writebackEnabled=false (writebackAllowed=false): YES
+- promptVersion present: YES (ollama-local-v1)
+- contextHash present: YES
+- latencyMs present: YES (4694ms)
+- generatedText present: YES
+- redaction before call: YES (email redacted to [REDACTED_EMAIL])
+
+=== Cluster Configuration ===
+- OLLAMA_BASE_URL: http://10.88.0.1:11434 (podman0 bridge to host Ollama)
+- OLLAMA_MODEL: llama3.1:8b
+- OLLAMA_ENABLED: true
+- OLLAMA_FALLBACK_ENABLED: true
+
+=== Host Ollama ===
+- Bound to 0.0.0.0:11434 via systemd override
+- Version: 0.18.2
+- Model: llama3.1:8b (4.9GB, already installed)
+
+This proves a real host-controlled Ollama model call from the SupportPlane cluster API.
