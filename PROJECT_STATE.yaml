@@ -313,21 +313,6 @@ current_state:
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
     active_queue_items: [BL-106]
-      - BL-107
-      - BL-108
-      - BL-109
-      - BL-110
-      - BL-111
-      - BL-112
-      - BL-113
-      - BL-114
-      - BL-115
-      - BL-116
-      - BL-117
-      - BL-118
-      - BL-119
-      - BL-120
-    active_queue_source: NEXT_ACTIONS.md
     active_queue_items: [BL-104, BL-105, BL-106]
 
   documentation:
