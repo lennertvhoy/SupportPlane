@@ -34,8 +34,8 @@ current_state:
     git_repository: true
     branch: main
     head_before_bl_102: 8b4f0311878bf648fb9d945dcc816f7b0ec27bb3
-    final_head_after_bl_102: pending_final_commit_hash
-    worktree_status_at_state_update: dirty_until_bl_102_commit
+    final_head_after_bl_102: recorded_in_final_handoff
+    worktree_status_at_state_update: clean_after_final_commit
 
   current_product_truth:
     lifecycle_stage: local_mock_mvp_frozen_with_real_sandbox_roadmap
@@ -127,7 +127,7 @@ current_state:
       - observability stack
     evidence_folder: output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/
     screenshot_count: 17
-    final_commit_hash: pending_final_commit_hash
+    final_commit_hash: recorded_in_final_handoff
 
   kubernetes_podman_target:
     target_cluster_name: supportplane-local

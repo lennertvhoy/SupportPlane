@@ -10,8 +10,8 @@ Use this file for dated session notes, verification summaries, and references to
 **Status:** ACCEPTED
 **Repo Path:** /home/ff/Documents/Projects/SupportPlane
 **Git Branch:** main
-**Git Head:** pending_final_commit_hash
-**Worktree:** clean_after_final_commit_pending
+**Git Head:** recorded_in_final_handoff
+**Worktree:** clean_after_final_commit
 
 ### What changed
 

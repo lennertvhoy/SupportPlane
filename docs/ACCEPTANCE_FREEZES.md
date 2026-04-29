@@ -36,7 +36,7 @@ and must be protected from quiet regression.
 - Scope: Architecture/backlog/state freeze for the next strategic direction. This freeze defines the local Kubernetes-on-Podman self-hosted sandbox target and phased roadmap. It is not a working real Kubernetes cluster and does not implement real integrations.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
-- head: pending_final_commit_hash
+- head: recorded_in_final_handoff
 - process_or_container:
   - node process (NestJS API via tsx) on port 4110 for runtime boundary proof
   - node process (Next.js dev) on port 3200 for browser proof
