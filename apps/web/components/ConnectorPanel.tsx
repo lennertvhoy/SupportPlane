@@ -477,8 +477,8 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                       <div className="mt-1 rounded border border-cockpit-700 bg-cockpit-900/50 p-1.5 text-[10px] text-cockpit-300">
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Runtime readiness</span>
-                          <Badge variant={readiness?.mockReady ? 'success' : 'warning'} className="text-[9px]">
-                            {readiness?.mockReady ? 'Mock ready' : 'Not ready'}
+                          <Badge variant={(readiness?.mockReady || readiness?.realReady) ? 'success' : 'warning'} className="text-[9px]">
+                            {readiness?.realReady ? 'Real ready' : readiness?.mockReady ? 'Mock ready' : 'Not ready'}
                           </Badge>
                         </div>
                         {result.error ? (
@@ -510,9 +510,15 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                     <div className="mt-2 space-y-2 rounded border border-cockpit-700 bg-cockpit-800/30 p-2">
                       <div className="flex items-center justify-between">
                         <div className="text-[10px] font-semibold text-cockpit-300">Installation Settings</div>
-                        <span className="inline-flex items-center gap-1 rounded bg-amber-900/30 px-1.5 py-0.5 text-[9px] text-amber-300">
-                          <Lock size={8} /> Mock-only
-                        </span>
+                        {inst.mockMode ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-amber-900/30 px-1.5 py-0.5 text-[9px] text-amber-300">
+                            <Lock size={8} /> Mock-only
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded bg-emerald-900/30 px-1.5 py-0.5 text-[9px] text-emerald-300">
+                            <Plug size={8} /> Real mode
+                          </span>
+                        )}
                       </div>
 
                       {/* Display name */}
@@ -570,12 +576,18 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                         </button>
                       </div>
 
-                      {/* Mock mode - locked ON */}
+                      {/* Mock mode */}
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] text-cockpit-400">Mock mode</span>
-                        <span className="inline-flex items-center gap-1 rounded bg-amber-900/30 px-2 py-0.5 text-[10px] text-amber-300">
-                          <Lock size={10} /> Locked ON
-                        </span>
+                        {inst.mockMode ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-amber-900/30 px-2 py-0.5 text-[10px] text-amber-300">
+                            <Lock size={10} /> ON
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded bg-emerald-900/30 px-2 py-0.5 text-[10px] text-emerald-300">
+                            <Plug size={10} /> OFF
+                          </span>
+                        )}
                       </div>
 
                       {/* Validate before write toggle */}

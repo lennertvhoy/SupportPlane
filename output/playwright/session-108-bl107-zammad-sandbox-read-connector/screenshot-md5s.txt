@@ -1,0 +1,3 @@
+ed8650a3a09fe6ea7371004359e92996  01-zammad-api-seeded-ticket.png
+25d5ac52e758393977caeff32819bd9a  02-cockpit-loaded-ticket.png
+9cbc3278f0252d0daea991fb10561eaf  04-cluster-api-health.png

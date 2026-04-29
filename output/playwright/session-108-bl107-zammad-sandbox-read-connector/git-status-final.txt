@@ -1,0 +1,15 @@
+=== Git Status ===
+## main
+ M apps/api/src/connector-installations/connector-installations.service.ts
+ M apps/api/src/connector-installations/connector-runtime.service.ts
+ M apps/api/src/support-sessions/support-sessions.service.ts
+ M apps/web/components/ConnectorPanel.tsx
+ M apps/web/components/TicketContextPanel.tsx
+ M infra/kubernetes/local-podman/app/api-deployment.yaml
+ M infra/kubernetes/local-podman/app/app-configmap.yaml
+ M infra/kubernetes/local-podman/app/app-secret.local.yaml
+ M packages/connectors/src/zammad-adapter.ts
+ M packages/contracts/src/connector-runtime.ts
+ M packages/contracts/test/connector-runtime.test.ts
+?? output/playwright/session-108-bl107-zammad-sandbox-read-connector/
+?? scripts/bl107_screenshots.js

@@ -36,7 +36,7 @@ const UNSAFE_CONFIG_KEYS = [
   'webhookSecret',
 ];
 
-const ALLOWED_CONFIG_KEYS = [
+const ALLOWED_CONFIG_KEYS_MOCK = [
   'baseUrlPlaceholder',
   'timeoutMs',
   'capabilities',
@@ -46,6 +46,12 @@ const ALLOWED_CONFIG_KEYS = [
   'status',
   'enabled',
   'linkedCredentialReferenceIds',
+];
+
+const ALLOWED_CONFIG_KEYS_REAL = [
+  ...ALLOWED_CONFIG_KEYS_MOCK,
+  'baseUrl',
+  'apiToken',
 ];
 
 @Injectable()
@@ -65,17 +71,21 @@ export class ConnectorRuntimeService {
       throw new NotFoundException(`Connector installation ${installationId} not found`);
     }
 
+    const isMock = installation.mockMode !== false;
+
     return {
       installationId,
       schema: {
         type: 'object',
         properties: {
           baseUrlPlaceholder: { type: 'string', description: 'Mock endpoint label or placeholder' },
+          baseUrl: { type: 'string', description: 'Real Zammad base URL (required for real mode)' },
+          apiToken: { type: 'string', description: 'Zammad API token (required for real mode)' },
           timeoutMs: { type: 'integer', minimum: 1000, maximum: 60000, description: 'Request timeout in milliseconds' },
           capabilities: { type: 'array', items: { type: 'string' }, description: 'Connector capabilities' },
           validateBeforeWrite: { type: 'boolean', description: 'Require validation before write operations' },
           maxRetries: { type: 'integer', minimum: 0, maximum: 10, description: 'Maximum retry attempts' },
-          mockMode: { type: 'boolean', const: true, description: 'Mock mode — must be true' },
+          mockMode: { type: 'boolean', description: 'Mock mode — true for mock, false for real Zammad' },
           status: { type: 'string', enum: ['active', 'inactive', 'error'] },
           enabled: { type: 'boolean', description: 'Whether the connector is enabled' },
           linkedCredentialReferenceIds: { type: 'array', items: { type: 'string' }, description: 'Linked credential reference IDs' },
@@ -83,9 +93,9 @@ export class ConnectorRuntimeService {
         required: ['mockMode'],
         additionalProperties: false,
       },
-      safeFields: ALLOWED_CONFIG_KEYS,
-      rejectedFields: UNSAFE_CONFIG_KEYS,
-      mockOnly: true,
+      safeFields: isMock ? ALLOWED_CONFIG_KEYS_MOCK : ALLOWED_CONFIG_KEYS_REAL,
+      rejectedFields: isMock ? UNSAFE_CONFIG_KEYS : [],
+      mockOnly: isMock,
     };
   }
 
@@ -100,62 +110,87 @@ export class ConnectorRuntimeService {
       throw new NotFoundException(`Connector installation ${installationId} not found`);
     }
 
+    const isMock = config.mockMode === true;
     const issues: Array<{ field: string; severity: 'error' | 'warning'; message: string; code: string }> = [];
     const warnings: string[] = [];
 
-    // Check mockMode
-    if (config.mockMode !== true) {
+    // Check mockMode presence
+    if (config.mockMode !== true && config.mockMode !== false) {
       issues.push({
         field: 'mockMode',
         severity: 'error',
-        message: 'mockMode must be true. Real network mode is not implemented.',
-        code: 'MOCK_MODE_REQUIRED',
+        message: 'mockMode must be a boolean (true for mock, false for real).',
+        code: 'MOCK_MODE_INVALID',
       });
     }
 
-    // Check for unsafe keys
-    for (const key of Object.keys(config)) {
-      const lowerKey = key.toLowerCase();
-      if (UNSAFE_CONFIG_KEYS.some((unsafe) => lowerKey.includes(unsafe.toLowerCase()))) {
-        issues.push({
-          field: key,
-          severity: 'error',
-          message: `Field '${key}' implies real network or secret usage and is not allowed in mock-only mode.`,
-          code: 'UNSAFE_FIELD_REJECTED',
-        });
+    if (isMock) {
+      // Check for unsafe keys in mock mode
+      for (const key of Object.keys(config)) {
+        const lowerKey = key.toLowerCase();
+        if (UNSAFE_CONFIG_KEYS.some((unsafe) => lowerKey.includes(unsafe.toLowerCase()))) {
+          issues.push({
+            field: key,
+            severity: 'error',
+            message: `Field '${key}' implies real network or secret usage and is not allowed in mock-only mode.`,
+            code: 'UNSAFE_FIELD_REJECTED',
+          });
+        }
+        if (!ALLOWED_CONFIG_KEYS_MOCK.includes(key)) {
+          issues.push({
+            field: key,
+            severity: 'warning',
+            message: `Field '${key}' is not in the allowed config schema and may be ignored.`,
+            code: 'UNKNOWN_FIELD',
+          });
+        }
       }
-      if (!ALLOWED_CONFIG_KEYS.includes(key)) {
-        issues.push({
-          field: key,
-          severity: 'warning',
-          message: `Field '${key}' is not in the allowed config schema and may be ignored.`,
-          code: 'UNKNOWN_FIELD',
-        });
-      }
-    }
 
-    // Check for real-network implication keys
-    const realNetworkImplyingKeys = ['baseUrl', 'endpoint', 'url', 'host', 'proxy'];
-    for (const key of Object.keys(config)) {
-      const lowerKey = key.toLowerCase();
-      if (realNetworkImplyingKeys.some((rk) => lowerKey.includes(rk) && lowerKey !== 'baseurlplaceholder')) {
-        issues.push({
-          field: key,
-          severity: 'error',
-          message: `Field '${key}' may imply real network usage. Only baseUrlPlaceholder is allowed.`,
-          code: 'REAL_NETWORK_FIELD_REJECTED',
-        });
+      // Check for real-network implication keys in mock mode
+      const realNetworkImplyingKeys = ['baseUrl', 'endpoint', 'url', 'host', 'proxy'];
+      for (const key of Object.keys(config)) {
+        const lowerKey = key.toLowerCase();
+        if (realNetworkImplyingKeys.some((rk) => lowerKey.includes(rk) && lowerKey !== 'baseurlplaceholder')) {
+          issues.push({
+            field: key,
+            severity: 'error',
+            message: `Field '${key}' may imply real network usage. Only baseUrlPlaceholder is allowed in mock mode.`,
+            code: 'REAL_NETWORK_FIELD_REJECTED',
+          });
+        }
       }
+    } else {
+      // Real mode validations
+      for (const key of Object.keys(config)) {
+        if (!ALLOWED_CONFIG_KEYS_REAL.includes(key)) {
+          issues.push({
+            field: key,
+            severity: 'warning',
+            message: `Field '${key}' is not in the allowed config schema and may be ignored.`,
+            code: 'UNKNOWN_FIELD',
+          });
+        }
+      }
+
+      if (!config.baseUrl && !process.env.ZAMMAD_BASE_URL) {
+        warnings.push('No baseUrl configured in installation config and ZAMMAD_BASE_URL env var is not set. Real connection may fail.');
+      }
+      if (!config.apiToken && !process.env.ZAMMAD_API_TOKEN) {
+        warnings.push('No apiToken configured in installation config and ZAMMAD_API_TOKEN env var is not set. Real connection may fail.');
+      }
+      warnings.push('Real network mode is enabled. Connector will make actual HTTP calls to Zammad.');
     }
 
     if (issues.length === 0) {
-      warnings.push('Config is valid for mock-only mode. No real network call will be made.');
+      warnings.push(isMock
+        ? 'Config is valid for mock-only mode. No real network call will be made.'
+        : 'Config is valid for real Zammad mode. Actual network calls will be made.');
     }
 
     const result: ConnectorRuntimeConfigValidationResult = {
       valid: issues.filter((i) => i.severity === 'error').length === 0,
-      mockMode: true,
-      realNetwork: false,
+      mockMode: isMock,
+      realNetwork: !isMock,
       writebackEnabled: false,
       issues,
       warnings,
@@ -166,7 +201,8 @@ export class ConnectorRuntimeService {
       valid: result.valid,
       issueCount: issues.length,
       warningCount: warnings.length,
-      mockDevOnly: true,
+      mockMode: isMock,
+      realNetwork: result.realNetwork,
     });
 
     return { installationId, result };
@@ -184,12 +220,19 @@ export class ConnectorRuntimeService {
 
     const credentialRefs = await this.resolveCredentialReferences(identity.tenantId, installation);
     const linkedCount = credentialRefs.length;
+    const isMock = installation.mockMode !== false;
 
-    const warnings: string[] = [
-      'This is a mock readiness check. No real network call was made.',
-      'Real writeback is not implemented.',
-      'Secret resolution is not implemented.',
-    ];
+    const warnings: string[] = isMock
+      ? [
+          'This is a mock readiness check. No real network call was made.',
+          'Real writeback is not implemented.',
+          'Secret resolution is not implemented.',
+        ]
+      : [
+          'Real network mode is configured.',
+          'Real writeback is not implemented (read-only for BL-107).',
+          'Secret resolution is not implemented — env vars will be used.',
+        ];
 
     if (linkedCount === 0) {
       warnings.push('No credential references are linked to this installation.');
@@ -200,9 +243,9 @@ export class ConnectorRuntimeService {
     }
 
     const result: ConnectorRuntimeReadinessResult = {
-      mockReady: installation.mockMode === true && installation.enabled === true,
-      realReady: false,
-      realNetwork: false,
+      mockReady: isMock && installation.enabled === true,
+      realReady: !isMock && installation.enabled === true,
+      realNetwork: !isMock,
       writebackEnabled: false,
       externalWriteAttempted: false,
       warnings,
@@ -215,7 +258,7 @@ export class ConnectorRuntimeService {
       mockReady: result.mockReady,
       realReady: result.realReady,
       credentialReferencesLinked: result.credentialReferencesLinked,
-      mockDevOnly: true,
+      mockMode: isMock,
     });
 
     return { installationId, result };
@@ -236,18 +279,26 @@ export class ConnectorRuntimeService {
     }
 
     const credentialRefs = await this.resolveCredentialReferences(identity.tenantId, installation);
+    const isMock = installation.mockMode !== false;
 
     const readiness: ConnectorRuntimeReadinessResult = {
-      mockReady: installation.mockMode === true && installation.enabled === true,
-      realReady: false,
-      realNetwork: false,
+      mockReady: isMock && installation.enabled === true,
+      realReady: !isMock && installation.enabled === true,
+      realNetwork: !isMock,
       writebackEnabled: false,
       externalWriteAttempted: false,
-      warnings: [
-        'Runtime resolver operates in mock-only mode.',
-        'No real network calls will be made.',
-        'Secret resolution is not implemented.',
-      ],
+      warnings: isMock
+        ? [
+            'Runtime resolver operates in mock-only mode.',
+            'No real network calls will be made.',
+            'Secret resolution is not implemented.',
+          ]
+        : [
+            'Runtime resolver operates in real Zammad mode.',
+            'Actual network calls will be made for read operations.',
+            'Writeback is not implemented (BL-107 read-only).',
+            'Secret resolution is not implemented — env vars will be used.',
+          ],
       credentialReferencesLinked: credentialRefs.length > 0,
       linkedCredentialReferenceCount: credentialRefs.length,
       timestamp: new Date().toISOString(),
@@ -260,8 +311,8 @@ export class ConnectorRuntimeService {
       installationDisplayName: installation.displayName ?? installation.name,
       capabilities: installation.capabilities,
       credentialReferences: credentialRefs,
-      mode: 'mock',
-      realNetwork: false,
+      mode: isMock ? 'mock' : 'zammad',
+      realNetwork: !isMock,
       writebackEnabled: false,
       externalWriteAttempted: false,
       readiness,
@@ -272,7 +323,7 @@ export class ConnectorRuntimeService {
       mode: result.mode,
       realNetwork: result.realNetwork,
       credentialReferenceCount: credentialRefs.length,
-      mockDevOnly: true,
+      mockMode: isMock,
     });
 
     return result;

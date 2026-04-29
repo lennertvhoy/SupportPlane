@@ -165,6 +165,9 @@ export class SupportSessionsService {
     await this.store.saveSession(linkedSession);
     await this.store.saveTicketReference(linkedSession.id, ticket as TicketReferenceShape);
 
+    const isRealNetwork =
+      mode === 'zammad' && activeInstallation?.mockMode === false;
+
     const packet: AIContextPacketShape = {
       id: randomUUID() as AIContextPacketId,
       tenantId: identity.tenantId as TenantId,
@@ -187,9 +190,9 @@ export class SupportSessionsService {
               capabilities: activeInstallation.capabilities,
               credentialReferencesLinked: linkedCredentialRefs.length > 0,
               linkedCredentialReferenceCount: linkedCredentialRefs.length,
-              realNetwork: false,
+              realNetwork: isRealNetwork,
               writebackEnabled: false,
-              noRealNetworkCall: true,
+              noRealNetworkCall: !isRealNetwork,
             }
           : null,
       },

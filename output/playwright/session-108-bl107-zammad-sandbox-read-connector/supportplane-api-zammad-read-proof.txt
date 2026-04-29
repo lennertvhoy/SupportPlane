@@ -1,0 +1,12 @@
+=== SupportPlane API Connector Runtime Readiness ===
+Endpoint: POST /connector-installations/conn-inst-dev-001/runtime-readiness
+
+Result:
+- mockReady: false
+- realReady: true
+- realNetwork: true
+- writebackEnabled: false
+- warnings:
+  - Real network mode is configured.
+  - Real writeback is not implemented (read-only for BL-107).
+  - Secret resolution is not implemented — env vars will be used.

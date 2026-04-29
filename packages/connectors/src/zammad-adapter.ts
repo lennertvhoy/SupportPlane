@@ -21,13 +21,13 @@ import {
   MockZammadHttpClient,
 } from './zammad-http-client.js';
 
-function normalizeZammadState(state: string): TicketReferenceShape['status'] {
+function normalizeZammadState(state: string | number): TicketReferenceShape['status'] {
   const lower = String(state).toLowerCase();
-  if (lower === 'new') return TicketStatus.enum.new;
-  if (lower === 'open') return TicketStatus.enum.open;
-  if (lower === 'pending reminder' || lower === 'pending close') return TicketStatus.enum.pending;
-  if (lower === 'closed') return TicketStatus.enum.closed;
-  if (lower === 'merged') return TicketStatus.enum.merged;
+  if (lower === 'new' || lower === '1') return TicketStatus.enum.new;
+  if (lower === 'open' || lower === '2') return TicketStatus.enum.open;
+  if (lower === 'pending reminder' || lower === 'pending close' || lower === '3' || lower === '6') return TicketStatus.enum.pending;
+  if (lower === 'closed' || lower === '4') return TicketStatus.enum.closed;
+  if (lower === 'merged' || lower === '5') return TicketStatus.enum.merged;
   return TicketStatus.enum.unknown;
 }
 
@@ -118,7 +118,13 @@ export class ZammadConnectorAdapter implements TicketingAdapterDriver {
         adapterId: this.adapterId,
         externalTicketId,
         subject: typeof data.title === 'string' ? data.title : `Ticket ${externalTicketId}`,
-        status: normalizeZammadState(String(data.state ?? 'unknown')),
+        status: normalizeZammadState(
+          typeof data.state === 'string'
+            ? data.state
+            : typeof data.state_id === 'number'
+              ? String(data.state_id)
+              : 'unknown'
+        ),
         priority: normalizeZammadPriority(data.priority as string | number | Record<string, unknown>),
         customerEmail,
         customerName,

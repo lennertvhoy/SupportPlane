@@ -12,3 +12,8 @@ data:
   API_PORT: "4110"
   PORT: "3200"
   SUPPORTPLANE_WORKER_EMAIL: "admin@supportplane.local"
+  # Zammad sandbox connector configuration (BL-107)
+  ZAMMAD_CONNECTOR_MODE: "zammad"
+  ZAMMAD_BASE_URL: "http://zammad.supportplane-integrations.svc.cluster.local:3000"
+  # Web build-time API base URL for cluster access
+  NEXT_PUBLIC_API_BASE_URL: "http://localhost:4210"

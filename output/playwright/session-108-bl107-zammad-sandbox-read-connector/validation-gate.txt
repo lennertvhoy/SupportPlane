@@ -1,0 +1,17 @@
+=== Validation Gate Results ===
+Command: npm run lint
+Result: PASSED
+
+Command: npm run typecheck --workspaces --if-present
+Result: PASSED (all workspaces)
+
+Command: npm test --workspaces --if-present
+Result: PASSED (43 tests, 0 failures)
+
+Zammad sandbox reachable: YES (http://localhost:8080)
+Cluster API reachable: YES (http://localhost:4210)
+Cluster Web reachable: YES (http://localhost:3300)
+Real Zammad ticket read: YES (ticket 2, customer 5)
+UI sandbox labels visible: YES
+Writeback blocked: YES (writebackEnabled=false)
+Connector readiness: realReady=true, mockReady=false

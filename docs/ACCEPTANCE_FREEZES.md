@@ -1451,3 +1451,52 @@ and must be protected from quiet regression.
   - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
   - No real secret broker, credential vault, or encrypted secret storage was implemented.
   - Design document does not constitute implementation or readiness for real writeback.
+
+
+---
+
+## BL-107 — Zammad Sandbox Bootstrap and Real Read Connector
+
+- frozen_at: 2026-04-29T19:55:00+02:00
+- backlog_id: BL-107
+- final_commit: 0fafced39863317269c825627ea689e2d612d4a9
+- verification:
+  - lint: pass
+  - typecheck (all workspaces): pass
+  - tests: 43/43 pass
+  - zammad_sandbox_reachable: yes (localhost:8080)
+  - cluster_api_reachable: yes (localhost:4210)
+  - cluster_web_reachable: yes (localhost:3300)
+  - real_zammad_ticket_read: yes (ticket 2, customer 5)
+  - ui_sandbox_labels_visible: yes
+  - writeback_blocked: yes (writebackEnabled=false)
+- what_is_frozen:
+  - Zammad sandbox seeded with deterministic customer (Acme BVBA, ID 5) and ticket (68002, ID 2)
+  - SupportPlane API reads real ticket/customer from Zammad sandbox via FetchZammadHttpClient
+  - UI displays real sandbox data with explicit "Zammad sandbox", "Read-only", "Sandbox · No writeback · No production data" labels
+  - Connector Runtime Provenance shows "real sandbox" mode and "sandbox local cluster" network
+  - Audit trail records `zammad_ticket_loaded` event
+  - Contracts updated to allow `mockMode: boolean`, `realNetwork: boolean`, `mode: 'mock' | 'zammad'`
+  - Contract tests accept sandbox mode values while maintaining `writebackEnabled: false` safety boundary
+  - Kubernetes manifests include ZAMMAD_BASE_URL, ZAMMAD_CONNECTOR_MODE, ZAMMAD_API_TOKEN
+- regression_guard:
+  - Any change to connector runtime contracts must preserve the `writebackEnabled: false` boundary for mock/sandbox mode
+  - Any new connector mode must include explicit safety labels in UI
+  - Real network mode must require explicit `mockMode=false` and env-based credentials
+- known_limitations:
+  - Writeback is explicitly blocked; no real write path exists
+  - Zammad API token stored in Kubernetes secret only (not production-grade)
+  - No OpenBao credential resolver yet
+  - No NATS worker bridge yet
+  - No Ollama AI provider yet
+  - No MinIO evidence persistence yet
+  - No Mailpit notification capture yet
+- explicit_non_claims:
+  - No production Zammad read/write
+  - No real Zammad writeback
+  - No public replies
+  - No production secrets vault
+  - No production auth/OIDC/MFA
+  - No compliance certification
+  - No real AI provider calls
+  - No real telephony/PBX integration

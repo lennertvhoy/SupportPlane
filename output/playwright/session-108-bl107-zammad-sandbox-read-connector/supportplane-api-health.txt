@@ -1,0 +1,15 @@
+=== Cluster API Health ===
+Endpoint: GET /health
+
+Response:
+{
+  "service": "supportplane-api",
+  "version": "0.1.0",
+  "status": "ok",
+  "branch": "main",
+  "head": "6093cf00b2f7af7caa03a794697a8d8e89ed75ae",
+  "timestamp": "2026-04-29T17:54:06.436Z",
+  "runtime": "NestJS",
+  "storeMode": "postgres",
+  "authMode": "local"
+}

@@ -1,0 +1,7 @@
+=== Local MVP Regression ===
+Local MVP on localhost:3200 / localhost:4110: NOT RUNNING this session
+Cluster Web (localhost:3300): RUNNING and reachable
+Cluster API (localhost:4210): RUNNING and reachable
+
+Note: Cluster path is the acceptance target for BL-107. Local MVP regression
+was not required because the cluster deployment is the verified artifact.

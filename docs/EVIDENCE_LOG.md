@@ -1984,3 +1984,34 @@
   docs:
     - docs/REAL_WRITEBACK_PATH_DESIGN.md
   as_of: 2026-04-28T21:30:00+02:00
+
+
+- id: EV-2026-04-29-001
+  backlog_id: BL-107
+  title: Zammad Sandbox Bootstrap and Real Read Connector
+  evidence_type: runtime_verification
+  status: accepted
+  artifact_folder: output/playwright/session-108-bl107-zammad-sandbox-read-connector/
+  artifact_count: 11
+  screenshots:
+    - 01-zammad-api-seeded-ticket.png — Zammad API returns real ticket 2 (68002) and customer 5 (Acme BVBA)
+    - 02-cockpit-loaded-ticket.png — Composite: UI shows real Zammad ticket with sandbox labels, Connector Runtime Provenance, AI Context Quality, Case Timeline
+    - 04-cluster-api-health.png — Cluster API health: store=postgres, auth=local, status=ok
+  cli_artifacts:
+    - connector-runtime-readiness.txt — realReady=true, mockReady=false, writebackEnabled=false
+    - zammad-api-read-proof.txt — SupportPlane API reads real Zammad ticket via authenticated POST
+    - boundary-proof.txt — Real sandbox read only; no production, no writeback
+    - validation-gate.txt — Exact commands and pass/fail results
+    - local-mvp-regression.txt — Local MVP not required; cluster is acceptance target
+    - proof-state-mapping.md — Maps each artifact to the state it proves
+    - screenshot-md5s.txt — Duplicate detection: 0 duplicates
+  test_results:
+    - npm run lint: passed
+    - npm run typecheck: passed (all workspaces)
+    - npm test: passed (43 tests, 0 failures)
+  verification_commands:
+    - curl http://localhost:4210/health
+    - curl -b cookies -X POST http://localhost:4210/connector-installations/conn-inst-dev-001/runtime-readiness
+    - curl -b cookies -X POST http://localhost:4210/support-sessions/{id}/zammad/ticket-context -d '{"externalTicketId":"2"}'
+    - node scripts/bl107_screenshots_final.js
+  as_of: 2026-04-29T19:55:00+02:00

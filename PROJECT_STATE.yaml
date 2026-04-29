@@ -42,7 +42,7 @@ current_state:
     worktree_status_at_state_update: clean_after_final_commit
 
   current_product_truth:
-    lifecycle_stage: local_mock_mvp_frozen_with_real_sandbox_roadmap
+    lifecycle_stage: local_mock_mvp_frozen_with_real_zammad_read_sandbox
     api:
       framework: NestJS
       local_url: http://localhost:4110
@@ -62,8 +62,8 @@ current_state:
       current: local username/password demo auth
       not_implemented: [OIDC, OAuth, SAML, MFA, password_reset, production_auth_hardening]
     connectors:
-      current: mock/local only
-      zammad: deterministic fixtures only; no real Zammad API calls
+      current: real sandbox read + mock writeback
+      zammad: real HTTP read from sandbox Zammad via FetchZammadHttpClient; writeback still mock-only
       writeback: mock-only; real network locked off
     ai:
       current: deterministic mock/local only
@@ -252,7 +252,7 @@ current_state:
       backlog_ids: [BL-106]
     - id: Phase 3
       title: Zammad Sandbox Read Connector
-      status: planned
+      status: accepted_bl_107
       backlog_ids: [BL-107]
     - id: Phase 4
       title: Ollama Local AI Provider
@@ -294,10 +294,8 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-120
-    accepted_current_slice: BL-106
+    accepted_current_slice: BL-107
     planned_real_e2e_items:
-      - BL-106
-      - BL-107
       - BL-108
       - BL-109
       - BL-110
@@ -312,7 +310,7 @@ current_state:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-107]
+    active_queue_items: [BL-108]
 
   documentation:
     primary_user_guide: README.md
@@ -433,12 +431,35 @@ current_state:
       - docs/WORKFLOW_TRUTH.md
       - docs/BOUNDARY_MATRIX.md
       - infra/kubernetes/local-podman/README.md
+    created_in_bl_107:
+      - scripts/bl107_screenshots_final.js
+      - output/playwright/session-108-bl107-zammad-sandbox-read-connector/
+    updated_in_bl_107:
+      - packages/contracts/src/connector-runtime.ts
+      - packages/contracts/test/connector-runtime.test.ts
+      - packages/connectors/src/zammad-adapter.ts
+      - apps/api/src/connector-installations/connector-runtime.service.ts
+      - apps/api/src/connector-installations/connector-installations.service.ts
+      - apps/api/src/connectors/connectors.service.ts
+      - apps/api/src/support-sessions/support-sessions.service.ts
+      - apps/web/components/TicketContextPanel.tsx
+      - apps/web/components/ConnectorPanel.tsx
+      - infra/kubernetes/local-podman/app/app-configmap.yaml
+      - infra/kubernetes/local-podman/app/app-secret.local.yaml
+      - infra/kubernetes/local-podman/app/api-deployment.yaml
+      - BACKLOG.md
+      - NEXT_ACTIONS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - WORKLOG.md
+      - docs/EVIDENCE_LOG.md
+      - docs/ACCEPTANCE_FREEZES.md
 
   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-107-bl106-evidence-reconciliation/
-    latest_screenshot_count: 20
+    latest_folder: output/playwright/session-108-bl107-zammad-sandbox-read-connector/
+    latest_screenshot_count: 3
     latest_duplicate_count: 0
     cli_artifacts:
       - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md

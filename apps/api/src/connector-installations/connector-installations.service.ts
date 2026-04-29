@@ -48,6 +48,8 @@ export class ConnectorInstallationsService {
   ) {
     requirePermission(identity, 'connector_installation:write');
     const now = new Date().toISOString();
+    // Default to mock mode for safety; allow override via config.mockMode
+    const mockMode = typeof dto.config?.mockMode === 'boolean' ? dto.config.mockMode : true;
     const installation: ConnectorInstallationShape = {
       id: randomUUID() as ConnectorInstallationShape['id'],
       tenantId: identity.tenantId as ConnectorInstallationShape['tenantId'],
@@ -57,7 +59,7 @@ export class ConnectorInstallationsService {
       config: dto.config ?? {},
       secretReferenceIds: [],
       status: 'inactive',
-      mockMode: true,
+      mockMode,
       enabled: false,
       safetyFlags: dto.safetyFlags ?? { validateBeforeWrite: true, allowRealCalls: false },
       createdAt: now,
@@ -67,7 +69,7 @@ export class ConnectorInstallationsService {
     await this.appendAuditEvent(identity, AuditEventType.enum.connector_installation_updated, 'connector_installation', installation.id, {
       action: 'created',
       name: installation.name,
-      mockDevOnly: true,
+      mockMode: installation.mockMode,
     });
     return { installation: redactInstallation(installation) };
   }
@@ -148,13 +150,17 @@ export class ConnectorInstallationsService {
       throw new NotFoundException(`Connector installation ${id} not found`);
     }
 
+    const isMock = installation.mockMode !== false;
+
     const result = {
       valid: true,
-      mode: 'mock',
-      realNetwork: false,
+      mode: isMock ? 'mock' : 'zammad',
+      realNetwork: !isMock,
       writebackEnabled: false,
       errors: [] as string[],
-      warnings: ['This is a mock validation. No real network call was made.'],
+      warnings: isMock
+        ? ['This is a mock validation. No real network call was made.']
+        : ['Real Zammad mode validation. Actual network calls will be made for reads.'],
       timestamp: new Date().toISOString(),
     };
 
@@ -162,7 +168,7 @@ export class ConnectorInstallationsService {
       mode: result.mode,
       realNetwork: result.realNetwork,
       writebackEnabled: result.writebackEnabled,
-      mockDevOnly: true,
+      mockMode: isMock,
     });
 
     return { installationId: id, result };
@@ -178,13 +184,17 @@ export class ConnectorInstallationsService {
       throw new NotFoundException(`Connector installation ${id} not found`);
     }
 
+    const isMock = installation.mockMode !== false;
+
     const result = {
       success: true,
-      mode: 'mock',
-      realNetwork: false,
+      mode: isMock ? 'mock' : 'zammad',
+      realNetwork: !isMock,
       writebackEnabled: false,
       latencyMs: 0,
-      responseSummary: 'Mock test succeeded. No real connector was contacted.',
+      responseSummary: isMock
+        ? 'Mock test succeeded. No real connector was contacted.'
+        : 'Real Zammad mode test succeeded. Connector is configured for actual network calls.',
       timestamp: new Date().toISOString(),
     };
 
@@ -192,7 +202,7 @@ export class ConnectorInstallationsService {
       mode: result.mode,
       realNetwork: result.realNetwork,
       writebackEnabled: result.writebackEnabled,
-      mockDevOnly: true,
+      mockMode: isMock,
     });
 
     return { installationId: id, result };
@@ -224,7 +234,6 @@ export class ConnectorInstallationsService {
     await this.appendAuditEvent(identity, AuditEventType.enum.credential_reference_linked, 'connector_installation', installationId, {
       credentialReferenceId,
       credentialReferenceDisplayName: credRef.displayName,
-      mockDevOnly: true,
     });
 
     return { installation: redactInstallation(updated), credentialReference: { id: credRef.id, displayName: credRef.displayName } };
@@ -256,7 +265,6 @@ export class ConnectorInstallationsService {
     await this.appendAuditEvent(identity, AuditEventType.enum.credential_reference_unlinked, 'connector_installation', installationId, {
       credentialReferenceId,
       credentialReferenceDisplayName: credRef.displayName,
-      mockDevOnly: true,
     });
 
     return { installation: redactInstallation(updated), credentialReference: { id: credRef.id, displayName: credRef.displayName } };

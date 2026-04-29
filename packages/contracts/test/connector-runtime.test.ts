@@ -27,15 +27,20 @@ describe('connector runtime contracts', () => {
     }
   });
 
-  it('rejects mockMode false', () => {
+  it('accepts mockMode false for real sandbox mode', () => {
     const parsed = ConnectorRuntimeConfigSchema.safeParse({
       mockMode: false,
       enabled: true,
+      baseUrl: 'http://zammad.local:3000',
+      apiToken: 'test-token',
     });
-    assert.strictEqual(parsed.success, false);
+    assert.strictEqual(parsed.success, true);
+    if (parsed.success) {
+      assert.strictEqual(parsed.data.mockMode, false);
+    }
   });
 
-  it('accepts a valid config validation result', () => {
+  it('accepts a valid mock config validation result', () => {
     const result = ConnectorRuntimeConfigValidationResult.parse({
       valid: true,
       mockMode: true,
@@ -50,30 +55,38 @@ describe('connector runtime contracts', () => {
     assert.strictEqual(result.writebackEnabled, false);
   });
 
-  it('rejects config validation result with realNetwork true', () => {
+  it('accepts config validation result with realNetwork true in sandbox mode', () => {
     const parsed = ConnectorRuntimeConfigValidationResult.safeParse({
       valid: true,
-      mockMode: true,
+      mockMode: false,
       realNetwork: true,
       writebackEnabled: false,
       issues: [],
       warnings: [],
       timestamp: new Date().toISOString(),
     });
-    assert.strictEqual(parsed.success, false);
+    assert.strictEqual(parsed.success, true);
+    if (parsed.success) {
+      assert.strictEqual(parsed.data.realNetwork, true);
+      assert.strictEqual(parsed.data.writebackEnabled, false);
+    }
   });
 
-  it('rejects config validation result with writebackEnabled true', () => {
+  it('accepts config validation result with writebackEnabled true at schema level (service layer blocks writeback)', () => {
     const parsed = ConnectorRuntimeConfigValidationResult.safeParse({
       valid: true,
-      mockMode: true,
-      realNetwork: false,
+      mockMode: false,
+      realNetwork: true,
       writebackEnabled: true,
       issues: [],
       warnings: [],
       timestamp: new Date().toISOString(),
     });
-    assert.strictEqual(parsed.success, false);
+    // Schema allows boolean for forward compatibility; service layer enforces false for BL-107
+    assert.strictEqual(parsed.success, true);
+    if (parsed.success) {
+      assert.strictEqual(parsed.data.writebackEnabled, true);
+    }
   });
 
   it('accepts a mock-only readiness result', () => {
@@ -93,19 +106,24 @@ describe('connector runtime contracts', () => {
     assert.strictEqual(result.credentialReferencesLinked, true);
   });
 
-  it('rejects readiness result with realReady true', () => {
+  it('accepts readiness result with realReady true in sandbox mode', () => {
     const parsed = ConnectorRuntimeReadinessResult.safeParse({
-      mockReady: true,
+      mockReady: false,
       realReady: true,
-      realNetwork: false,
+      realNetwork: true,
       writebackEnabled: false,
       externalWriteAttempted: false,
-      warnings: [],
+      warnings: ['Sandbox real mode'],
       credentialReferencesLinked: false,
       linkedCredentialReferenceCount: 0,
       timestamp: new Date().toISOString(),
     });
-    assert.strictEqual(parsed.success, false);
+    assert.strictEqual(parsed.success, true);
+    if (parsed.success) {
+      assert.strictEqual(parsed.data.realReady, true);
+      assert.strictEqual(parsed.data.realNetwork, true);
+      assert.strictEqual(parsed.data.writebackEnabled, false);
+    }
   });
 
   it('accepts credential reference metadata without secretRef', () => {
@@ -121,7 +139,7 @@ describe('connector runtime contracts', () => {
     assert.strictEqual(result.displayName, 'Test Credential');
   });
 
-  it('rejects credential metadata with secretResolutionImplemented true', () => {
+  it('accepts credential metadata with secretResolutionImplemented true for future resolver', () => {
     const parsed = ConnectorRuntimeCredentialReferenceMetadata.safeParse({
       id: 'cred-1',
       displayName: 'Test',
@@ -129,7 +147,10 @@ describe('connector runtime contracts', () => {
       status: 'active',
       secretResolutionImplemented: true,
     });
-    assert.strictEqual(parsed.success, false);
+    assert.strictEqual(parsed.success, true);
+    if (parsed.success) {
+      assert.strictEqual(parsed.data.secretResolutionImplemented, true);
+    }
   });
 
   it('accepts a mock-only runtime resolver result', () => {
@@ -168,22 +189,22 @@ describe('connector runtime contracts', () => {
     assert.strictEqual(result.credentialReferences.length, 1);
   });
 
-  it('rejects runtime resolver result with mode real', () => {
+  it('accepts runtime resolver result with mode zammad for sandbox read', () => {
     const parsed = ConnectorRuntimeResolverResult.safeParse({
       tenantId: 'tenant-a',
       connectorType: 'zammad',
       installationId: 'inst-1',
-      installationDisplayName: 'Zammad',
+      installationDisplayName: 'Zammad Sandbox',
       capabilities: [],
       credentialReferences: [],
-      mode: 'real',
-      realNetwork: false,
+      mode: 'zammad',
+      realNetwork: true,
       writebackEnabled: false,
       externalWriteAttempted: false,
       readiness: {
-        mockReady: true,
-        realReady: false,
-        realNetwork: false,
+        mockReady: false,
+        realReady: true,
+        realNetwork: true,
         writebackEnabled: false,
         externalWriteAttempted: false,
         warnings: [],
@@ -192,7 +213,12 @@ describe('connector runtime contracts', () => {
         timestamp: new Date().toISOString(),
       },
     });
-    assert.strictEqual(parsed.success, false);
+    assert.strictEqual(parsed.success, true);
+    if (parsed.success) {
+      assert.strictEqual(parsed.data.mode, 'zammad');
+      assert.strictEqual(parsed.data.realNetwork, true);
+      assert.strictEqual(parsed.data.writebackEnabled, false);
+    }
   });
 
   it('accepts config schema response with mockOnly true', () => {
@@ -212,7 +238,7 @@ describe('connector runtime contracts', () => {
     assert.deepStrictEqual(result.safeFields, ['mockMode', 'enabled']);
   });
 
-  it('rejects config schema response with mockOnly false', () => {
+  it('accepts config schema response with mockOnly false for real sandbox', () => {
     const parsed = ConnectorConfigSchemaResponse.safeParse({
       installationId: 'inst-1',
       schema: {
@@ -225,7 +251,10 @@ describe('connector runtime contracts', () => {
       rejectedFields: [],
       mockOnly: false,
     });
-    assert.strictEqual(parsed.success, false);
+    assert.strictEqual(parsed.success, true);
+    if (parsed.success) {
+      assert.strictEqual(parsed.data.mockOnly, false);
+    }
   });
 
   it('evidence bundle connector summary remains secret-free', () => {

@@ -1,0 +1,32 @@
+=== BL-107 Boundary Proof ===
+Real sandbox Zammad read: YES
+Production Zammad read: NO
+Zammad writeback: NO
+Public replies: NO
+External customer data: NO (sandbox-only Acme BVBA fixture)
+Browser-stored credentials: NO
+Hidden production secrets: NO
+
+Connector installation: mockMode=false, realNetwork=true, writebackEnabled=false
+Zammad adapter: FetchZammadHttpClient with cluster DNS baseUrl
+Token storage: Kubernetes secret only (app-secret-local)
+Token exposure in API/UI/evidence/logs: NONE
+
+What is real now:
+- SupportPlane API reads real ticket/customer from Zammad sandbox
+- UI displays real sandbox data with explicit sandbox labels
+- Audit trail records real Zammad ticket loaded event
+- Evidence bundle includes real sandbox provenance
+
+What is still mocked:
+- AI drafts/summaries (mock provider)
+- Writeback (blocked by policy)
+- Telephony (fake webhook)
+- Screen observation (metadata-only mock)
+
+What is explicitly not production:
+- Local Kind/Podman cluster only
+- Sandbox Zammad with deterministic seeded data
+- No production secrets vault
+- No production auth/OIDC/MFA
+- No compliance certification

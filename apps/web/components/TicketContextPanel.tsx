@@ -65,12 +65,17 @@ export function TicketContextPanel({
               <div className="flex items-center gap-2">
                 <Ticket size={14} className="text-accent" />
                 <span className="text-xs font-medium text-cockpit-300">
-                  {connectorMode === 'zammad' ? 'Zammad Connector Data' : 'Mock Connector Data'}
+                  {connectorMode === 'zammad' ? 'Zammad Sandbox' : 'Mock Connector Data'}
                 </span>
               </div>
-              <Badge variant={connectorMode === 'zammad' ? 'success' : 'warning'}>
-                {connectorMode === 'zammad' ? 'Zammad' : 'Mock'}
-              </Badge>
+              <div className="flex items-center gap-1">
+                <Badge variant={connectorMode === 'zammad' ? 'success' : 'warning'}>
+                  {connectorMode === 'zammad' ? 'Zammad sandbox' : 'Mock'}
+                </Badge>
+                {connectorMode === 'zammad' && (
+                  <Badge variant="muted">Read-only</Badge>
+                )}
+              </div>
             </div>
             <div className="space-y-2 p-3">
               <div className="flex items-start justify-between gap-2">
@@ -103,9 +108,9 @@ export function TicketContextPanel({
               <div className="flex items-center justify-between rounded bg-cockpit-800/60 px-2 py-1.5 text-xs text-cockpit-500">
                 <span>Adapter: {ticket.adapterId}</span>
                 {connectorMode === 'zammad' && (
-                  <span className="inline-flex items-center gap-1 text-emerald-400">
-                    <Globe size={10} />
-                    Live
+                  <span className="inline-flex items-center gap-1 text-amber-400">
+                    <Shield size={10} />
+                    Sandbox · No writeback · No production data
                   </span>
                 )}
               </div>
@@ -124,13 +129,31 @@ export function TicketContextPanel({
                     <div className="text-cockpit-200">{connectorInstallation.adapterType}</div>
                     <div className="text-cockpit-500">Mode:</div>
                     <div className="inline-flex items-center gap-1">
-                      <Lock size={8} className="text-amber-400" />
-                      <span className="text-amber-300">{connectorInstallation.mockMode ? 'mock' : 'real'}</span>
+                      {connectorInstallation.mockMode ? (
+                        <>
+                          <Lock size={8} className="text-amber-400" />
+                          <span className="text-amber-300">mock</span>
+                        </>
+                      ) : (
+                        <>
+                          <Globe size={8} className="text-emerald-400" />
+                          <span className="text-emerald-300">real sandbox</span>
+                        </>
+                      )}
                     </div>
                     <div className="text-cockpit-500">Network:</div>
                     <div className="inline-flex items-center gap-1">
-                      <Shield size={8} className="text-emerald-400" />
-                      <span className="text-emerald-300">none (local-only)</span>
+                      {connectorInstallation.mockMode ? (
+                        <>
+                          <Shield size={8} className="text-emerald-400" />
+                          <span className="text-emerald-300">none (local-only)</span>
+                        </>
+                      ) : (
+                        <>
+                          <Globe size={8} className="text-amber-400" />
+                          <span className="text-amber-300">sandbox local cluster</span>
+                        </>
+                      )}
                     </div>
                     <div className="text-cockpit-500">Credentials:</div>
                     <div className="text-cockpit-200">{connectorInstallation.secretReferenceIds.length} linked</div>
