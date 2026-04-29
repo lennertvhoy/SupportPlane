@@ -1,0 +1,27 @@
+# Boundary Matrix
+
+**Backlog:** BL-102  
+**Status:** strict capability boundary for future agents.
+
+| Capability | Current state | Mock/local behavior | Real sandbox target | Production target | Allowed now? | Requires approval? | Requires secret resolution? | Requires network egress? | Evidence required | Non-claims |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Zammad ticket read | Mock only | Fixture lookup by ticket ID. | Read deterministic Zammad sandbox ticket. | Tenant-configured production connector later. | Mock read only. | No for mock; yes for real enablement. | For real sandbox, yes. | For real sandbox, local-only. | API/browser provenance, no-token proof. | No production Zammad. |
+| Zammad internal-note writeback | Mock only | Mock delivery attempt, no external write. | One internal note to sandbox ticket. | Production writeback future only. | No real writeback now. | Yes. | Yes. | Yes, sandbox-only. | Approval, policy, worker, Zammad result, idempotency, kill switch. | No public replies, no production writeback. |
+| AI draft/summary | Mock only | Deterministic mock text. | Ollama local provider. | Production model governance later. | Mock only now. | Human review required before action. | No. | No cloud egress. | Model/prompt/context hash/latency/local-provider marker. | No cloud AI, no autonomous send. |
+| Credential references | Metadata only | `secretRef` redacted and unresolved. | OpenBao local placeholder resolver. | Vault/KMS or equivalent with rotation. | Metadata only now. | Admin/operator management only. | Target yes. | OpenBao local only. | No secret in API/UI/evidence/logs/storage. | No production secrets. |
+| Worker/outbox | Local PostgreSQL mock | Process-once/mock delivery, retry/dead-letter in local state. | NATS JetStream durable worker. | Production broker cluster later. | Local mock only now. | Approval before queueing where policy requires. | For writeback, yes. | For writeback, yes. | Durable stream/consumer, idempotency, DLQ. | No production queue. |
+| Delivery policy | Real local gate | Mock-only enforced, real network locked off. | Sandbox allowlist under kill switch. | Tenant-admin production policy later. | Yes, as blocker/gate. | Yes for writeback. | Depends on action. | Depends on action. | Allowed and blocked path proof. | No hidden egress. |
+| Email notification | Not real | None or disabled. | Mailpit local SMTP capture. | Production email provider later. | No real email now. | Yes if tied to support action. | Future provider creds yes. | Mailpit local only. | Captured message and no internet email proof. | No real delivery. |
+| Evidence bundle | Local/mock export | JSON/Markdown generated, not object-stored or signed. | MinIO artifact with checksum. | Immutable/compliance storage later. | Local export now. | No. | No. | MinIO local only. | Object key/checksum/no-secret proof. | No compliance certification. |
+| Kubernetes runtime | Not implemented | Compose + host-run app only. | Podman-backed local cluster. | Production cluster future only. | No cluster claim now. | n/a | Local placeholders. | Local only. | Cluster commands, namespaces, health, browser identity. | No cloud/prod deployment. |
+| Observability | Planned | Basic logs only. | OTel/Grafana/Loki/Prometheus local. | Production monitoring later. | No observability claim now. | n/a | Maybe for datasources later. | Local only. | Correlation ID logs/metrics/traces. | No production monitoring. |
+| PBX/CTI | Mock boundary | Fake webhook/call controls. | Asterisk/FreePBX internal test only. | Production CTI later. | Mock only now. | Yes for real CTI. | Likely yes. | Local/internal only first. | Internal call event, no PSTN. | No real telephony/PSTN. |
+| Endpoint diagnostics | Not implemented | None. | osquery/read-only diagnostics later. | Managed endpoint agent later. | No. | Yes. | Agent identity later. | Outbound-only later. | Read-only proof, no arbitrary shell. | No remediation/agent now. |
+| Tauri companion | Not implemented | Web mock panels only. | Desktop app explicit sharing later. | Signed desktop app later. | No. | Operator consent required. | No. | API only later. | Start/stop sharing proof. | No desktop app now. |
+| Screen/OCR/remote observation | Not implemented | Metadata-only mock observations. | Consent-gated OCR/screen context future. | Privacy-reviewed production future. | No real capture now. | Yes, explicit consent. | No. | Maybe local OCR only. | Consent, redaction, no raw retention by default. | No ambient surveillance or remote desktop. |
+
+## Rules for Future Changes
+
+- Do not flip a capability from mock to real without a backlog item, tests, runtime identity proof, browser/API evidence, and state-file reconciliation.
+- Do not expose raw secrets in browser storage, API responses, screenshots, logs, evidence bundles, or PostgreSQL config.
+- Do not claim production readiness, production auth, production secrets, production monitoring, customer-data readiness, or compliance certification from local sandbox proof.

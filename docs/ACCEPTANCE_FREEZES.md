@@ -29,6 +29,63 @@ and must be protected from quiet regression.
   Notes: optional
 ```
 
+## AF-2026-04-29-002: BL-102 Local Kubernetes Self-Hosted Sandbox Architecture and Roadmap
+
+- ID: AF-2026-04-29-002
+- Milestone: Local Kubernetes Self-Hosted Sandbox Architecture and Roadmap
+- Scope: Architecture/backlog/state freeze for the next strategic direction. This freeze defines the local Kubernetes-on-Podman self-hosted sandbox target and phased roadmap. It is not a working real Kubernetes cluster and does not implement real integrations.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: pending_final_commit_hash
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110 for runtime boundary proof
+  - node process (Next.js dev) on port 3200 for browser proof
+  - Podman PostgreSQL on localhost:5434 for local MVP state when runtime proof was captured
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- routes:
+  - /
+  - docs proof pages rendered by `scripts/bl102_screenshots.js`
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: false
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-29-015 through EV-2026-04-29-031
+- evidence_folder: output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/
+- screenshot_count: 17
+- duplicate_screenshot_count: 0
+- created_docs:
+  - docs/SELF_HOSTED_STACK.md
+  - docs/LOCAL_KUBERNETES_PODMAN_TARGET.md
+  - docs/REAL_E2E_SANDBOX_FLOW.md
+  - docs/KUBERNETES_SERVICE_CATALOG.md
+  - docs/SANDBOX_INTEGRATION_ACCEPTANCE.md
+  - docs/IMPLEMENTATION_PHASES_REAL_E2E.md
+  - docs/BACKLOG_REAL_E2E_ROADMAP.md
+  - docs/WORKFLOW_TRUTH.md
+  - docs/BOUNDARY_MATRIX.md
+- regression_guard:
+  - Future work must preserve the truth that the current repo is a local/mock MVP until a real integration is implemented and directly verified.
+  - The Kubernetes/Podman target must remain marked as not verified until a cluster is created and tested.
+  - No real writeback may be enabled without approval gates, kill switch, credential resolution, egress guardrails, idempotency proof, audit/evidence proof, and sandbox-only boundaries.
+  - No real credentials may be stored in repo files, API responses, browser storage, evidence bundles, logs, or screenshots.
+  - Zammad is the first real ticket/customer/writeback sandbox target.
+  - Ollama is the first real local AI provider target.
+  - OpenBao is the first real secret-resolution target.
+  - NATS JetStream is the first durable worker/broker target.
+  - Mailpit is local SMTP capture only, not internet email.
+  - MinIO evidence artifacts remain local/sandbox evidence, not compliance certification by themselves.
+  - Asterisk/FreePBX, endpoint agents, Tauri companion, screen monitoring, OCR, and remote-support observation remain later/future only.
+- known_limitations:
+  - This is an architecture/backlog freeze, not a working real Kubernetes cluster.
+  - No real writeback was enabled.
+  - No real credentials were stored.
+  - No production claims were introduced.
+  - Next milestone is BL-103 Local Kubernetes/Podman cluster foundation.
+
 ## AF-2026-04-29-001: BL-101 MVP Demo Freeze and Final Polish
 
 - ID: AF-2026-04-29-001

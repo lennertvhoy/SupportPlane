@@ -38,9 +38,14 @@ decides what is allowed.
 
 - PostgreSQL for transactional state.
 - pgvector later for knowledge retrieval when needed.
-- NATS for events and async work.
-- MinIO locally and S3-compatible object storage later for evidence artifacts.
-- OpenTelemetry for traces/metrics/log correlation.
+- Current MVP: PostgreSQL-backed local state plus mock/local workflows.
+- Target self-hosted sandbox: local Kubernetes on Podman with PostgreSQL,
+  Zammad, Ollama, OpenBao, NATS JetStream, Mailpit, MinIO, and observability.
+- NATS JetStream for future durable worker/broker semantics.
+- MinIO locally for future evidence artifacts; MinIO alone is not
+  compliance-grade evidence storage.
+- OpenTelemetry collector plus Grafana/Loki/Prometheus for future local
+  observability.
 
 ## MVP Sequence
 
@@ -56,3 +61,11 @@ A customer calls about VPN problems. SupportPlane recognizes the caller, loads
 Zammad tickets, creates a SupportSession, builds an AIContextPacket, gives the
 support worker a briefing, later adds screen and endpoint context, drafts a
 resolution note, writes it back, and exports an evidence bundle.
+
+Current truth: the accepted MVP proves this story with local/mock ticket data,
+mock AI, mock delivery, and local evidence export only. The next strategic
+roadmap makes the first real target a local Kubernetes-on-Podman sandbox where
+Zammad read, Ollama draft generation, approval-gated sandbox internal-note
+writeback, OpenBao credential resolution, NATS JetStream worker semantics,
+Mailpit local capture, MinIO evidence artifacts, and observability are proven in
+phases before any production claim.

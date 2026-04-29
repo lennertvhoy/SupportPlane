@@ -22,6 +22,7 @@
 - PostgreSQL, NATS, and MinIO run in containers via `compose.yaml`.
 - The API (NestJS) and Web (Next.js) run on the host via `npm run dev`.
 - BL-093 adds a host-run local worker/process-once command that calls the API and uses PostgreSQL outbox state. The compose worker container may still be a placeholder; NATS is not consumed by BL-093.
+- BL-102 adds the next strategic target: a future local Kubernetes-on-Podman sandbox. That cluster is not implemented or verified yet; this compose runbook remains the current runnable local MVP path.
 
 ## Port map
 
@@ -160,7 +161,7 @@ podman compose -f infra/docker-compose/compose.yaml down -v
 - **No production authentication:** Local auth is not SSO/OAuth/SAML/OIDC and has no MFA, password reset, rate limiting, or production password policy claims.
 - **No real AI provider:** The AI gateway uses deterministic mock output.
 - **No real ticketing integration:** `MockTicketingAdapter` returns fixture data.
-- **Zammad connector is mock-only by default:** Set `ZAMMAD_CONNECTOR_MODE=zammad`, `ZAMMAD_BASE_URL`, and `ZAMMAD_API_TOKEN` to enable real integration. See `docs/ZAMMAD_CONNECTOR.md`.
+- **Zammad connector is mock-only in the accepted MVP:** real Zammad sandbox integration is now planned under BL-107 and BL-111. Do not claim real Zammad read/write from this runbook. See `docs/ZAMMAD_CONNECTOR.md`, `docs/REAL_WRITEBACK_PATH_DESIGN.md`, and `docs/SELF_HOSTED_STACK.md`.
 - **No worker runtime:** The worker container is a placeholder that sleeps; no background job processing exists yet.
 - **No production deployment claims:** This topology is for local development only.
 

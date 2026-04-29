@@ -2,14 +2,20 @@
 
 **Product:** SupportPlane  
 **Scope:** BL-007 Zammad connector boundary  
-**Last updated:** 2026-04-26
+**Last updated:** 2026-04-29
+
+> BL-102 truth update: the accepted runtime still treats Zammad behavior as
+> mock/local only. Real Zammad sandbox read is planned under BL-107 and
+> sandbox-only internal-note writeback under BL-111. Do not claim real Zammad
+> read/write until those backlog items are implemented and verified against the
+> local self-hosted sandbox.
 
 ## Overview
 
-The Zammad connector is a safe, mock-first boundary for integrating SupportPlane with a Zammad ticketing instance. It supports two modes:
+The Zammad connector is a safe, mock-first boundary for integrating SupportPlane with a Zammad ticketing instance. The accepted MVP uses only mock mode:
 
 - **mock** (default) — deterministic, no external credentials, used for tests and local UI.
-- **zammad** — real adapter using env-provided base URL and API token, disabled unless configured.
+- **zammad** — historical/future adapter path. It is not accepted as the current runtime path and must not be used for production or claimed as verified real integration without a dedicated sandbox backlog slice.
 
 ## Mock mode behavior
 
@@ -19,9 +25,15 @@ The Zammad connector is a safe, mock-first boundary for integrating SupportPlane
 - No network calls are made.
 - The UI shows "Mock mode", "No real writeback unless configured", and "Credentials not stored in browser".
 
-## Real Zammad mode configuration
+## Future real Zammad sandbox configuration
 
-Set these environment variables before starting the API:
+The future sandbox path should not rely on raw env tokens as the long-term
+credential model. BL-107 should prove read-only sandbox access; BL-109 should
+introduce server-side OpenBao credential resolution; BL-111 should add
+approval-gated sandbox-only internal-note writeback. Any temporary local env
+configuration must be documented as dev-only and replaced by the resolver path.
+
+Historical variables that may appear in older code/docs:
 
 ```bash
 ZAMMAD_CONNECTOR_MODE=zammad

@@ -4,6 +4,53 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-29 - BL-102 Local Kubernetes Self-Hosted Sandbox Architecture and Roadmap
+
+**Type:** planning_backlog_state_integration
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** pending_final_commit_hash
+**Worktree:** clean_after_final_commit_pending
+
+### What changed
+
+- Decided and documented the next strategic direction: SupportPlane remains a local/mock MVP today, and the next major target is a local Kubernetes-on-Podman self-hosted sandbox.
+- Created roadmap docs for the self-hosted stack, local Kubernetes target, real E2E sandbox flow, Kubernetes service catalog, sandbox acceptance gates, implementation phases, backlog roadmap, workflow truth, and strict boundary matrix.
+- Added optional skeleton `infra/kubernetes/local-podman/README.md` and non-mutating `scripts/check_local_k8s_prereqs.sh`.
+- Added `scripts/bl102_screenshots.js` for the canonical proof set and CLI artifacts.
+- Updated `README.md`, `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `docs/EVIDENCE_LOG.md`, and `docs/ACCEPTANCE_FREEZES.md`.
+
+### Backlog items added
+
+- BL-102 accepted: Local Kubernetes self-hosted sandbox architecture and roadmap.
+- BL-103 through BL-120 planned: Kubernetes foundation, app manifests, PostgreSQL PVC, self-hosted topology, Zammad read/write, Ollama, OpenBao, NATS JetStream, MinIO, Mailpit, observability, network guardrails, sandbox acceptance freeze, and later optional PBX/endpoint/Tauri/OCR phases.
+
+### What remains mocked
+
+- No Kubernetes cluster was created.
+- No real Zammad read or writeback exists.
+- No Ollama provider, OpenBao resolver, NATS JetStream worker bridge, Mailpit notification capture, MinIO evidence artifact persistence, or observability stack is implemented.
+- No real credentials were stored and no production claims were introduced.
+
+### Next implementation move
+
+Start BL-103: Local Kubernetes/Podman cluster foundation. Verify Kind with Podman provider or Minikube with Podman driver on this Fedora/Podman host, create the `supportplane-local` cluster and namespaces, and prove local image-loading behavior without enabling real integrations.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/`
+- Screenshot count: 17
+- Duplicate count: 0
+- CLI artifacts: `proof-state-mapping.md`, `screenshot-md5s.txt`, `roadmap-summary.json`
+
+### Verification
+
+- Full validation gate was run in the BL-102 final handoff.
+- No real writeback, real secrets, cluster deployment, telephony/PBX, endpoint agent, Tauri companion, or screen/OCR implementation was started.
+
+---
+
 ## 2026-04-29 - BL-101 MVP Completion Audit, Demo Freeze, and Final Polish
 
 **Type:** implementation_and_closure

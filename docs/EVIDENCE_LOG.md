@@ -2,6 +2,40 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-29-015 through EV-2026-04-29-031: BL-102 local Kubernetes self-hosted sandbox roadmap proof
+
+- Files: `output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/01-readme-md.png` through `17-final-no-real-writeback-credentials-production-claims.png`
+- Source/System: Chromium via Playwright against rendered repo markdown proof pages plus running SupportPlane local Web/API for boundary proof.
+- Store/Auth mode for runtime screenshots: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - README local/mock MVP plus real self-hosted sandbox roadmap section.
+  - `docs/SELF_HOSTED_STACK.md` self-hosted service register.
+  - `docs/LOCAL_KUBERNETES_PODMAN_TARGET.md` local Kubernetes-on-Podman target.
+  - `docs/REAL_E2E_SANDBOX_FLOW.md` target flow and real/mock status matrix.
+  - `docs/KUBERNETES_SERVICE_CATALOG.md` Kubernetes workload/service catalog.
+  - `docs/SANDBOX_INTEGRATION_ACCEPTANCE.md` acceptance gates.
+  - `docs/IMPLEMENTATION_PHASES_REAL_E2E.md` phase plan.
+  - `docs/BACKLOG_REAL_E2E_ROADMAP.md` current-to-future backlog mapping.
+  - `docs/WORKFLOW_TRUTH.md` workflow truth matrix.
+  - `docs/BOUNDARY_MATRIX.md` strict capability boundary matrix.
+  - `BACKLOG.md` showing BL-102 accepted and BL-103 through BL-120 planned.
+  - `NEXT_ACTIONS.md` showing active next implementation candidates only.
+  - Running SupportPlane header still showing DEV/MOCK DATA, local auth, postgres store, and localhost API.
+  - Connector panel still showing mock-only boundary.
+  - Delivery policy still showing real network locked off.
+  - Evidence bundle still showing local/mock boundary.
+  - Final proof that no real writeback, real credentials, production claims, or cluster implementation were enabled.
+- CLI artifacts:
+  - `output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/proof-state-mapping.md`
+  - `output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/screenshot-md5s.txt`
+  - `output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/roadmap-summary.json`
+- Proves:
+  - The real self-hosted sandbox target is integrated into repo docs, backlog, state, and active plan.
+  - The current runtime remains local/mock and real writeback/secrets/production claims were not enabled.
+  - 17 unique screenshots, 0 duplicates, max-20 cap respected.
+- Type: planning-docs-and-browser-runtime-verification
+- as_of: 2026-04-29T16:30:00+02:00
+
 ## EV-2026-04-29-001 through EV-2026-04-29-014: BL-101 MVP Demo Freeze Final Proof
 
 - Files: `output/playwright/session-102-bl101-mvp-demo-freeze-final/01-admin-landing-after-demo-reset.png` through `14-reset-script-proof.png`

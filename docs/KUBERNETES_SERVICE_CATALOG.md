@@ -1,0 +1,29 @@
+# Kubernetes Service Catalog
+
+**Backlog:** BL-102  
+**Status:** catalog and planning only. Exact images and manifests are not implemented in this slice.
+
+| Workload/service | Namespace | Kind | Container image source | Local/upstream | Ports | Env vars | Secrets/configmaps | PVCs | Health checks | Startup dependencies | Phase | Acceptance test |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `supportplane-web` | `supportplane-app` | Deployment + Service | Local build `localhost/supportplane-web:local-dev` | Local | 3200 | `NEXT_PUBLIC_API_BASE_URL` | ConfigMap for API URL | None | HTTP `/` | API reachable for full UI | Phase 1 | Browser reaches Web and shows DEV/MOCK/local auth/postgres badges. |
+| `supportplane-api` | `supportplane-app` | Deployment + Service | Local build `localhost/supportplane-api:local-dev` | Local | 4110 | `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`, `DATABASE_URL` | Secret for local DB password; ConfigMap for mode | None | HTTP `/health` | PostgreSQL | Phase 1 | `/health` returns ok with cluster runtime identity. |
+| `supportplane-worker` | `supportplane-app` | Deployment | Local build `localhost/supportplane-worker:local-dev` | Local | None | `DATABASE_URL`, future `NATS_URL`, `OPENBAO_ADDR` | Secret/ConfigMap TBD | None | Command/status endpoint TBD | PostgreSQL; later NATS/OpenBao | Phase 1/6 | Worker status command reports honest mode and does not fake broker usage. |
+| `postgres` | `supportplane-data` | StatefulSet + Service | Upstream PostgreSQL image, version TBD - verify before implementation | Upstream | 5432 | `POSTGRES_DB`, `POSTGRES_USER` | Secret for local password | `postgres-data` | `pg_isready` | None | Phase 1 | Prisma migrate/seed works; data survives pod restart. |
+| `zammad-web/app` | `supportplane-integrations` | Deployment or upstream Helm release TBD | Upstream Zammad image/chart TBD - verify before implementation | Upstream | TBD | Zammad app config TBD | Secret for local sandbox token/admin password | Zammad data PVCs TBD | HTTP health/login | PostgreSQL/search dependencies TBD | Phase 2/3 | Deterministic customer/ticket can be read from Zammad sandbox. |
+| `zammad-scheduler/worker` | `supportplane-integrations` | Deployment/CronJob TBD | Upstream Zammad image/chart TBD | Upstream | None | Zammad worker config TBD | Same Zammad config | Shared Zammad PVCs if required | Process health TBD | Zammad app/db/search | Phase 2 | Zammad background jobs healthy enough for demo data. |
+| `zammad-elasticsearch/opensearch` | `supportplane-integrations` | StatefulSet TBD | Upstream OpenSearch/Elasticsearch image TBD | Upstream | 9200 TBD | Search config TBD | Secret/config TBD | Search PVC | HTTP cluster health | None | Phase 2 | Zammad search dependency healthy if selected deployment mode requires it. |
+| `ollama` | `supportplane-integrations` | Deployment + Service or controlled host service | Upstream Ollama image or host binary TBD | Upstream/host | 11434 | Model/cache config TBD | ConfigMap for model name | Model cache PVC optional | HTTP `/api/tags` or equivalent | GPU/CPU host capability TBD | Phase 2/4 | Local draft generated; no cloud AI call. |
+| `openbao` | `supportplane-integrations` | StatefulSet/Deployment + Service | Upstream OpenBao image TBD | Upstream | 8200 | Dev/local storage config TBD | Local dev init/unseal placeholders; never production secrets | OpenBao data PVC | HTTP health | None | Phase 2/5 | Server-side resolver returns local placeholder secret and API response hides it. |
+| `nats` | `supportplane-integrations` | StatefulSet/Deployment + Service | Upstream NATS image with JetStream TBD | Upstream | 4222, 8222 | JetStream enabled config | ConfigMap/Secret for local auth if used | JetStream data PVC | `/healthz` or monitor endpoint | None | Phase 2/6 | Durable stream/consumer survives restart and supports retry/dead-letter proof. |
+| `mailpit` | `supportplane-integrations` | Deployment + Service | Upstream Mailpit image TBD | Upstream | 1025, 8025 | Mailpit config TBD | None/local config | Optional | HTTP UI health | None | Phase 2/9 | Captures local SMTP message; no internet email sent. |
+| `minio` | `supportplane-data` | StatefulSet/Deployment + Service | Upstream MinIO image TBD | Upstream | 9000, 9001 | Bucket/console config | Local access key/secret placeholder | `minio-data` | `/minio/health/live` | None | Phase 2/8 | Evidence JSON/Markdown stored with key/checksum. |
+| `otel-collector` | `supportplane-observability` | Deployment | Upstream collector image TBD | Upstream | 4317, 4318 | Collector pipeline config | ConfigMap | None | Collector health endpoint TBD | Loki/Prometheus optional | Phase 10 | Receives basic API/worker traces or logs with correlation ID. |
+| `grafana` | `supportplane-observability` | Deployment + Service | Upstream Grafana image TBD | Upstream | 3000 mapped locally to 3001 | Datasource config | Local admin password placeholder | Optional dashboard PVC | HTTP `/api/health` | Loki/Prometheus | Phase 10 | Dashboard shows service health/log/metric source. |
+| `loki` | `supportplane-observability` | StatefulSet/Deployment | Upstream Loki image TBD | Upstream | 3100 | Loki config | ConfigMap | Optional log storage PVC | `/ready` | None | Phase 10 | Logs query by correlation ID. |
+| `prometheus` | `supportplane-observability` | StatefulSet/Deployment | Upstream Prometheus image TBD | Upstream | 9090 | Scrape config | ConfigMap | Optional metrics PVC | `/-/ready` | App metrics endpoints TBD | Phase 10 | Scrapes API/worker metrics. |
+
+## Notes
+
+- Exact image names and versions are intentionally `TBD` where not verified.
+- The first Kubernetes implementation slice should choose Kind/Podman or Minikube/Podman and prove the image load, namespace, PVC, health-check, and localhost access paths.
+- No manifest in this catalog is claimed to deploy today.

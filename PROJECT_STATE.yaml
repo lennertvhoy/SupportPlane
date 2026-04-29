@@ -1,9 +1,13 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-29T14:12:00+02:00
+  updated_at: 2026-04-29T16:30:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
+  note: >
+    Condensed during BL-102 because the previous state file was near the
+    repository 900-line limit. Historical detail remains in WORKLOG.md,
+    BACKLOG.md, docs/EVIDENCE_LOG.md, and docs/ACCEPTANCE_FREEZES.md.
 
 workflow:
   repo_mode: operating
@@ -13,27 +17,14 @@ workflow:
     system_investigated: true
     repo_investigated: true
     user_intake_complete: true
-    completion_summary: >
-      Product architecture, target users, MVP sequence, core safety model,
-      implementation stack, external integration order, backlog, active queue,
-      and evidence references were captured from user-provided architecture and
-      direct local/source verification.
-    unknowns_remaining:
-      - exact repository hosting/branching model not configured
-      - production deployment target not selected beyond local Docker Compose first
-      - concrete Zammad instance credentials and schema constraints not configured
-      - AI provider, model names, and retention defaults not selected
-      - legal/compliance requirements need counsel review before market claims
-      - evidence bundle object storage persistence not implemented
-      - evidence bundle cryptographic signing not implemented
 
 verification_labels:
-  observed: verified directly in the current session
-  unknown: not yet determined from currently available evidence
-  reported: provided by the user or prior context, not independently proven
+  observed: verified directly in a session
+  unknown: not determined from current evidence
+  reported: provided by user or prior context, not independently proven in this slice
   blocked: verification attempted but prevented
   assumed: temporary working assumption
-  stale: previously verified but no longer fresh
+  stale: previously verified but not fresh
   invalid: known false or superseded
 
 current_state:
@@ -42,838 +33,300 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 8588ed78ea55ae99897620966f8153f8a690150e
-    worktree_status: clean
-    notes:
-      - git repository initialized during BL-001
-      - BL-002 contracts and schema committed
-      - BL-003 mock-first API slice committed
-      - BL-004 support cockpit UI shell committed and closure verified
-      - BL-005 mock AI gateway and draft suggestion workflow implemented and committed
+    head_before_bl_102: 8b4f0311878bf648fb9d945dcc816f7b0ec27bb3
+    final_head_after_bl_102: pending_final_commit_hash
+    worktree_status_at_state_update: dirty_until_bl_102_commit
 
-  operating_mode:
-    status: observed
-    mode: operating
+  current_product_truth:
+    lifecycle_stage: local_mock_mvp_frozen_with_real_sandbox_roadmap
+    api:
+      framework: NestJS
+      local_url: http://localhost:4110
+      status: local_dev_runtime_when_started
+    web:
+      framework: Next.js
+      local_url: http://localhost:3200
+      status: local_dev_runtime_when_started
+    database:
+      engine: PostgreSQL
+      local_port: 5434
+      current_runtime: Podman compose for local MVP
+      canonical_store: postgres
+    auth:
+      current: local username/password demo auth
+      not_implemented: [OIDC, OAuth, SAML, MFA, password_reset, production_auth_hardening]
+    connectors:
+      current: mock/local only
+      zammad: deterministic fixtures only; no real Zammad API calls
+      writeback: mock-only; real network locked off
+    ai:
+      current: deterministic mock/local only
+      cloud_ai_calls: false
+      ollama_integrated: false
+    telephony:
+      current: fake incoming call/webhook simulation only
+      real_pbx: false
+    evidence:
+      current: local/mock JSON and Markdown bundle
+      object_storage_artifact_persistence: false
+      compliance_grade: false
+    credentials:
+      current: metadata/placeholder credential references only
+      real_secret_resolution: false
+      production_secret_storage: false
+    explicit_non_claims:
+      - no production software claim
+      - no real Zammad writeback
+      - no real AI provider
+      - no internet email sending
+      - no real telephony or PBX
+      - no endpoint agent
+      - no Tauri operator companion
+      - no screen monitoring or OCR
+      - no production secrets
+      - no production audit immutability
+      - no compliance certification
+
+  local_mock_mvp_status:
+    backlog_id: BL-101
+    status: accepted
     summary: >
-      Bootstrap is complete. BL-002 contracts/schema, BL-003 mock-first API
-      slice, BL-004 support cockpit UI shell, and BL-005 mock AI draft
-      suggestion workflow are implemented. The repository contains a NestJS API,
-      Next.js web app, and PostgreSQL-backed local persistence path with
-      browser-verified panels. External ticketing writeback, real AI provider
-      calls, and production delivery queues are not implemented.
+      The current runnable product is a local/mock MVP demo with local auth,
+      PostgreSQL-backed state, mock connector runtime, mock AI, local durable
+      action/outbox workflow, delivery policies that block real network, and
+      local/mock evidence export.
+    runtime_identity_when_verified:
+      api_url: http://localhost:4110
+      web_url: http://localhost:3200
+      postgres: localhost:5434
+      auth_mode: local
+      store_mode: postgres
+    evidence_folder: output/playwright/session-102-bl101-mvp-demo-freeze-final/
+    screenshot_count: 14
 
-  project:
-    name: SupportPlane
-    type: governed_ai_support_cockpit
-    lifecycle_stage: mvp_foundation
-    foundation_history:
-      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094, BL-095, BL-097, BL-098, BL-099, BL-100, BL-101]
-      summary: >
-        Early slices established contracts/schema, mock-first API, cockpit UI,
-        mock AI gateway, local Podman-compatible topology, Zammad connector
-        boundary, evidence bundle skeleton, and fake incoming call flow.
-      detail_location: WORKLOG.md
-    bl_041_status:
-      completed: true
-      status: closure_ready
-      scope: automatic_support_session_creation_from_incoming_call_events
-      screenshot_folder: unknown
-      screenshot_count: 0
-      final_closure_commit: 8588ed78ea55ae99897620966f8153f8a690150e
+  real_e2e_sandbox_target:
+    backlog_id: BL-102
+    status: accepted
+    scope: local_kubernetes_self_hosted_sandbox_architecture_and_roadmap
+    summary: >
+      SupportPlane targets a local self-hosted Kubernetes sandbox running on
+      Podman. It should prove a real end-to-end support workflow using Zammad
+      sandbox reads/writeback, Ollama local AI, approval gates, delivery policy,
+      durable worker semantics, OpenBao credential resolution, Mailpit local
+      capture, MinIO evidence artifacts, PostgreSQL canonical state, and local
+      observability.
+    not_implemented_in_bl_102:
+      - Kubernetes cluster creation
+      - real Zammad read connector
+      - real Zammad internal-note writeback
+      - Ollama provider integration
+      - OpenBao credential resolver
+      - NATS JetStream worker bridge
+      - MinIO evidence artifact persistence
+      - Mailpit notification capture
+      - observability stack
+    evidence_folder: output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/
+    screenshot_count: 17
+    final_commit_hash: pending_final_commit_hash
 
-    bl_042_status:
-      completed: true
-      status: closure_ready
-      scope: suggested_greeting_generation_from_call_plus_ticket_context
-      screenshot_folder: unknown
-      screenshot_count: 0
-      final_closure_commit: unknown
+  kubernetes_podman_target:
+    target_cluster_name: supportplane-local
+    current_status: planned_not_verified
+    recommended_default_path: Kind with Podman provider
+    recommendation_status: to_verify_on_host
+    fallback_candidate: Minikube with Podman driver
+    namespaces:
+      - supportplane-app
+      - supportplane-data
+      - supportplane-integrations
+      - supportplane-observability
+    app_image_tags:
+      supportplane_api: localhost/supportplane-api:local-dev
+      supportplane_web: localhost/supportplane-web:local-dev
+      supportplane_worker: localhost/supportplane-worker:local-dev
+    networking:
+      localhost_access: ingress_or_port_forward
+      internal_dns: Kubernetes service DNS
+      real_writeback_egress: disabled_until_sandbox_gates_pass
+    storage:
+      postgres: PVC required
+      zammad: PVCs required, exact mode TBD
+      openbao: local sandbox storage required
+      minio: PVC required
+      nats_jetstream: PVC or accepted local durable storage required
+      mailpit: optional persistence
+    secret_strategy:
+      raw_production_secrets_allowed: false
+      local_placeholders_allowed: true
+      future_resolver: OpenBao
+      kubernetes_secret_is_production_grade: false
+    safety_strategy:
+      real_writeback_default: disabled
+      kill_switch_default_for_real_writeback: blocking_until_explicit_phase
+      uncontrolled_egress_allowed: false
+      tenant_boundary_required: true
+      rbac_required: true
 
-    bl_043_status:
-      completed: true
-      status: closure_ready
-      scope: call_console_ui_closure
-      screenshot_folder: unknown
-      screenshot_count: 0
-      final_closure_commit: unknown
+  selected_self_hosted_services:
+    core_app:
+      - SupportPlane Web
+      - SupportPlane API
+      - SupportPlane Worker
+      - PostgreSQL
+    real_sandbox_workflow:
+      - Zammad
+      - Ollama
+      - OpenBao
+      - NATS JetStream
+      - Mailpit
+      - MinIO
+    observability:
+      - OpenTelemetry Collector
+      - Grafana
+      - Loki
+      - Prometheus
+    later_optional:
+      - Asterisk or FreePBX
+      - osquery
+      - MeshCentral or RustDesk
+      - Tauri operator companion
+      - Tesseract or PaddleOCR
 
-    bl_045_status:
-      completed: true
-      status: closure_ready
-      scope: call_recording_attachment_and_playback_mock_foundation
-      screenshot_folder: output/playwright/session-045-call-recording-mock-final-closure/
-      screenshot_count: 8
-      final_closure_commit: unknown
-
-    bl_047_status:
-      completed: true
-      status: closure_ready
-      scope: explicit_sharing_state_storage_and_visible_sharing_indicator
-      screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
-      screenshot_count: 0
-      final_closure_commit: unknown
-
-    bl_048_status:
-      completed: true
-      status: closure_ready
-      scope: deterministic_active_window_metadata_and_manual_screenshot_metadata_capture
-      screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
-      screenshot_count: 0
-      final_closure_commit: unknown
-
-    bl_049_status:
-      completed: true
-      status: closure_ready
-      scope: enhanced_redaction_and_structured_observation_fields_in_evidence_bundle
-      screenshot_folder: output/playwright/session-047-049-screen-context-hardening/
-      screenshot_count: 0
-      final_closure_commit: unknown
-
-    bl_046_status:
-      completed: true
-      status: closure_ready
-      scope: operator_companion_screen_observations_during_active_calls
-      screenshot_folder: output/playwright/session-046-operator-companion-closure-canonical/
-      screenshot_count: 9
-      final_closure_commit: unknown
-
-    bl_050_status:
-      completed: true
-      status: closure_ready
-      scope: postgres_persistence_foundation_prisma_store_runtime_switching
-      screenshot_folder: unknown
-      screenshot_count: 0
-      final_closure_commit: unknown
-
-    bl_044_status:
-      completed: true
-      status: closure_ready
-      scope: telephony_adapter_contract_and_bridge_boundary
-      screenshot_folder: output/playwright/session-043-call-console-ui-final-closure/
-      screenshot_count: 8
-      final_closure_commit: unknown
-
-  runtime_identity:
-    status: api_and_web_runtime_verified
-    repo_path: /home/ff/Documents/Projects/SupportPlane
-    branch: main
-    head: 89a8590dacfff01646b2459228bf7734df6aefff
-    process_or_container:
-      - node process (NestJS) on port 4110
-      - node process (Next.js) on port 3200
-    port_or_base_url:
-      - http://localhost:4110
-      - http://localhost:3200
-    rebuilt_in_current_slice: true
-    duplicate_runtimes_checked: true
-    notes:
-      - NestJS API verified via integration tests and curl
-      - Next.js web app verified via browser screenshots
-      - BL-050 PostgreSQL persistence verified with restart-survival script
-      - Infra containers verified via podman-compose with healthchecks
-    bl_092_status:
-      completed: true
-      status: closure_complete_after_repair
-      scope: durable_action_outbox_workflow_foundation
-      backlog_id: BL-092
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      prisma_schema: prisma/schema.prisma
-      migration: prisma/migrations/20260427234000_durable_action_outbox_workflow/
-      docs:
-        - docs/ACTION_OUTBOX_WORKFLOW.md
-        - docs/PERSISTENCE.md
-        - docs/EVIDENCE_BUNDLES.md
-        - docs/SUPPORT_CASE_WORKFLOW.md
-      runtime:
-        store_mode: postgres
-        auth_mode: local
-        api_url: http://localhost:4110
-        web_url: http://localhost:3200
-        postgres: localhost:5434
-      new_api_endpoints:
-        - GET /support-sessions/:id/actions
-        - POST /support-sessions/:id/actions
-        - GET /actions/:id
-        - POST /actions/:id/submit-for-review
-        - POST /actions/:id/approve
-        - POST /actions/:id/reject
-        - POST /actions/:id/queue
-        - POST /actions/:id/mock-deliver
-        - POST /actions/:id/cancel
-        - GET /outbox
-        - GET /outbox/:id
-        - POST /outbox/:id/retry
-        - POST /outbox/:id/mock-deliver
-      screenshot_folder: output/playwright/session-092-durable-action-outbox-workflow-final-closure/
-      screenshot_count: 17
-      validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
-      implementation_commit: 6819301fa5af04a6b02bbe6af532ae669e7a880a
-      closure_repair_commit: 5d0a9c54bd56e714da75bcfe84b8a809a417f6d8
-      final_closure_commit: 4c7697de0f143cba09ec60c9f1de05725ec659c7
-      closure_repair_summary: >
-        Fixed lifecycle contradiction where UI showed mock_delivered attempt history
-        on draft/review_required actions. Two bugs: backend returned all session outbox
-        items regardless of action status; frontend picked outboxItems[0] for attempts.
-      final_closure_summary: >
-        Completed 17-screenshot audit proof set, fixed verify_postgres_persistence.sh
-        to handle occupied API ports, reran full validation gate, updated acceptance freeze
-        and all state docs, and added closure repair rule to AGENTS.md.
-      notes:
-        - action/outbox delivery is local mock only with realNetwork=false and externalWriteAttempted=false
-        - viewer can inspect but cannot mutate; operator can create/submit; admin can approve/reject/queue
-        - backend suppresses outbox items until queued/delivered/failed; frontend scopes attempt history by supportActionId
-    bl_094_status:
-      completed: true
-      status: closure_complete_after_governance_repair
-      scope: connector_writeback_readiness_gates_and_delivery_policy_controls
-      backlog_id: BL-094
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      prisma_schema: prisma/schema.prisma
-      migration: prisma/migrations/20260428094012_delivery_policy_controls/
-      docs: [docs/DELIVERY_POLICY_CONTROLS.md]
-      runtime:
-        store_mode: postgres
-        auth_mode: local
-        api_url: http://localhost:4110
-        web_url: http://localhost:3200
-        postgres: localhost:5434
-      new_api_endpoints:
-        - GET /delivery-policies
-        - GET /delivery-policies/:id
-        - PATCH /delivery-policies/:id
-        - POST /delivery-policies/:id/validate
-        - POST /delivery-policies/:id/connector-readiness
-      screenshot_folder: output/playwright/session-095-bl094-final-closure-max20/
-      screenshot_count: 20
-      validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
-      governance_repair:
-        reason: prior closure violated AGENTS.md screenshot cap (24 screenshots) and stale BACKLOG.md
-        actions:
-          - AGENTS.md updated with hard 20-screenshot cap and backlog currency rule
-          - BACKLOG.md reconciled with accepted/superseded/partial markers for BL-001 through BL-094
-          - Old screenshot folder session-094-delivery-policy-controls-final-closure/ deleted
-          - New canonical folder session-095-bl094-final-closure-max20/ created with 20 unique screenshots
-      final_closure_commit: 93afe787847964b666e502d083b0dbc63cc79d86
-      notes:
-        - delivery policy evaluation gates (in order): killSwitch → enabled → allowedActionTypes → approvalRequired → minimumApproverRole → requireHumanReview → requireEvidenceBundle → requireConnectorValidation
-        - all policy decisions return realNetworkAllowed=false, writebackEnabled=false, externalWriteAllowed=false
-        - real writeback toggle requests return 400 with explicit rejection
-        - viewer sees read-only policy panel; admin can update safe fields only
-        - policy decisions are stored in outbox item deliveryIntent and audit events
-        - ActionsService.queue() evaluates policy before creating outbox item
-        - ActionsService.processClaimedOutbox() re-evaluates policy before processing
-        - evidence bundles include policy provenance
-        - no real external writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
-    bl_095_status:
-      completed: true
-      status: closure_complete_after_repair
-      scope: connector_installation_settings_foundation
-      backlog_id: BL-095
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      prisma_schema: prisma/schema.prisma
-      migration: prisma/migrations/20260428131300_bl095_connector_installation_settings/
-      docs:
-        - docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md
-        - docs/ZAMMAD_CONNECTOR.md
-      runtime:
-        store_mode: postgres
-        auth_mode: local
-        api_url: http://localhost:4110
-        web_url: http://localhost:3200
-        postgres: localhost:5434
-      new_api_endpoints:
-        - POST /connector-installations
-        - PATCH /connector-installations/:id
-        - POST /connector-installations/:id/validate
-        - POST /connector-installations/:id/test
-      screenshot_folder: output/playwright/session-096-bl095-connector-installation-settings-final-closure/
-      screenshot_count: 14
-      validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
-      closure_repair:
-        reason: prior closure had wrong screenshot folder name (session-095 conflicted with BL-094), incomplete validation gate, missing 18-section handoff, short commit hash, and under-proven cross-tenant/server-side denial evidence
-        actions:
-          - Deleted old session-095-connector-installation-settings/ folder
-          - Created canonical session-096-bl095-connector-installation-settings-final-closure/ with 14 unique screenshots
-          - Added scripts/bl095_screenshots.js with hard max-20 cap and duplicate detection
-          - Updated docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md with current endpoint truth and credential handling note
-          - Ran full validation gate with exact command results
-      final_closure_commit: d42b226fbef59eb078675a1b001b17a9038d12d2
-      notes:
-        - connector installation settings are editable by admin/operator; viewer denied server-side with 403
-        - config secrets redacted to [REDACTED] in all GET responses and evidence bundles
-        - credential/config JSON storage is local/mock/dev-only; not production credential management
-        - cross-tenant connector installation access returns 404
-        - connector readiness returns readyForRealWriteback=false and realNetwork=false
-        - delivery policy controls still deny real writeback
-        - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
-    bl_097_status:
-      completed: true
-      status: closure_ready
-      scope: connector_credential_reference_secret_broker_foundation
-      backlog_id: BL-097
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      prisma_schema: prisma/schema.prisma
-      migration: prisma/migrations/20260428160000_bl097_credential_reference_foundation/
-      runtime:
-        store_mode: postgres
-        auth_mode: local
-        api_url: http://localhost:4110
-        web_url: http://localhost:3200
-        postgres: localhost:5434
-      new_api_endpoints:
-        - POST /credential-references
-        - GET /credential-references
-        - GET /credential-references/:id
-        - PATCH /credential-references/:id
-        - POST /connector-installations/:id/link-credential
-        - POST /connector-installations/:id/unlink-credential
-      new_audit_events:
-        - credential_reference_created
-        - credential_reference_updated
-        - credential_reference_linked
-        - credential_reference_unlinked
-      screenshot_folder: output/playwright/session-097-credential-reference-foundation-final-closure/
-      screenshot_count: 6
-      validation: full_gate_passed
-      final_closure_commit: b6b42ce571edbccb742eaff447338afb622aa8a3
-      notes:
-        - credential references are tenant-scoped and stored in PostgreSQL via Prisma
-        - all API responses redact secretRef to [REDACTED]; raw secret values never leave the server
-        - evidence bundles include credential reference summaries with metadata only (no secrets)
-        - admin/operator can link/unlink credential references to connector installations
-        - viewer sees read-only credential reference list; server-side 403 on write operations
-        - secretRef values are local-dev opaque placeholders; no production credential broker exists
-        - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
-    bl_098_status:
-      completed: true
-      status: closure_ready
-      scope: connector_runtime_configuration_credential_reference_readiness_foundation
-      backlog_id: BL-098
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      prisma_schema: prisma/schema.prisma
-      runtime:
-        store_mode: postgres
-        auth_mode: local
-        api_url: http://localhost:4110
-        web_url: http://localhost:3200
-        postgres: localhost:5434
-      new_contracts:
-        - packages/contracts/src/connector-runtime.ts
-      new_api_endpoints:
-        - GET /connector-installations/:id/config-schema
-        - POST /connector-installations/:id/validate-config
-        - POST /connector-installations/:id/runtime-readiness
-        - GET /connector-installations/runtime/resolve
-      new_audit_events:
-        - connector_config_validated
-        - connector_readiness_checked
-        - connector_runtime_resolved
-      screenshot_folder: output/playwright/session-100-bl098-evidence-repair-final/
-      screenshot_count: 15
-      validation: full_gate_passed
-      final_closure_commit: 298ea8f57bbef9c3e69509c72e183001e9852e25
-      notes:
-        - config validation enforces mock-only safety: rejects mockMode:false, rejects unsafe real-network fields
-        - runtime readiness returns mockReady based on mockMode && enabled; realReady is always false
-        - runtime resolver returns tenant-scoped installation with credential reference metadata (no secretRef exposure)
-        - evidence bundles include connector installation summaries with realNetwork:false, writebackEnabled:false, externalWriteAttempted:false
-        - viewer denied server-side on config validation and readiness mutations with 403
-        - cross-tenant access returns 404 on all runtime endpoints
-        - all behavior remains local/mock-only with visible UI warnings
-        - seed is idempotent via upsert with fixed IDs; exactly 1 credential ref linked to conn-inst-dev-001
-        - ticket context panel shows connector runtime provenance card (installation name, type, mode, network status, linked credential count, capabilities)
-        - old session-098 and session-099 screenshot folders superseded and deleted per repair rules
-        - all 15 screenshots are compact (max 900px height), readable, and label-accurate
-        - screenshot 03 visibly shows valid: true with Valid badge
-        - evidence bundle summary (08) and final proof (15) show generated bundle state, not empty
-        - API evidence (09, 10) uses compact styled pages, not unreadable tall JSON dumps
-        - no real production Zammad writeback, email, telephony, AI provider, external broker, object storage, raw media, production audit immutability, compliance claim, SSO/OAuth/SAML/OIDC, MFA, or password reset
-    bl_099_status:
-      completed: true
-      status: closure_ready
-      scope: connector_runtime_test_coverage_documentation_hardening
-      backlog_id: BL-099
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      docs:
-        - docs/CONNECTOR_RUNTIME_CONTRACT.md
-        - docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md
-      new_tests:
-        - packages/contracts/test/connector-runtime.test.ts
-        - apps/api/test/api.test.ts (expanded connector runtime describe block)
-        - apps/web/lib/api.test.ts (connector runtime resolve response)
-      verification_scripts:
-        - scripts/verify_connector_runtime_contracts.sh
-      screenshot_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
-      screenshot_count: 13
-      validation: full_gate_passed
-      final_closure_commit: 298ea8f57bbef9c3e69509c72e183001e9852e25
-      notes:
-        - 14 new API tests added (147/147 pass, 14 suites)
-        - 43 contracts tests pass (7 suites)
-        - 19 web tests pass
-        - no secretRef leakage verified in all runtime flows
-        - deterministic credential count verified (exactly 1 from seed)
-        - evidence bundles secret-free verified
-        - viewer/operator/admin RBAC boundaries verified
-        - cross-tenant isolation verified
-        - all behavior remains mock-only; no real writeback
-    bl_100_status:
-      completed: true
-      status: closure_ready
-      scope: real_writeback_path_design_document
-      backlog_id: BL-100
-      docs:
-        - docs/REAL_WRITEBACK_PATH_DESIGN.md
-      implementation: none
-      screenshot_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
-      screenshot_count: 2
-      validation: full_gate_passed
-      final_closure_commit: 298ea8f57bbef9c3e69509c72e183001e9852e25
-      notes:
-        - design-only backlog item; no implementation
-        - documents current truth (mock-only state), block reasons, required architecture, phased path, non-goals, acceptance gates, threat/risk, test plan, rollback strategy, and "do not build until" checklist
-        - screenshots 12 and 13 show design doc and final proof state
-    bl_101_status:
-      completed: true
-      status: closure_ready
-      scope: mvp_completion_audit_demo_freeze_final_polish
-      backlog_id: BL-101
-      docs:
-        - docs/MVP_COMPLETION_AUDIT.md
-        - docs/DEMO_GUIDE.md
-        - docs/REAL_WRITEBACK_PATH_DESIGN.md
-      runtime:
-        store_mode: postgres
-        auth_mode: local
-        api_url: http://localhost:4110
-        web_url: http://localhost:3200
-        postgres: localhost:5434
-      screenshot_folder: output/playwright/session-102-bl101-mvp-demo-freeze-final/
-      screenshot_count: 14
-      validation: full_gate_passed
-      final_closure_commit: unknown
-      notes:
-        - no new features implemented
-        - created deterministic demo reset script scripts/reset_demo_data.sh
-        - updated README.md with honest product boundary
-        - UI header shows auth/store mode badges from /health endpoint
-        - Evidence Bundle panel explains local/mock export before session selection
-        - all state files reconciled: BACKLOG.md, NEXT_ACTIONS.md, STATUS.md, PROJECT_STATE.yaml, WORKLOG.md, docs/EVIDENCE_LOG.md, docs/ACCEPTANCE_FREEZES.md
-    bl_093_status:
-      completed: true
-      status: closure_ready
-      scope: background_outbox_worker_retry_deadletter_foundation
-      backlog_id: BL-093
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      worker_app: apps/worker
-      prisma_schema: prisma/schema.prisma
-      migration: prisma/migrations/20260428120000_outbox_worker_retry_deadletter_foundation/
-      docs: [docs/OUTBOX_WORKER_OPERATIONS.md, docs/ACTION_OUTBOX_WORKFLOW.md, docs/PERSISTENCE.md]
-      runtime:
-        store_mode: postgres
-        auth_mode: local
-        api_url: http://localhost:4110
-        web_url: http://localhost:3200
-        postgres: localhost:5434
-        worker_mode: local_mock_worker/process-once
-      new_api_endpoints: [GET /outbox/worker/status, POST /outbox/process-once, POST /outbox/:id/retry, POST /outbox/:id/cancel, POST /outbox/:id/dead-letter]
-      screenshot_folder: output/playwright/session-093-outbox-worker-retry-deadletter-foundation/
-      screenshot_count: 24
-      validation: full_gate_passed_with_npm_audit_vulnerabilities_reported
-      final_closure_commit: f5c101da467384bce940f886f0e8226478180bfa
-      notes:
-        - worker/process-once delivery mode is local mock only; all results include mode=mock, realNetwork=false, writebackEnabled=false, externalWriteAttempted=false
-        - retryable failures schedule retry; non-retryable or exhausted attempts move to dead_lettered
-        - viewer can inspect only; admin/owner can process, retry, cancel, and dead-letter
-        - forged role headers ignored; cross-tenant outbox access denied server-side
-        - evidence bundles include attempt provenance without secrets or raw media
-    bl_091_status:
-      completed: true
-      scope: support_case_workflow_foundation
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      prisma_schema: prisma/schema.prisma
-      new_modules:
-        - apps/api/src/tickets/
-      new_ui_components:
-        - apps/web/components/TicketSummaryPanel.tsx
-        - apps/web/components/CaseTimelinePanel.tsx
-        - apps/web/components/SupportNoteDraftPanel.tsx
-      updated_ui_components:
-        - apps/web/components/ConnectorPanel.tsx
-        - apps/web/app/page.tsx
-        - apps/web/lib/api.ts
-      new_api_endpoints:
-        - GET /tickets
-        - GET /tickets/:id
-        - PATCH /connector-installations/:id
-        - POST /connector-installations/:id/validate
-        - POST /connector-installations/:id/test
-        - POST /support-sessions/:id/support-note-drafts
-      validation: all_typechecks_pass_111_api_tests_pass_browser_proof_20_screenshots
-      screenshot_folder: output/playwright/session-091-support-case-workflow-foundation/
-      screenshot_count: 20
-      notes:
-        - internal_note_drafts is represented in prisma/schema.prisma and committed migration prisma/migrations/20260427124815_init_persistence_foundation/migration.sql; npx prisma validate and migrate status passed on 2026-04-27
-        - All new behavior is deterministic local/mock-only with visible UI warnings
-        - No real Zammad, telephony, AI provider, queue, object storage, SSO, MFA, or password reset implemented
-    bl_020_status:
-      completed: true
-      scope: ticket_context_connector_safety_foundation
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      prisma_schema: prisma/schema.prisma
-      migration: prisma/migrations/20260427160804_ticket_context_connector_safety_foundation/
-      new_contracts:
-        - packages/contracts/src/customer.ts
-        - packages/contracts/src/connector-installation.ts
-      new_modules:
-        - apps/api/src/customers/
-        - apps/api/src/connector-installations/
-      new_ui_components:
-        - apps/web/components/CustomerReferencePanel.tsx
-      updated_ui_components:
-        - apps/web/components/ConnectorPanel.tsx
-        - apps/web/components/EvidenceBundlePanel.tsx
-        - apps/web/lib/api.ts
-      validation: all_typechecks_pass_102_api_tests_pass_browser_proof_13_screenshots
-      notes:
-        - All new entities default to mockDevOnly: true
-        - No real production Zammad, telephony, AI, or object storage implemented
-    bl_018_status:
-      completed: true
-      scope: local_auth_rbac_tenant_boundary_foundation
-      contracts_package: packages/contracts
-      api_app: apps/api
-      web_app: apps/web
-      prisma_schema: prisma/schema.prisma
-      migration: prisma/migrations/20260427152000_local_auth_rbac/
-      docs:
-        - docs/AUTHORIZATION.md
-        - docs/LOCAL_DEVELOPMENT.md
-        - docs/PERSISTENCE.md
-      runtime:
-        store_mode: postgres
-        auth_modes: [dev, local]
-        local_auth: PostgreSQL-backed local users, password hashes, sessions, roles, permissions
-        seed_users:
-          - admin@supportplane.local / dev-tenant / admin
-          - operator@supportplane.local / dev-tenant / operator
-          - viewer@supportplane.local / dev-tenant / viewer
-          - admin@alt.supportplane.local / alt-tenant / admin
-          - operator@alt.supportplane.local / alt-tenant / operator
-        verification_script: scripts/verify_local_auth_rbac.sh
-        screenshot_folder: output/playwright/session-018-auth-rbac-tenant-boundary-foundation/
-        screenshot_count: 13
-        limitations:
-          - local MVP auth only; no SSO/OAuth/SAML/OIDC
-          - no production password policy/MFA/rate limiting/password reset
-          - audit integrity is not production immutable
-
-  environment:
-    status: observed
-    host:
-      os: Fedora Linux 43 Workstation Edition
-      kernel: Linux 6.19.13-200.fc43.x86_64
-      shell: /bin/bash
-      terminal: dumb
-      timezone: Europe/Brussels
-    package_managers:
-      - dnf
-      - npm_or_corepack_not_verified
-    language_runtimes:
-      python: 3.14.4
-      node: 22.22.0
-      go: unknown
-      rust: unknown
-    container_tooling:
-      podman: 5.8.2
-      podman_compose: 1.5.0
-      docker: absent
-      compose_file: infra/docker-compose/compose.yaml
-      tested_orchestrator: podman_compose
-      docker_compose_expected_compatible: true
-      docker_compose_verified: false
-    browser_tooling:
-      chrome: /usr/bin/google-chrome-stable
-    ports:
-      listeners_observed: true
-      notes:
-        - active listeners were observed with ss -ltn
-        - none were tied to a SupportPlane runtime
-
-  repository_structure:
-    status: observed
-    current_top_level_entries:
-      - AGENTS.md
-      - BACKLOG.md
-      - NEXT_ACTIONS.md
-      - PROJECT_STATE.yaml
-      - README.md
-      - STATUS.md
-      - WORKLOG.md
-      - docs
-      - fixtures
-      - infra
-      - scripts
-      - apps
-      - packages
-    current_entrypoints:
-      - scripts/init_template.py
-      - scripts/check_state_docs.py
-      - scripts/health.js
-      - apps/api/dist/src/main.js
-    current_test_setup:
-      - scripts/check_state_docs.py
-      - python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py
-      - npm run typecheck --workspaces --if-present
-      - npm run health
-    planned_monorepo:
-      apps:
-        - apps/web
-        - apps/api
-        - apps/worker
-        - apps/operator-companion
-        - apps/endpoint-agent
-      packages:
-        - packages/contracts
-        - packages/policy
-        - packages/connectors
-        - packages/ai
-        - packages/audit
-        - packages/ui
-      infra:
-        - infra/docker-compose
-        - infra/kubernetes
-        - infra/terraform-later
-    deployment_assumptions:
-      - MVP local self-hosting through Docker Compose or Podman-compatible compose
-      - production later may use Kubernetes, managed PostgreSQL, NATS cluster, object storage, and OpenTelemetry
-    contradictions:
-      - repository still contains template fixtures in some apps
-      - AGENTS template language still includes some generic workflow framing
-      - apps/web and apps/worker are scaffold placeholders without frameworks installed yet
-      - apps/api supports both in-memory and PostgreSQL stores via SUPPORTPLANE_STORE env var; PrismaStore uses Prisma v7.8.0 with pg adapter
-      - packages/ai contains only deterministic mock provider behavior, not real provider integrations
-
-  target_architecture:
-    frontend:
-      app: apps/web
-      stack:
-        - Next.js
-        - React
-        - TypeScript
-        - Tailwind
-        - shadcn/ui
-        - OpenAPI-generated client
-      primary_screens:
-        - support cockpit
-        - ticket context view
-        - call console
-        - device console
-        - evidence bundle viewer
-        - admin
-    backend:
-      app: apps/api
-      stack:
-        - NestJS
-        - TypeScript
-        - PostgreSQL
-        - Prisma
-        - NATS
-        - OpenAPI
-        - OpenTelemetry
-      responsibilities:
-        - auth
-        - tenant isolation
-        - RBAC and ABAC
-        - support sessions
-        - ticket context
-        - call events
-        - AI orchestration
-        - connector gateway
-        - policy checks
-        - approval workflows
-        - audit events
-        - evidence bundles
-    worker:
-      app: apps/worker
-      responsibilities:
-        - async jobs
-        - connector sync
-        - evidence generation
-        - AI/background workflows
-    operator_companion:
-      app: apps/operator-companion
-      stack:
-        - Tauri
-        - Rust
-        - TypeScript
-      default_capture_mode: active_window_only
-      status: planned_after_mvp_2
-    endpoint_agent:
-      app: apps/endpoint-agent
-      language: Go
-      connection_model: outbound_only_websocket_or_mtls
-      v1_limitations:
-        - read-only diagnostics
-        - no arbitrary shell execution
-      status: planned_after_operator_companion
-
-  domain_model:
-    central_aggregate: SupportSession
-    important_entities:
-      - Tenant
-      - User
-      - Role
-      - Permission
-      - Policy
-      - ApprovalRule
-      - ConnectorInstallation
-      - SupportSession
-      - TicketReference
-      - CustomerReference
-      - CallEvent
-      - Device
-      - EndpointAgent
-      - OperatorCompanion
-      - ScreenObservation
-      - AIConversation
-      - AIContextPacket
-      - ToolManifest
-      - ToolInvocation
-      - ApprovalRequest
-      - AuditEvent
-      - EvidenceBundle
-      - KnowledgeSource
-      - ModelPolicy
-      - SecretReference
-
-  safety_model:
-    authority_chain:
-      - user role
-      - tenant policy
-      - device policy
-      - tool manifest
-      - risk level
-      - approval rules
-      - audit rules
-      - execution gateway
-    ai_authority: non_authoritative
-    ai_allowed_to:
-      - reason
-      - summarize
-      - suggest
-      - draft
-      - request policy-checked actions
-    ai_not_allowed_to:
-      - directly execute privileged work
-      - access raw secrets
-      - use hidden tools
-      - bypass approval or audit
-    mvp_tool_scope:
-      - read_only
-      - low_risk_with_approval_support
-
-  external_integrations:
-    ticketing_first:
-      provider: Zammad
+  next_real_e2e_phases:
+    - id: Phase 0
+      title: Current Local/Mock MVP Freeze
+      status: accepted_baseline
+      backlog_ids: [BL-101]
+    - id: Phase 1
+      title: Local Kubernetes/Podman Cluster Foundation
       status: planned
-      evidence_ref: EV-2026-04-26-001
-    ticketing_second:
-      provider: GLPI
+      backlog_ids: [BL-103, BL-104, BL-105]
+    - id: Phase 2
+      title: Self-Hosted Service Topology
       status: planned
-      evidence_ref: EV-2026-04-26-002
-    phone_first:
-      provider: simulated webhook
-      status: planned_before_pbx
-    phone_later:
-      provider: Asterisk or FreePBX
+      backlog_ids: [BL-106]
+    - id: Phase 3
+      title: Zammad Sandbox Read Connector
       status: planned
-      evidence_ref: EV-2026-04-26-003
-    remote_support_first:
-      provider: MeshCentral
+      backlog_ids: [BL-107]
+    - id: Phase 4
+      title: Ollama Local AI Provider
       status: planned
-      evidence_ref: EV-2026-04-26-004
-    firewall_context:
-      provider: Fortinet UI screen context first, API later
+      backlog_ids: [BL-108]
+    - id: Phase 5
+      title: OpenBao Credential Resolver
       status: planned
-      notes:
-        - no deep Fortinet API integration in MVP
-
-  mvp_sequence:
-    mvp_1:
-      name: Ticket-aware AI cockpit
-      status: active_target
-      scope:
-        - Zammad connector boundary
-        - SupportSession
-        - AIContextPacket
-        - AI chat
-        - ticket summary
-        - draft internal note
-        - write note back to Zammad
-        - audit log
-    mvp_2:
-      name: Call simulator
+      backlog_ids: [BL-109]
+    - id: Phase 6
+      title: NATS JetStream Worker Semantics
       status: planned
-    mvp_3:
-      name: Operator Companion
+      backlog_ids: [BL-110]
+    - id: Phase 7
+      title: Sandbox-Only Zammad Internal Note Writeback
       status: planned
-    mvp_4:
-      name: Endpoint Agent read-only diagnostics
+      backlog_ids: [BL-111, BL-115]
+    - id: Phase 8
+      title: MinIO Evidence Artifact Persistence
       status: planned
-    mvp_5:
-      name: Approval-gated low-risk remediation
+      backlog_ids: [BL-112]
+    - id: Phase 9
+      title: Mailpit Local Notification Capture
       status: planned
+      backlog_ids: [BL-113]
+    - id: Phase 10
+      title: Observability
+      status: planned
+      backlog_ids: [BL-114]
+    - id: Phase 11
+      title: Optional PBX/CTI
+      status: later
+      backlog_ids: [BL-117]
+    - id: Phase 12
+      title: Optional Endpoint/Companion/Screen Context
+      status: later
+      backlog_ids: [BL-118, BL-119, BL-120]
 
   backlog:
-    status: observed
-    scope: complete_milestone_level
     source: BACKLOG.md
-    total_items: 90
+    highest_id: BL-120
+    accepted_current_slice: BL-102
+    planned_real_e2e_items:
+      - BL-103
+      - BL-104
+      - BL-105
+      - BL-106
+      - BL-107
+      - BL-108
+      - BL-109
+      - BL-110
+      - BL-111
+      - BL-112
+      - BL-113
+      - BL-114
+      - BL-115
+      - BL-116
+      - BL-117
+      - BL-118
+      - BL-119
+      - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    operating_loop_prompt: prompts/OPERATING_LOOP_START_PROMPT.md
-    coverage:
-      - foundation
-      - ticket-aware AI cockpit
-      - call simulator
-      - operator companion
-      - endpoint agent read-only diagnostics
-      - approval-gated remediation
-      - post-MVP integrations
-      - admin governance and compliance evidence
-      - production hardening
-
-  evidence:
-    status: active
-    ledger: docs/EVIDENCE_LOG.md
-    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    artifact_root: docs/evidence
-    source_refs:
-      - EV-2026-04-26-001
-      - EV-2026-04-26-002
-      - EV-2026-04-26-003
-      - EV-2026-04-26-004
-      - EV-2026-04-26-005
+    active_queue_items: [BL-103, BL-104, BL-105, BL-106]
 
   documentation:
-    status: observed
     primary_user_guide: README.md
-    live_docs: [README.md, AGENTS.md, STATUS.md, PROJECT_STATE.yaml, PROJECT_DNA.yaml, PROJECT_ADAPTER.yaml, NEXT_ACTIONS.md, BACKLOG.md, WORKLOG.md, docs/EVIDENCE_LOG.md, docs/ACCEPTANCE_FREEZES.md]
+    created_in_bl_102:
+      - docs/SELF_HOSTED_STACK.md
+      - docs/LOCAL_KUBERNETES_PODMAN_TARGET.md
+      - docs/REAL_E2E_SANDBOX_FLOW.md
+      - docs/KUBERNETES_SERVICE_CATALOG.md
+      - docs/SANDBOX_INTEGRATION_ACCEPTANCE.md
+      - docs/IMPLEMENTATION_PHASES_REAL_E2E.md
+      - docs/BACKLOG_REAL_E2E_ROADMAP.md
+      - docs/WORKFLOW_TRUTH.md
+      - docs/BOUNDARY_MATRIX.md
+      - infra/kubernetes/local-podman/README.md
+    updated_in_bl_102:
+      - README.md
+      - BACKLOG.md
+      - NEXT_ACTIONS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - WORKLOG.md
+      - docs/EVIDENCE_LOG.md
+      - docs/ACCEPTANCE_FREEZES.md
+
+  evidence:
+    ledger: docs/EVIDENCE_LOG.md
+    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
+    latest_folder: output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/
+    latest_screenshot_count: 17
+    latest_duplicate_count: 0
+    cli_artifacts:
+      - output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/proof-state-mapping.md
+      - output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/screenshot-md5s.txt
+      - output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/roadmap-summary.json
+
+  environment:
+    host:
+      os: Fedora Linux 43 Workstation Edition
+      timezone: Europe/Brussels
+    container_tooling:
+      current_verified_local_mvp: Podman compose
+      podman_version_previous_observation: 5.8.2
+      kubernetes_on_podman_status: planned_not_verified
+
+  repository_structure:
+    apps: [apps/web, apps/api, apps/worker]
+    future_apps_not_currently_implemented:
+      - apps/operator-companion
+      - apps/endpoint-agent
+    packages:
+      - packages/contracts
+      - packages/policy
+      - packages/connectors
+      - packages/ai
+      - packages/audit
+      - packages/ui
+    infra:
+      current: infra/docker-compose
+      planned: infra/kubernetes/local-podman

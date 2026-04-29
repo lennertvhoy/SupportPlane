@@ -8,6 +8,37 @@ diagnostics, remote support activity, and knowledge into governed
 `SupportSession` workflows where policy, approvals, tool manifests, execution
 gateways, and audit logs decide what is allowed.
 
+## Project Status: Local/Mock MVP With Real Self-Hosted Sandbox Roadmap
+
+The current repo is a **local/mock MVP**. It runs a local SupportPlane API, Web
+app, PostgreSQL-backed demo auth/state, deterministic mock connectors, mock AI,
+mock writeback, and local evidence export. It is not production software and has
+no production deployment, production auth, real Zammad writeback, cloud AI,
+real email, real telephony, endpoint agent, screen monitoring, production
+secrets, or compliance claim.
+
+The next major goal is a **local Kubernetes-on-Podman self-hosted sandbox**. The
+target sandbox services are **Zammad, Ollama, OpenBao, NATS JetStream, Mailpit,
+MinIO, PostgreSQL, and observability**. The first real E2E goal is sandbox
+Zammad ticket lookup + local Ollama AI draft + approval-gated sandbox internal
+note writeback + MinIO evidence artifact, with Mailpit local capture where
+notifications are enabled.
+
+Roadmap references:
+
+- [Self-Hosted Stack](docs/SELF_HOSTED_STACK.md)
+- [Local Kubernetes Podman Target](docs/LOCAL_KUBERNETES_PODMAN_TARGET.md)
+- [Real E2E Sandbox Flow](docs/REAL_E2E_SANDBOX_FLOW.md)
+- [Kubernetes Service Catalog](docs/KUBERNETES_SERVICE_CATALOG.md)
+- [Sandbox Integration Acceptance](docs/SANDBOX_INTEGRATION_ACCEPTANCE.md)
+- [Implementation Phases for Real E2E Sandbox](docs/IMPLEMENTATION_PHASES_REAL_E2E.md)
+- [Backlog Real E2E Roadmap](docs/BACKLOG_REAL_E2E_ROADMAP.md)
+- [Workflow Truth](docs/WORKFLOW_TRUTH.md)
+- [Boundary Matrix](docs/BOUNDARY_MATRIX.md)
+- [Real Writeback Path Design](docs/REAL_WRITEBACK_PATH_DESIGN.md)
+- [Demo Guide](docs/DEMO_GUIDE.md)
+- [MVP Completion Audit](docs/MVP_COMPLETION_AUDIT.md)
+
 ## What This Repo Is (Local / Mock MVP)
 
 This repository contains a **local-only, mock-data, development-grade MVP** that

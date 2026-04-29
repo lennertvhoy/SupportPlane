@@ -2,7 +2,7 @@
 
 **Product:** SupportPlane
 **Execution Mode:** operating
-**Updated At:** 2026-04-28
+**Updated At:** 2026-04-29
 
 ## Purpose
 
@@ -91,7 +91,7 @@ Status markers:
 
 ## MVP 4 - Endpoint Agent Read-Only Diagnostics
 
-- [BL-054] `[planned]` Scaffold Go endpoint agent with build targets for Windows, Linux, and macOS.
+- [BL-054] `[superseded by BL-118]` Scaffold Go endpoint agent with build targets for Windows, Linux, and macOS. Superseded by the optional endpoint diagnostics foundation path; no agent exists today.
 - [BL-055] `[planned]` Implement agent registration, device identity, and outbound-only connection model.
 - [BL-056] `[planned]` Implement heartbeat, version reporting, and device inventory basics.
 - [BL-057] `[planned]` Implement read-only diagnostics for disk, network, service status, and installed software inventory.
@@ -113,7 +113,7 @@ Status markers:
 ## Integrations After MVP
 
 - [BL-069] `[planned]` Add GLPI connector for assets, users, ITIL tickets, and configuration items.
-- [BL-070] `[planned]` Add Asterisk/FreePBX CTI gateway behind SupportPlane API rather than direct browser access.
+- [BL-070] `[superseded by BL-117]` Add Asterisk/FreePBX CTI gateway behind SupportPlane API rather than direct browser access.
 - [BL-071] `[planned]` Add MeshCentral device context and remote session launch metadata.
 - [BL-072] `[planned]` Add Fortinet read-only connector only after screen-context workflow is proven.
 - [BL-073] `[planned]` Add knowledge source ingestion for KB articles, known issues, and ticket-history summaries.
@@ -133,11 +133,11 @@ Status markers:
 ## Production Hardening
 
 - [BL-083] `[planned]` Add OIDC-ready auth, MFA hooks, service accounts, and short-lived connector tokens.
-- [BL-084] `[planned]` Add secrets encryption, secret references, and server-side credential broker boundaries.
-- [BL-085] `[planned]` Add OpenTelemetry traces, structured logs, metrics, and correlation IDs.
+- [BL-084] `[superseded by BL-109]` Add secrets encryption, secret references, and server-side credential broker boundaries. BL-109 now narrows the next step to local OpenBao sandbox credential resolution, not production secrets.
+- [BL-085] `[superseded by BL-114]` Add OpenTelemetry traces, structured logs, metrics, and correlation IDs.
 - [BL-086] `[planned]` Add rate limits, request validation, body limits, and audit coverage for API gateway paths.
 - [BL-087] `[planned]` Add backup/restore runbook for PostgreSQL, object storage, and configuration.
-- [BL-088] `[planned]` Add Kubernetes manifests after Docker Compose topology is stable.
+- [BL-088] `[superseded by BL-103/BL-104]` Add Kubernetes manifests after Docker Compose topology is stable.
 - [BL-089] `[planned]` Add threat-model review checkpoints and security regression tests.
 - [BL-090] `[planned]` Add release packaging, demo dataset reset, and operator deployment documentation.
 
@@ -153,6 +153,28 @@ Status markers:
 - [BL-099] `[accepted]` Connector Runtime Test Coverage + Documentation Hardening. Expanded API tests for config schema, valid/unsafe config validation, secret-like field rejection, real-network field rejection, runtime readiness mock-only behavior, runtime resolver output, no secretRef leakage, tenant isolation, viewer/operator/admin RBAC boundaries, deterministic linked credential count. Added contracts tests for Zod schema accept/reject behavior. Added web API client tests for connector runtime methods. Created `docs/CONNECTOR_RUNTIME_CONTRACT.md`. Created `scripts/verify_connector_runtime_contracts.sh` with 14 checks. All behavior remains mock-only.
 - [BL-100] `[accepted]` Real Writeback Path Design Document. Created `docs/REAL_WRITEBACK_PATH_DESIGN.md` with current truth, blocked reasons, required architecture (credential broker, encrypted secret storage, tenant admin config, network egress policy, delivery policy gates, approval gates, audit/evidence requirements, retry/dead-letter, dry-run, kill switch, blast-radius controls), proposed phased path (Phase 0 mock-only through Phase 4 real writeback), explicit non-goals, acceptance gates, threat/risk table, test plan, rollback strategy, and "do not build until" checklist. No implementation.
 - [BL-101] `[accepted]` MVP Completion Audit, Demo Freeze, and Final Polish. Created `docs/MVP_COMPLETION_AUDIT.md`, `docs/DEMO_GUIDE.md`, `scripts/reset_demo_data.sh`, updated `README.md`, UI header polish (auth/store mode badges), Evidence Bundle empty-state polish. Reconciled all state files. Screenshot proof captured. No new features. No production claims.
+- [BL-102] `[accepted]` Local Kubernetes self-hosted sandbox architecture and roadmap. Integrated the strategic target that SupportPlane evolves from local/mock MVP to a local Kubernetes-on-Podman sandbox with Zammad, Ollama, OpenBao, NATS JetStream, Mailpit, MinIO, PostgreSQL, SupportPlane API/Web/Worker, and observability. Created canonical docs for stack, cluster target, E2E flow, service catalog, acceptance gates, phases, workflow truth, and boundary matrix. Dependencies: BL-101 freeze. Non-claims: no cluster, real writeback, real secrets, real AI, real broker, or production claim implemented. Evidence: docs proof plus running mock boundary screenshots in `output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/`.
+
+## Real Self-Hosted Sandbox Roadmap
+
+- [BL-103] `[planned]` Local Kubernetes/Podman cluster foundation. Choose and verify Kind/Podman, Minikube/Podman, or a fallback; create `supportplane-local` and namespaces; prove kubectl health and local image load. Dependencies: BL-102. Non-claims: no app integration or production cluster. Evidence expected: cluster commands, namespace proof, no-Docker-Desktop proof.
+- [BL-104] `[planned]` Kubernetes manifests for SupportPlane app services. Add deployable local manifests or kustomize/Helm structure for API, Web, and Worker with health checks and local image tags. Dependencies: BL-103. Non-claims: no real external integrations. Evidence expected: Web/API health and browser runtime identity from cluster.
+- [BL-105] `[planned]` PostgreSQL Kubernetes persistence foundation. Deploy PostgreSQL with PVC, Prisma migrate/generate/seed path, and restart survival proof. Dependencies: BL-103/BL-104. Non-claims: no production database ops. Evidence expected: migration/seed output and persisted data after pod restart.
+- [BL-106] `[planned]` Self-hosted service topology: Zammad, OpenBao, NATS, Mailpit, MinIO. Deploy or document exact local workloads for Zammad, OpenBao, NATS JetStream, Mailpit, MinIO, and Ollama placement. Dependencies: BL-103. Non-claims: SupportPlane does not use them until later items. Evidence expected: health/readiness and PVC/port proof.
+- [BL-107] `[planned]` Zammad sandbox bootstrap and real read connector. Seed deterministic Zammad customer/ticket data and read it through SupportPlane with provenance. Dependencies: BL-106. Non-claims: no writeback. Evidence expected: API/browser proof against real sandbox and cross-tenant denial.
+- [BL-108] `[planned]` Ollama local AI provider integration. Add local provider path for drafts/summaries with model name, prompt version, context hash, latency, and deterministic test fallback. Dependencies: BL-106/BL-107. Non-claims: no cloud AI or autonomous send. Evidence expected: local-provider metadata and no-cloud-call proof.
+- [BL-109] `[planned]` OpenBao credential resolver foundation. Resolve sandbox credential references server-side through OpenBao with disable path and no raw secret exposure. Dependencies: BL-106/BL-107. Non-claims: no production secret management. Evidence expected: API/UI/evidence/log/browser no-token proof.
+- [BL-110] `[planned]` NATS JetStream durable worker/outbox bridge. Move or bridge outbox processing to durable streams/consumers with idempotency, retry, dead-letter, and worker status. Dependencies: BL-106. Non-claims: no production broker cluster. Evidence expected: durable stream, restart, retry/DLQ, and browser worker-state proof.
+- [BL-111] `[planned]` Sandbox-only Zammad internal note writeback. Write exactly one approval-gated internal note to Zammad sandbox only, with dry-run, kill switch, idempotency marker, redacted HTTP result, and audit/evidence. Dependencies: BL-107/BL-109/BL-110/BL-115. Non-claims: no production writeback, public replies, or broad ticket mutation. Evidence expected: allowed path, blocked path, duplicate prevention.
+- [BL-112] `[planned]` MinIO evidence artifact persistence. Store evidence JSON/Markdown artifacts in MinIO with object key, checksum, and local/sandbox disclaimer in UI/API. Dependencies: BL-106/BL-111. Non-claims: no compliance-grade evidence. Evidence expected: object write/read/checksum and no-secret proof.
+- [BL-113] `[planned]` Mailpit local notification capture. Send optional local SMTP notification to Mailpit and record captured-message evidence. Dependencies: BL-106/BL-111. Non-claims: no internet email. Evidence expected: Mailpit capture and disabled/no-egress proof.
+- [BL-114] `[planned]` Observability baseline. Add OTel collector plus Grafana/Loki/Prometheus or equivalent local stack with correlation IDs. Dependencies: BL-103/BL-104. Non-claims: no production monitoring. Evidence expected: logs/metrics/traces query by correlation ID and no-secret telemetry proof.
+- [BL-115] `[planned]` Network egress and writeback safety hardening. Add sandbox allowlist, kill-switch enforcement, tenant/RBAC guardrails, and explicit denial for uncontrolled connector egress. Dependencies: BL-103/BL-106/BL-109. Non-claims: no production firewall. Evidence expected: allowed local Zammad path and blocked external path proof.
+- [BL-116] `[planned]` Real self-hosted sandbox acceptance freeze. Freeze the complete real sandbox E2E milestone after cluster, Zammad read/write, Ollama, OpenBao, NATS, MinIO, Mailpit, observability, RBAC, kill switch, evidence, and no-secret gates pass. Dependencies: BL-103 through BL-115. Non-claims: still not production/compliance. Evidence expected: max-20 canonical proof set plus CLI artifacts.
+- [BL-117] `[planned]` Optional Asterisk/FreePBX call-event bridge. Add internal test-call CTI bridge only after core flow works. Dependencies: BL-116. Non-claims: no PSTN, production call center, or media recording. Evidence expected: internal call event and no-PSTN proof.
+- [BL-118] `[planned]` Optional endpoint diagnostics foundation. Start read-only diagnostics with osquery or equivalent after core flow works. Dependencies: BL-116. Non-claims: no arbitrary shell or remediation. Evidence expected: read-only diagnostics, consent, RBAC, and denial proof.
+- [BL-119] `[planned]` Optional Tauri operator companion scaffold. Create desktop companion scaffold only after privacy/consent requirements are explicit. Dependencies: BL-116/BL-118 as applicable. Non-claims: no screen capture or OCR by scaffold alone. Evidence expected: explicit start/stop sharing state.
+- [BL-120] `[planned]` Optional consent-gated screen/OCR observation. Add OCR/screen text extraction only after consent, retention, redaction, and privacy design are accepted. Dependencies: BL-119 and separate privacy design. Non-claims: no ambient surveillance, raw pixel retention by default, or remote desktop observation. Evidence expected: consent-gated OCR fixture and redaction/no-secret proof.
 
 ## WATCHLIST
 
