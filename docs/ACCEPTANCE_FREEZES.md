@@ -29,6 +29,45 @@ and must be protected from quiet regression.
   Notes: optional
 ```
 
+## AF-2026-04-29-001: BL-101 MVP Demo Freeze and Final Polish
+
+- ID: AF-2026-04-29-001
+- Milestone: MVP Demo Freeze and Final Polish
+- Scope: Clean backlog truth, deterministic demo reset, honest product documentation, UI final polish, and canonical screenshot proof for the local/mock MVP demo baseline. Includes `docs/MVP_COMPLETION_AUDIT.md`, `docs/DEMO_GUIDE.md`, `scripts/reset_demo_data.sh`, updated `README.md`, header auth/store mode badges, Evidence Bundle empty-state polish, and full state reconciliation.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: 8588ed78ea55ae99897620966f8153f8a690150e
+- process_or_container:
+  - node process (NestJS API via tsx) on port 4110
+  - node process (Next.js dev) on port 3200
+  - Podman container `sp-postgres` on port 5434
+- port_or_base_url:
+  - http://localhost:4110
+  - http://localhost:3200
+  - PostgreSQL localhost:5434
+- routes:
+  - /
+  - /call-console
+- store_mode: postgres
+- auth_mode: local
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-29-001 through EV-2026-04-29-014
+- evidence_folder: output/playwright/session-102-bl101-mvp-demo-freeze-final/
+- screenshot_count: 14
+- regression_guard:
+  - `README.md` must remain honest about mock-only/local-only boundaries and must not claim production readiness.
+  - `docs/MVP_COMPLETION_AUDIT.md` must accurately reflect implemented vs planned vs not-implemented backlog items.
+  - `scripts/reset_demo_data.sh` must refuse non-local DATABASE_URL and require explicit `--force` or `SUPPORTPLANE_DEMO_RESET=allow`.
+  - Header must display `DEV / MOCK DATA`, API URL, and auth/store mode badges.
+  - Evidence Bundle panel must show local/mock export disclaimer before a session is selected.
+  - No page may imply production auth, compliance evidence, real telephony, real AI, real writeback, or real secret resolution.
+- known_limitations:
+  - All behavior remains local/mock-only.
+  - Real writeback remains unimplemented.
+  - No production auth, external integrations, or compliance claims exist.
+
 ## AF-2026-04-26-001: Support Cockpit UI shell (BL-004)
 
 - ID: AF-2026-04-26-001

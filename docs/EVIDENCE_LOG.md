@@ -2,6 +2,32 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-04-29-001 through EV-2026-04-29-014: BL-101 MVP Demo Freeze Final Proof
+
+- Files: `output/playwright/session-102-bl101-mvp-demo-freeze-final/01-admin-landing-after-demo-reset.png` through `14-reset-script-proof.png`
+- Source/System: visible Chromium via Playwright CLI against `http://localhost:3200` and `http://localhost:4110`
+- Store/Auth mode: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Shows:
+  - fresh clean admin landing after demo reset with zero stale sessions
+  - header/runtime identity proof including `DEV / MOCK DATA`, `API: localhost:4110`, `Auth: local · Store: postgres`, and user/tenant/role pill
+  - clean session list with only demo-ready sessions
+  - ticket context loaded with connector runtime provenance card
+  - Connector panel showing mock-only/local-only boundary (Mock mode badge, Locked ON, credential metadata only)
+  - Delivery Policy panel showing real network locked OFF and mock-only enforced ON
+  - Action/outbox local-only workflow with mock delivery and `realNetwork: false`
+  - Evidence Bundle generated with JSON/Markdown tabs and mock/dev-only disclaimers
+  - Viewer read-only proof with disabled controls and view-only messages
+  - Viewer/server-side denial proof (403 on mutation attempts)
+  - Demo guide proof showing `docs/DEMO_GUIDE.md` rendered in browser
+  - MVP completion audit proof showing `docs/MVP_COMPLETION_AUDIT.md` rendered in browser
+  - Final no-real-writeback/no-secret/no-production-claim proof
+  - Demo reset script and README proof
+- Proves:
+  - BL-101 produces a coherent, demo-ready local/mock MVP with clean backlog truth and honest documentation
+  - 14 unique screenshots, 0 duplicates, max-20 cap respected
+- Type: browser-runtime-verification
+- as_of: 2026-04-29T14:12:00+02:00
+
 ## EV-2026-04-27-051 through EV-2026-04-27-063: BL-018 local auth/RBAC/tenant boundary browser proof
 
 - Files: `output/playwright/session-018-auth-rbac-tenant-boundary-foundation/01-login-page-local-auth.png` through `13-after-api-restart-relogin-scoped-data.png`

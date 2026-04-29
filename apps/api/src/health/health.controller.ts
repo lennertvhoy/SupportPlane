@@ -53,6 +53,8 @@ export class HealthController {
       head: getGitHead(),
       timestamp: new Date().toISOString(),
       runtime: 'NestJS',
+      storeMode: process.env['SUPPORTPLANE_STORE'] || 'memory',
+      authMode: process.env['SUPPORTPLANE_AUTH_MODE'] || 'dev',
       note: 'Mock-first ticket-aware API slice (BL-003)',
     };
   }

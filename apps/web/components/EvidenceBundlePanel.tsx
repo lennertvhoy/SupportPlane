@@ -58,7 +58,17 @@ export function EvidenceBundlePanel({
       }
     >
       {!sessionId ? (
-        <div className="text-xs text-cockpit-500">Select a session to generate an evidence bundle.</div>
+        <div className="space-y-2">
+          <div className="text-xs text-cockpit-400">
+            Select a session to generate an evidence bundle.
+          </div>
+          <div className="rounded border border-amber-700/30 bg-amber-900/20 p-2">
+            <div className="text-[10px] font-medium text-amber-300">Local / Mock Export Only</div>
+            <div className="mt-0.5 text-[10px] text-amber-400/80">
+              Evidence bundles are generated from local development data. No real compliance, legal evidence, cryptographic signing, or object storage is claimed.
+            </div>
+          </div>
+        </div>
       ) : error ? (
         <div className="text-xs text-red-400">{error}</div>
       ) : !bundle ? (

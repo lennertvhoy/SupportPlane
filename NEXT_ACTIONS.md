@@ -1,12 +1,19 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-28 19:30 CEST
+**Updated At:** 2026-04-29 14:12 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-- None. BL-099 and BL-100 are accepted. All validation gates pass.
+- None. BL-101 is accepted. All validation gates pass. MVP demo is frozen.
+
+## Optional Next Slices (no active work)
+
+- Credential broker scaffold (Phase 1 of real writeback) — if continuing.
+- Sandbox Zammad integration tests (Phase 2) — if continuing.
+- Production hardening (OIDC hooks, rate limits, secret encryption) — if continuing.
+- Endpoint agent scaffold (MVP 4) — if continuing.
 
 ## Queue Rules
 

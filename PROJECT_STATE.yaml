@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-28T21:15:00+02:00
+  updated_at: 2026-04-29T14:12:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
 
@@ -42,7 +42,7 @@ current_state:
     path_status: observed
     git_repository: true
     branch: main
-    head: 298ea8f57bbef9c3e69509c72e183001e9852e25
+    head: 8588ed78ea55ae99897620966f8153f8a690150e
     worktree_status: clean
     notes:
       - git repository initialized during BL-001
@@ -67,7 +67,7 @@ current_state:
     type: governed_ai_support_cockpit
     lifecycle_stage: mvp_foundation
     foundation_history:
-      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094, BL-095, BL-097, BL-098, BL-099, BL-100]
+      completed_items: [BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008, BL-009, BL-018, BL-020, BL-041, BL-042, BL-043, BL-044, BL-045, BL-046, BL-047, BL-048, BL-049, BL-050, BL-091, BL-092, BL-093, BL-094, BL-095, BL-097, BL-098, BL-099, BL-100, BL-101]
       summary: >
         Early slices established contracts/schema, mock-first API, cockpit UI,
         mock AI gateway, local Podman-compatible topology, Zammad connector
@@ -79,7 +79,7 @@ current_state:
       scope: automatic_support_session_creation_from_incoming_call_events
       screenshot_folder: unknown
       screenshot_count: 0
-      final_closure_commit: unknown
+      final_closure_commit: 8588ed78ea55ae99897620966f8153f8a690150e
 
     bl_042_status:
       completed: true
@@ -445,6 +445,32 @@ current_state:
         - design-only backlog item; no implementation
         - documents current truth (mock-only state), block reasons, required architecture, phased path, non-goals, acceptance gates, threat/risk, test plan, rollback strategy, and "do not build until" checklist
         - screenshots 12 and 13 show design doc and final proof state
+    bl_101_status:
+      completed: true
+      status: closure_ready
+      scope: mvp_completion_audit_demo_freeze_final_polish
+      backlog_id: BL-101
+      docs:
+        - docs/MVP_COMPLETION_AUDIT.md
+        - docs/DEMO_GUIDE.md
+        - docs/REAL_WRITEBACK_PATH_DESIGN.md
+      runtime:
+        store_mode: postgres
+        auth_mode: local
+        api_url: http://localhost:4110
+        web_url: http://localhost:3200
+        postgres: localhost:5434
+      screenshot_folder: output/playwright/session-102-bl101-mvp-demo-freeze-final/
+      screenshot_count: 14
+      validation: full_gate_passed
+      final_closure_commit: unknown
+      notes:
+        - no new features implemented
+        - created deterministic demo reset script scripts/reset_demo_data.sh
+        - updated README.md with honest product boundary
+        - UI header shows auth/store mode badges from /health endpoint
+        - Evidence Bundle panel explains local/mock export before session selection
+        - all state files reconciled: BACKLOG.md, NEXT_ACTIONS.md, STATUS.md, PROJECT_STATE.yaml, WORKLOG.md, docs/EVIDENCE_LOG.md, docs/ACCEPTANCE_FREEZES.md
     bl_093_status:
       completed: true
       status: closure_ready

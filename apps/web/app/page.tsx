@@ -32,6 +32,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
   const [writebackResult, setWritebackResult] = useState<InternalNoteWritebackResult | undefined>(undefined);
   const [connectorStatus, setConnectorStatus] = useState<ConnectorStatus | undefined>(undefined);
   const [connectorInstallations, setConnectorInstallations] = useState<import('@/lib/api').ConnectorInstallation[]>([]);
+  const [healthInfo, setHealthInfo] = useState<{ storeMode?: string; authMode?: string } | undefined>(undefined);
   const [evidenceBundle, setEvidenceBundle] = useState<EvidenceBundleExportResponse | undefined>(undefined);
   const [, setRecentCalls] = useState<CallEvent[]>([]);
   const [evidenceBundleMarkdown, setEvidenceBundleMarkdown] = useState<string | undefined>(undefined);
@@ -111,12 +112,25 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
     }
   }, []);
 
+  const fetchHealth = useCallback(async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4110'}/health`);
+      if (res.ok) {
+        const data = await res.json();
+        setHealthInfo({ storeMode: data.storeMode, authMode: data.authMode });
+      }
+    } catch {
+      // Non-fatal
+    }
+  }, []);
+
   useEffect(() => {
     fetchSessions();
     fetchConnectorStatus();
     fetchConnectorInstallations();
     fetchRecentCalls();
-  }, [fetchSessions, fetchConnectorStatus, fetchConnectorInstallations, fetchRecentCalls]);
+    fetchHealth();
+  }, [fetchSessions, fetchConnectorStatus, fetchConnectorInstallations, fetchRecentCalls, fetchHealth]);
 
   const handleSelectSession = useCallback(
     async (session: SupportSession) => {
@@ -326,6 +340,11 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             <Cpu size={10} />
             API: localhost:4110
           </span>
+          {healthInfo && (
+            <span className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-400">
+              Auth: {healthInfo.authMode} · Store: {healthInfo.storeMode}
+            </span>
+          )}
           {connectorStatus && (
             <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
               connectorStatus.mode === 'mock'

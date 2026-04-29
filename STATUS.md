@@ -1,22 +1,20 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-28 21:15 CEST
+**Updated At:** 2026-04-29 14:12 CEST
 **Execution Mode:** operating
-**Project State:** bl_099_bl_100_connector_runtime_confidence_accepted_writeback_design_accepted
+**Project State:** bl_101_mvp_demo_freeze_accepted
 **Public URL:** not configured
 
 ## Snapshot
 
-- **BL-099 is accepted.** Connector Runtime Test Coverage + Documentation Hardening complete. 14 new API tests (147/147 pass), 43 contracts tests (7 suites), 19 web tests. Coverage: config schema, safe/unsafe config validation, secret-like field rejection, real-network field rejection, runtime readiness mock-only behavior, runtime resolver output, no secretRef leakage, tenant isolation, viewer/operator/admin RBAC boundaries, deterministic linked credential count, audit event emission. Created `docs/CONNECTOR_RUNTIME_CONTRACT.md` and `scripts/verify_connector_runtime_contracts.sh` (14/14 checks pass). All behavior remains mock-only.
-- **BL-100 is accepted.** Real Writeback Path Design Document complete. Created `docs/REAL_WRITEBACK_PATH_DESIGN.md` with current truth, blocked reasons, required architecture, phased path (Phase 0→4), explicit non-goals, acceptance gates, threat/risk table, test plan, rollback strategy, and "do not build until" checklist. No implementation.
-- BL-098 is **accepted and evidence-repaired**. Connector runtime configuration and credential reference readiness foundation.
-- BL-097 remains accepted. Credential reference foundation with CRUD, link/unlink, RBAC, redaction, and evidence bundle inclusion.
-- BL-095 and BL-094 remain accepted. Connector installation settings with editable safe fields, RBAC gating, and mock-only safety.
-- PostgreSQL/local-auth baseline remains active: API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
+- **BL-101 is accepted.** MVP Completion Audit, Demo Freeze, and Final Polish complete. Created `docs/MVP_COMPLETION_AUDIT.md`, `docs/DEMO_GUIDE.md`, `scripts/reset_demo_data.sh`. Updated `README.md` with honest product boundary. UI header now shows auth/store mode badges. Evidence Bundle empty state explains local/mock export boundary. All state files reconciled. Screenshot proof captured under `output/playwright/session-102-bl101-mvp-demo-freeze-final/`.
+- **BL-099 and BL-100 remain accepted.** Connector runtime confidence and real writeback design document.
+- **BL-098, BL-097, BL-095, BL-094, BL-093, BL-092, BL-091** remain accepted with clean evidence and acceptance freezes.
+- **PostgreSQL/local-auth baseline remains active:** API `http://localhost:4110`, web `http://localhost:3200`, PostgreSQL `localhost:5434`, `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`.
 
 ## Immediate Priorities
 
-1. Review backlog for next slice; no active blockers.
+- None. MVP demo is frozen. Awaiting CTO direction for next slice if continuing.
 
 ## Active Blockers
 

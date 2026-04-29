@@ -152,7 +152,13 @@ export class PrismaStore implements Store {
   // TicketReference
   async saveTicketReference(sessionId: string, ticket: TicketReferenceShape): Promise<void> {
     await this.prisma.ticketReference.upsert({
-      where: { id: ticket.id },
+      where: {
+        tenantId_adapterId_externalTicketId: {
+          tenantId: ticket.tenantId,
+          adapterId: ticket.adapterId,
+          externalTicketId: ticket.externalTicketId,
+        },
+      },
       create: {
         id: ticket.id,
         tenantId: ticket.tenantId,

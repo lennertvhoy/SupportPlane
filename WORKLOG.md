@@ -4,6 +4,79 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-29 - BL-101 MVP Completion Audit, Demo Freeze, and Final Polish
+
+**Type:** implementation_and_closure
+**Status:** COMPLETE
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 8588ed78ea55ae99897620966f8153f8a690150e
+**Worktree:** clean_after_final_commit
+
+### What changed
+
+- Created `docs/MVP_COMPLETION_AUDIT.md` with current product truth, accepted backlog ranges, partial/mock items, planned items, demo-ready capabilities, known limitations, non-claims, product positioning, "done enough" decision, and next options.
+- Created `docs/DEMO_GUIDE.md` with scripted demo path: start services, login, show badges, create session, load ticket, connector provenance, mock AI draft, action/outbox workflow, delivery policy gates, evidence bundle, viewer RBAC proof, real-writeback design boundary. Includes exact credentials, ports, and expected UI labels.
+- Created `scripts/reset_demo_data.sh` — deterministic demo reset via `npx prisma migrate reset --force` against local PostgreSQL only. Refuses non-local DATABASE_URL. Requires `--force` or `SUPPORTPLANE_DEMO_RESET=allow`. Reseeds tenants, users, roles, adapters, customers, tickets, connector installations, credential references, and delivery policies. Destroys all runtime sessions, calls, actions, outbox, and audit events.
+- Updated `README.md` with honest product boundary: what the MVP demonstrates, what is not implemented, how to run locally, how to run tests, how to run demo reset, project structure, safety boundary, and evidence locations.
+- UI final polish:
+  - Header now fetches `/health` and displays `Auth: local · Store: postgres` badges alongside existing `DEV / MOCK DATA` and `API: localhost:4110`.
+  - `EvidenceBundlePanel` empty state (no session selected) now explains: "Local / Mock Export Only" with honest limitations.
+  - Health endpoint updated to return `storeMode` and `authMode`.
+- State reconciliation:
+  - `BACKLOG.md`: BL-101 marked `[accepted]`.
+  - `NEXT_ACTIONS.md`: active work cleared; optional next slices listed.
+  - `STATUS.md`: updated with BL-101 snapshot.
+  - `PROJECT_STATE.yaml`: added `bl_101_status`, updated `completed_items`, `updated_at`.
+  - `docs/EVIDENCE_LOG.md`: added BL-101 evidence entries.
+  - `docs/ACCEPTANCE_FREEZES.md`: added AF-2026-04-29-001 BL-101 acceptance freeze.
+
+### Verification
+
+- `npm run lint` passed.
+- `npm run typecheck --workspaces --if-present` passed for all 9 workspaces.
+- `npm run validate` passed.
+- `npm run health` passed.
+- `npx prisma validate`, `npx prisma generate`, `npx prisma migrate status`, `npx prisma db seed` passed.
+- `cd apps/api && npm test` passed: 147/147 tests (14 suites).
+- `npm test --workspace @supportplane/contracts` passed: 43/43 tests (7 suites).
+- `npm test --workspace @supportplane/web` passed: 19/19 tests (1 suite).
+- `npm test --workspace @supportplane/connectors` passed: 16/16 tests (6 suites).
+- `python3 scripts/check_state_docs.py` passed.
+- `python3 scripts/check_state_docs.py --bootstrap-gate` passed.
+- `bash scripts/verify_connector_runtime_readiness.sh` passed: 12/12 checks.
+- `bash scripts/verify_connector_runtime_contracts.sh` passed: 14/14 checks.
+- `bash scripts/reset_demo_data.sh --force` passed against `localhost:5434`.
+- Browser proof captured 14 unique screenshots in `output/playwright/session-102-bl101-mvp-demo-freeze-final/`.
+- Duplicate detection: 0 duplicates.
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-102-bl101-mvp-demo-freeze-final/`
+  - `01-admin-landing-after-demo-reset.png` — Fresh clean admin landing after demo reset
+  - `02-header-runtime-identity.png` — Header/runtime identity with auth/store badges
+  - `03-clean-session-list.png` — Clean session list with only demo-ready sessions
+  - `04-ticket-context-provenance.png` — Ticket context loaded with connector provenance
+  - `05-connector-panel-mock-boundary.png` — Connector panel showing mock-only/local-only boundary
+  - `06-delivery-policy-real-network-locked.png` — Delivery policy panel showing real network locked off
+  - `07-action-outbox-local-workflow.png` — Action/outbox local-only workflow
+  - `08-evidence-bundle-generated.png` — Evidence bundle generated
+  - `09-viewer-read-only-proof.png` — Viewer read-only proof
+  - `10-viewer-server-side-denial.png` — Viewer/server-side denial proof
+  - `11-demo-guide-proof.png` — Demo guide proof
+  - `12-mvp-audit-proof.png` — MVP completion audit proof
+  - `13-final-no-real-writeback-proof.png` — Final no-real-writeback/no-secret/no-production-claim proof
+  - `14-reset-script-proof.png` — Demo reset script and README proof
+
+### Remaining Risk
+
+- All behavior remains local/mock-only with visible UI warnings.
+- Real writeback remains unimplemented.
+- Credential references remain metadata-only with opaque placeholders.
+- No production auth, external integrations, or compliance claims exist.
+
+---
+
 ## 2026-04-28 - BL-046–BL-053 Backlog Truth Audit
 
 **Type:** backlog_truth_audit
