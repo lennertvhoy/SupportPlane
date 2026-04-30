@@ -1,6 +1,0 @@
-# Local MVP regression (dev/memory runtime)
-$ curl -s http://localhost:4110/health
-{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"4ee5102ce36013a98d39da36f092f10d36f916e1","timestamp":"2026-04-29T19:03:44.793Z","runtime":"NestJS","storeMode":"memory","authMode":"dev","note":"Mock-first ticket-aware API slice (BL-003)"}
-$ curl -s -o /dev/null -w "%{http_code}" http://localhost:3200/
-200
-Result: PASS for local MVP reachability. Full local-auth workflow script is not applicable to the currently running local dev/memory API because health reports authMode=dev and storeMode=memory.

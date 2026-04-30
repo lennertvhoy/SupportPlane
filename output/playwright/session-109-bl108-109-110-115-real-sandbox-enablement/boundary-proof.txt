@@ -1,1 +1,0 @@
-{"success":false,"error":{"code":"NOTEBACK_WRITE_FAILED","message":"Real writeback is blocked until the BL-111 sandbox-only writeback gate is implemented.","safeToDisplay":true,"metadata":{}},"metadata":{"connectorMode":"zammad","connectorType":"zammad","egressDecision":"blocked_writeback_disabled","writebackEnabled":false,"externalWriteAttempted":false}}

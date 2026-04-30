@@ -1,4 +1,0 @@
-Final clean worktree proof is reported in the final handoff after this evidence artifact is committed.
-Pre-final status before adding this artifact:
-## main
-?? output/playwright/session-109-bl108-109-110-115-real-sandbox-enablement/git-status-final.txt

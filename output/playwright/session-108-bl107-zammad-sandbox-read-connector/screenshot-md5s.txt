@@ -1,6 +1,0 @@
-ed8650a3a09fe6ea7371004359e92996  01-zammad-api-seeded-ticket.png
-145c0358ebbbafcebf0657bcbff996d0  02-cockpit-loaded-ticket.png
-4017a1bd725b41e5876194c205a32a07  04-cluster-api-health.png
-dffe22a4618617c360cd2aefd4ff28b8  05-connector-runtime-readiness.png
-41a9eead3732692361c735450db0c4c1  06-local-mvp-regression.png
-b66a2e63c6820a489e09f571cf0d2f81  07-boundary-proof.png

@@ -1,1 +1,0 @@
-{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"ce23d2d338fb94bff5086d6114e4210435c88eca","timestamp":"2026-04-29T14:22:17.815Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","note":"Mock-first ticket-aware API slice (BL-003)"}

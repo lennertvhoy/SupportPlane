@@ -1,1 +1,0 @@
-{"model":"gemma4:e4b","loadSuccess":true,"httpStatus":"200","latencyMs":8611,"evalCount":"644","tokensPerSecond":"79.91","jsonParseable":true,"noWriteback":false,"noAutonomousSend":false,"noCloudClaim":false,"noSecret":true,"fallbackUsed":false,"error":""}

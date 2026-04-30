@@ -1,9 +1,0 @@
-App pods:
-NAME                                  READY   STATUS    RESTARTS      AGE
-supportplane-api-df49dcbc4-nrmr9      1/1     Running   0             10m
-supportplane-web-8469974fd-ff6qq      1/1     Running   0             10m
-supportplane-worker-7bc45586f-tkw4g   1/1     Running   2 (63s ago)   85s
----
-NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-supportplane-api   ClusterIP   10.96.243.132   <none>        4110/TCP   10m
-supportplane-web   ClusterIP   10.96.241.89    <none>        3200/TCP   10m
