@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-30T11:20:00+02:00
+  updated_at: 2026-04-30T11:33:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -45,10 +45,10 @@ current_state:
     final_head_after_bl_107: 17592be3ea2b172a0262fd8ecfd37308fae21283
     head_before_bl_108_repair: b1225ba206e88025594a698c6c30e2b7ddff70dc
     final_head_after_bl_108_repair: 4b771068ad666191e99f688065c457d098e26b7f
-    worktree_status_at_state_update: clean_after_final_commit
+    worktree_status_at_state_update: clean_after_bl_116_reconciliation_commit
 
   current_product_truth:
-    lifecycle_stage: local_mock_mvp_frozen_with_real_zammad_read_and_ollama_host_call_sandbox
+    lifecycle_stage: real_self_hosted_sandbox_acceptance_frozen
     api:
       framework: NestJS
       local_url: http://localhost:4110
@@ -70,12 +70,12 @@ current_state:
     connectors:
       current: real sandbox read + real sandbox writeback (BL-111 accepted)
       zammad: real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient
-      writeback: sandbox-only; real network allowed for local Zammad sandbox only
+      writeback: sandbox-only internal notes; real network allowed for local Zammad sandbox only
     ai:
       current: deterministic mock/local only
       cloud_ai_calls: false
       ollama_integrated: true
-      model: llama3.1:8b
+      model: gemma4:e4b
       provider_mode: local
       fallback_used: false
       host_reachable_from_cluster: true
@@ -85,8 +85,8 @@ current_state:
       current: fake incoming call/webhook simulation only
       real_pbx: false
     evidence:
-      current: local/mock JSON and Markdown bundle
-      object_storage_artifact_persistence: true (MinIO local sandbox)
+      current: local sandbox JSON and Markdown bundle persisted to MinIO with direct read/checksum proof
+      object_storage_artifact_persistence: true (MinIO local sandbox, direct object read/checksum proven)
       compliance_grade: false
     credentials:
       current: OpenBao local sandbox resolver for Zammad API token
@@ -314,7 +314,7 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-120
-    accepted_current_slice: BL-114
+    accepted_current_slice: BL-116
     planned_real_e2e_items:
       - BL-111
       - BL-112
@@ -326,7 +326,7 @@ current_state:
       - BL-120
       - BL-121
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-116]
+    active_queue_items: [BL-089]
 
   documentation:
     primary_user_guide: README.md
@@ -474,9 +474,11 @@ current_state:
   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-110-bl108-ollama-host-call-model-selection/
-    latest_screenshot_count: 8
+    latest_folder: output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/
+    latest_screenshot_count: 16
     latest_duplicate_count: 0
+    latest_cli_artifacts: 4
+    total_files_in_latest_folder: 20
     cli_artifacts:
       - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md
       - output/playwright/session-107-bl106-evidence-reconciliation/screenshot-md5s.txt

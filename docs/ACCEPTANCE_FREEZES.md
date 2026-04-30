@@ -1753,3 +1753,68 @@ and must be protected from quiet regression.
   - No production writeback
   - No distributed tracing guarantee
   - No Loki-backed log search acceptance
+
+## AF-2026-04-30-008: BL-116 Real Self-Hosted Sandbox Acceptance Freeze (ACCEPTED)
+
+- ID: AF-2026-04-30-008
+- Milestone: Complete local self-hosted sandbox acceptance freeze
+- Scope: Freeze the complete real sandbox E2E milestone after cluster, Zammad read/writeback, Ollama local AI, OpenBao sandbox resolver, NATS JetStream worker bridge, MinIO evidence persistence, Mailpit notification capture, observability baseline, RBAC, kill switch, evidence bundle, and no-secret gates all pass.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: 1e6298a5586e30400f9a600a62f82e6128445e81
+- process_or_container:
+  - Kind/Podman cluster `supportplane-local` with port-forwards
+  - SupportPlane API, Web, Worker in `supportplane-app`
+  - PostgreSQL StatefulSet in `supportplane-data`
+  - Zammad, OpenBao, NATS, Mailpit, MinIO in `supportplane-integrations`
+  - Prometheus, Grafana, Loki, OTel Collector in `supportplane-observability`
+  - Host-controlled Ollama at 10.88.0.1:11435 (podman0 bridge IP)
+- port_or_base_url:
+  - Cluster API http://localhost:4210
+  - Cluster Web http://localhost:3300
+  - Local MVP API http://localhost:4110
+  - Local MVP Web http://localhost:3200
+- routes:
+  - / (cluster web cockpit)
+  - /call-console (cluster web call console)
+  - /health (cluster API)
+  - /metrics (cluster API)
+  - /observability/status (cluster API)
+  - POST /support-sessions/:id/zammad/ticket-context
+  - POST /support-sessions/:id/draft-suggestion
+  - POST /support-sessions/:id/zammad/internal-note-writeback
+  - POST /actions/:id/approve
+  - POST /actions/:id/queue
+  - GET /outbox
+  - GET /outbox/worker/status
+  - POST /outbox/process-once
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-30-005
+- evidence_folder: output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/
+- screenshot_count: 5
+- cli_artifact_count: 15
+- total_artifact_count: 20
+- duplicate_screenshot_count: 0
+- regression_guard:
+  - All AF-001 through AF-007 regression guards remain in force.
+  - Zammad sandbox read must continue to work via real HTTP with server-side OpenBao credential resolution.
+  - Zammad sandbox writeback must remain approval-gated, kill-switch protected, and idempotent.
+  - Ollama provider must continue to return provider=ollama, providerMode=local, fallbackUsed=false when host is reachable.
+  - NATS JetStream bridge must remain durable with idempotency key preservation.
+  - MinIO evidence persistence must continue to write objects with SHA-256 checksums.
+  - Mailpit must continue to capture SMTP notifications locally.
+  - Observability must remain localOnly=true with no production monitoring.
+  - Egress policy must continue to block external URLs, production URLs, and unapproved writeback.
+  - No raw secrets may appear in API responses, logs, telemetry, screenshots, or evidence bundles.
+- known_limitations:
+  - Worker status endpoint requires service token header.
+  - Mailpit API occasionally shows zero messages; host process is the canonical capture source.
+  - All integrations remain local sandbox only; no production readiness claim.
+  - No production auth, secrets, broker HA, observability, telephony, endpoint agent, or compliance.
+- reconciliation_notes:
+  - 2026-04-30: BL-116 closure reconciliation fixed three proof blockers:
+    1. Committed untracked evidence folder and verification script to make worktree clean.
+    2. Fixed boundary matrix contradiction: Zammad internal-note writeback and MinIO evidence persistence are now marked as real sandbox accepted, not mock-only.
+    3. Proved MinIO direct object read/checksum via boto3 (ContentLength=1643, SHA-256=dfb12da6916febe8d5e186dced66cdb2f854d6b37894b98bcc0f6c54b08f8675); removed the previous limitation about direct access being blocked.

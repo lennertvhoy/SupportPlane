@@ -1,13 +1,13 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-30 11:20 CEST
+**Updated At:** 2026-04-30 12:08 CEST
 **Execution Mode:** operating
-**Project State:** bl_114_accepted_bl_116_active
+**Project State:** bl_116_accepted
 **Public URL:** not configured
 
 ## Snapshot
 
-- **BL-104 through BL-115, BL-121, and BL-122 are accepted.** BL-111/112/113 prove real sandbox writeback E2E: Zammad internal note (article 16 on ticket 2), MinIO evidence artifact, Mailpit notification capture, all via NATS JetStream worker with OpenBao credential resolution. BL-114 adds local-only observability with correlation IDs, structured logs, Prometheus metrics, OTel Collector, Grafana, and Loki-ready local stack.
+- **BL-104 through BL-116, BL-121, and BL-122 are accepted.** BL-116 freezes the complete real self-hosted sandbox milestone: Zammad read/writeback (article 17 on ticket 2), Ollama local AI (gemma4:e4b, fallbackUsed=false), OpenBao sandbox resolver, NATS JetStream durable worker, MinIO evidence persistence (direct object read/checksum proven), Mailpit notification capture, observability baseline, RBAC, kill switch, and no-secret gates. All proven with 20 canonical evidence artifacts. BL-116 closure reconciliation completed: committed evidence and verifier script, fixed boundary matrix contradiction, and proved MinIO object read/checksum directly via boto3.
 - **Cluster foundation:** Kind/Podman control-plane Ready; CoreDNS, kube-proxy, local-path-provisioner running; four namespaces active.
 - **Self-hosted topology:** Zammad seeded and reachable; OpenBao initialized/unsealed; NATS JetStream file-backed; Mailpit capturing SMTP; MinIO healthy; Ollama host-controlled with AMD GPU, reachable from cluster pods via podman0 bridge (10.88.0.1:11435) with user-local Ollama v0.22.0 and gemma4:e4b.
 - **Runnable paths:** Local/mock MVP API verified on localhost:4110 and local production web verified on localhost:3201 because a pre-existing localhost:3200 dev server was stale/broken. Cluster sandbox verified on localhost:4210/3300 with real Zammad read/writeback, OpenBao sandbox resolver, NATS JetStream bridge, real Ollama local AI call, MinIO evidence, Mailpit notification, and local observability.

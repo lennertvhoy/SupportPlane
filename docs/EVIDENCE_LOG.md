@@ -2244,3 +2244,56 @@
     - python3 scripts/check_state_docs.py: passed
     - bash scripts/verify_observability_baseline.sh: passed
   as_of: 2026-04-30T11:20:00+02:00
+
+- id: EV-2026-04-30-005
+  backlog_id: BL-116
+  title: Real Self-Hosted Sandbox Acceptance Freeze
+  evidence_type: runtime_verification
+  status: accepted
+  artifact_folder: output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/
+  artifact_count: 20
+  screenshots:
+    - 12-ui-cockpit-overview.png — Cockpit with DEV/MOCK DATA badge, local auth, Zammad mode, session list
+    - 13-ui-call-console.png — Call console with "No real telephony connected" boundary warning
+    - 14-ui-observability-panel.png — Local Observability panel with localOnly, no-secret, NATS JetStream status
+    - 15-ui-delivery-policy-panel.png — Delivery Policy panel with sandbox allowlist, kill switch, approval gates
+    - 16-ui-action-outbox-panel.png — Delivery Operations panel with sandbox_delivered items and attempt history
+  cli_artifacts:
+    - 01-baseline-runtime-and-git.txt — Git HEAD, branch, API health matching runtime
+    - 02-cluster-topology-and-services-proof.txt — All 4 namespaces, pods, services, PVCs healthy
+    - 03-app-postgres-persistence-proof.txt — 20 app tables, 5 Prisma migrations, BL-105 probe survives
+    - 04-real-sandbox-e2e-flow-proof.txt — Full E2E flow: session → action → submit → approve → queue → sandbox_delivered
+    - 05-blocked-paths-and-safety-proof.txt — External URL, production URL, kill switch, unapproved writeback all blocked
+    - 06-no-secret-no-cloud-no-production-proof.txt — Negative scan of secrets, cloud AI, production monitoring
+    - 07-observability-and-correlation-proof.txt — Correlation IDs, Prometheus metrics, local status endpoint
+    - 08-validation-gate.txt — Lint, typecheck (9 packages), tests (33/33 pass), observability baseline
+    - 09-local-mvp-regression.txt — MVP regression summary with exact test inventory
+    - 10-acceptance-freeze-record.md — Formal acceptance freeze document with limitations
+    - 11-runtime-redeploy-proof.txt — Images rebuilt, cluster rolled out, health verified
+    - 17-proof-mapping.txt — Proof-state mapping table covering all required states
+    - 18-md5s.txt — MD5 checksums for all 20 files; duplicate detection shows no duplicates
+    - 19-boundary-matrix.txt — Canonical boundary matrix reference summary
+    - 20-final-git-status.txt — Clean worktree proof with full commit hash
+  test_results:
+    - npm run lint: passed
+    - npm run typecheck --workspaces --if-present: passed
+    - npm test --workspaces --if-present: passed (33/33)
+    - bash scripts/verify_observability_baseline.sh: passed
+  as_of: 2026-04-30T11:33:00+02:00
+
+
+## EV-2026-04-30-006: BL-116 Closure Reconciliation (ACCEPTED)
+
+- Files: `output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/` (20 files total, refreshed in place)
+- Source/System: Same as EV-2026-04-30-005
+- Changes from prior EV-2026-04-30-005:
+  - MinIO direct object verification now proven via boto3 from host against `localhost:9000` port-forward.
+  - HEAD: ContentLength=1643, ETag="ec036747a3c037ac25f02968d018e649", ContentType=application/json
+  - GET: SHA-256=dfb12da6916febe8d5e186dced66cdb2f854d6b37894b98bcc0f6c54b08f8675
+  - No raw secrets in object content (only `secretPath`, `secretExposed:false`, `persistedRawSecret:false`, `secretRefHash` metadata).
+  - Boundary matrix contradiction fixed: `docs/BOUNDARY_MATRIX.md` and `docs/WORKFLOW_TRUTH.md` now mark Zammad internal-note writeback and MinIO evidence as real sandbox accepted.
+  - Worktree made clean by committing evidence folder and verification script.
+  - `scripts/verify_bl116_real_sandbox_freeze.sh` MinIO credentials corrected to `minioadmin/minioadmin`.
+- Proves:
+  - BL-116 is now closure-grade complete with clean worktree, consistent boundary docs, and direct MinIO object read/checksum proof.
+- as_of: 2026-04-30T12:08:00+02:00

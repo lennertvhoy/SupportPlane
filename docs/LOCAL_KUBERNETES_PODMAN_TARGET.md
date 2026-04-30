@@ -68,7 +68,7 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 - Web and API should be reachable from localhost through ingress or port-forwarding.
 - Cluster-internal calls should use Kubernetes service DNS, for example `supportplane-api.supportplane-app.svc.cluster.local`.
 - Zammad, OpenBao, NATS, Mailpit, MinIO, and observability UIs should be exposed only through explicit local ports needed for the demo.
-- Real writeback egress stays disabled by default until BL-111.
+- Real writeback egress is sandbox-only for local Zammad internal notes after BL-111 acceptance; no production writeback.
 - Connector network egress is deny-by-default; the current allowlist permits local Zammad sandbox read only and blocks uncontrolled external or production-looking URLs.
 - Ollama is reached through the explicit host-controlled `OLLAMA_BASE_URL` setting; it is not deployed in-cluster.
 - OpenBao and NATS JetStream are local sandbox services only, not production secret/broker infrastructure.
@@ -97,9 +97,9 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 ## Safety Strategy
 
 - Real writeback disabled by default.
-- Kill switch remains effective and should default to blocking real writeback until explicit sandbox phase acceptance.
+- Kill switch remains effective and blocks real writeback when enabled; sandbox writeback is allowed only when policy gates pass.
 - Tenant boundary and RBAC must be preserved in every cluster-deployed path.
-- No uncontrolled real network egress for writeback until gates pass.
+- No uncontrolled real network egress; writeback is sandbox-only and policy-gated.
 - Zammad writeback target is sandbox-only internal notes, not public replies or production tickets.
 
 ## Acceptance Gates: BL-103 Cluster Foundation

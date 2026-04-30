@@ -607,3 +607,94 @@ Close BL-114 before attempting BL-116. Add a local-only observability baseline a
 ### Next Recommended Action
 
 - BL-116: Real self-hosted sandbox acceptance freeze.
+
+## 2026-04-30 — BL-116 Real Self-Hosted Sandbox Acceptance Freeze
+
+- **Scope:** Execute canonical acceptance freeze for the complete local self-hosted sandbox milestone.
+- **Git HEAD:** 1e6298a5586e30400f9a600a62f82e6128445e81
+- **Validation:**
+  - `npm run lint`: PASS
+  - `npm run typecheck` (all 9 packages): PASS
+  - `npm test` (API suite): 33/33 PASS
+  - `scripts/verify_observability_baseline.sh`: PASS
+  - No-secret telemetry scan: PASS
+- **Evidence artifacts:** 20 files in `output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/`
+  - 01: baseline runtime and git
+  - 02: cluster topology and services proof
+  - 03: app postgres persistence proof
+  - 04: real sandbox E2E flow proof
+  - 05: blocked paths and safety proof
+  - 06: no secret / no cloud / no production proof
+  - 07: observability and correlation proof
+  - 08: validation gate (lint/typecheck/test)
+  - 09: local MVP regression summary
+  - 10: acceptance freeze record
+  - 11: runtime redeploy proof
+  - 12: UI cockpit overview screenshot
+  - 13: UI call console screenshot
+  - 14: UI observability panel screenshot
+  - 15: UI delivery policy panel screenshot
+  - 16: UI action outbox panel screenshot
+  - 17: proof mapping table
+  - 18: MD5 checksums + duplicate detection (no duplicates)
+  - 19: boundary matrix reference
+  - 20: final git status
+- **E2E canonical session:** `12b786cf-c60e-4b19-9403-808cbe9fe663`
+- **Action:** `225a543a-5bb4-48a4-a2b2-986f8aca0893` → `sandbox_delivered`
+- **Outbox item:** `91ac6128-f76e-47f1-872b-02bae63a3b9a` → `sandbox_delivered`
+- **Zammad article:** 17 on ticket 2
+- **MinIO evidence:** `dev-tenant/writebacks/12b786cf-c60e-4b19-9403-808cbe9fe663/91ac6128-f76e-47f1-872b-02bae63a3b9a.json`
+- **Mailpit notification:** "SupportPlane sandbox writeback completed"
+- **Correlation ID:** `sp-f08069d2-42c0-457d-acf2-447b1cf0b288`
+- **State docs updated:** BACKLOG.md, NEXT_ACTIONS.md, STATUS.md, PROJECT_STATE.yaml, WORKLOG.md, docs/ACCEPTANCE_FREEZES.md, docs/EVIDENCE_LOG.md
+- **Next recommended action:** P1 [BL-089] Threat-model review checkpoints and security regression tests.
+
+
+## 2026-04-30 — BL-116 Closure Reconciliation
+
+**Type:** closure_repair
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** to_be_recorded_after_reconciliation_commit
+**Worktree:** clean
+
+### Why reconciliation was needed
+
+The BL-116 final handoff claimed acceptance, but three proof blockers prevented true closure-grade status:
+1. Final git status was not clean: evidence folder and verification script were untracked.
+2. Boundary matrix contradicted the freeze: Zammad internal-note writeback and evidence bundle were labeled "mock only" while the freeze claimed real sandbox behavior.
+3. MinIO proof was too weak: direct object read/checksum had failed with `UnknownError` / `SignatureDoesNotMatch`; only worker logs proved the write.
+
+### What changed
+
+- **Git hygiene**: Added and committed `output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/` (20 curated evidence files) and `scripts/verify_bl116_real_sandbox_freeze.sh`.
+- **Boundary truth**: Updated `docs/BOUNDARY_MATRIX.md` and `docs/WORKFLOW_TRUTH.md` to mark Zammad internal-note writeback as "real sandbox writeback" and evidence bundle as "local sandbox MinIO artifact" with checksum proof.
+- **MinIO direct proof**: Discovered the correct MinIO credentials were `minioadmin/minioadmin` (not `minioadmin123`). Used Python boto3 via existing `localhost:9000` port-forward to:
+  - HEAD object: ContentLength=1643, ETag="ec036747a3c037ac25f02968d018e649"
+  - GET object: length=1643, SHA-256=dfb12da6916febe8d5e186dced66cdb2f854d6b37894b98bcc0f6c54b08f8675
+  - Verified no raw secrets in content (only metadata hashes and safety flags).
+- **Evidence artifacts updated**: Refreshed `04-real-sandbox-e2e-flow-proof.txt`, `06-no-secret-no-cloud-no-production-proof.txt`, `19-boundary-matrix.txt`, `10-acceptance-freeze-record.md` with corrected MinIO proof and boundary claims.
+- **State docs updated**: `STATUS.md`, `NEXT_ACTIONS.md`, `PROJECT_STATE.yaml`, `docs/ACCEPTANCE_FREEZES.md`, `docs/LOCAL_KUBERNETES_PODMAN_TARGET.md`.
+
+### What remains mocked or not implemented
+
+- PBX/CTI remains mock-only.
+- Email remains local SMTP capture only (Mailpit), no internet email.
+- Endpoint agent, Tauri companion, screen/OCR remain not implemented.
+- Production auth, secrets, broker HA, observability, compliance remain out of scope.
+
+### Next Recommended Action
+
+- P1 [BL-089] Threat-model review checkpoints and security regression tests.
+
+### Verification
+
+- `npm run lint`: passed
+- `npm run typecheck --workspaces --if-present`: passed
+- `npm test --workspaces --if-present`: passed (33/33)
+- `python3 scripts/check_state_docs.py`: passed
+- `bash scripts/verify_observability_baseline.sh`: passed
+- `bash scripts/verify_bl116_real_sandbox_freeze.sh`: passed
+- API health: `curl http://localhost:4210/health` → status ok, head matches git HEAD
+- MinIO direct object read: proven via boto3 with SHA-256 checksum

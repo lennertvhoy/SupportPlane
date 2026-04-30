@@ -1,16 +1,16 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-30 11:20 CEST
+**Updated At:** 2026-04-30 12:08 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-116] Real self-hosted sandbox acceptance freeze
+### P1 [BL-089] Threat-model review checkpoints and security regression tests
 
 - Owner: next coding-agent session.
-- Next action: run the complete real sandbox E2E acceptance freeze using the BL-116 readiness audit from `output/playwright/session-114-bl114-observability-baseline/16-bl116-readiness-audit.md`.
-- Exit criteria: cluster health, Zammad read/write, Ollama, OpenBao, NATS, MinIO, Mailpit, RBAC, kill switch, evidence, no-secret gates all pass with max-20 canonical proof set.
+- Next action: conduct threat-model review for the accepted sandbox topology; identify security gaps; add security regression tests covering egress policy, RBAC, tenant isolation, secret handling, and kill-switch behavior.
+- Exit criteria: threat-model document committed, security regression tests passing, no unmitigated high-risk gaps.
 
 ## Queue Rules
 
