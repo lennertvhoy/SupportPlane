@@ -221,10 +221,174 @@ export class AuthService {
     return { valid: true };
   }
 
+  // OIDC session persistence
+  async createOidcSession(identity: CurrentIdentity, tokenHash: string, idTokenSub: string, idTokenIssuer: string, idTokenAud: string, expiresAt: Date, oidcRealmRoles?: string[]) {
+    // Auto-provision OIDC user if they don't exist yet
+    const user = await this.prisma.user.upsert({
+      where: { id: identity.userId },
+      create: {
+        id: identity.userId,
+        tenantId: identity.tenantId,
+        email: identity.userEmail || identity.userId,
+        name: identity.userName || identity.userEmail || identity.userId,
+        status: 'active',
+      },
+      update: {
+        email: identity.userEmail || identity.userId,
+        name: identity.userName || identity.userEmail || identity.userId,
+        status: 'active',
+      },
+    });
+    // Connect OIDC realm roles to SupportPlane Role records
+    const effectiveRealmRoles = oidcRealmRoles?.length ? oidcRealmRoles : identity.roles;
+    if (effectiveRealmRoles && effectiveRealmRoles.length > 0) {
+      const roles = await this.prisma.role.findMany({
+        where: {
+          tenantId: identity.tenantId,
+          name: { in: effectiveRealmRoles },
+        },
+      });
+      if (roles.length > 0) {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: {
+            roles: {
+              connect: roles.map((r) => ({ id: r.id })),
+            },
+          },
+        });
+      }
+    }
+    await this.prisma.oidcAuthSession.create({
+      data: {
+        tenantId: identity.tenantId,
+        userId: identity.userId,
+        tokenHash,
+        idTokenSub,
+        idTokenIssuer,
+        idTokenAud,
+        expiresAt,
+      },
+    });
+    await this.recordAudit(identity.tenantId, identity.userId, undefined, AuditEventType.enum.user_login, 'auth', identity.userId, {
+      email: identity.userEmail,
+      tenantSlug: identity.tenantSlug,
+      authMode: 'oidc',
+    });
+  }
+
+  async resolveOidcSession(token: string | undefined): Promise<CurrentIdentity | undefined> {
+    if (!token) return undefined;
+    const session = await this.prisma.oidcAuthSession.findUnique({
+      where: { tokenHash: tokenHash(token) },
+    });
+    if (!session || session.revokedAt || session.expiresAt.getTime() <= Date.now()) return undefined;
+    const user = await this.prisma.user.findUnique({
+      where: { id: session.userId },
+      include: { roles: true, tenant: true },
+    });
+    const roles = user?.roles.map((r) => r.name) ?? [];
+    const userRole = roles.find((r) => ['admin', 'operator', 'viewer'].includes(r)) ?? 'viewer';
+    const effectiveRoles = roles.length > 0 ? roles : [userRole];
+    return {
+      tenantId: session.tenantId,
+      tenantName: user?.tenant?.name,
+      tenantSlug: user?.tenant?.slug,
+      userId: session.userId,
+      userEmail: user?.email,
+      userName: user?.name,
+      userRole,
+      roles: effectiveRoles,
+      permissions: permissionsForRoles(effectiveRoles),
+      authMode: 'oidc',
+    };
+  }
+
+  async logoutOidcSession(token: string | undefined, identity?: CurrentIdentity): Promise<void> {
+    if (!token) return;
+    await this.prisma.oidcAuthSession.updateMany({
+      where: { tokenHash: tokenHash(token), revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    if (identity) {
+      await this.recordAudit(identity.tenantId, identity.userId, undefined, AuditEventType.enum.user_logout, 'auth', identity.userId, {
+        authMode: 'oidc',
+      });
+    }
+  }
+
+  // Service accounts
+  async listServiceAccounts(tenantId: string) {
+    return this.prisma.serviceAccount.findMany({
+      where: { tenantId },
+      select: { id: true, tenantId: true, name: true, description: true, roles: true, status: true, createdAt: true, updatedAt: true },
+    });
+  }
+
+  async createServiceAccount(tenantId: string, name: string, description?: string, roles?: string[]) {
+    return this.prisma.serviceAccount.create({
+      data: {
+        tenantId,
+        name,
+        description: description ?? '',
+        roles: roles ?? ['viewer'],
+      },
+      select: { id: true, tenantId: true, name: true, description: true, roles: true, status: true, createdAt: true, updatedAt: true },
+    });
+  }
+
+  async createServiceAccountToken(serviceAccountId: string, tenantId: string, scopes?: string[], ttlHours = 168) {
+    const rawToken = `spt_${randomBytes(32).toString('base64url')}`;
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * ttlHours);
+    const token = await this.prisma.serviceAccountToken.create({
+      data: {
+        tenantId,
+        serviceAccountId,
+        tokenHash: tokenHash(rawToken),
+        scopes: scopes ?? ['support_session:read'],
+        expiresAt,
+      },
+      select: { id: true, tenantId: true, serviceAccountId: true, scopes: true, expiresAt: true, createdAt: true },
+    });
+    return { rawToken, token };
+  }
+
+  async resolveServiceAccountToken(token: string | undefined): Promise<CurrentIdentity | undefined> {
+    if (!token || !token.startsWith('spt_')) return undefined;
+    const record = await this.prisma.serviceAccountToken.findUnique({
+      where: { tokenHash: tokenHash(token) },
+      include: { serviceAccount: true },
+    });
+    if (!record || record.revokedAt || record.expiresAt.getTime() <= Date.now()) return undefined;
+    if (record.serviceAccount.status !== 'active') return undefined;
+    // Update last used timestamp
+    await this.prisma.serviceAccountToken.update({
+      where: { id: record.id },
+      data: { lastUsedAt: new Date() },
+    });
+    const roles = record.serviceAccount.roles.length > 0 ? record.serviceAccount.roles : ['service'];
+    return {
+      tenantId: record.tenantId,
+      userId: record.serviceAccountId,
+      userRole: roles[0],
+      roles,
+      permissions: permissionsForRoles(roles),
+      authMode: 'service',
+      serviceActor: record.serviceAccount.name,
+    };
+  }
+
+  async revokeServiceAccountToken(serviceAccountId: string, tenantId: string) {
+    await this.prisma.serviceAccountToken.updateMany({
+      where: { serviceAccountId, tenantId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
+
   getServiceAccountHooks(): { note: string; available: boolean } {
     return {
-      note: 'Service account hooks are conceptual only. No persistent storage or token management is implemented.',
-      available: false,
+      note: 'Service account and token persistence implemented with hashed storage and expiry.',
+      available: true,
     };
   }
 

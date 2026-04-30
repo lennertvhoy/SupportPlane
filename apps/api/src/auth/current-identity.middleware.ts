@@ -1,6 +1,7 @@
 import { Inject, Injectable, NestMiddleware, UnauthorizedException } from '@nestjs/common';
 import type { Request, Response, NextFunction } from 'express';
 import { AuthService } from './auth.service.js';
+import { OidcService } from './oidc.service.js';
 import { permissionsForRoles } from './rbac.js';
 import type { AuthMode, CurrentIdentity } from './auth.types.js';
 
@@ -40,7 +41,10 @@ function serviceTokenMatches(token: string | undefined): boolean {
 
 @Injectable()
 export class CurrentIdentityMiddleware implements NestMiddleware {
-  constructor(@Inject(AuthService) private readonly authService: AuthService) {}
+  constructor(
+    @Inject(AuthService) private readonly authService: AuthService,
+    @Inject(OidcService) private readonly oidcService: OidcService,
+  ) {}
 
   async use(req: Request, res: Response, next: NextFunction) {
     const serviceToken = readServiceToken(req);
@@ -62,6 +66,16 @@ export class CurrentIdentityMiddleware implements NestMiddleware {
       };
       next();
       return;
+    }
+
+    // Check persisted service account tokens (DB-backed, hashed, expiring)
+    if (serviceToken && serviceToken.startsWith('spt_')) {
+      const identity = await this.authService.resolveServiceAccountToken(serviceToken);
+      if (identity) {
+        (req as Request & { currentIdentity: CurrentIdentity }).currentIdentity = identity;
+        next();
+        return;
+      }
     }
 
     if (authMode() === 'dev') {
@@ -98,6 +112,17 @@ export class CurrentIdentityMiddleware implements NestMiddleware {
       };
       next();
       return;
+    }
+
+    // Try OIDC session first, then local session
+    const oidcToken = readCookie(req, this.oidcService.getSessionCookieName());
+    if (oidcToken) {
+      const identity = await this.authService.resolveOidcSession(oidcToken);
+      if (identity) {
+        (req as Request & { currentIdentity: CurrentIdentity }).currentIdentity = identity;
+        next();
+        return;
+      }
     }
 
     const token = readBearer(req) ?? readCookie(req, this.authService.getSessionCookieName());

@@ -19,7 +19,7 @@ export interface AuthIdentity {
   userRole?: string;
   roles: string[];
   permissions: string[];
-  authMode: 'dev' | 'local' | 'oidc';
+  authMode: 'dev' | 'local' | 'oidc' | 'service';
 }
 
 const DEFAULT_IDENTITY: DevIdentity = {

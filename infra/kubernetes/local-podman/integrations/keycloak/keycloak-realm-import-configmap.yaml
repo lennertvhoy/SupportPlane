@@ -1,0 +1,87 @@
+apiVersion: v1
+data:
+  supportplane-realm.json: |
+    {
+      "id": "supportplane-local",
+      "realm": "supportplane-local",
+      "enabled": true,
+      "displayName": "SupportPlane Local Sandbox",
+      "sslRequired": "none",
+      "registrationAllowed": false,
+      "loginWithEmailAllowed": true,
+      "duplicateEmailsAllowed": false,
+      "resetPasswordAllowed": false,
+      "editUsernameAllowed": false,
+      "bruteForceProtected": false,
+      "roles": {
+        "realm": [
+          { "name": "admin", "description": "Administrator" },
+          { "name": "operator", "description": "Support Operator" },
+          { "name": "viewer", "description": "Read-only Viewer" }
+        ]
+      },
+      "users": [
+        {
+          "username": "oidc-admin",
+          "enabled": true,
+          "email": "oidc-admin@supportplane.local",
+          "firstName": "OIDC",
+          "lastName": "Admin",
+          "credentials": [{ "type": "password", "value": "supportplane-oidc-demo", "temporary": false }],
+          "realmRoles": ["admin"]
+        },
+        {
+          "username": "oidc-operator",
+          "enabled": true,
+          "email": "oidc-operator@supportplane.local",
+          "firstName": "OIDC",
+          "lastName": "Operator",
+          "credentials": [{ "type": "password", "value": "supportplane-oidc-demo", "temporary": false }],
+          "realmRoles": ["operator"]
+        },
+        {
+          "username": "oidc-viewer",
+          "enabled": true,
+          "email": "oidc-viewer@supportplane.local",
+          "firstName": "OIDC",
+          "lastName": "Viewer",
+          "credentials": [{ "type": "password", "value": "supportplane-oidc-demo", "temporary": false }],
+          "realmRoles": ["viewer"]
+        }
+      ],
+      "clients": [
+        {
+          "clientId": "supportplane-web",
+          "name": "SupportPlane Web",
+          "description": "Local sandbox OIDC client",
+          "enabled": true,
+          "clientAuthenticatorType": "client-secret",
+          "secret": "supportplane-web-local-secret",
+          "redirectUris": ["http://localhost:4210/auth/oidc/callback", "http://localhost:3300/auth/oidc/callback"],
+          "webOrigins": ["http://localhost:4210", "http://localhost:3300"],
+          "standardFlowEnabled": true,
+          "implicitFlowEnabled": false,
+          "directAccessGrantsEnabled": true,
+          "serviceAccountsEnabled": false,
+          "publicClient": false,
+          "protocol": "openid-connect",
+          "attributes": {
+            "pkce.code.challenge.method": "S256"
+          }
+        }
+      ],
+      "browserSecurityHeaders": {
+        "contentSecurityPolicyReportOnly": "",
+        "xContentTypeOptions": "nosniff",
+        "xRobotsTag": "none",
+        "xFrameOptions": "SAMEORIGIN",
+        "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+        "xXSSProtection": "1; mode=block",
+        "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+      }
+    }
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: keycloak-realm-import
+  namespace: supportplane-integrations

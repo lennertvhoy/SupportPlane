@@ -1,10 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import type { Request } from 'express';
+import { AuthService } from './auth.service.js';
 import type { CurrentIdentity } from './auth.types.js';
 
 @Injectable()
 export class ServiceAccountGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
+  constructor(private readonly authService: AuthService) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.switchToHttp().getRequest<Request & { currentIdentity?: CurrentIdentity }>();
     const token = req.headers['x-service-token'];
 
@@ -16,26 +19,16 @@ export class ServiceAccountGuard implements CanActivate {
       });
     }
 
-    // Conceptual short-lived expiry check:
-    // In a production system we would look up tokenHash in persistent storage,
-    // compare against a stored expiresAt, and enforce scope restrictions.
-    // This slice has no DB table for short-lived tokens, so only format validation is performed.
+    // Persisted DB-backed token resolution with hashing, expiry, and revocation checks
+    const identity = await this.authService.resolveServiceAccountToken(token);
+    if (!identity) {
+      throw new UnauthorizedException({
+        error: 'invalid_service_token',
+        message: 'Service token invalid, expired, or revoked',
+      });
+    }
 
-    req.currentIdentity = {
-      tenantId: (req.headers['x-tenant-id'] as string) || 'service-tenant',
-      userId: (req.headers['x-service-user-id'] as string) || 'service-account',
-      userRole: 'service',
-      roles: ['service'],
-      permissions: [
-        'support_session:read',
-        'ticket:read',
-        'audit:read',
-        'connector:read',
-      ],
-      authMode: 'service',
-      serviceActor: 'external-service',
-    };
-
+    req.currentIdentity = identity;
     return true;
   }
 }

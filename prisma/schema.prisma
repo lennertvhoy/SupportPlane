@@ -33,6 +33,9 @@ model Tenant {
   policyDecisions     PolicyDecision[]
   auditEvents         AuditEvent[]
   localAuthSessions   LocalAuthSession[]
+  oidcAuthSessions    OidcAuthSession[]
+  serviceAccounts     ServiceAccount[]
+  serviceAccountTokens ServiceAccountToken[]
   callEvents          CallEvent[]
   callRecordings      CallRecording[]
   internalNoteDrafts  InternalNoteDraft[]
@@ -81,6 +84,7 @@ model User {
   auditEvents       AuditEvent[]       @relation("ActorUser")
   policyDecisions   PolicyDecision[]
   localAuthSessions LocalAuthSession[]
+  oidcAuthSessions  OidcAuthSession[]
 
   @@unique([tenantId, email])
   @@unique([tenantId, id])
@@ -667,4 +671,63 @@ model DeliveryPolicy {
   @@index([tenantId, enabled])
   @@index([tenantId, killSwitch])
   @@map("delivery_policies")
+}
+
+model OidcAuthSession {
+  id           String    @id @default(cuid())
+  tenantId     String
+  userId       String
+  tokenHash    String    @unique
+  idTokenSub   String
+  idTokenIssuer String
+  idTokenAud   String
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [tenantId, userId], references: [tenantId, id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("oidc_auth_sessions")
+}
+
+model ServiceAccount {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  roles       String[] @default([])
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant  Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tokens  ServiceAccountToken[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("service_accounts")
+}
+
+model ServiceAccountToken {
+  id               String    @id @default(cuid())
+  tenantId         String
+  serviceAccountId String
+  tokenHash        String    @unique
+  scopes           String[]  @default([])
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  lastUsedAt       DateTime?
+  createdAt        DateTime  @default(now())
+
+  tenant         Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  serviceAccount ServiceAccount @relation(fields: [serviceAccountId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([serviceAccountId])
+  @@index([expiresAt])
+  @@map("service_account_tokens")
 }

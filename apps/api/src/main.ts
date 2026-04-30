@@ -1,12 +1,16 @@
 import 'dotenv/config';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module.js';
 import { securityHeadersMiddleware } from './common/security-headers.middleware.js';
 import { bodyLimitMiddleware } from './common/body-limit.middleware.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Parse cookies so req.cookies is available for OIDC state/session correlation.
+  app.use(cookieParser());
 
   // Security headers for all responses (local sandbox only; HSTS omitted).
   app.use(securityHeadersMiddleware);

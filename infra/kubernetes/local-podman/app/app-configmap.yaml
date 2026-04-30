@@ -39,3 +39,10 @@ data:
   MINIO_SECRET_KEY: "minioadmin"
   MINIO_EVIDENCE_BUCKET: "supportplane-evidence"
   MAILPIT_SMTP: "mailpit.supportplane-integrations.svc.cluster.local:1025"
+  # OIDC local sandbox configuration (BL-083)
+  # Both API and browser reach Keycloak via the host's Podman bridge IP (port-forward binds 0.0.0.0).
+  OIDC_ISSUER_URL: "http://10.88.0.1:8080/realms/supportplane-local"
+  OIDC_BROWSER_BASE_URL: "http://10.88.0.1:8080/realms/supportplane-local"
+  OIDC_CLIENT_ID: "supportplane-web"
+  OIDC_REDIRECT_URI: "http://localhost:4210/auth/oidc/callback"
+  OIDC_SCOPES: "openid,profile,email"

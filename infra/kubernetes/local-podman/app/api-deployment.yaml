@@ -45,6 +45,11 @@ spec:
                 secretKeyRef:
                   name: app-secret-local
                   key: SUPPORTPLANE_INTERNAL_SERVICE_TOKEN
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret-local
+                  key: OIDC_CLIENT_SECRET
           readinessProbe:
             httpGet:
               path: /health

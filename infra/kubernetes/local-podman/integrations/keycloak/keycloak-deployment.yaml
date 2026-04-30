@@ -42,6 +42,9 @@ spec:
                 secretKeyRef:
                   name: keycloak-local-dev
                   key: db-password
+          volumeMounts:
+            - name: realm-import
+              mountPath: /opt/keycloak/data/import
           ports:
             - containerPort: 8080
               name: http
@@ -77,3 +80,7 @@ spec:
             limits:
               memory: "1536Mi"
               cpu: "1000m"
+      volumes:
+        - name: realm-import
+          configMap:
+            name: keycloak-realm-import
