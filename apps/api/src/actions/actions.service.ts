@@ -1,8 +1,8 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { createHash, createHmac, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { createConnection } from 'net';
-import { request as httpRequest } from 'http';
 import { AckPolicy, connect, StorageType, StringCodec } from 'nats';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import {
   ActionOutboxAttempt,
   ActionOutboxItem,
@@ -23,83 +23,6 @@ import { evaluateEgressPolicy } from '@supportplane/policy';
 
 function nowIso(): string {
   return new Date().toISOString();
-}
-
-/** Minimal AWS Signature V4 signer for MinIO S3-compatible PUT. */
-function signAwsV4(
-  method: string,
-  url: string,
-  headers: Record<string, string>,
-  payloadHash: string,
-  accessKey: string,
-  secretKey: string,
-  region = 'us-east-1',
-  service = 's3'
-): Record<string, string> {
-  const parsed = new URL(url);
-  const host = parsed.host;
-  const now = new Date();
-  const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
-  const amzDate = now.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
-
-  // Build canonical headers from all provided headers + required AWS headers
-  const allHeaders: Record<string, string> = {
-    ...headers,
-    host,
-    'x-amz-content-sha256': payloadHash,
-    'x-amz-date': amzDate,
-  };
-  // Sort header names alphabetically (lowercase)
-  const sortedHeaderNames = Object.keys(allHeaders).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-  const canonicalHeaders = sortedHeaderNames.map((name) => `${name.toLowerCase()}:${allHeaders[name].trim()}\n`).join('');
-  const signedHeaders = sortedHeaderNames.map((name) => name.toLowerCase()).join(';');
-
-  const canonicalRequest = [
-    method,
-    parsed.pathname,
-    parsed.search.slice(1),
-    canonicalHeaders,
-    signedHeaders,
-    payloadHash,
-  ].join('\n');
-
-  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
-  const stringToSign = [
-    'AWS4-HMAC-SHA256',
-    amzDate,
-    credentialScope,
-    hashSha256(canonicalRequest),
-  ].join('\n');
-
-  const signingKey = getSignatureKey(secretKey, dateStamp, region, service);
-  const signature = hmacSha256Hex(signingKey, stringToSign);
-
-  const authHeader = `AWS4-HMAC-SHA256 Credential=${accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
-
-  const result: Record<string, string> = {};
-  for (const name of sortedHeaderNames) {
-    // Preserve original case for Content-Type etc, but use canonical lowercase for aws headers
-    const outName = name.toLowerCase().startsWith('x-amz-') || name.toLowerCase() === 'host' ? name.toLowerCase() : name;
-    result[outName] = allHeaders[name];
-  }
-  result['Authorization'] = authHeader;
-  return result;
-}
-
-function hashSha256(data: string): string {
-  return createHash('sha256').update(data).digest('hex');
-}
-
-function getSignatureKey(key: string, dateStamp: string, region: string, service: string): Buffer {
-  const kDate = createHmac('sha256', Buffer.from(`AWS4${key}`)).update(dateStamp).digest();
-  const kRegion = createHmac('sha256', kDate).update(region).digest();
-  const kService = createHmac('sha256', kRegion).update(service).digest();
-  const kSigning = createHmac('sha256', kService).update('aws4_request').digest();
-  return kSigning;
-}
-
-function hmacSha256Hex(key: Buffer, data: string): string {
-  return createHmac('sha256', key).update(data).digest('hex');
 }
 
 function preview(value: string): string {
@@ -1040,42 +963,20 @@ export class ActionsService {
     const contentHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload));
     const checksum = Array.from(new Uint8Array(contentHash)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // For local sandbox, use HTTP PUT with AWS Signature V4 auth
+    // For local sandbox, use AWS SDK S3 client with MinIO endpoint
     try {
-      const putUrl = new URL(`${minioUrl}/${bucket}/${objectKey}`);
-      const payloadHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload)).then((buf) =>
-        Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
-      );
-      const signedHeaders = signAwsV4('PUT', putUrl.href, { 'content-type': 'application/json', 'content-length': String(Buffer.byteLength(payload, 'utf8')) }, payloadHash, minioAccessKey, minioSecretKey);
-
-      const ok = await new Promise<boolean>((resolve, reject) => {
-        const req = httpRequest(
-          {
-            hostname: putUrl.hostname,
-            port: putUrl.port || (putUrl.protocol === 'https:' ? 443 : 80),
-            path: putUrl.pathname + putUrl.search,
-            method: 'PUT',
-            headers: signedHeaders,
-          },
-          (res) => {
-            let body = '';
-            res.on('data', (chunk) => { body += chunk; });
-            res.on('end', () => {
-              if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-                resolve(true);
-              } else {
-                reject(new Error(`MinIO PUT failed: ${res.statusCode} ${body}`));
-              }
-            });
-          }
-        );
-        req.on('error', (err) => reject(err));
-        req.write(payload);
-        req.end();
+      const s3 = new S3Client({
+        endpoint: minioUrl,
+        region: 'us-east-1',
+        credentials: { accessKeyId: minioAccessKey, secretAccessKey: minioSecretKey },
+        forcePathStyle: true,
       });
-      if (!ok) {
-        throw new Error('MinIO PUT returned non-success');
-      }
+      await s3.send(new PutObjectCommand({
+        Bucket: bucket,
+        Key: objectKey,
+        Body: payload,
+        ContentType: 'application/json',
+      }));
       // Update deliveryResult with MinIO metadata
       (deliveryResult as Record<string, unknown>)['minioEvidence'] = {
         objectKey,
