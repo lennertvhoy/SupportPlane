@@ -1,22 +1,22 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-30 13:35 CEST
+**Updated At:** 2026-04-30 14:00 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-123/124/125] Plugin Registry + Runtime Resolver + Zammad Migration — Closure
+### P1 [BL-117] Asterisk/FreePBX call-event bridge — Research
 
-- Owner: next coding-agent session.
-- Next action: capture remaining UI screenshots for registry proof; commit evidence script; update BACKLOG.md and PROJECT_STATE.yaml to mark complete.
-- Exit criteria: all evidence artifacts generated (max 20), reproducible script committed, state files reconciled, clean worktree.
+- Owner: CTO lane
+- Next action: evaluate whether BL-117 should proceed or be deferred until telephony priority is confirmed
+- Exit criteria: decision to implement, defer, or mark as `wontfix`
 
-### P2 [BL-126] AI Provider Registry — Runtime Verification
+### P2 [BL-128] osTicket real integration test — Future
 
-- Owner: next coding-agent session.
-- Next action: verify AI provider registry (`packages/ai/src/registry.ts`) against Ollama/Gemma cluster path; confirm `createModelGatewayFromRegistry` populates providers correctly.
-- Exit criteria: AI draft suggestion uses registry-resolved provider, evidence captured, no fallback to hardcoded path unless registry empty.
+- Owner: next coding-agent session when osTicket instance is available
+- Next action: deploy small osTicket fixture or test instance; verify read path against real HTTP API
+- Exit criteria: osTicket adapter connects to real instance, reads ticket/customer data, no writeback claimed
 
 ## Queue Rules
 

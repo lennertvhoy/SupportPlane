@@ -1,0 +1,49 @@
+State Documentation Proof - BL-089/123/124/125/126/127
+=======================================================
+Generated: 2026-04-30T13:35+02:00
+Git HEAD: 5e5fc22
+
+1. AGENTS.md
+------------
+- Mode: operating
+- Read order: AGENTS.md -> STATUS.md -> PROJECT_STATE.yaml -> PROJECT_DNA.yaml -> NEXT_ACTIONS.md
+- Closure rules: all 12 rules present and enforced
+- Screenshot budget: max 20 per backlog item (honored)
+
+2. STATUS.md
+------------
+Current snapshot (to be updated post-evidence):
+- Active items: BL-089 (plugin registry), BL-123 (runtime schema), BL-124 (delivery policy), BL-125 (connector runtime), BL-126 (adapter config), BL-127 (osTicket adapter)
+- Truth state: sandbox writeback enabled, production blocked, public reply blocked
+- Cluster: supportplane-local, redeploy pending at 5e5fc22
+
+3. PROJECT_STATE.yaml
+---------------------
+- Registry state: zammad + osticket factories registered
+- Sandbox state: SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED = true (observed)
+- Writeback state: internal-note sandbox only, no public reply, no production
+
+4. NEXT_ACTIONS.md
+------------------
+To be reconciled post-closure with accurate state markers.
+
+5. BACKLOG.md
+-------------
+Items BL-089 through BL-127 must be updated with status markers:
+- BL-089: in-progress -> closure-pending
+- BL-123: in-progress -> closure-pending
+- BL-124: in-progress -> closure-pending
+- BL-125: in-progress -> closure-pending
+- BL-126: in-progress -> closure-pending
+- BL-127: partial/local-fixture
+
+6. EVIDENCE_LOG.md
+------------------
+Evidence folder: output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/
+Max files: 20
+Current plan: 20 files (mix of JSON API responses, text proofs, screenshots)
+
+7. ACCEPTANCE_FREEZES.md
+------------------------
+BL-116 acceptance freeze already recorded.
+BL-089/123-126 acceptance freeze to be added after UI screenshot verification.

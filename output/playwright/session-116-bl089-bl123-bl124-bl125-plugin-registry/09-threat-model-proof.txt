@@ -1,0 +1,60 @@
+SupportPlane Connector Registry Threat Model - BL-089/123/124/125/126/127
+================================================================================
+Generated: 2026-04-30T13:35+02:00
+Git HEAD: 5e5fc22
+Scope: Plugin registry, adapter factory pattern, sandbox writeback, osTicket read-only adapter
+
+1. ATTACK SURFACE
+-----------------
+- Connector installation config ingestion (JSON schema validation)
+- Adapter factory registration (runtime code loading)
+- Credential reference resolution (secretRef handling)
+- Sandbox writeback egress (URL allowlist enforcement)
+- Public reply pathway (intentionally absent in current build)
+- Production writeback pathway (intentionally absent in current build)
+
+2. TRUST BOUNDARIES
+-------------------
+- Admin UI -> API: Authenticated, role-gated
+- API -> Connector Registry: In-process, trust boundary at factory registration
+- API -> External Ticketing System: Egress policy enforced at service layer
+- API -> Secret Store: Not yet implemented (credentialReferences secretRef redacted in all responses)
+
+3. THREATS AND MITIGATIONS
+--------------------------
+T1: Malicious adapter factory injected at runtime
+    Mitigation: Registry is code-defined, no dynamic loading. Only pre-registered factories (zammad, osticket, mock) are available.
+    Evidence: connectors.service.ts ensureRegistry() hardcodes factory list.
+
+T2: Credential secret exposure via API responses
+    Mitigation: secretRef is never returned in runtime resolver result. Contract test "evidence bundle connector summary remains secret-free" enforces this.
+    Evidence: packages/contracts/test/connector-runtime.test.ts line ~285
+
+T3: Unauthorized production writeback to real ticketing system
+    Mitigation: productionWritebackReady is hardcoded false. No production URL allowlist exists. Egress policy blocks all non-sandbox URLs.
+    Evidence: delivery-policy.service.ts returns productionWritebackReady: false
+
+T4: Sandbox writeback to non-allowlisted URL
+    Mitigation: Egress policy service checks URL against allowlist before any outbound request. Kill switch (SUPPORTPLANE_EGRESS_POLICY_KILL_SWITCH) can block all egress.
+    Evidence: packages/policy test suite validates allowlist and kill switch behavior.
+
+T5: osTicket adapter claiming write capability
+    Mitigation: OsTicketAdapterFactory capabilities list is readonly: ['read_tickets', 'read_customers']. No 'write_notes' capability.
+    Evidence: osticket-adapter-factory.ts line ~6
+
+T6: Hardcoded adapter ID collisions
+    Mitigation: resolveCanonicalAdapterId() centralizes all adapter ID generation. All backend services use this helper.
+    Evidence: canonical-ids.ts in packages/connectors/src/index.ts
+
+4. ASSUMPTIONS AND RISKS
+------------------------
+- ASSUME: Code review prevents malicious factory registration.
+- ASSUME: Container image build chain is trusted.
+- RISK:  No real osTicket instance for integration testing (fixture-only).
+- RISK:  Sandbox writeback URL allowlist is currently empty in default config.
+
+5. COMPLIANCE NOTES
+-------------------
+- No PII in evidence artifacts (credentialReferences use redacted metadata only).
+- No secrets in committed code (all API keys are placeholder/config-only).
+- No autonomous AI send capability (Ollama local-only, no cloud inference).

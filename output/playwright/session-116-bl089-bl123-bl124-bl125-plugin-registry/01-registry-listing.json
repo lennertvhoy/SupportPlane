@@ -1,13 +1,1 @@
-{
-  "adapters": [
-    {
-      "adapterType": "zammad",
-      "capabilities": [
-        "read_tickets",
-        "read_customers",
-        "write_notes"
-      ]
-    }
-  ],
-  "_tenantId": "dev-tenant"
-}
+{"adapters":[{"adapterType":"zammad","capabilities":["read_tickets","read_customers","write_notes"],"registryPattern":true},{"adapterType":"osticket","capabilities":["read_tickets","read_customers"],"registryPattern":true},{"adapterType":"osticket-mock","capabilities":["read_tickets","read_customers"],"registryPattern":true}]}

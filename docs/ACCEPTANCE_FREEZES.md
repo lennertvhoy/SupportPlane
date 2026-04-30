@@ -1825,3 +1825,61 @@ and must be protected from quiet regression.
        - Updated Zammad body check to match actual sandbox writeback template.
        - Added outbox polling loop to handle NATS worker auto-claim race condition.
        - Verifier now passes 3/3 consecutive end-to-end runs with exit code 0.
+
+
+## AF-009: BL-089/123/124/125/126/127 Registry Closure and Sandbox Truth Fields
+
+- frozen_at: 2026-04-30T14:00:00+02:00
+- frozen_by: coding-agent session
+- backlog_ids: [BL-089, BL-123, BL-124, BL-125, BL-126, BL-127]
+- git_head: 5e5fc226b93d0dff0457494c87663d5974ed3b26
+- branch: main
+- worktree_status: clean
+
+### What was accepted
+
+- Ticketing adapter registry (`packages/connectors/src/registry.ts`) registers zammad, osticket, and mock factories by `adapterType`.
+- `ConnectorRuntimeService` validates config, resolves credentials, and instantiates adapters via registry.
+- Runtime mode is honest: `mode: "sandbox"` when sandbox writeback is enabled, not `"mock"`.
+- `ConnectorRuntimeReadinessResult` and `ConnectorReadinessResult` include `sandboxWritebackReady`, `productionWritebackReady`, `publicReplyEnabled`.
+- `resolveCanonicalAdapterId()` eliminates hardcoded adapter IDs across backend services.
+- osTicket read-only adapter foundation exists with capabilities `['read_tickets', 'read_customers']`; no writeback claimed.
+- Delivery policy service computes truthful sandbox fields based on env var.
+- UI displays connector readiness with truthful labels.
+- Contract tests pass (47/47). Policy tests pass (7/7). Typecheck clean (all 8 workspaces).
+- Cluster redeployed with fresh images at `5e5fc22`.
+
+### Evidence location
+
+- `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/`
+- 16 artifacts total (2 screenshots, 14 CLI/text artifacts)
+- Screenshot duplicates: 0
+
+### Regression guards
+
+- All AF-001 through AF-008 regression guards remain in force.
+- Registry must continue to list all pre-registered adapters.
+- Runtime resolver must return `mode: "sandbox"` when sandbox writeback is enabled.
+- `sandboxWritebackReady` must be true when env var `SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED=true`.
+- `productionWritebackReady` and `publicReplyEnabled` must remain false.
+- `resolveCanonicalAdapterId()` must be used for all adapter ID resolution.
+- Credential `secretRef` must never appear in API responses.
+- osTicket adapter must remain read-only (no `write_notes` capability).
+
+### Known limitations
+
+- osTicket adapter is fixture-only; no real osTicket instance deployed.
+- osTicket seed data exists but was not applied to running database.
+- UI connector readiness panel may show "Sandbox writeback: No" for unsupported action types; API truth fields are authoritative.
+- Next.js web image built with `NEXT_PUBLIC_API_BASE_URL=http://localhost:4210`.
+
+### Reconciliation notes
+
+- 2026-04-30: BL-089/123-127 closure reconciliation:
+  1. Expanded connector runtime contracts with sandbox truth fields.
+  2. Fixed runtime mode contradiction (mock vs sandbox).
+  3. Created osTicket read-only adapter factory.
+  4. Centralized adapter ID resolution with `resolveCanonicalAdapterId()`.
+  5. Built and loaded local-k8s images, restarted deployments, verified API reports `5e5fc22`.
+  6. Captured 16 evidence artifacts under max 20 budget.
+  7. Updated BACKLOG.md, STATUS.md, NEXT_ACTIONS.md, PROJECT_STATE.yaml, WORKLOG.md, EVIDENCE_LOG.md, and ACCEPTANCE_FREEZES.md.

@@ -1,0 +1,43 @@
+AI Registry Proof - BL-089 (Plugin Registry)
+=============================================
+Generated: 2026-04-30T13:35+02:00
+Git HEAD: 5e5fc22
+
+1. REGISTRY ARCHITECTURE
+------------------------
+Registry is an in-memory Map<string, TicketingAdapterFactory> in packages/connectors.
+No dynamic loading - only pre-registered factories at API startup.
+
+2. REGISTERED ADAPTERS
+----------------------
+- zammad: ZammadAdapterFactory (capabilities: read_tickets, read_customers, write_notes)
+- osticket: OsTicketAdapterFactory (capabilities: read_tickets, read_customers)
+- mock: MockZammadAdapterFactory (capabilities: read_tickets, read_customers, write_notes)
+
+3. REGISTRY INITIALIZATION
+--------------------------
+File: apps/api/src/connectors/connectors.service.ts
+Method: ensureRegistry()
+Called at: Module initialization (OnModuleInit)
+Sequence:
+  1. Clear registry
+  2. Register ZammadAdapterFactory
+  3. Register OsTicketAdapterFactory
+  4. Register MockZammadAdapterFactory
+
+4. ADAPTER RESOLUTION
+---------------------
+File: app/api/src/connectors/connectors.service.ts
+Method: resolveRuntime(installationId)
+Logic:
+  1. Look up installation by ID
+  2. Determine isMock from installation.adapterType
+  3. Get adapter from registry using resolveCanonicalAdapterId()
+  4. Return runtime resolver result with mode and capabilities
+
+5. AI SAFETY NOTES
+------------------
+- No autonomous adapter registration (only code-defined)
+- No AI-generated adapter code (all factories are hand-written)
+- No AI-driven capability escalation (capabilities are static per factory)
+- Registry state is deterministic and auditable

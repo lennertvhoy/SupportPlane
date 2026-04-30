@@ -777,3 +777,77 @@ BL-116 closure reconciliation left the canonical verifier script `scripts/verify
 
 - `ff8e271` feat(connectors,ai): BL-123/124/125/126 registry + resolver + threat model
 
+
+
+## Session 2026-04-30 — BL-089/123/124/125/126/127 Registry Closure
+
+### Scope
+
+- BL-089: Threat model review checkpoints and security regression tests
+- BL-123: Plugin registry and runtime resolver closure
+- BL-124: Zammad runtime mode honesty fix (sandbox vs mock)
+- BL-125: Connector runtime service expansion with truthful sandbox fields
+- BL-126: Adapter config schema discovery
+- BL-127: osTicket read-only adapter foundation (partial/local-fixture)
+
+### What Changed
+
+- **Contracts:** Expanded `ConnectorRuntimeReadinessResult` and `ConnectorReadinessResult` with `sandboxWritebackReady`, `productionWritebackReady`, `publicReplyEnabled`.
+- **Delivery policy service:** `checkConnectorReadiness` computes truthful sandbox fields based on `SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED`.
+- **Connector runtime service:** `checkRuntimeReadiness` and `resolveRuntime` populate new truth fields. `resolveRuntime` returns `mode: 'sandbox'` when sandbox is enabled.
+- **Canonical IDs:** Added `resolveCanonicalAdapterId()` helper in `packages/connectors/src/index.ts` to eliminate hardcoded adapter IDs across backend services.
+- **osTicket adapter:** Created `OsTicketAdapterFactory` and `MockOsTicketConnectorAdapter` with read-only capabilities (`read_tickets`, `read_customers`). No writeback claimed.
+- **UI:** Updated `DeliveryPolicyPanel.tsx` to display new readiness fields with truthful labels.
+- **Seed data:** Updated Zammad installation description. Added osTicket installation seed (not applied to running DB).
+- **Contract tests:** Fixed "evidence bundle connector summary remains secret-free" test to include new required top-level fields. All 47 contract tests pass.
+- **Cluster:** Built and loaded local-k8s images for api/web/worker. Restarted deployments. API now reports git head `5e5fc22`.
+
+### Verification
+
+- `npm run typecheck --workspaces --if-present`: PASS (all 8 workspaces)
+- `npm test --workspaces --if-present`: PASS (contracts 47/47, policy 7/7)
+- `git status --short --branch`: clean on main at `5e5fc22`
+- API `/health`: reports head `5e5fc226b93d0dff0457494c87663d5974ed3b26`, branch `main`
+- Cluster pods: all Running after rollout restart
+- Runtime readiness API: `sandboxWritebackReady: true`, `productionWritebackReady: false`, `publicReplyEnabled: false`
+- Runtime resolver API: `mode: "sandbox"`, `sandboxWritebackReady: true`
+- Registry API: lists zammad, osticket, osticket-mock adapters
+
+### Evidence Inventory
+
+Folder: `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/`
+Total files: 16 (under 20 limit)
+Screenshots: 2 (no duplicates)
+
+1. `01-registry-listing.json` — API response showing registered adapters
+2. `02-connector-status.json` — Delivery policy status
+3. `03-connector-installations.json` — List of installations
+4. `04-specific-installation.json` — Zammad installation details
+5. `05-runtime-readiness.json` — Runtime readiness with sandbox truth fields
+6. `09-threat-model-proof.txt` — Threat model with 6 categories
+7. `10-osticket-connector-proof.txt` — osTicket adapter proof + API responses
+8. `11-security-regression-matrix.txt` — 15/15 security checks PASS
+9. `12-runtime-resolver.json` — Runtime resolver showing `mode: sandbox`
+10. `13-ui-connector-registry-proof.png` — Login page + main dashboard
+11. `14-ui-zammad-registry-runtime-proof.png` — Delivery policy panel with connector readiness
+12. `16-state-docs-proof.txt` — State documentation reconciliation
+13. `17-config-schema-proof.txt` — Config schema discovery proof + live responses
+14. `18-zammad-migration-proof.txt` — Zammad runtime mode migration documentation
+15. `19-ai-registry-proof.txt` — AI registry safety notes
+16. `20-git-status-proof.txt` — Git status proof
+
+### Risks and Limitations
+
+- osTicket adapter is fixture-only; no real osTicket service deployed (BL-127 marked `partial/local-fixture`).
+- osTicket seed data exists in `prisma/seed.ts` but was not applied to the running database (no migration/reset run).
+- UI shows "Sandbox writeback: No" in connector readiness panel for some action types; this is because `connectorSupportsActionType` is false for the checked action type, not because the sandbox field is wrong. The API returns `sandboxWritebackReady: true` correctly.
+- Next.js web image built with `NEXT_PUBLIC_API_BASE_URL=http://localhost:4210`; local testing requires port-forwarding API to 4210.
+
+### Commits
+
+- `5e5fc22` BL-089/123/124/125/126/127: registry closure, sandbox truth fields, osTicket adapter, canonical IDs, contract tests fix
+
+### Next Recommended Action
+
+- CTO lane: Decide whether to proceed with BL-117 (Asterisk/FreePBX bridge) or defer.
+- Future coding-agent: When osTicket test instance is available, verify BL-127 read path against real HTTP API.

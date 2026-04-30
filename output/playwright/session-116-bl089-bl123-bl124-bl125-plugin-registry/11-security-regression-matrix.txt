@@ -1,0 +1,24 @@
+Security Regression Matrix - BL-089/123/124/125/126/127
+=========================================================
+Generated: 2026-04-30T13:35+02:00
+Git HEAD: 5e5fc22
+
+| # | Check | Expected | Status | Evidence |
+|---|-------|----------|--------|----------|
+| 1 | Zammad sandbox writeback ready flag | sandboxWritebackReady = true when env enabled | PASS | delivery-policy.service.ts |
+| 2 | Production writeback blocked | productionWritebackReady = false always | PASS | delivery-policy.service.ts |
+| 3 | Public reply blocked | publicReplyEnabled = false always | PASS | delivery-policy.service.ts |
+| 4 | Credential secretRef never exposed in API | secretRef stripped from responses | PASS | contracts test line ~285 |
+| 5 | Egress kill switch functional | Kill switch blocks read/write before allowlist | PASS | packages/policy tests (7/7 pass) |
+| 6 | Uncontrolled external URLs blocked | Non-allowlisted URLs rejected | PASS | packages/policy tests |
+| 7 | Production-looking URLs blocked | URLs with prod indicators rejected | PASS | packages/policy tests |
+| 8 | osTicket adapter read-only | capabilities = ['read_tickets', 'read_customers'] | PASS | osticket-adapter-factory.ts |
+| 9 | osTicket write explicitly fails | addNote throws "not implemented" | PASS | osticket-adapter-factory.ts |
+| 10 | Hardcoded adapter IDs eliminated | resolveCanonicalAdapterId() used everywhere | PASS | connectors.service.ts |
+| 11 | Runtime resolver mode honest | mode = 'sandbox' when sandbox enabled, not 'mock' | PASS | connector-runtime.service.ts |
+| 12 | UI shows truthful labels | "Sandbox internal-note writeback enabled; no public reply; no production writeback" | PASS | DeliveryPolicyPanel.tsx |
+| 13 | Contract tests pass | All 47 contract tests pass | PASS | npm test in packages/contracts |
+| 14 | Typecheck clean | All 8 workspace typechecks pass | PASS | npm run typecheck --workspaces |
+| 15 | No secrets in commits | grep for apiKey, password, token returns only placeholders | PASS | git diff + grep audit |
+
+Summary: 15/15 checks PASS

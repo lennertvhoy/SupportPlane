@@ -2320,3 +2320,32 @@
 - Proves:
   - BL-116 is fully closure-grade: clean worktree, truthful boundary docs, strong MinIO proof, AND a passing canonical E2E verifier script.
 - as_of: 2026-04-30T12:35:00+02:00
+
+
+## EV-2026-04-30-121 through EV-2026-04-30-136: BL-089/123/124/125/126/127 Registry Closure (ACCEPTED)
+
+- Files: `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/01-registry-listing.json` through `20-git-status-proof.txt`
+- Source/System: Cluster API (`localhost:4110`), cluster Web (`localhost:3200` via port-forward to 4210 for API), terminal-rendered JSON/text proof pages.
+- Store/Auth mode for runtime screenshots: cluster `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Cluster proof:
+  - API/Web/Worker deployments rebuilt, reloaded, and rolled out from local images with registry closure code at `5e5fc22`.
+  - API health reports head `5e5fc226b93d0dff0457494c87663d5974ed3b26`.
+- Shows:
+  - Registry listing API with zammad, osticket, and osticket-mock adapters.
+  - Zammad runtime readiness API with `sandboxWritebackReady: true`, `productionWritebackReady: false`, `publicReplyEnabled: false`.
+  - Zammad runtime resolver API with `mode: "sandbox"` (not mock).
+  - UI delivery policy panel showing connector readiness with mode, mock ready, sandbox writeback, production writeback, and public reply fields.
+  - Threat model proof with 6 attack categories and mitigations.
+  - Security regression matrix with 15/15 checks PASS.
+  - osTicket adapter proof (fixture-only, no real instance).
+  - Config schema discovery proof for zammad and osticket.
+  - Git status proof showing clean worktree at `5e5fc22`.
+- CLI artifacts:
+  - `09-threat-model-proof.txt`
+  - `10-osticket-connector-proof.txt`
+  - `11-security-regression-matrix.txt`
+  - `16-state-docs-proof.txt`
+  - `17-config-schema-proof.txt`
+  - `18-zammad-migration-proof.txt`
+  - `19-ai-registry-proof.txt`
+  - `20-git-status-proof.txt`

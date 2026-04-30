@@ -1,0 +1,70 @@
+osTicket Adapter Proof - BL-127
+================================
+Generated: 2026-04-30T13:35+02:00
+Git HEAD: 5e5fc22
+Status: partial/local-fixture (no real osTicket service deployed)
+
+1. ADAPTER REGISTRATION
+-----------------------
+File: packages/connectors/src/osticket-adapter-factory.ts
+Factory: OsTicketAdapterFactory
+Adapter Type: osticket
+Canonical ID: osticket-adapter-001 (via resolveCanonicalAdapterId)
+
+2. CAPABILITIES (READ-ONLY)
+---------------------------
+- read_tickets
+- read_customers
+Intentionally absent: write_notes, public_reply
+
+3. CONFIG SCHEMA
+----------------
+{
+  type: 'object',
+  properties: {
+    baseUrl: { type: 'string', description: 'osTicket base URL' },
+    apiKey: { type: 'string', description: 'osTicket API key' },
+    timeoutMs: { type: 'integer', minimum: 1000, maximum: 60000 }
+  },
+  required: ['baseUrl'],
+  additionalProperties: false
+}
+
+4. MOCK ADAPTER BEHAVIOR
+------------------------
+MockOsTicketConnectorAdapter returns deterministic fixture data:
+- searchTickets: returns 1 fixture ticket (id: "osticket-ticket-001")
+- getTicket: returns fixture ticket with customer info
+- getCustomer: returns fixture customer
+- addNote: throws Error("osTicket write_notes not implemented")
+- getSuggestedReply: returns placeholder suggestion
+
+5. REGISTRY VERIFICATION
+------------------------
+The connector service registers both zammad and osticket factories:
+ensureRegistry() calls:
+  registerAdapterFactory(new ZammadAdapterFactory())
+  registerAdapterFactory(new OsTicketAdapterFactory())
+
+6. SEED DATA
+------------
+Prisma seed includes osTicket installation:
+  id: "conn-inst-osticket-001"
+  tenantId: "dev-tenant"
+  adapterType: "osticket"
+  enabled: false
+  capabilities: ["read_tickets", "read_customers"]
+
+7. HONEST SCOPE LIMITATION
+--------------------------
+- No real osTicket HTTP service is running in the cluster.
+- The adapter factory returns a mock client for all adapter IDs.
+- BL-127 is marked partial/local-fixture in backlog.
+- Future work: real osTicket integration test against a deployed instance.
+
+8. API RESPONSES (LIVE CLUSTER)
+--------------------------------
+--- osticket installation API (404 expected, seed not applied) ---
+{"message":"Connector installation conn-inst-osticket-001 not found","error":"Not Found","statusCode":404}
+--- osticket readiness API (404 expected, seed not applied) ---
+{"message":"Connector installation conn-inst-osticket-001 not found","error":"Not Found","statusCode":404}

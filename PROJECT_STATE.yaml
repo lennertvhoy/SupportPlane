@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-30T11:33:00+02:00
+  updated_at: 2026-04-30T14:00:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -45,7 +45,9 @@ current_state:
     final_head_after_bl_107: 17592be3ea2b172a0262fd8ecfd37308fae21283
     head_before_bl_108_repair: b1225ba206e88025594a698c6c30e2b7ddff70dc
     final_head_after_bl_108_repair: 4b771068ad666191e99f688065c457d098e26b7f
-    worktree_status_at_state_update: clean_after_bl_116_reconciliation_commit
+    head_before_bl_089_123_124_125_126_127: c4d0fa6e4c87663d5974ed3b26
+    final_head_after_bl_089_123_124_125_126_127: 5e5fc226b93d0dff0457494c87663d5974ed3b26
+    worktree_status_at_state_update: clean
 
   current_product_truth:
     lifecycle_stage: real_self_hosted_sandbox_acceptance_frozen
@@ -71,6 +73,13 @@ current_state:
       current: real sandbox read + real sandbox writeback (BL-111 accepted)
       zammad: real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient
       writeback: sandbox-only internal notes; real network allowed for local Zammad sandbox only
+      registry: zammad, osticket, mock factories registered via AdapterRuntimeResolver
+      canonical_ids: resolveCanonicalAdapterId() eliminates hardcoded IDs
+      runtime_mode: sandbox (not mock) when sandbox writeback enabled
+      sandbox_writeback_ready: true (env var driven)
+      production_writeback_ready: false (hardcoded)
+      public_reply_enabled: false (hardcoded)
+      osticket: partial/local-fixture (read-only adapter, no real instance)
     ai:
       current: deterministic mock/local only
       cloud_ai_calls: false
@@ -326,7 +335,7 @@ current_state:
       - BL-120
       - BL-121
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-089]
+    active_queue_items: [BL-117, BL-128]
 
   documentation:
     primary_user_guide: README.md
@@ -474,11 +483,11 @@ current_state:
   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/
-    latest_screenshot_count: 16
+    latest_folder: output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/
+    latest_screenshot_count: 2
     latest_duplicate_count: 0
-    latest_cli_artifacts: 4
-    total_files_in_latest_folder: 20
+    latest_cli_artifacts: 14
+    total_files_in_latest_folder: 16
     cli_artifacts:
       - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md
       - output/playwright/session-107-bl106-evidence-reconciliation/screenshot-md5s.txt

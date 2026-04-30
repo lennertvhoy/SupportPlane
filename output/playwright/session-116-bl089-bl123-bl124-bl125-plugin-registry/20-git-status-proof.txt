@@ -1,0 +1,14 @@
+Git Status Proof - BL-089/123/124/125/126/127
+===============================================
+Generated: 2026-04-30T13:35+02:00
+
+Commit: 5e5fc22c4d0fa6c7465fede6a0ec80fb7b761b644-9622-4c94-8103-7f15eb115696
+Message: BL-089/123/124/125/126/127: registry closure, sandbox truth fields, osTicket adapter, canonical IDs, contract tests fix
+Branch: main
+
+Files changed: 13 files changed, 586 insertions(+), 118 deletions(-)
+New file: packages/connectors/src/osticket-adapter-factory.ts
+
+Clean worktree: yes (all changes committed)
+Typecheck: pass (all 8 workspaces)
+Tests: pass (contracts 47/47, policy 7/7)
