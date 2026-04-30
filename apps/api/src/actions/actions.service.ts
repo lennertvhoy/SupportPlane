@@ -41,8 +41,18 @@ function signAwsV4(
   const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
   const amzDate = now.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
 
-  const canonicalHeaders = `host:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`;
-  const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+  // Build canonical headers from all provided headers + required AWS headers
+  const allHeaders: Record<string, string> = {
+    ...headers,
+    host,
+    'x-amz-content-sha256': payloadHash,
+    'x-amz-date': amzDate,
+  };
+  // Sort header names alphabetically (lowercase)
+  const sortedHeaderNames = Object.keys(allHeaders).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  const canonicalHeaders = sortedHeaderNames.map((name) => `${name.toLowerCase()}:${allHeaders[name].trim()}\n`).join('');
+  const signedHeaders = sortedHeaderNames.map((name) => name.toLowerCase()).join(';');
+
   const canonicalRequest = [
     method,
     parsed.pathname,
@@ -65,13 +75,14 @@ function signAwsV4(
 
   const authHeader = `AWS4-HMAC-SHA256 Credential=${accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
-  return {
-    ...headers,
-    'Host': host,
-    'X-Amz-Date': amzDate,
-    'X-Amz-Content-SHA256': payloadHash,
-    'Authorization': authHeader,
-  };
+  const result: Record<string, string> = {};
+  for (const name of sortedHeaderNames) {
+    // Preserve original case for Content-Type etc, but use canonical lowercase for aws headers
+    const outName = name.toLowerCase().startsWith('x-amz-') || name.toLowerCase() === 'host' ? name.toLowerCase() : name;
+    result[outName] = allHeaders[name];
+  }
+  result['Authorization'] = authHeader;
+  return result;
 }
 
 function hashSha256(data: string): string {
