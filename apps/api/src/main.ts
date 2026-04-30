@@ -19,7 +19,8 @@ async function bootstrap() {
       'http://127.0.0.1:3200',
     ],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'x-user-id', 'x-user-role'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'x-user-id', 'x-user-role', 'x-correlation-id'],
+    exposedHeaders: ['x-correlation-id'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 

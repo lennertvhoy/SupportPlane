@@ -14,6 +14,17 @@ function short(value?: string) {
   return value ? value.slice(0, 8) : 'none';
 }
 
+function latestDeliveryFlag(
+  attempts: ActionOutboxAttempt[],
+  item: ActionOutboxItem,
+  key: 'realNetwork' | 'writebackEnabled' | 'externalWriteAttempted'
+) {
+  const latestAttempt = [...attempts].sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
+  const attemptValue = latestAttempt?.deliveryResult?.[key];
+  if (typeof attemptValue === 'boolean') return attemptValue;
+  return Boolean(item.safetyFlags?.[key]);
+}
+
 export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIdentity; onChanged?: () => Promise<void> }) {
   const [items, setItems] = useState<ActionOutboxItem[]>([]);
   const [summary, setSummary] = useState<Record<string, number>>({});
@@ -150,7 +161,7 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
                 <div className="font-medium text-cockpit-100">Selected outbox {short(selected.id)} / {selected.status}</div>
                 <div>Action {short(selected.supportActionId)} / idempotency {selected.idempotencyKey}</div>
                 <div>nextAttemptAt {selected.nextAttemptAt ?? 'not scheduled'} / deadLetterReason {selected.deadLetterReason ?? 'none'}</div>
-                <div>mode: {selected.deliveryMode ?? 'mock'} / realNetwork: {String(selected.safetyFlags?.realNetwork ?? false)} / writebackEnabled: {String(selected.safetyFlags?.writebackEnabled ?? false)} / externalWriteAttempted: {String(selected.safetyFlags?.externalWriteAttempted ?? false)}</div>
+                <div>mode: {selected.deliveryMode ?? 'mock'} / realNetwork: {String(latestDeliveryFlag(attempts, selected, 'realNetwork'))} / writebackEnabled: {String(latestDeliveryFlag(attempts, selected, 'writebackEnabled'))} / externalWriteAttempted: {String(latestDeliveryFlag(attempts, selected, 'externalWriteAttempted'))}</div>
               </div>
             </div>
             <div className="mb-2 flex flex-wrap gap-2">
@@ -163,7 +174,7 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
               <div className="text-cockpit-500">Attempt history for selected item</div>
               {attempts.map((attempt) => (
                 <div key={attempt.id} className="rounded border border-cockpit-700 px-2 py-1">
-                  #{attempt.attemptNumber} {attempt.state} code {attempt.errorCode ?? 'none'} / {attempt.errorMessage ?? 'no error'} / realNetwork: {String((attempt.deliveryResult as Record<string, unknown>)?.realNetwork ?? false)} / writeback: {String((attempt.deliveryResult as Record<string, unknown>)?.writebackEnabled ?? false)}
+                  #{attempt.attemptNumber} {attempt.state} code {attempt.errorCode ?? 'none'} / {attempt.errorMessage ?? 'no error'} / realNetwork: {String((attempt.deliveryResult as Record<string, unknown>)?.realNetwork ?? false)} / writeback: {String((attempt.deliveryResult as Record<string, unknown>)?.writebackEnabled ?? false)} / externalWriteAttempted: {String((attempt.deliveryResult as Record<string, unknown>)?.externalWriteAttempted ?? false)}
                 </div>
               ))}
               {attempts.length === 0 && <div>No attempts yet.</div>}

@@ -1,0 +1,47 @@
+SupportPlane BL-114 Subagent A previous-closure truth audit
+Generated: 2026-04-30T11:09:00+02:00
+Repo: /home/ff/Documents/Projects/SupportPlane
+Scope: BL-111/112/113 regression truth only; BL-114 observability baseline remains primary target; BL-116 readiness audit only.
+
+Git and worktree truth
+- Repo branch at audit start: main.
+- Repo HEAD at audit start: e3bb56f378f20bc6e7606e730ef12a8e916886bd.
+- Latest commit inspected: e3bb56f378f20bc6e7606e730ef12a8e916886bd, "BL-111/112/113: Closure-grade reconciliation -- evidence, state docs, acceptance freeze".
+- Prior implementation/status commit inspected in log: bb81e7a9029d212fd01507c564635c0a455a6140, "BL-111/112/113: Add sandbox_delivered status to resolve mock/sandbox truth ambiguity".
+- Baseline `git status --short --branch` before this proof file: `## main` (clean).
+- Runtime API `/health` reported branch main and head bb81e7a9029d212fd01507c564635c0a455a6140. Interpretation: the cluster app image is not rebuilt from final reconciliation HEAD e3bb56f; e3bb56f is docs/evidence/state reconciliation, while runtime code identity is bb81e7a.
+
+Committed contract/backend/UI truth
+- `packages/contracts/src/action-outbox.ts` includes `sandbox_delivered` in outbox status schemas.
+- `packages/contracts/src/audit.ts` includes `action_sandbox_delivered` and `outbox_sandbox_writeback_succeeded`.
+- `apps/api/src/actions/actions.service.ts` contains sandbox writeback delivery result paths with `writebackEnabled: true`, `externalWriteAttempted: true`, MinIO persistence, Mailpit notification, and terminal `sandbox_delivered` status.
+- `apps/web/components/ActionOutboxPanel.tsx` and `apps/web/components/OutboxMonitorPanel.tsx` render `sandbox_delivered`; Delivery Operations renders the selected item details.
+- The `externalWriteAttempted` display artifact still exists in committed source and in the running UI. Runtime browser snapshot showed selected outbox detail text: `mode: sandbox / realNetwork: true / writebackEnabled: true / externalWriteAttempted: false`.
+
+Cluster and service health truth
+- `kubectl config current-context`: kind-supportplane-local.
+- Node `supportplane-local-control-plane`: Ready, Kubernetes v1.31.4.
+- App pods: `supportplane-api`, `supportplane-web`, and `supportplane-worker` all `1/1 Running`.
+- Integration/data pods observed running: Zammad, OpenBao, NATS, Mailpit, MinIO, PostgreSQL.
+- Web runtime: http://localhost:3300 served SupportPlane and allowed local login as `operator@supportplane.local` in `dev-tenant`.
+- API runtime: temporary port-forward to http://localhost:4210 returned `/health` status ok.
+
+Runtime integration truth
+- Worker service-auth: `bash scripts/verify_worker_service_auth.sh` returned 401 for missing token, 401 for invalid token, and with valid internal token returned `processed:false`, `reason:no_eligible_outbox_item`, `mode:sandbox`; worker status showed `queueBackend:nats-jetstream`, `writebackEnabled:true`, `realNetwork:true`, `externalWriteAttempted:false`, summary total 23 with `sandbox_delivered:1`.
+- NATS bridge: NATS `/healthz` returned `{"status":"ok"}` and `/jsz` reported JetStream configured with 2 streams, 2 consumers, 24 messages, 0 API errors.
+- Zammad writeback: Zammad ticket 2 articles query returned count 15; latest article id 16, ticket_id 2, subject `Internal note`, internal true, created_at `2026-04-30T08:29:26.858Z`, body begins `[SupportPlane sandbox internal note]`.
+- MinIO evidence: `mc ls local/supportplane-evidence/dev-tenant/writebacks/ --recursive` returned four writeback evidence objects including `3b4e87c9-413a-4ab6-b917-65f723a304d7/0c796d9b-2a03-4116-88f0-7c9aef9c846e.json` at 1.5 KiB, timestamp `2026-04-30 08:29:26 UTC`.
+- Mailpit notification: Mailpit API returned total/count/messages_count 13; latest message subject `SupportPlane sandbox writeback completed`, from `worker@supportplane.local`, to `admin@supportplane.local`, created `2026-04-30T08:29:26.971Z`, snippet states local sandbox notification only and no production email/customer email.
+- OpenBao resolver: OpenBao `/v1/sys/health` returned initialized true, sealed false, standby false, version 2.2.0. API deployment has `OPENBAO_TOKEN` from `app-secret-local` and config has `OPENBAO_RESOLVER_ENABLED=true` with service URL `http://openbao.supportplane-integrations.svc.cluster.local:8200`.
+- Ollama/Gemma local AI: host Ollama `/api/version` returned `0.22.0`; `/api/tags` included `gemma4:e4b` and `qwen3.6:27b`; API draft-suggestion probe using `gemma4:e4b` returned provider `ollama`, model `gemma4:e4b`, usage `providerMode:local`, `runtime:ollama`, `fallbackUsed:false`, `noCloudCall:true`, safety `localProviderCallMade:true`, `writebackAllowed:false`, and latency 8317 ms.
+
+Observed caveats and risks
+- Running API identity is bb81e7a, not e3bb56f. This appears consistent with e3bb56f being reconciliation/evidence/state only, but it means runtime is not proof of a rebuilt e3bb56f image.
+- One read-only AI audit probe created a new runtime support session `ceaba2f5-083b-45fd-a0a6-b19905f42c67` titled `BL-114 runtime AI audit probe`; no code/docs were edited by that probe.
+- Existing runtime data includes many BL-111 E2E test sessions and mock-delivered rows; this is audit context, not a clean fixture reset.
+- Web header still labels `DEV / MOCK DATA` and `API: localhost:4110` while the browser uses cluster web at localhost:3300 and API base localhost:4210. Do not treat that header as full runtime identity proof by itself.
+- Delivery Policy panel still contains stale text `Writeback route is blocked until BL-111` even though BL-111 sandbox writeback is now enabled; this is a user-visible truth artifact to reconcile later.
+
+Audit result
+- BL-111/112/113 previous closure truth is mostly supported by current runtime evidence: sandbox Zammad writeback, MinIO evidence, Mailpit notification, service-auth-gated worker processing, NATS JetStream bridge, OpenBao local resolver, and local Ollama/Gemma AI all have fresh proof.
+- Not closure-grade for BL-114 observability: this file is only a regression truth proof, and no observability implementation or acceptance freeze is claimed here.

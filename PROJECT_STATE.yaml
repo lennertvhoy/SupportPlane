@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-30T10:45:00+02:00
+  updated_at: 2026-04-30T11:20:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -133,6 +133,14 @@ current_state:
       durable worker semantics, OpenBao credential resolution, Mailpit local
       capture, MinIO evidence artifacts, PostgreSQL canonical state, and local
       observability.
+    implemented_in_bl_114:
+      - correlation_id_middleware
+      - structured_safe_logs
+      - prometheus_metrics_endpoint
+      - observability_status_endpoint
+      - worker_outbox_correlation
+      - local_observability_ui
+      - otel_collector_prometheus_grafana_loki_manifests
     not_implemented_in_bl_102:
       - Kubernetes cluster creation
       - real Zammad read connector
@@ -292,7 +300,7 @@ current_state:
       backlog_ids: [BL-113]
     - id: Phase 10
       title: Observability
-      status: planned
+      status: accepted_bl_114_local_only
       backlog_ids: [BL-114]
     - id: Phase 11
       title: Optional PBX/CTI
@@ -306,12 +314,11 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-120
-    accepted_current_slice: BL-108_BL-109_BL_110_BL_115_BL_111_BL_112_BL_113
+    accepted_current_slice: BL-114
     planned_real_e2e_items:
       - BL-111
       - BL-112
       - BL-113
-      - BL-114
       - BL-116
       - BL-117
       - BL-118
@@ -319,7 +326,7 @@ current_state:
       - BL-120
       - BL-121
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-111]
+    active_queue_items: [BL-116]
 
   documentation:
     primary_user_guide: README.md

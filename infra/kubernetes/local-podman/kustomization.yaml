@@ -41,3 +41,17 @@ resources:
   - integrations/zammad/zammad-secret.yaml
   - integrations/zammad/zammad-statefulset.yaml
   - integrations/zammad/zammad-service.yaml
+  # Observability services
+  - observability/otel-collector-configmap.yaml
+  - observability/otel-collector-deployment.yaml
+  - observability/otel-collector-service.yaml
+  - observability/prometheus-configmap.yaml
+  - observability/prometheus-deployment.yaml
+  - observability/prometheus-service.yaml
+  - observability/loki-configmap.yaml
+  - observability/loki-deployment.yaml
+  - observability/loki-service.yaml
+  - observability/grafana-secret.yaml
+  - observability/grafana-datasources-configmap.yaml
+  - observability/grafana-deployment.yaml
+  - observability/grafana-service.yaml

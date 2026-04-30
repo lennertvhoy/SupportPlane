@@ -1703,3 +1703,53 @@ and must be protected from quiet regression.
   - No production AI governance
   - No real telephony/PBX integration
   - No endpoint agent or screen monitoring
+
+---
+
+## BL-114 — Local Observability Baseline
+
+- frozen_at: 2026-04-30T11:20:00+02:00
+- backlog_id: BL-114
+- final_commit: recorded in final handoff for this slice
+- verification:
+  - lint: pass
+  - typecheck (all workspaces with scripts): pass
+  - tests (all workspaces with tests): pass
+  - state_docs_check: pass
+  - observability_baseline_script: pass
+  - cluster_api_reachable: yes (localhost:4210)
+  - cluster_web_reachable: yes (localhost:3300)
+  - worker_healthy: yes
+  - observability_namespace_ready: yes
+  - prometheus_query: yes
+  - grafana_health: yes
+  - ui_observability_panel_visible: yes
+- what_is_frozen:
+  - API request correlation ID middleware with response header propagation
+  - Safe in-memory telemetry and Prometheus-compatible `/metrics`
+  - `/observability/status` operator status endpoint without secrets
+  - Worker/outbox correlation propagation and structured logs
+  - Sandbox writeback, MinIO, Mailpit, NATS, OpenBao, and local AI telemetry events
+  - Local Kubernetes OpenTelemetry Collector, Prometheus, Grafana, and Loki manifests
+  - Operator Local Observability panel with explicit local-only/no-production-monitoring copy
+  - BL-116 readiness audit only; BL-116 remains unaccepted
+- regression_guard:
+  - Do not add raw session IDs or raw customer/ticket content as global metric labels
+  - Do not log or expose tokens, credential values, raw prompts, raw model outputs, raw customer emails, or raw ticket bodies in telemetry
+  - Do not claim production monitoring, alerting, or compliance coverage from this local baseline
+  - Keep Loki log aggregation unclaimed until a committed shipper and query proof exist
+- known_limitations:
+  - Local-only observability baseline; no production monitoring or alerting
+  - OTel collector is deployed but app OTLP trace export is not implemented
+  - Loki is deployed but no log shipper is committed
+  - Telemetry is in-memory in the app process and not a durable audit source
+  - One wrong-token probe produced a 401 telemetry anomaly before the corrected service-auth proof
+- explicit_non_claims:
+  - No cloud telemetry
+  - No production monitoring
+  - No production alerting
+  - No compliance certification
+  - No production secrets vault
+  - No production writeback
+  - No distributed tracing guarantee
+  - No Loki-backed log search acceptance

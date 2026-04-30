@@ -62,6 +62,11 @@ export const NatsOutboxEnvelope = z.object({
     externalWriteAttempted: z.boolean(),
     noSecrets: z.literal(true),
   }),
+  telemetry: z.object({
+    correlationId: z.string().min(1).max(128),
+    localOnly: z.literal(true),
+    noSecrets: z.literal(true),
+  }).optional(),
   createdAt: z.string().datetime(),
 });
 export type NatsOutboxEnvelope = z.infer<typeof NatsOutboxEnvelope>;

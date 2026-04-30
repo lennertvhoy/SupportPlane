@@ -1,0 +1,71 @@
+=== API Prometheus metrics endpoint ===
+# HELP supportplane_info Local SupportPlane observability baseline info.
+# TYPE supportplane_info gauge
+supportplane_info{service="supportplane-api",local_only="true",production_monitoring="false"} 1
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_health",status="200"} 37
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="POST",route="_outbox_process-once",status="201"} 38
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_metrics",status="200"} 9
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_observability_status",status="200"} 2
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_outbox_worker_status",status="401"} 1
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_outbox_worker_status",status="200"} 1
+# TYPE supportplane_api_request_latency_ms summary
+supportplane_api_request_latency_ms_count{method="GET",route="_health"} 37
+supportplane_api_request_latency_ms_sum{method="GET",route="_health"} 14
+# TYPE supportplane_api_request_latency_ms summary
+supportplane_api_request_latency_ms_count{method="POST",route="_outbox_process-once"} 38
+supportplane_api_request_latency_ms_sum{method="POST",route="_outbox_process-once"} 2104
+# TYPE supportplane_api_request_latency_ms summary
+supportplane_api_request_latency_ms_count{method="GET",route="_metrics"} 9
+supportplane_api_request_latency_ms_sum{method="GET",route="_metrics"} 4
+# TYPE supportplane_api_request_latency_ms summary
+supportplane_api_request_latency_ms_count{method="GET",route="_observability_status"} 2
+supportplane_api_request_latency_ms_sum{method="GET",route="_observability_status"} 0
+# TYPE supportplane_api_request_latency_ms summary
+supportplane_api_request_latency_ms_count{method="GET",route="_outbox_worker_status"} 2
+supportplane_api_request_latency_ms_sum{method="GET",route="_outbox_worker_status"} 7
+
+=== Prometheus target health for supportplane-api ===
+[
+  {
+    "job": "otel-collector",
+    "scrapeUrl": "http://otel-collector:8888/metrics",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "otel-collector",
+    "scrapeUrl": "http://otel-collector:8889/metrics",
+    "health": "up",
+    "lastError": ""
+  },
+  {
+    "job": "supportplane-api",
+    "scrapeUrl": "http://supportplane-api.supportplane-app.svc.cluster.local:4110/metrics",
+    "health": "up",
+    "lastError": ""
+  }
+]
+
+=== Prometheus query supportplane_info ===
+[
+  {
+    "metric": {
+      "__name__": "supportplane_info",
+      "instance": "supportplane-api.supportplane-app.svc.cluster.local:4110",
+      "job": "supportplane-api",
+      "local_only": "true",
+      "production_monitoring": "false",
+      "service": "supportplane-api"
+    },
+    "value": [
+      1777540579.277,
+      "1"
+    ]
+  }
+]

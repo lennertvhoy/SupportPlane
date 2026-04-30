@@ -2207,3 +2207,40 @@
   verification_commands:
     - curl http://localhost:8025/api/v1/messages
   as_of: 2026-04-30T10:45:00+02:00
+
+- id: EV-2026-04-30-004
+  backlog_id: BL-114
+  title: Local Observability Baseline
+  evidence_type: runtime_verification
+  status: accepted
+  artifact_folder: output/playwright/session-114-bl114-observability-baseline/
+  artifact_count: 20
+  screenshots:
+    - 12-ui-observability-overview-proof.png — Local Observability panel with local-only, no-production-monitoring, and no-secret telemetry copy
+    - 13-ui-correlation-drilldown-proof.png — Correlation ID/API health/worker status/queue backend summary
+    - 14-ui-sandbox-writeback-observability-proof.png — NATS JetStream worker and sandbox writeback telemetry proof
+    - 15-state-docs-proof.png — State docs reconciled to BL-114 accepted and BL-116 active/not accepted
+  cli_artifacts:
+    - 01-baseline-runtime.txt — baseline git/cluster/app/worker evidence
+    - 02-bl111-113-regression-truth-proof.txt — prior closure truth audit and dependency regression proof
+    - 03-observability-architecture-proof.md — local-only observability contract and no-secret rules
+    - 04-otel-collector-proof.txt — observability namespace/pod/service proof
+    - 05-api-worker-correlation-proof.txt — API/worker correlation proof
+    - 06-metrics-proof.txt — metrics endpoint and Prometheus query proof
+    - 07-logs-proof.txt — structured safe log proof
+    - 08-dashboard-or-query-proof.txt — Grafana/Prometheus query proof
+    - 09-no-secret-telemetry-proof.txt — secret leakage search proof
+    - 10-validation-gate.txt — exact validation commands and pass/fail results
+    - 11-cluster-redeploy-proof.txt — rebuilt local Kubernetes rollout proof
+    - 16-bl116-readiness-audit.md — readiness audit only; BL-116 not accepted
+    - 17-local-mvp-regression.txt — local MVP regression proof
+    - 18-proof-state-mapping.md — evidence-to-claim mapping
+    - 19-screenshot-md5s.txt — screenshot duplicate detection
+    - 20-git-status-final.txt — clean worktree proof
+  test_results:
+    - npm run lint: passed
+    - npm run typecheck --workspaces --if-present: passed
+    - npm test --workspaces --if-present: passed
+    - python3 scripts/check_state_docs.py: passed
+    - bash scripts/verify_observability_baseline.sh: passed
+  as_of: 2026-04-30T11:20:00+02:00

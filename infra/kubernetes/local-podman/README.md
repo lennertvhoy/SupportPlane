@@ -1,6 +1,6 @@
 # Local Podman Kubernetes Foundation
 
-**Status:** BL-103 cluster foundation, BL-104/BL-105 app/PostgreSQL, BL-106 self-hosted service topology. This directory contains the complete local sandbox manifests.
+**Status:** BL-103 cluster foundation, BL-104/BL-105 app/PostgreSQL, BL-106 self-hosted service topology, BL-114 local observability baseline. This directory contains the complete local sandbox manifests.
 
 The local sandbox cluster is named `supportplane-local` and uses Kind with the
 Podman provider. BL-103 verified `kindest/node:v1.31.4` on this Fedora/Podman
@@ -36,7 +36,7 @@ infra/kubernetes/local-podman/
     nats/        # NATS StatefulSet with JetStream + Service + ConfigMap
     mailpit/     # Mailpit Deployment + Service
     minio/       # MinIO Deployment + PVC + Service + Secret
-  observability/ # Placeholder for future BL-114
+  observability/ # BL-114 local OTel Collector, Prometheus, Grafana, Loki
 ```
 
 Verification commands for BL-103:
@@ -113,6 +113,6 @@ Verified BL-103/BL-104/BL-105 result:
 Non-claims:
 
 - These manifests deploy local sandbox images only, not production-grade builds.
-- These manifests do not deploy Zammad, Ollama, OpenBao, NATS, Mailpit, MinIO, or observability.
+- These manifests deploy local sandbox services and local-only observability. They do not claim production monitoring, secure retention, or cloud telemetry.
 - No real Zammad writeback, real secrets, real AI provider, or production deployment is enabled.
 - This is a local sandbox foundation only, not a production cluster.

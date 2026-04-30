@@ -1,0 +1,98 @@
+=== Grafana health ===
+{
+  "database": "ok",
+  "version": "11.2.0",
+  "commit": "2a88694fd3ced0335bf3726cc5d0adc2d1858855"
+}
+=== Prometheus query supportplane_api_requests_total ===
+[
+  {
+    "metric": {
+      "__name__": "supportplane_api_requests_total",
+      "instance": "supportplane-api.supportplane-app.svc.cluster.local:4110",
+      "job": "supportplane-api",
+      "method": "GET",
+      "route": "_health",
+      "status": "200"
+    },
+    "value": [
+      1777540579.421,
+      "36"
+    ]
+  },
+  {
+    "metric": {
+      "__name__": "supportplane_api_requests_total",
+      "instance": "supportplane-api.supportplane-app.svc.cluster.local:4110",
+      "job": "supportplane-api",
+      "method": "POST",
+      "route": "_outbox_process-once",
+      "status": "201"
+    },
+    "value": [
+      1777540579.421,
+      "36"
+    ]
+  },
+  {
+    "metric": {
+      "__name__": "supportplane_api_requests_total",
+      "instance": "supportplane-api.supportplane-app.svc.cluster.local:4110",
+      "job": "supportplane-api",
+      "method": "GET",
+      "route": "_metrics",
+      "status": "200"
+    },
+    "value": [
+      1777540579.421,
+      "8"
+    ]
+  },
+  {
+    "metric": {
+      "__name__": "supportplane_api_requests_total",
+      "instance": "supportplane-api.supportplane-app.svc.cluster.local:4110",
+      "job": "supportplane-api",
+      "method": "GET",
+      "route": "_observability_status",
+      "status": "200"
+    },
+    "value": [
+      1777540579.421,
+      "2"
+    ]
+  },
+  {
+    "metric": {
+      "__name__": "supportplane_api_requests_total",
+      "instance": "supportplane-api.supportplane-app.svc.cluster.local:4110",
+      "job": "supportplane-api",
+      "method": "GET",
+      "route": "_outbox_worker_status",
+      "status": "401"
+    },
+    "value": [
+      1777540579.421,
+      "1"
+    ]
+  },
+  {
+    "metric": {
+      "__name__": "supportplane_api_requests_total",
+      "instance": "supportplane-api.supportplane-app.svc.cluster.local:4110",
+      "job": "supportplane-api",
+      "method": "GET",
+      "route": "_outbox_worker_status",
+      "status": "200"
+    },
+    "value": [
+      1777540579.421,
+      "1"
+    ]
+  }
+]
+
+=== Loki ready ===
+ready
+
+Note: Loki is deployed and ready, but no log shipper is claimed in BL-114. Structured correlated logs remain available via kubectl logs.

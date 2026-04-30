@@ -1,0 +1,63 @@
+=== API health ===
+HTTP/1.1 200 OK
+X-Powered-By: Express
+Vary: Origin
+Access-Control-Allow-Credentials: true
+Access-Control-Expose-Headers: x-correlation-id
+X-Correlation-Id: sp-bl114-runtime-proof
+Content-Type: application/json; charset=utf-8
+Content-Length: 280
+ETag: W/"118-vVFdMIUjAGTB7GHqhRH/A4i/hFU"
+Date: Thu, 30 Apr 2026 09:15:28 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"e3bb56f378f20bc6e7606e730ef12a8e916886bd","timestamp":"2026-04-30T09:15:28.996Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","note":"Mock-first ticket-aware API slice (BL-003)"}
+=== Observability status ===
+{"enabled":true,"localOnly":true,"productionMonitoring":false,"correlationId":"sp-bl114-runtime-proof","startedAt":"2026-04-30T09:14:12.672Z","checkedAt":"2026-04-30T09:15:29.001Z","api":{"status":"ok","health":"ok","storeMode":"postgres","authMode":"local","checkedAt":"2026-04-30T09:15:29.001Z"},"worker":{"status":"available","queueBackend":"nats-jetstream","fallbackQueueBackend":"postgres-local-outbox","deliveryMode":"sandbox_available","writebackEnabled":true,"realNetwork":true,"externalWriteAttempted":false,"lastSandboxWritebackStatus":"not_currently_reported"},"queue":{"backend":"nats-jetstream","fallbackBackend":"postgres-local-outbox","status":"available"},"nats":{"enabled":true,"status":"enabled","streamName":"SUPPORTPLANE_OUTBOX","subject":"supportplane.outbox.ready","consumerName":"SUPPORTPLANE_WORKER","bridgeMode":"postgres-canonical-jetstream-bridge"},"sandboxWriteback":{"status":"not_currently_reported","lastStatus":"not_currently_reported","externalArticleId":"not_currently_reported"},"ai":{"provider":"ollama","providerMode":"local","model":"gemma4:e4b","fallbackUsed":false,"status":"local_no_cloud"},"observabilityStack":{"prometheus":{"status":"configured","endpoint":"http://localhost:9090 via port-forward"},"grafana":{"status":"configured","endpoint":"http://localhost:3001 via port-forward"},"otelCollector":{"status":"configured","endpoint":"otel-collector.supportplane-observability.svc.cluster.local:4317/4318"},"loki":{"status":"configured_no_log_shipper","endpoint":"http://localhost:3100 via port-forward"}},"telemetry":{"minioEvidence":{"status":"not_currently_reported","endpoint":"minio.supportplane-data.svc.cluster.local:9000","lastWriteStatus":"not_currently_reported"},"mailpitNotification":{"status":"not_currently_reported","endpoint":"mailpit.supportplane-integrations.svc.cluster.local:1025","lastNotificationStatus":"not_currently_reported"},"sandboxWriteback":{"status":"not_currently_reported","lastStatus":"not_currently_reported"},"secretsRedacted":true},"endpoints":{"apiMetrics":"/metrics","apiStatus":"/observability/status","prometheusPortForward":"kubectl -n supportplane-observability port-forward svc/prometheus 9090:9090","grafanaPortForward":"kubectl -n supportplane-observability port-forward svc/grafana 3001:3000","otelCollector":"supportplane-observability/otel-collector:4317,4318","lokiPortForward":"kubectl -n supportplane-observability port-forward svc/loki 3100:3100"},"signals":{"correlationIds":true,"structuredLogs":true,"prometheusMetrics":true,"traces":"OTel collector deployed for local ingestion; API emits correlated logs/metrics in this baseline.","noSecretsInTelemetry":true},"recentLogs":[{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540492811-wl0uy8h6","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:14:52.818Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":4}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540495822-lruij9gd","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:14:55.835Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":10}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-6853e80e-815f-4ba5-9ad6-eb758ee373cf","result":"200","timestamp":"2026-04-30T09:14:56.979Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540498839-xcrli9k2","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:14:58.933Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":92}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-d8004f20-be30-41af-9849-0acbbef5d74b","result":"200","timestamp":"2026-04-30T09:15:00.064Z","metadata":{"method":"GET","route":"/metrics","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540501936-3cpfwyma","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:15:01.944Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":5}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-21a8634d-7198-4eff-b8de-e3238b143a70","result":"200","timestamp":"2026-04-30T09:15:01.979Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-abbdb8fb-4a9f-4403-869d-c0606180c2cf","result":"200","timestamp":"2026-04-30T09:15:01.980Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540504946-0pfw6s9f","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:15:04.954Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":5}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-8bc1f51c-deed-4020-a2d6-b890cda6d4e9","result":"200","timestamp":"2026-04-30T09:15:06.979Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540507956-v06cb2z7","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:15:07.963Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":4}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540510966-fy82agw6","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:15:10.980Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":12}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-0fe7647c-b994-48f0-a6a6-af2b733c6093","result":"200","timestamp":"2026-04-30T09:15:11.979Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-6fd92c30-7651-463f-bfb9-70da816dc1d4","result":"200","timestamp":"2026-04-30T09:15:11.980Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540513982-79r2qftj","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:15:13.990Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":6}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-afbf7f71-c55c-4090-9e4b-a2f433e2f210","result":"200","timestamp":"2026-04-30T09:15:15.063Z","metadata":{"method":"GET","route":"/metrics","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-03a7c53f-9c1f-4fe5-9f86-e018e4e909e5","result":"200","timestamp":"2026-04-30T09:15:16.979Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540516992-3pa0hhdp","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:15:17.000Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":5}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540520002-cbmtdch2","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:15:20.009Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":5}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-46024e83-0813-41a1-a1f1-e592f8646a29","result":"200","timestamp":"2026-04-30T09:15:21.979Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-04b2a997-4aaf-4402-afb3-8e701fa79935","result":"200","timestamp":"2026-04-30T09:15:21.980Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540523011-4pqfl8s1","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:15:23.025Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777540526028-bnosarwq","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:15:26.036Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":5}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-b6fac683-4e5b-435c-8550-86257e898d2f","result":"200","timestamp":"2026-04-30T09:15:26.979Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-bl114-runtime-proof","result":"200","timestamp":"2026-04-30T09:15:28.996Z","metadata":{"method":"GET","route":"/health","latencyMs":0}}],"disclaimers":["Local observability only","No production monitoring","No secrets in telemetry"]}
+=== Metrics ===
+# HELP supportplane_info Local SupportPlane observability baseline info.
+# TYPE supportplane_info gauge
+supportplane_info{service="supportplane-api",local_only="true",production_monitoring="false"} 1
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_health",status="200"} 21
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="POST",route="_outbox_process-once",status="201"} 21
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_metrics",status="200"} 3
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_observability_status",status="200"} 1
+# TYPE supportplane_api_request_latency_ms summary
+supportplane_api_request_latency_ms_count{method="GET",route="_health"} 21
+supportplane_api_request_latency_ms_sum{method="GET",route="_health"} 8
+# TYPE supportplane_api_request_latency_ms summary
+supportplane_api_request_latency_ms_count{method="POST",route="_outbox_process-once"} 21
+supportplane_api_request_latency_ms_sum{method="POST",route="_outbox_process-once"} 390
+# TYPE supportplane_api_request_latency_ms summary
+supportplane_api_request_latency_ms_count{method="GET",route="_metrics"} 3
+supportplane_api_request_latency_ms_sum{method="GET",route="_metrics"} 3
+# TYPE supportplane_api_request_latency_ms summary
+supportplane_api_request_latency_ms_count{method="GET",route="_observability_status"} 1
+supportplane_api_request_latency_ms_sum{method="GET",route="_observability_status"} 0
+
+=== Worker status ===
+{"message":"Authentication required","error":"Unauthorized","statusCode":401}
+=== Observability services ===
+Prometheus Server is Ready.
+{
+  "database": "ok",
+  "version": "11.2.0",
+  "commit": "2a88694fd3ced0335bf3726cc5d0adc2d1858855"
+}ready
+
+=== Cluster observability ===
+NAME                              READY   STATUS    RESTARTS   AGE
+grafana-745d7b9546-zzrfq          1/1     Running   0          78s
+loki-85f59df588-8hmj7             1/1     Running   0          78s
+otel-collector-5499c8ccc9-kt7dr   1/1     Running   0          78s
+prometheus-68bdbfb7ff-2kkcl       1/1     Running   0          78s
+NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                               AGE
+grafana          ClusterIP   10.96.225.128   <none>        3000/TCP                              78s
+loki             ClusterIP   10.96.218.0     <none>        3100/TCP,9095/TCP                     78s
+otel-collector   ClusterIP   10.96.32.196    <none>        4317/TCP,4318/TCP,8888/TCP,8889/TCP   78s
+prometheus       ClusterIP   10.96.122.8     <none>        9090/TCP                              78s

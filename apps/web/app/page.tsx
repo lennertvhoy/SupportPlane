@@ -18,6 +18,7 @@ import { SupportNoteDraftPanel } from '@/components/SupportNoteDraftPanel';
 import { ActionOutboxPanel } from '@/components/ActionOutboxPanel';
 import { OutboxMonitorPanel } from '@/components/OutboxMonitorPanel';
 import { DeliveryPolicyPanel } from '@/components/DeliveryPolicyPanel';
+import { ObservabilityPanel } from '@/components/ObservabilityPanel';
 import { AuthGate, IdentityPill } from '@/components/AuthGate';
 import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, type GreetingSuggestionResponse, type AuthIdentity, ApiClientError } from '@/lib/api';
 
@@ -114,11 +115,8 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
 
   const fetchHealth = useCallback(async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4110'}/health`);
-      if (res.ok) {
-        const data = await res.json();
-        setHealthInfo({ storeMode: data.storeMode, authMode: data.authMode });
-      }
+      const data = await api.getHealth();
+      setHealthInfo({ storeMode: data.storeMode, authMode: data.authMode });
     } catch {
       // Non-fatal
     }
@@ -471,6 +469,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               identity={identity}
               onChanged={selectedSession ? () => fetchSessionDetails(selectedSession) : undefined}
             />
+            <ObservabilityPanel identity={identity} />
             <DeliveryPolicyPanel identity={identity} />
             <AuditTrailPanel
               session={selectedSession}

@@ -480,7 +480,7 @@ export interface ActionOutboxItem {
   actionType: 'ticket_note';
   status: string;
   idempotencyKey: string;
-  deliveryMode?: 'mock';
+  deliveryMode?: 'mock' | 'sandbox';
   deliveryIntent: Record<string, unknown>;
   attemptCount: number;
   maxAttempts: number;
@@ -546,6 +546,69 @@ export interface OutboxWorkerStatus {
     consumerName: string;
     bridgeMode: string;
   };
+}
+
+export interface ApiHealthStatus {
+  status?: string;
+  storeMode?: string;
+  authMode?: string;
+  checkedAt?: string;
+}
+
+export interface ObservabilityStatus {
+  api?: {
+    status?: string;
+    health?: string;
+    storeMode?: string;
+    authMode?: string;
+    checkedAt?: string;
+  };
+  worker?: Partial<OutboxWorkerStatus> & {
+    lastSandboxWriteback?: string;
+    lastSandboxWritebackStatus?: string;
+  };
+  queue?: {
+    backend?: string;
+    status?: string;
+    fallbackBackend?: string;
+  };
+  nats?: {
+    enabled?: boolean;
+    status?: string;
+    streamName?: string;
+    subject?: string;
+    consumerName?: string;
+    bridgeMode?: string;
+  };
+  sandboxWriteback?: {
+    status?: string;
+    lastStatus?: string;
+    lastCompletedAt?: string;
+    externalArticleId?: string;
+  };
+  ai?: {
+    provider?: string;
+    model?: string;
+    providerMode?: string;
+    fallbackUsed?: boolean;
+    fallbackProvider?: string;
+    status?: string;
+  };
+  observabilityStack?: {
+    prometheus?: { status?: string; endpoint?: string };
+    grafana?: { status?: string; endpoint?: string };
+    otelCollector?: { status?: string; endpoint?: string };
+    loki?: { status?: string; endpoint?: string };
+  };
+  telemetry?: {
+    minioEvidence?: { status?: string; endpoint?: string; lastWriteStatus?: string };
+    mailpitNotification?: { status?: string; endpoint?: string; lastNotificationStatus?: string };
+    sandboxWriteback?: { status?: string; lastStatus?: string };
+    secretsRedacted?: boolean;
+  };
+  correlationId?: string;
+  disclaimers?: string[];
+  checkedAt?: string;
 }
 
 export interface EvidenceBundleExportResponse {
@@ -969,6 +1032,12 @@ export const api = {
 
   me: () =>
     apiFetch<{ identity: AuthIdentity; authMode: 'dev' | 'local' }>('/auth/me', { method: 'GET' }),
+
+  getHealth: (identity?: DevIdentity) =>
+    apiFetch<ApiHealthStatus>('/health', { method: 'GET' }, identity),
+
+  getObservabilityStatus: (identity?: DevIdentity) =>
+    apiFetch<ObservabilityStatus>('/observability/status', { method: 'GET' }, identity),
 
   // Sessions
   listSessions: (identity?: DevIdentity) =>

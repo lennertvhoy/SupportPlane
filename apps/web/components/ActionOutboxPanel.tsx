@@ -18,6 +18,17 @@ function can(identity: AuthIdentity, permission: string) {
   return identity.permissions.includes('*') || identity.permissions.includes(permission);
 }
 
+function latestDeliveryFlag(
+  attempts: ActionOutboxAttempt[],
+  item: ActionOutboxItem,
+  key: 'realNetwork' | 'writebackEnabled' | 'externalWriteAttempted'
+) {
+  const latestAttempt = [...attempts].sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
+  const attemptValue = latestAttempt?.deliveryResult?.[key];
+  if (typeof attemptValue === 'boolean') return attemptValue;
+  return Boolean(item.safetyFlags?.[key]);
+}
+
 export function ActionOutboxPanel({
   session,
   ticket,
@@ -216,7 +227,7 @@ export function ActionOutboxPanel({
                 <div className="font-medium text-cockpit-100">Outbox item: {latestOutbox.status}</div>
                 <div>Attempts: {latestOutbox.attemptCount}</div>
                 <div>Latest attempt: {latestOutbox.latestAttemptState ?? 'none'}</div>
-                <div>mode: {latestOutbox.deliveryMode ?? 'mock'} / realNetwork: {String(latestOutbox.safetyFlags?.realNetwork ?? false)} / writebackEnabled: {String(latestOutbox.safetyFlags?.writebackEnabled ?? false)} / externalWriteAttempted: {String(latestOutbox.safetyFlags?.externalWriteAttempted ?? false)}</div>
+                <div>mode: {latestOutbox.deliveryMode ?? 'mock'} / realNetwork: {String(latestDeliveryFlag(attempts, latestOutbox, 'realNetwork'))} / writebackEnabled: {String(latestDeliveryFlag(attempts, latestOutbox, 'writebackEnabled'))} / externalWriteAttempted: {String(latestDeliveryFlag(attempts, latestOutbox, 'externalWriteAttempted'))}</div>
               </div>
             )}
 
@@ -225,7 +236,7 @@ export function ActionOutboxPanel({
                 <div className="text-[11px] font-medium text-cockpit-300">Attempt history</div>
                 {attempts.map((attempt) => (
                   <div key={attempt.id} className="rounded border border-cockpit-700 px-2 py-1 text-[10px] text-cockpit-400">
-                    #{attempt.attemptNumber} {attempt.state} at {new Date(attempt.attemptedAt).toLocaleString()} / realNetwork: {String((attempt.deliveryResult as Record<string, unknown>)?.realNetwork ?? false)} / writeback: {String((attempt.deliveryResult as Record<string, unknown>)?.writebackEnabled ?? false)}
+                    #{attempt.attemptNumber} {attempt.state} at {new Date(attempt.attemptedAt).toLocaleString()} / realNetwork: {String((attempt.deliveryResult as Record<string, unknown>)?.realNetwork ?? false)} / writeback: {String((attempt.deliveryResult as Record<string, unknown>)?.writebackEnabled ?? false)} / externalWriteAttempted: {String((attempt.deliveryResult as Record<string, unknown>)?.externalWriteAttempted ?? false)}
                   </div>
                 ))}
               </div>

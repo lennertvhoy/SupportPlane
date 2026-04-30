@@ -84,7 +84,7 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 | MinIO | PVC `minio-data` 1Gi in `supportplane-data` | Bound. |
 | NATS JetStream | PVC `nats-jetstream-data` 512Mi in `supportplane-integrations` | Bound. |
 | Mailpit | No PVC (ephemeral) | Acceptable for local sandbox. |
-| Observability | Local retention PVCs optional | Planned for BL-114. |
+| Observability | Ephemeral `emptyDir` only | BL-114 local-only baseline accepted: OTel Collector, Prometheus, Grafana, and Loki-ready stack. |
 
 ## Secret Strategy
 

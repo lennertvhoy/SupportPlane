@@ -68,10 +68,16 @@ describe('sandbox enablement contracts', () => {
         externalWriteAttempted: false,
         noSecrets: true,
       },
+      telemetry: {
+        correlationId: 'sp-test-correlation',
+        localOnly: true,
+        noSecrets: true,
+      },
       createdAt: '2026-04-29T20:00:00.000Z',
     });
     assert.equal(parsed.idempotencyKey, 'tenant:session:ticket_note:abc');
     assert.equal(parsed.safety.noSecrets, true);
+    assert.equal(parsed.telemetry?.correlationId, 'sp-test-correlation');
   });
 
   it('models worker backend modes and egress denials', () => {

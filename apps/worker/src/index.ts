@@ -12,8 +12,13 @@ const NATS_CONSUMER = process.env['NATS_OUTBOX_CONSUMER'] ?? 'SUPPORTPLANE_WORKE
 
 type Command = 'process-once' | 'loop' | 'status';
 
-function getHeaders(tenantId?: string): Record<string, string> {
+function createCorrelationId(): string {
+  return `sp-worker-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function getHeaders(tenantId?: string, correlationId?: string): Record<string, string> {
   const headers: Record<string, string> = { 'content-type': 'application/json' };
+  headers['x-correlation-id'] = correlationId ?? createCorrelationId();
   if (SERVICE_TOKEN && SERVICE_TOKEN.length >= 16) {
     headers['x-supportplane-service-token'] = SERVICE_TOKEN;
     headers['x-service-actor'] = WORKER_ID;
@@ -41,7 +46,7 @@ async function login(): Promise<string> {
 }
 
 async function apiPost<T>(path: string, _cookie: string, body?: Record<string, unknown>, tenantId?: string): Promise<T> {
-  const headers = getHeaders(tenantId);
+  const headers = getHeaders(tenantId, typeof body?.['correlationId'] === 'string' ? body['correlationId'] : undefined);
   if (!_cookie.startsWith('service-token-auth')) {
     headers['cookie'] = _cookie;
   }
@@ -67,11 +72,11 @@ async function apiGet<T>(path: string, _cookie: string, tenantId?: string): Prom
 }
 
 async function processOnce(cookie: string): Promise<Record<string, unknown>> {
-  return apiPost('/outbox/process-once', cookie, { workerId: WORKER_ID });
+  return apiPost('/outbox/process-once', cookie, { workerId: WORKER_ID, correlationId: createCorrelationId() });
 }
 
-async function processSpecific(cookie: string, outboxItemId: string): Promise<Record<string, unknown>> {
-  return apiPost('/outbox/process-once', cookie, { workerId: WORKER_ID, outboxItemId });
+async function processSpecific(cookie: string, outboxItemId: string, correlationId?: string): Promise<Record<string, unknown>> {
+  return apiPost('/outbox/process-once', cookie, { workerId: WORKER_ID, outboxItemId, correlationId: correlationId ?? createCorrelationId() });
 }
 
 async function status(cookie: string): Promise<Record<string, unknown>> {
@@ -163,13 +168,17 @@ async function loopNats(cookie: string) {
       let processedAny = false;
       for await (const message of messages) {
         processedAny = true;
-        const envelope = JSON.parse(sc.decode(message.data)) as { outboxItemId?: string; idempotencyKey?: string };
+        const envelope = JSON.parse(sc.decode(message.data)) as { outboxItemId?: string; idempotencyKey?: string; telemetry?: { correlationId?: string } };
         if (!envelope.outboxItemId) {
           message.ack();
           continue;
         }
-        const result = await processSpecific(cookie, envelope.outboxItemId);
+        const correlationId = envelope.telemetry?.correlationId ?? createCorrelationId();
+        const result = await processSpecific(cookie, envelope.outboxItemId, correlationId);
         console.log(JSON.stringify({
+          service: 'supportplane-worker',
+          event: 'nats_outbox_message_processed',
+          correlationId,
           queueBackend: 'nats-jetstream',
           stream: NATS_STREAM,
           consumer: NATS_CONSUMER,

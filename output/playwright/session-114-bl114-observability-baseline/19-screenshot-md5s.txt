@@ -1,0 +1,9 @@
+# BL-114 Screenshot MD5s
+
+3724a91aa3b920a40e919b8faaee8c92  output/playwright/session-114-bl114-observability-baseline/12-ui-observability-overview-proof.png
+242993bf22ee946b8792344987b9070a  output/playwright/session-114-bl114-observability-baseline/13-ui-correlation-drilldown-proof.png
+fda8d789d04bcc4a89d7550adf62a9c2  output/playwright/session-114-bl114-observability-baseline/14-ui-sandbox-writeback-observability-proof.png
+c9b1f83d0d5968f03034a1b4511f0e4d  output/playwright/session-114-bl114-observability-baseline/15-state-docs-proof.png
+
+# Duplicate detection
+No duplicate screenshot hashes found.

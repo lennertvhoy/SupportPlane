@@ -13,13 +13,16 @@ import { ActionsModule } from './actions/actions.module.js';
 import { DeliveryPolicyModule } from './delivery-policy/delivery-policy.module.js';
 import { CredentialReferencesModule } from './credential-references/credential-references.module.js';
 import { CurrentIdentityMiddleware } from './auth/current-identity.middleware.js';
+import { CorrelationMiddleware } from './telemetry/correlation.middleware.js';
+import { TelemetryModule } from './telemetry/telemetry.module.js';
 
 @Module({
-  imports: [StoreModule, AuthModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule],
+  imports: [StoreModule, AuthModule, TelemetryModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorrelationMiddleware).forRoutes('*');
     consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies');
   }
 }

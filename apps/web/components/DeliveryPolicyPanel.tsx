@@ -240,7 +240,7 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
                     </span>
                   </div>
                   <div className="rounded border border-cockpit-700 bg-cockpit-900/50 px-2 py-1.5 text-[10px] text-cockpit-300">
-                    Sandbox allowlist permits read-only local Zammad sandbox egress. Uncontrolled egress is denied. Writeback route is blocked until BL-111.
+                    Sandbox allowlist permits local Zammad sandbox read and approved internal-note writeback only. Uncontrolled egress is denied. This is not production writeback.
                   </div>
 
                   {/* Allowed Action Types */}
@@ -324,7 +324,7 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
                     </div>
                     <div className="text-amber-300">
                       <Lock size={10} className="inline mr-1" />
-                      Real writeback not implemented.
+                      Production writeback is not implemented; local sandbox internal-note writeback is policy-gated.
                     </div>
                     <div className="text-cockpit-500">Policy: {readiness.policyDecision}</div>
                   </div>

@@ -551,3 +551,59 @@ Reconcile BL-111, BL-112, BL-113 from implementation-credible to closure-grade. 
 ### Next Recommended Action
 
 - BL-116: Real self-hosted sandbox acceptance freeze. Aggregate all accepted slices (BL-103 through BL-115, BL-121) into a single canonical acceptance freeze with max-20 composite screenshots.
+
+---
+
+## 2026-04-30 — BL-114 Observability Baseline and BL-116 Readiness Audit
+
+### Scope
+
+Close BL-114 before attempting BL-116. Add a local-only observability baseline across API, worker, Kubernetes manifests, and the operator UI, then produce a readiness audit for the later real self-hosted sandbox freeze.
+
+### What Changed
+
+- Added API correlation middleware that accepts or creates `X-Correlation-Id`, returns it in responses, and stores it for request-scoped telemetry.
+- Added safe in-memory telemetry and `/metrics` plus `/observability/status` endpoints. Metrics are bounded Prometheus text format and avoid raw session IDs, tokens, prompts, model output, ticket bodies, and customer email bodies.
+- Added worker/outbox correlation propagation and structured JSON logs for outbox, sandbox writeback, MinIO evidence, Mailpit notification, NATS bridge, OpenBao resolver, and local AI metadata.
+- Added local Kubernetes observability manifests for OpenTelemetry Collector, Prometheus, Grafana, and Loki under `infra/kubernetes/local-podman/observability/`.
+- Added an operator-facing Local Observability panel in the Web app with explicit "Local observability only", "No production monitoring", "Correlation ID", "NATS JetStream worker", "Sandbox writeback telemetry", "MinIO evidence telemetry", "Mailpit notification telemetry", and "No secrets in telemetry" copy.
+- Repaired the stale `externalWriteAttempted: false` UI artifact by preferring delivery-result safety flags when present.
+- Produced a BL-116 readiness audit without accepting BL-116.
+
+### Verification
+
+- `npm run lint`: passed.
+- `npm run typecheck --workspaces --if-present`: passed for all workspaces with typecheck scripts.
+- `npm test --workspaces --if-present`: passed for all workspaces with tests.
+- `python3 scripts/check_state_docs.py`: passed before final reconciliation; rerun recorded in BL-114 evidence.
+- `bash scripts/verify_observability_baseline.sh`: passed.
+- Kubernetes API/Web/Worker and observability deployments rolled out successfully after rebuilding local images.
+
+### Evidence
+
+- Folder: `output/playwright/session-114-bl114-observability-baseline/`
+- Final curated evidence cap: 20 files maximum.
+- Key artifacts:
+  - `03-observability-architecture-proof.md`
+  - `04-otel-collector-proof.txt`
+  - `05-api-worker-correlation-proof.txt`
+  - `06-metrics-proof.txt`
+  - `07-logs-proof.txt`
+  - `08-dashboard-or-query-proof.txt`
+  - `09-no-secret-telemetry-proof.txt`
+  - `12-ui-observability-overview-proof.png`
+  - `13-ui-correlation-drilldown-proof.png`
+  - `14-ui-sandbox-writeback-observability-proof.png`
+  - `16-bl116-readiness-audit.md`
+
+### Risks and Limitations
+
+- Observability is local-only and not production monitoring.
+- Loki is deployed but no committed log shipper is included; correlated logs are proven through app/worker logs, not Loki queries.
+- The OpenTelemetry Collector is deployed as a local endpoint, but app OTLP trace export is not implemented in BL-114.
+- One negative service-auth probe used an incorrect token and produced a 401 before the corrected worker proof; this remains visible in in-memory telemetry and is disclosed as an evidence anomaly.
+- BL-116 remains unaccepted pending a separate canonical freeze with max-20 composite evidence.
+
+### Next Recommended Action
+
+- BL-116: Real self-hosted sandbox acceptance freeze.

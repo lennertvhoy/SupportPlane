@@ -20,6 +20,8 @@ import { DeliveryPolicyService } from '../delivery-policy/delivery-policy.servic
 import { ConnectorsService } from '../connectors/connectors.service.js';
 import { CredentialResolverService } from '../credential-references/credential-resolver.service.js';
 import { evaluateEgressPolicy } from '@supportplane/policy';
+import { getCorrelationId } from '../telemetry/correlation.js';
+import { telemetry } from '../telemetry/telemetry.service.js';
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -221,6 +223,7 @@ export class ActionsService {
     const existing = (await this.store.listActionOutboxItems(identity.tenantId, { supportActionId: id }))[0];
     if (existing) return { action, outboxItem: existing, idempotentReplay: true };
     const at = nowIso();
+    const correlationId = getCorrelationId();
     const isSandbox = decision.mode === 'sandbox';
     const safetyFlags = isSandbox ? SANDBOX_SAFETY_FLAGS : MOCK_SAFETY_FLAGS;
     const outboxItem: ActionOutboxItem = {
@@ -243,6 +246,7 @@ export class ActionsService {
         externalWriteAttempted: false,
         policyDecision: decision.decision,
         policyVersion: decision.policyVersion,
+        correlationId,
       },
       attemptCount: 0,
       maxAttempts: 3,
@@ -266,6 +270,19 @@ export class ActionsService {
     await this.store.saveSupportAction(updated);
     await this.store.saveActionOutboxItem(outboxItem);
     await this.publishOutboxEnvelope(outboxItem);
+    telemetry.increment('supportplane_outbox_queued_total', {
+      mode: outboxItem.deliveryMode,
+      actionType: outboxItem.actionType,
+    });
+    telemetry.log({
+      event: 'outbox_item_queued',
+      correlationId,
+      tenantId: identity.tenantId,
+      actionId: action.id,
+      outboxItemId: outboxItem.id,
+      mode: outboxItem.deliveryMode,
+      result: 'queued',
+    });
     await this.audit(identity, 'action_queued', action.sessionId, 'support_action', action.id, { outboxItemId: outboxItem.id });
     await this.audit(identity, 'outbox_item_created', action.sessionId, 'action_outbox_item', outboxItem.id, outboxItem.deliveryIntent);
     return { action: updated, outboxItem, idempotentReplay: false };
@@ -412,6 +429,12 @@ export class ActionsService {
       realNetwork: process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true',
       writebackEnabled: process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true',
       externalWriteAttempted: false,
+      observability: {
+        enabled: true,
+        localOnly: true,
+        noSecretsInTelemetry: true,
+        correlationId: getCorrelationId(),
+      },
       summary: this.outboxSummary(items),
       warnings: [
         process.env['SUPPORTPLANE_QUEUE_BACKEND'] === 'nats-jetstream'
@@ -432,6 +455,7 @@ export class ActionsService {
     await this.assertPermission(identity, 'outbox:process_once');
     const workerId = body.workerId ?? `api-process-once:${identity.userId}`;
     const at = nowIso();
+    const correlationId = getCorrelationId();
     const isSandbox = process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true';
     await this.audit(identity, 'outbox_process_once_requested', undefined, 'worker', identity.tenantId, {
       workerId,
@@ -440,6 +464,7 @@ export class ActionsService {
       realNetwork: isSandbox,
       writebackEnabled: isSandbox,
       externalWriteAttempted: false,
+      correlationId,
       dryRun: body.dryRun ?? false,
     });
     const item = await this.store.claimNextActionOutboxItem(identity.tenantId, {
@@ -449,6 +474,16 @@ export class ActionsService {
       outboxItemId: body.outboxItemId,
     });
     if (!item) return { processed: false, reason: 'no_eligible_outbox_item', workerId, mode: isSandbox ? 'sandbox' : 'mock' };
+    const itemCorrelationId = this.itemCorrelationId(item, correlationId);
+    telemetry.log({
+      event: 'outbox_processing_started',
+      correlationId: itemCorrelationId,
+      tenantId: identity.tenantId,
+      outboxItemId: item.id,
+      mode: item.deliveryMode,
+      result: 'processing',
+      metadata: { workerId },
+    });
     await this.audit(identity, 'outbox_processing_started', item.sessionId, 'action_outbox_item', item.id, {
       workerId,
       attemptNumber: item.attemptCount + 1,
@@ -456,6 +491,7 @@ export class ActionsService {
       realNetwork: item.deliveryMode === 'sandbox',
       writebackEnabled: item.deliveryMode === 'sandbox',
       externalWriteAttempted: false,
+      correlationId: itemCorrelationId,
       dryRun: body.dryRun ?? false,
     });
     return this.processClaimedOutbox(identity, item, workerId, { dryRun: body.dryRun });
@@ -482,6 +518,7 @@ export class ActionsService {
     options?: { forceSuccess?: boolean; dryRun?: boolean }
   ) {
     const action = await this.requireAction(identity, item.supportActionId);
+    const correlationId = this.itemCorrelationId(item);
 
     // Re-evaluate delivery policy before processing (BL-094)
     const connectorInstallation = action.connectorInstallationId
@@ -521,6 +558,7 @@ export class ActionsService {
         externalReferenceId: null,
         responseSummary: 'Mock delivery recorded locally. No external connector was contacted.',
         workerId,
+        correlationId,
         deliveredAt: at,
       };
       const attempt: ActionOutboxAttempt = {
@@ -551,6 +589,7 @@ export class ActionsService {
       await this.store.saveActionOutboxAttempt(attempt);
       await this.store.saveActionOutboxItem(updatedItem);
       await this.store.saveSupportAction(updatedAction);
+      this.recordOutboxResult(identity.tenantId, item, action.id, correlationId, 'mock_delivered');
       await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       await this.audit(identity, 'outbox_processing_succeeded', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       await this.audit(identity, 'action_mock_delivered', item.sessionId, 'support_action', action.id, deliveryResult);
@@ -569,6 +608,7 @@ export class ActionsService {
       errorCode: simulation.errorCode,
       errorMessage,
       workerId,
+      correlationId,
       failedAt: at,
     };
     const attempt: ActionOutboxAttempt = {
@@ -587,6 +627,7 @@ export class ActionsService {
       mockDevOnly: true,
     };
     await this.store.saveActionOutboxAttempt(attempt);
+    this.recordOutboxResult(identity.tenantId, item, action.id, correlationId, 'failed');
     await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
     await this.audit(identity, 'outbox_processing_failed', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
 
@@ -634,6 +675,7 @@ export class ActionsService {
     dryRun: boolean
   ) {
     const at = nowIso();
+    const correlationId = this.itemCorrelationId(item);
     const externalTicketId = action.payloadSummary['externalTicketId'] as string | undefined;
     if (!externalTicketId || externalTicketId === 'not_provided') {
       const errorMessage = 'Sandbox writeback requires externalTicketId in action payload.';
@@ -646,6 +688,7 @@ export class ActionsService {
         errorCode: 'MISSING_EXTERNAL_TICKET_ID',
         errorMessage,
         workerId,
+        correlationId,
         blockedAt: at,
       };
       const attempt: ActionOutboxAttempt = {
@@ -666,6 +709,7 @@ export class ActionsService {
       await this.store.saveActionOutboxAttempt(attempt);
       await this.store.saveActionOutboxItem({ ...item, status: 'dead_lettered' as const, attemptCount: item.attemptCount + 1, latestAttemptState: 'dead_lettered' as const, deadLetteredAt: at, deadLetterReason: errorMessage, lastError: errorMessage, lastErrorCode: 'MISSING_EXTERNAL_TICKET_ID', lastErrorMessage: errorMessage, lastErrorRedacted: true, workerLockId: undefined, workerLockedAt: undefined, workerLockExpiresAt: undefined, updatedAt: at });
       await this.store.saveSupportAction({ ...action, status: 'dead_lettered' as const, failureReason: errorMessage, updatedAt: at });
+      this.recordOutboxResult(identity.tenantId, item, action.id, correlationId, 'missing_external_ticket_id');
       await this.audit(identity, 'outbox_processing_failed', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       return { processed: false, reason: errorMessage, errorCode: 'MISSING_EXTERNAL_TICKET_ID' };
     }
@@ -691,6 +735,7 @@ export class ActionsService {
         errorCode: 'EGRESS_BLOCKED',
         errorMessage,
         workerId,
+        correlationId,
         blockedAt: at,
       };
       const attempt: ActionOutboxAttempt = {
@@ -711,6 +756,7 @@ export class ActionsService {
       await this.store.saveActionOutboxAttempt(attempt);
       await this.store.saveActionOutboxItem({ ...item, status: 'dead_lettered' as const, attemptCount: item.attemptCount + 1, latestAttemptState: 'policy_blocked' as const, deadLetteredAt: at, deadLetterReason: errorMessage, lastError: errorMessage, lastErrorCode: 'EGRESS_BLOCKED', lastErrorMessage: errorMessage, lastErrorRedacted: true, workerLockId: undefined, workerLockedAt: undefined, workerLockExpiresAt: undefined, updatedAt: at });
       await this.store.saveSupportAction({ ...action, status: 'dead_lettered' as const, failureReason: errorMessage, updatedAt: at });
+      this.recordOutboxResult(identity.tenantId, item, action.id, correlationId, 'egress_blocked');
       await this.audit(identity, 'delivery_policy_blocked', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       return { processed: false, reason: errorMessage, errorCode: 'EGRESS_BLOCKED', policyDecision: decision.decision };
     }
@@ -727,6 +773,7 @@ export class ActionsService {
         externalTicketId,
         idempotencyKey: item.idempotencyKey,
         workerId,
+        correlationId,
         dryRunAt: at,
       };
       const attempt: ActionOutboxAttempt = {
@@ -743,6 +790,7 @@ export class ActionsService {
         mockDevOnly: false,
       };
       await this.store.saveActionOutboxAttempt(attempt);
+      this.recordOutboxResult(identity.tenantId, item, action.id, correlationId, 'sandbox_dry_run');
       await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       await this.audit(identity, 'outbox_processing_succeeded', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       return { processed: true, action, outboxItem: item, attempt, delivery: deliveryResult, workerId, dryRun: true };
@@ -769,6 +817,7 @@ export class ActionsService {
         errorCode: 'CREDENTIAL_RESOLUTION_FAILED',
         errorMessage,
         workerId,
+        correlationId,
         failedAt: at,
       };
       const attempt: ActionOutboxAttempt = {
@@ -789,6 +838,7 @@ export class ActionsService {
       await this.store.saveActionOutboxAttempt(attempt);
       await this.store.saveActionOutboxItem({ ...item, status: 'retry_scheduled' as const, attemptCount: item.attemptCount + 1, latestAttemptState: 'retry_scheduled' as const, nextAttemptAt: addSeconds(at, 60), failedAt: at, retryScheduledAt: at, lastError: errorMessage, lastErrorCode: 'CREDENTIAL_RESOLUTION_FAILED', lastErrorMessage: errorMessage, lastErrorRedacted: true, workerLockId: undefined, workerLockedAt: undefined, workerLockExpiresAt: undefined, updatedAt: at });
       await this.store.saveSupportAction({ ...action, status: 'retry_scheduled' as const, failureReason: errorMessage, updatedAt: at });
+      this.recordOutboxResult(identity.tenantId, item, action.id, correlationId, 'credential_resolution_failed');
       await this.audit(identity, 'outbox_processing_failed', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       return { processed: false, reason: errorMessage, errorCode: 'CREDENTIAL_RESOLUTION_FAILED' };
     }
@@ -820,6 +870,7 @@ export class ActionsService {
         idempotencyKey: item.idempotencyKey,
         credentialMetadata,
         workerId,
+        correlationId,
         deliveredAt: at,
       };
 
@@ -857,6 +908,8 @@ export class ActionsService {
       await this.store.saveActionOutboxAttempt(attempt);
       await this.store.saveActionOutboxItem(updatedItem);
       await this.store.saveSupportAction(updatedAction);
+      telemetry.increment('supportplane_sandbox_writeback_total', { result: 'success' });
+      this.recordOutboxResult(identity.tenantId, item, action.id, correlationId, 'sandbox_delivered');
       await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       await this.audit(identity, 'outbox_processing_succeeded', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       await this.audit(identity, 'action_sandbox_delivered', item.sessionId, 'support_action', action.id, deliveryResult);
@@ -875,6 +928,7 @@ export class ActionsService {
         errorCode: 'ZAMMAD_WRITEBACK_FAILED',
         errorMessage,
         workerId,
+        correlationId,
         failedAt: at,
       };
       const attempt: ActionOutboxAttempt = {
@@ -893,6 +947,8 @@ export class ActionsService {
         mockDevOnly: false,
       };
       await this.store.saveActionOutboxAttempt(attempt);
+      telemetry.increment('supportplane_sandbox_writeback_total', { result: 'failure' });
+      this.recordOutboxResult(identity.tenantId, item, action.id, correlationId, 'sandbox_writeback_failed');
       await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       await this.audit(identity, 'outbox_processing_failed', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
 
@@ -986,12 +1042,24 @@ export class ActionsService {
         createdAt: date,
         disclaimer: 'Local sandbox evidence only. No compliance claim.',
       };
+      telemetry.increment('supportplane_minio_evidence_total', { result: 'success' });
+      telemetry.log({
+        event: 'minio_evidence_persisted',
+        correlationId: String(deliveryResult['correlationId'] ?? getCorrelationId()),
+        tenantId: item.tenantId,
+        actionId: action.id,
+        outboxItemId: item.id,
+        mode: 'sandbox',
+        result: 'success',
+        metadata: { bucket, objectKey },
+      });
     } catch (err) {
       (deliveryResult as Record<string, unknown>)['minioEvidence'] = {
         error: err instanceof Error ? err.message : 'MinIO upload failed',
         objectKey,
         bucket,
       };
+      telemetry.increment('supportplane_minio_evidence_total', { result: 'failure' });
     }
   }
 
@@ -1031,6 +1099,17 @@ export class ActionsService {
       disclaimer: 'Local sandbox notification only. No production email was sent.',
       capturedAt: new Date().toISOString(),
     };
+    telemetry.increment('supportplane_mailpit_notification_total', { result: smtpStatus === 'captured' ? 'success' : 'failure' });
+    telemetry.log({
+      event: 'mailpit_notification_recorded',
+      correlationId: String(deliveryResult['correlationId'] ?? getCorrelationId()),
+      tenantId: item.tenantId,
+      actionId: action.id,
+      outboxItemId: item.id,
+      mode: 'sandbox',
+      result: smtpStatus,
+      metadata: { smtpHost: host, smtpPort: port, capturedMessageId },
+    });
   }
 
   private sendSmtp(
@@ -1278,6 +1357,11 @@ export class ActionsService {
         externalWriteAttempted: false,
         noSecrets: true,
       },
+      telemetry: {
+        correlationId: this.itemCorrelationId(item),
+        localOnly: true,
+        noSecrets: true,
+      },
       createdAt: new Date().toISOString(),
     });
     let nc: Awaited<ReturnType<typeof connect>> | undefined;
@@ -1304,6 +1388,16 @@ export class ActionsService {
       }
       await nc.jetstream().publish(NATS_SUBJECT, StringCodec().encode(JSON.stringify(envelope)), {
         msgID: item.idempotencyKey,
+      });
+      telemetry.increment('supportplane_nats_bridge_publish_total', { result: 'success' });
+      telemetry.log({
+        event: 'nats_outbox_envelope_published',
+        correlationId: this.itemCorrelationId(item),
+        tenantId: item.tenantId,
+        outboxItemId: item.id,
+        mode: item.deliveryMode,
+        result: 'success',
+        metadata: { stream: NATS_STREAM, subject: NATS_SUBJECT, consumer: NATS_CONSUMER },
       });
     } finally {
       await nc?.drain().catch(() => undefined);
@@ -1345,6 +1439,7 @@ export class ActionsService {
     resourceId: string,
     metadata: Record<string, unknown>
   ) {
+    const correlationId = getCorrelationId();
     const event: AuditEvent = {
       id: randomUUID() as AuditEvent['id'],
       tenantId: identity.tenantId as AuditEvent['tenantId'],
@@ -1355,9 +1450,36 @@ export class ActionsService {
       action: eventType,
       resourceType,
       resourceId: resourceId as AuditEvent['resourceId'],
-      metadata: metadata as AuditEvent['metadata'],
+      metadata: { ...metadata, correlationId } as AuditEvent['metadata'],
       createdAt: nowIso(),
     };
     await this.store.saveAuditEvent(event);
+  }
+
+  private itemCorrelationId(item: ActionOutboxItem, fallback = getCorrelationId()): string {
+    const value = item.deliveryIntent?.['correlationId'];
+    return typeof value === 'string' && value.length > 0 ? value : fallback;
+  }
+
+  private recordOutboxResult(
+    tenantId: string,
+    item: ActionOutboxItem,
+    actionId: string,
+    correlationId: string,
+    result: string
+  ): void {
+    telemetry.increment('supportplane_outbox_processed_total', {
+      mode: item.deliveryMode,
+      result,
+    });
+    telemetry.log({
+      event: 'outbox_processing_completed',
+      correlationId,
+      tenantId,
+      actionId,
+      outboxItemId: item.id,
+      mode: item.deliveryMode,
+      result,
+    });
   }
 }

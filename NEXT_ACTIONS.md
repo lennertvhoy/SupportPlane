@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-30 10:45 CEST
+**Updated At:** 2026-04-30 11:20 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
@@ -9,7 +9,7 @@
 ### P1 [BL-116] Real self-hosted sandbox acceptance freeze
 
 - Owner: next coding-agent session.
-- Next action: freeze the complete real sandbox E2E milestone after verifying all gates pass.
+- Next action: run the complete real sandbox E2E acceptance freeze using the BL-116 readiness audit from `output/playwright/session-114-bl114-observability-baseline/16-bl116-readiness-audit.md`.
 - Exit criteria: cluster health, Zammad read/write, Ollama, OpenBao, NATS, MinIO, Mailpit, RBAC, kill switch, evidence, no-secret gates all pass with max-20 canonical proof set.
 
 ## Queue Rules

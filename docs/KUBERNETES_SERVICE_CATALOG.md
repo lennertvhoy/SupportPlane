@@ -1,7 +1,7 @@
 # Kubernetes Service Catalog
 
 **Backlog:** BL-102
-**Status:** BL-104/BL-105 verified app workloads and PostgreSQL persistence. BL-106 verified self-hosted service topology. BL-108/109/110/115 wire API/Web/Worker to local Ollama/OpenBao/NATS and sandbox egress gates. Observability remains planned for BL-114.
+**Status:** BL-104/BL-105 verified app workloads and PostgreSQL persistence. BL-106 verified self-hosted service topology. BL-108/109/110/115 wire API/Web/Worker to local Ollama/OpenBao/NATS and sandbox egress gates. BL-114 verified local-only observability.
 
 | Workload/service | Namespace | Kind | Container image source | Local/upstream | Ports | Env vars | Secrets/configmaps | PVCs | Health checks | Startup dependencies | Phase | Acceptance test |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -17,14 +17,14 @@
 | `nats` | `supportplane-integrations` | StatefulSet + Service | Upstream `nats:2.10.24-alpine` | Upstream | 4222, 8222 | JetStream enabled via ConfigMap | ConfigMap `nats-config` | `nats-jetstream-data` | HTTP `/healthz` on monitor port | None | Phase 2/6 | Durable stream `SUPPORTPLANE_OUTBOX`, subject `supportplane.outbox.ready`, and consumer `SUPPORTPLANE_WORKER` created; message pub/consume verified. |
 | `mailpit` | `supportplane-integrations` | Deployment + Service | Upstream `axllent/mailpit:v1.21` | Upstream | 1025, 8025 | None | None | None | HTTP `/api/v1/messages` on web port | None | Phase 2/9 | Captures local SMTP message; no internet email sent. Web UI shows captured messages. |
 | `minio` | `supportplane-data` | Deployment + Service | Upstream `minio/minio:RELEASE.2025-04-22T22-12-26Z` | Upstream | 9000, 9001 | `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD` | Secret for local access key/secret placeholder | `minio-data` | `/minio/health/live`, `/minio/health/ready` | None | Phase 2/8 | Bucket `bl106-bucket` and object `topology-proof.txt` created and retrieved. |
-| `otel-collector` | `supportplane-observability` | Deployment | Upstream collector image TBD | Upstream | 4317, 4318 | Collector pipeline config | ConfigMap | None | Collector health endpoint TBD | Loki/Prometheus optional | Phase 10 | Receives basic API/worker traces or logs with correlation ID. |
-| `grafana` | `supportplane-observability` | Deployment + Service | Upstream Grafana image TBD | Upstream | 3000 mapped locally to 3001 | Datasource config | Local admin password placeholder | Optional dashboard PVC | HTTP `/api/health` | Loki/Prometheus | Phase 10 | Dashboard shows service health/log/metric source. |
-| `loki` | `supportplane-observability` | StatefulSet/Deployment | Upstream Loki image TBD | Upstream | 3100 | Loki config | ConfigMap | Optional log storage PVC | `/ready` | None | Phase 10 | Logs query by correlation ID. |
-| `prometheus` | `supportplane-observability` | StatefulSet/Deployment | Upstream Prometheus image TBD | Upstream | 9090 | Scrape config | ConfigMap | Optional metrics PVC | `/-/ready` | App metrics endpoints TBD | Phase 10 | Scrapes API/worker metrics. |
+| `otel-collector` | `supportplane-observability` | Deployment | `otel/opentelemetry-collector-contrib:0.113.0` | Upstream | 4317, 4318, 8888, 8889 | Collector pipeline config | ConfigMap | None | Collector rollout + metrics endpoints | Prometheus | Phase 10 | Local collector deployed; API emits correlated logs/metrics in this baseline. |
+| `grafana` | `supportplane-observability` | Deployment + Service | `grafana/grafana:11.2.0` | Upstream | 3000 mapped locally to 3001 | Datasource config | Local admin password placeholder | `emptyDir` | HTTP `/api/health` | Loki/Prometheus | Phase 10 | Grafana health verified; datasource provisioning committed. |
+| `loki` | `supportplane-observability` | Deployment + Service | `grafana/loki:3.2.1` | Upstream | 3100 | Loki config | ConfigMap | `emptyDir` | `/ready` | None | Phase 10 | Loki ready; no log shipper claimed in BL-114. |
+| `prometheus` | `supportplane-observability` | Deployment + Service | `prom/prometheus:v2.55.0` | Upstream | 9090 | Scrape config | ConfigMap | `emptyDir` | `/-/ready` | API `/metrics`, OTel collector | Phase 10 | Scrapes API metrics and OTel collector metrics. |
 
 ## Notes
 
-- Exact image names and versions are pinned where deployed; observability images remain TBD for BL-114.
+- Exact image names and versions are pinned where deployed; observability images were pinned in BL-114.
 - BL-103 selected Kind with the Podman provider for the local foundation using `kindest/node:v1.31.4`.
 - BL-103 proved local image loading by building a Podman smoke image, saving it to an archive, and loading it with `kind load image-archive`; direct `kind load docker-image` did not see the rootless Podman image.
 - BL-104/BL-105 committed manifests deploy API, Web, Worker, and PostgreSQL into the cluster.
