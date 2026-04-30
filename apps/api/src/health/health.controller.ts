@@ -61,7 +61,7 @@ export class HealthController {
       authMode: process.env['SUPPORTPLANE_AUTH_MODE'] || 'dev',
       oidcReady: !!(process.env['OIDC_ISSUER_URL'] && process.env['OIDC_CLIENT_ID']),
       mfaHookAvailable: true,
-      note: 'Mock-first ticket-aware API slice (BL-003)',
+      note: 'Mock-first ticket-aware API slice (BL-003) — runtime identity verified',
     };
   }
 }
