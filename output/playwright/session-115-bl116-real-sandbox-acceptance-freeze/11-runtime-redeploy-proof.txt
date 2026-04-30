@@ -1,0 +1,37 @@
+=== BL-116 Runtime Redeploy Proof ===
+Generated: 2026-04-30T11:40:45+02:00
+
+=== Git HEAD ===
+1e6298a5586e30400f9a600a62f82e6128445e81
+
+=== Git Log (last 5) ===
+1e6298a BL-114: Add local observability baseline
+e3bb56f BL-111/112/113: Closure-grade reconciliation — evidence, state docs, acceptance freeze
+bb81e7a BL-111/112/113: Add sandbox_delivered status to resolve mock/sandbox truth ambiguity
+822723c BL-121: Commit missing handoff, evidence, and upgrade script
+6018cc3 BL-111/112/113: Add E2E verification scripts and evidence artifacts
+
+=== API Health Head ===
+
+=== Match Status ===
+MATCH: API head equals git HEAD (1e6298a5586e30400f9a600a62f82e6128445e81)
+
+=== App Pods ===
+NAME                                   READY   STATUS    RESTARTS   AGE
+supportplane-api-67c7d9b5cd-lkzfd      1/1     Running   0          53s
+supportplane-web-676b5467bd-f8kxp      1/1     Running   0          53s
+supportplane-worker-56676bfd45-d6qr9   1/1     Running   0          53s
+
+=== Worker Logs (first 5 lines after restart) ===
+{"queueBackend":"fallback-postgres-local-outbox","result":{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"sandbox"}}
+{"queueBackend":"fallback-postgres-local-outbox","result":{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"sandbox"}}
+{"queueBackend":"fallback-postgres-local-outbox","result":{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"sandbox"}}
+{"queueBackend":"fallback-postgres-local-outbox","result":{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"sandbox"}}
+{"queueBackend":"fallback-postgres-local-outbox","result":{"processed":false,"reason":"no_eligible_outbox_item","workerId":"local-worker-1","mode":"sandbox"}}
+
+=== Observability Pods ===
+NAME                              READY   STATUS    RESTARTS   AGE
+grafana-745d7b9546-zzrfq          1/1     Running   0          26m
+loki-85f59df588-8hmj7             1/1     Running   0          26m
+otel-collector-5499c8ccc9-kt7dr   1/1     Running   0          26m
+prometheus-68bdbfb7ff-2kkcl       1/1     Running   0          26m

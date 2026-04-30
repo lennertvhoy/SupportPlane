@@ -1,0 +1,60 @@
+=== BL-116 Observability and Correlation Proof ===
+Generated: 2026-04-30T11:52+02:00
+=== Correlation ID Propagation ===
+Request with X-Correlation-Id: sp-bl116-freeze
+Response header: Access-Control-Expose-Headers: x-correlation-id
+X-Correlation-Id: sp-bl116-freeze
+
+=== API Structured Logs with Correlation ===
+{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777542853809-hus1oks5","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:54:13.818Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":7}}
+{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-66b38cd9-72ae-43e0-9def-a46c004be10e","result":"200","timestamp":"2026-04-30T09:54:15.062Z","metadata":{"method":"GET","route":"/metrics","latencyMs":0}}
+{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777542856821-x5duqmdy","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:54:16.829Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":6}}
+{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-d92f8a99-7d48-43fa-9bad-a2b2572254c1","result":"200","timestamp":"2026-04-30T09:54:18.119Z","metadata":{"method":"GET","route":"/health","latencyMs":1}}
+{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777542859832-e92jcv0w","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T09:54:19.845Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":10}}
+
+=== SupportPlane Metrics ===
+# HELP supportplane_info Local SupportPlane observability baseline info.
+# TYPE supportplane_info gauge
+supportplane_info{service="supportplane-api",local_only="true",production_monitoring="false"} 1
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_health",status="200"} 268
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_metrics",status="200"} 60
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="POST",route="_outbox_process-once",status="201"} 295
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="POST",route="_auth_local_login",status="201"} 20
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="GET",route="_auth_me",status="200"} 1
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="POST",route="_support-sessions",status="201"} 4
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="POST",route="_support-sessions_be361cb0-2722-4718-9a91-fad6d00c7802_zammad_ticket-context",status="201"} 1
+# TYPE supportplane_api_requests_total counter
+supportplane_api_requests_total{method="POST",route="_support-sessions_be361cb0-2722-4718-9a91-fad6d00c7802_draft-suggestion",status="201"} 1
+# TYPE supportplane_api_requests_total counter
+
+=== Prometheus Query ===
+39
+
+=== Grafana Health ===
+{
+  "database": "ok",
+  "version": "11.2.0",
+  "commit": "2a88694fd3ced0335bf3726cc5d0adc2d1858855"
+}
+=== OTel Collector Pod ===
+Running
+
+=== Loki Status ===
+Running
+Loki is deployed but no committed log shipper is included in this slice.
+
+=== Observability Verdict ===
+PASS: Correlation ID propagated from request to response.
+PASS: Structured API logs include correlation IDs.
+PASS: /metrics exposes SupportPlane metrics.
+PASS: Prometheus query returns SupportPlane metrics.
+PASS: Grafana health OK.
+PASS: OTel Collector pod running.
+HONEST: Loki deployed but no log shipper claimed; correlated logs proven via kubectl logs.

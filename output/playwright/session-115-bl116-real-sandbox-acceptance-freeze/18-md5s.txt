@@ -1,0 +1,23 @@
+19ac95bd1129fc258c719977bb696f87  01-baseline-runtime-and-git.txt
+a3a6ed60512c2b2e7dd2de04d82197ba  02-cluster-topology-and-services-proof.txt
+a723cd913534ae591991d01b3a38c64f  03-app-postgres-persistence-proof.txt
+e6beeae639ba77fa161181652bcca78c  04-real-sandbox-e2e-flow-proof.txt
+d5610731a952751cb6d7b6507b770d3e  05-blocked-paths-and-safety-proof.txt
+6777461b8621f5885911170640858954  06-no-secret-no-cloud-no-production-proof.txt
+d8d250db8e7d67bf2dce2f9e71d1e15d  07-observability-and-correlation-proof.txt
+ae73816a419691ddc96349ac7899f1f0  08-validation-gate.txt
+5d8c0d28e821c98b714ae6eede6ddfc5  09-local-mvp-regression.txt
+4505450c9b6afc8ad9809f5001a282b7  10-acceptance-freeze-record.md
+066b10f7820c1d57a07db74deefdc3ef  11-runtime-redeploy-proof.txt
+7349577ef496c164815a6c1d971cf1fe  12-ui-cockpit-overview.png
+869f48b696043594bf2a9106097398ca  13-ui-call-console.png
+aa2b41b79ba92e56c80cce76284ae4b0  14-ui-observability-panel.png
+08f8a3e8f192d63ba2911dee6e5f43b5  15-ui-delivery-policy-panel.png
+8a794703e7e647478601657ea932123d  16-ui-action-outbox-panel.png
+174623f76df1c92275507e74a9768524  17-proof-mapping.txt
+7fdbd0e30186197ac6ae38409023dac7  18-md5s.txt
+92feaa36ac933e488165911a761fa4cc  19-boundary-matrix.txt
+4d67e20f033e78b4f86ca6a8ae40f0a3  20-final-git-status.txt
+---
+Duplicate detection:
+Total files: 20

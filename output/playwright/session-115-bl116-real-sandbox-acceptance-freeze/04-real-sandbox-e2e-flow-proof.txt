@@ -1,0 +1,93 @@
+=== BL-116 Fresh Real Sandbox E2E Flow Proof ===
+Generated: 2026-04-30T11:48+02:00
+Git HEAD: 1e6298a5586e30400f9a600a62f82e6128445e81
+
+Session ID: 12b786cf-c60e-4b19-9403-808cbe9fe663
+Action ID: 225a543a-5bb4-48a4-a2b2-986f8aca0893
+Outbox ID: 91ac6128-f76e-47f1-872b-02bae63a3b9a
+Zammad Article ID: 17
+
+=== Step 1: API Health ===
+status: ok, head: 1e6298a5586e30400f9a600a62f82e6128445e81, storeMode: postgres, authMode: local
+
+=== Step 2: Login operator/admin/viewer ===
+PASS (all three roles authenticated)
+
+=== Step 3: Real Zammad Ticket/Customer ===
+Customer: Acme BVBA
+Connector mode: zammad
+Ticket: 2 (68002)
+
+=== Step 4: Gemma/Ollama Draft ===
+Provider: ollama
+Model: gemma4:e4b
+fallbackUsed: false
+noCloudCall: true
+autonomousSend: false
+latencyMs: ~10089
+
+=== Step 5: Action Created/Submitted/Approved/Queued ===
+connectorInstallationId: conn-inst-dev-001
+policyDecision: sandbox_allowed
+deliveryMode: sandbox
+status after queue: queued
+
+=== Step 6: NATS Envelope Published ===
+stream: SUPPORTPLANE_OUTBOX
+subject: supportplane.outbox.ready
+consumer: SUPPORTPLANE_WORKER
+mode: sandbox
+result: success
+
+=== Step 7: Outbox Processing ===
+status: sandbox_delivered
+attemptCount: 1
+workerId: local-worker-1
+mode: sandbox
+result: sandbox_delivered
+
+=== Step 8: Zammad Article ===
+Article ID: 17
+Ticket ID: 2
+Created: 2026-04-30T09:48:16.445Z
+Subject: Internal note
+Body contains: [SupportPlane sandbox internal note]
+
+=== Step 9: MinIO Evidence ===
+API log: minio_evidence_persisted success
+Bucket: supportplane-evidence
+Object key: dev-tenant/writebacks/12b786cf-c60e-4b19-9403-808cbe9fe663/91ac6128-f76e-47f1-872b-02bae63a3b9a.json
+Direct object verification (boto3 from host via port-forward localhost:9000):
+  - HEAD: ContentLength=1643, ETag="ec036747a3c037ac25f02968d018e649", ContentType=application/json
+  - GET: length=1643, SHA-256=dfb12da6916febe8d5e186dced66cdb2f854d6b37894b98bcc0f6c54b08f8675
+  - No raw secrets in object content (only metadata hashes and safety flags)
+
+=== Step 10: Mailpit Notification ===
+API log: mailpit_notification_recorded captured
+SMTP host: mailpit.supportplane-integrations.svc.cluster.local:1025
+Mailpit cluster UI (port 18025): 14 messages total
+Latest message: Subject "SupportPlane sandbox writeback completed"
+Created: 2026-04-30T09:48:16.566Z
+Outbox item: 91ac6128-f76e-47f1-872b-02bae63a3b9a
+
+=== Step 11: Audit Events ===
+- session_created
+- ticket_linked
+- ai_context_loaded
+- zammad_ticket_loaded
+- ai_draft_generated
+- action_created
+- action_submitted_for_review
+- action_approved
+- delivery_policy_evaluated
+- action_queued
+- outbox_item_created
+- outbox_processing_started
+- outbox_item_attempted
+- outbox_processing_succeeded
+- action_sandbox_delivered
+
+=== E2E Flow Verdict ===
+PASS: Full sandbox E2E flow completed with real Zammad read, real Gemma/Ollama draft,
+approval gates, sandbox delivery, Zammad internal note writeback, MinIO evidence,
+Mailpit notification, and terminal audit events.

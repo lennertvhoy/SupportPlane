@@ -1,0 +1,68 @@
+=== BL-116 Local MVP Regression Summary ===
+Generated: 2026-04-30T11:33+02:00
+Git HEAD: 1e6298a5586e30400f9a600a62f82e6128445e81
+
+=== npm run lint ===
+Result: PASS (0 errors, 0 warnings)
+
+=== npm run typecheck (all packages) ===
+- @supportplane/api     PASS
+- @supportplane/web     PASS
+- @supportplane/worker  PASS
+- @supportplane/ai      PASS
+- @supportplane/audit   PASS
+- @supportplane/connectors PASS
+- @supportplane/contracts PASS
+- @supportplane/policy  PASS
+- @supportplane/ui      PASS
+
+=== npm test (API unit tests) ===
+Suite: SupportPlane API
+Total assertions: 33
+Passed: 33
+Failed: 0
+
+Key test coverage:
+1. GET /health returns ok with runtime info
+2. POST /support-sessions rejects missing x-tenant-id
+3. POST /support-sessions rejects missing x-user-id
+4. POST /support-sessions/:id/draft-suggestion rejects missing tenant context
+5. POST /support-sessions creates a session
+6. GET /support-sessions/:id returns the session
+7. GET /support-sessions/:id enforces tenant isolation
+8. POST /support-sessions/:id/ticket-context loads ticket context
+9. POST /support-sessions/:id/context-packets creates a packet
+10. GET /support-sessions/:id/context-packets lists packets
+11. GET /support-sessions/:id/audit-events lists audit events
+12. Durable action/outbox workflow: create → submit → approve → queue → mock-deliver
+13. Action/outbox state-machine lifecycle prevents attempts before queue
+14. Action/outbox invalid transitions are rejected
+15. Tenant isolation holds for context-packets and audit-events
+16. POST /support-sessions/:id/draft-suggestion rejects unknown session
+17. Ollama draft suggestion generates real local AI response
+18. Cross-tenant action access returns 404
+19. Cross-tenant outbox access returns 404
+20. POST /actions/:id/approve rejects non-admin operator
+21. GET /auth/me returns identity with permissions
+22. POST /auth/local/login succeeds with valid credentials
+23. POST /auth/logout clears session
+24. GET /auth/audit-events returns auth audit trail
+25. GET /metrics returns Prometheus metrics
+26. GET /observability/status returns local-only status
+27. POST /calls/fake-incoming creates mock call
+28. GET /calls/recent lists calls
+29. GET /telephony/status returns mock telephony status
+30. POST /telephony/test returns bridge test result
+31. POST /connector-installations creates installation
+32. GET /connector-installations lists installations
+33. GET /delivery-policies returns policies
+
+=== Observability baseline (BL-114) ===
+- Correlation ID middleware active
+- /metrics exposes Prometheus counters
+- /observability/status returns localOnly: true
+- No secret-like telemetry output found
+- Observability namespace pods all Running
+
+=== Conclusion ===
+All 33 tests pass. Lint and typecheck clean. MVP regression confirmed.
