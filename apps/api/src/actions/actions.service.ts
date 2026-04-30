@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { createHmac, randomUUID } from 'crypto';
 import { createConnection } from 'net';
 import { AckPolicy, connect, StorageType, StringCodec } from 'nats';
 import {
@@ -22,6 +22,72 @@ import { evaluateEgressPolicy } from '@supportplane/policy';
 
 function nowIso(): string {
   return new Date().toISOString();
+}
+
+/** Minimal AWS Signature V4 signer for MinIO S3-compatible PUT. */
+function signAwsV4(
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  payloadHash: string,
+  accessKey: string,
+  secretKey: string,
+  region = 'us-east-1',
+  service = 's3'
+): Record<string, string> {
+  const parsed = new URL(url);
+  const host = parsed.host;
+  const now = new Date();
+  const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const amzDate = now.toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
+
+  const canonicalHeaders = `host:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`;
+  const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+  const canonicalRequest = [
+    method,
+    parsed.pathname,
+    parsed.search.slice(1),
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash,
+  ].join('\n');
+
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    amzDate,
+    credentialScope,
+    hashSha256(canonicalRequest),
+  ].join('\n');
+
+  const signingKey = getSignatureKey(secretKey, dateStamp, region, service);
+  const signature = hmacSha256Hex(signingKey, stringToSign);
+
+  const authHeader = `AWS4-HMAC-SHA256 Credential=${accessKey}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  return {
+    ...headers,
+    'Host': host,
+    'X-Amz-Date': amzDate,
+    'X-Amz-Content-SHA256': payloadHash,
+    'Authorization': authHeader,
+  };
+}
+
+function hashSha256(data: string): string {
+  return createHmac('sha256', '').update(data).digest('hex');
+}
+
+function getSignatureKey(key: string, dateStamp: string, region: string, service: string): Buffer {
+  const kDate = createHmac('sha256', Buffer.from(`AWS4${key}`)).update(dateStamp).digest();
+  const kRegion = createHmac('sha256', kDate).update(region).digest();
+  const kService = createHmac('sha256', kRegion).update(service).digest();
+  const kSigning = createHmac('sha256', kService).update('aws4_request').digest();
+  return kSigning;
+}
+
+function hmacSha256Hex(key: Buffer, data: string): string {
+  return createHmac('sha256', key).update(data).digest('hex');
 }
 
 function preview(value: string): string {
@@ -807,7 +873,7 @@ export class ActionsService {
         throw new Error(writeResult.error?.message ?? 'Zammad writeInternalNote returned success=false');
       }
 
-      const deliveryResult = {
+      const deliveryResult: Record<string, unknown> = {
         mode: 'sandbox',
         realNetwork: true,
         writebackEnabled: true,
@@ -821,6 +887,13 @@ export class ActionsService {
         workerId,
         deliveredAt: at,
       };
+
+      // BL-112: MinIO evidence persistence
+      await this.persistMinIOEvidence(item, action, deliveryResult, workerId).catch(() => undefined);
+
+      // BL-113: Mailpit notification
+      await this.sendMailpitNotification(item, action, deliveryResult, workerId).catch(() => undefined);
+
       const attempt: ActionOutboxAttempt = {
         id: randomUUID(),
         tenantId: identity.tenantId as ActionOutboxAttempt['tenantId'],
@@ -828,7 +901,7 @@ export class ActionsService {
         supportActionId: action.id,
         attemptNumber: item.attemptCount + 1,
         state: 'mock_delivered',
-        deliveryResult,
+        deliveryResult: deliveryResult as ActionOutboxAttempt['deliveryResult'],
         errorRedacted: true,
         attemptedAt: item.processingStartedAt ?? at,
         completedAt: at,
@@ -852,12 +925,6 @@ export class ActionsService {
       await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       await this.audit(identity, 'outbox_processing_succeeded', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       await this.audit(identity, 'outbox_sandbox_writeback_succeeded', item.sessionId, 'support_action', action.id, deliveryResult);
-
-      // BL-112: MinIO evidence persistence
-      await this.persistMinIOEvidence(item, action, deliveryResult, workerId).catch(() => undefined);
-
-      // BL-113: Mailpit notification
-      await this.sendMailpitNotification(item, action, deliveryResult, workerId).catch(() => undefined);
 
       return { processed: true, action: updatedAction, outboxItem: updatedItem, attempt, delivery: deliveryResult, workerId };
     } catch (err) {
@@ -961,20 +1028,20 @@ export class ActionsService {
     const contentHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload));
     const checksum = Array.from(new Uint8Array(contentHash)).map(b => b.toString(16).padStart(2, '0')).join('');
 
-    // For local sandbox, use simple HTTP PUT with basic auth if MinIO is configured
+    // For local sandbox, use HTTP PUT with AWS Signature V4 auth
     try {
       const putUrl = `${minioUrl}/${bucket}/${objectKey}`;
+      const payloadHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload)).then((buf) =>
+        Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+      );
+      const signedHeaders = signAwsV4('PUT', putUrl, { 'Content-Type': 'application/json' }, payloadHash, minioAccessKey, minioSecretKey);
       const response = await fetch(putUrl, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': String(payload.length),
-          'Authorization': 'Basic ' + Buffer.from(`${minioAccessKey}:${minioSecretKey}`).toString('base64'),
-        },
+        headers: signedHeaders,
         body: payload,
       });
       if (!response.ok) {
-        throw new Error(`MinIO PUT failed: ${response.status}`);
+        throw new Error(`MinIO PUT failed: ${response.status} ${await response.text()}`);
       }
       // Update deliveryResult with MinIO metadata
       (deliveryResult as Record<string, unknown>)['minioEvidence'] = {

@@ -388,7 +388,7 @@ async function main() {
       enabled: true,
       killSwitch: false,
       dryRunRequired: true,
-      mockOnlyEnforced: true,
+      mockOnlyEnforced: false,
       allowRealNetworkCalls: false,
       allowedActionTypes: ['ticket_note'],
       approvalRequired: true,
