@@ -36,6 +36,6 @@ data:
   SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED: "true"
   MINIO_ENDPOINT: "http://minio.supportplane-data.svc.cluster.local:9000"
   MINIO_ACCESS_KEY: "minioadmin"
-  MINIO_SECRET_KEY: "minioadmin123"
+  MINIO_SECRET_KEY: "minioadmin"
   MINIO_EVIDENCE_BUCKET: "supportplane-evidence"
   MAILPIT_SMTP: "mailpit.supportplane-integrations.svc.cluster.local:1025"
