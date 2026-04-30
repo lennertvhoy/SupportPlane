@@ -32,3 +32,10 @@ data:
   OLLAMA_FALLBACK_ENABLED: "true"
   # Web build-time API base URL for cluster access
   NEXT_PUBLIC_API_BASE_URL: "http://localhost:4210"
+  # BL-111/112/113: Enable sandbox-only writeback, MinIO evidence, Mailpit notification
+  SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED: "true"
+  MINIO_ENDPOINT: "http://minio.supportplane-data.svc.cluster.local:9000"
+  MINIO_ACCESS_KEY: "minioadmin"
+  MINIO_SECRET_KEY: "minioadmin123"
+  MINIO_EVIDENCE_BUCKET: "supportplane-evidence"
+  MAILPIT_SMTP: "mailpit.supportplane-integrations.svc.cluster.local:1025"

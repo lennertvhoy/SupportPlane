@@ -528,15 +528,24 @@ export interface OutboxWorkerStatus {
   status: string;
   consumerEnabled: boolean;
   queueBackend: string;
+  fallbackQueueBackend?: string;
   storeMode: string;
-  deliveryMode: 'mock';
-  realNetwork: false;
-  writebackEnabled: false;
-  externalWriteAttempted: false;
+  deliveryMode: 'mock' | 'sandbox_available';
+  realNetwork: boolean;
+  writebackEnabled: boolean;
+  externalWriteAttempted: boolean;
   summary: Record<string, number>;
   warnings: string[];
   checkedAt: string;
-  mockDevOnly: true;
+  mockDevOnly: boolean;
+  nats?: {
+    enabled: boolean;
+    urlConfigured: boolean;
+    streamName: string;
+    subject: string;
+    consumerName: string;
+    bridgeMode: string;
+  };
 }
 
 export interface EvidenceBundleExportResponse {

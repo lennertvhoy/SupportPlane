@@ -13,6 +13,8 @@ function findGitDir(): string | null {
 }
 
 function getGitHead(): string | null {
+  const envHead = process.env['GIT_HEAD'];
+  if (envHead) return envHead;
   try {
     const gitDir = findGitDir();
     if (!gitDir) return null;
@@ -28,6 +30,8 @@ function getGitHead(): string | null {
 }
 
 function getBranch(): string | null {
+  const envBranch = process.env['GIT_BRANCH'];
+  if (envBranch) return envBranch;
   try {
     const gitDir = findGitDir();
     if (!gitDir) return null;

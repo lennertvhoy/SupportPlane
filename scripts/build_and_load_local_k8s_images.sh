@@ -39,9 +39,17 @@ build_and_load() {
   local app="$1"
   local tag="$2"
   local containerfile="$3"
+  local git_head=""
+  local git_branch=""
+  git_head="$(git rev-parse HEAD 2>/dev/null || echo '')"
+  git_branch="$(git branch --show-current 2>/dev/null || echo '')"
 
   echo "--- Building ${app} ---"
-  podman build -f "${containerfile}" -t "${tag}" .
+  if [ "$app" = "api" ]; then
+    podman build -f "${containerfile}" -t "${tag}" --build-arg GIT_HEAD="${git_head}" --build-arg GIT_BRANCH="${git_branch}" .
+  else
+    podman build -f "${containerfile}" -t "${tag}" .
+  fi
   local image_id
   image_id="$(podman inspect --format='{{.Id}}' "${tag}")"
   echo "Image ID: ${image_id}"

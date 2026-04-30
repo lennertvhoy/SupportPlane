@@ -37,18 +37,45 @@ describe('@supportplane/policy egress policy', () => {
     assert.equal(decision.decision, 'blocked_production_like_url');
   });
 
-  it('blocks writeback even to an allowlisted sandbox URL', () => {
+  it('blocks writeback when writebackEnabled is false', () => {
     const decision = evaluateEgressPolicy({
       tenantId: 'dev-tenant',
       connectorType: 'zammad',
       operation: 'writeback',
       url: 'http://zammad.supportplane-integrations.svc.cluster.local:3000',
+      writebackEnabled: false,
     });
     assert.equal(decision.allowed, false);
     assert.equal(decision.decision, 'blocked_writeback_disabled');
   });
 
-  it('kill switch denies before allowlist', () => {
+  it('allows sandbox writeback to an allowlisted URL when writebackEnabled is true', () => {
+    const decision = evaluateEgressPolicy({
+      tenantId: 'dev-tenant',
+      connectorType: 'zammad',
+      operation: 'writeback',
+      url: 'http://zammad.supportplane-integrations.svc.cluster.local:3000',
+      writebackEnabled: true,
+    });
+    assert.equal(decision.allowed, true);
+    assert.equal(decision.decision, 'allowed_local_zammad_sandbox_writeback');
+    assert.equal(decision.secretExposed, false);
+  });
+
+  it('kill switch denies writeback before allowlist', () => {
+    const decision = evaluateEgressPolicy({
+      tenantId: 'dev-tenant',
+      connectorType: 'zammad',
+      operation: 'writeback',
+      url: 'http://zammad.supportplane-integrations.svc.cluster.local:3000',
+      writebackEnabled: true,
+      killSwitchEnabled: true,
+    });
+    assert.equal(decision.allowed, false);
+    assert.equal(decision.decision, 'blocked_by_kill_switch');
+  });
+
+  it('kill switch denies read before allowlist', () => {
     const decision = evaluateEgressPolicy({
       tenantId: 'dev-tenant',
       connectorType: 'zammad',

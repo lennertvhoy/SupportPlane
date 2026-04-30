@@ -86,7 +86,9 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
     >
       <div className="space-y-3">
         <div className="rounded border border-amber-700/40 bg-amber-900/20 px-2 py-1.5 text-[11px] text-amber-300">
-          NATS JetStream local sandbox bridge with durable local worker. PostgreSQL remains canonical outbox truth. No real writeback, email, telephony, cloud AI, object storage, raw media, or production queue semantics.
+          {worker?.writebackEnabled
+            ? 'NATS JetStream local sandbox bridge. Sandbox-only Zammad internal note writeback is enabled. MinIO local evidence. Mailpit local notification. No public reply. No production data.'
+            : 'NATS JetStream local sandbox bridge with durable local worker. PostgreSQL remains canonical outbox truth. No real writeback, email, telephony, cloud AI, object storage, raw media, or production queue semantics.'}
         </div>
 
         {worker && (
@@ -96,13 +98,13 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
             <div><span className="text-cockpit-500">Queue</span><div>{worker.queueBackend}</div></div>
             <div><span className="text-cockpit-500">Store</span><div>{worker.storeMode}</div></div>
             <div><span className="text-cockpit-500">Auth</span><div>{identity.authMode}</div></div>
-            <div><span className="text-cockpit-500">Safety</span><div>realNetwork: false</div></div>
+            <div><span className="text-cockpit-500">Safety</span><div>realNetwork: {String(worker?.realNetwork ?? false)} / writeback: {String(worker?.writebackEnabled ?? false)}</div></div>
           </div>
         )}
         {worker && (
           <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2 text-[11px] text-cockpit-300">
             <div className="font-medium text-cockpit-100">NATS JetStream</div>
-            <div>Durable local worker · fallback: postgres-local-outbox · writeback blocked</div>
+            <div>Durable local worker · fallback: {worker?.fallbackQueueBackend ?? 'postgres-local-outbox'} · {worker?.writebackEnabled ? 'sandbox writeback enabled' : 'writeback blocked'}</div>
           </div>
         )}
 
@@ -148,7 +150,7 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
                 <div className="font-medium text-cockpit-100">Selected outbox {short(selected.id)} / {selected.status}</div>
                 <div>Action {short(selected.supportActionId)} / idempotency {selected.idempotencyKey}</div>
                 <div>nextAttemptAt {selected.nextAttemptAt ?? 'not scheduled'} / deadLetterReason {selected.deadLetterReason ?? 'none'}</div>
-                <div>mode: mock / realNetwork: false / writebackEnabled: false / externalWriteAttempted: false</div>
+                <div>mode: {selected.deliveryMode ?? 'mock'} / realNetwork: {String(selected.safetyFlags?.realNetwork ?? false)} / writebackEnabled: {String(selected.safetyFlags?.writebackEnabled ?? false)} / externalWriteAttempted: {String(selected.safetyFlags?.externalWriteAttempted ?? false)}</div>
               </div>
             </div>
             <div className="mb-2 flex flex-wrap gap-2">
@@ -161,7 +163,7 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
               <div className="text-cockpit-500">Attempt history for selected item</div>
               {attempts.map((attempt) => (
                 <div key={attempt.id} className="rounded border border-cockpit-700 px-2 py-1">
-                  #{attempt.attemptNumber} {attempt.state} code {attempt.errorCode ?? 'none'} / {attempt.errorMessage ?? 'no error'} / realNetwork: false
+                  #{attempt.attemptNumber} {attempt.state} code {attempt.errorCode ?? 'none'} / {attempt.errorMessage ?? 'no error'} / realNetwork: {String((attempt.deliveryResult as Record<string, unknown>)?.realNetwork ?? false)} / writeback: {String((attempt.deliveryResult as Record<string, unknown>)?.writebackEnabled ?? false)}
                 </div>
               ))}
               {attempts.length === 0 && <div>No attempts yet.</div>}

@@ -109,7 +109,9 @@ export function ActionOutboxPanel({
     <Panel title="Action Center / Durable Outbox">
       <div className="space-y-3">
         <div className="rounded border border-amber-700/40 bg-amber-900/20 px-2 py-1.5 text-[11px] text-amber-300">
-          Local/mock delivery only. Human review required. No real Zammad writeback, email, telephony, AI provider, external broker, raw media, or compliance-grade evidence.
+          {latestOutbox?.safetyFlags?.writebackEnabled
+            ? 'Sandbox-only Zammad internal note writeback enabled. OpenBao server-side credential resolve. NATS JetStream worker. MinIO local evidence. Mailpit local notification. No public reply. No production data.'
+            : 'Local/mock delivery only. Human review required. No real Zammad writeback, email, telephony, AI provider, external broker, raw media, or compliance-grade evidence.'}
         </div>
 
         {!session && <div className="text-xs text-cockpit-500">Select a session to prepare a support action.</div>}
@@ -214,7 +216,7 @@ export function ActionOutboxPanel({
                 <div className="font-medium text-cockpit-100">Outbox item: {latestOutbox.status}</div>
                 <div>Attempts: {latestOutbox.attemptCount}</div>
                 <div>Latest attempt: {latestOutbox.latestAttemptState ?? 'none'}</div>
-                <div>realNetwork: false / writebackEnabled: false / externalWriteAttempted: false</div>
+                <div>mode: {latestOutbox.deliveryMode ?? 'mock'} / realNetwork: {String(latestOutbox.safetyFlags?.realNetwork ?? false)} / writebackEnabled: {String(latestOutbox.safetyFlags?.writebackEnabled ?? false)} / externalWriteAttempted: {String(latestOutbox.safetyFlags?.externalWriteAttempted ?? false)}</div>
               </div>
             )}
 
@@ -223,7 +225,7 @@ export function ActionOutboxPanel({
                 <div className="text-[11px] font-medium text-cockpit-300">Attempt history</div>
                 {attempts.map((attempt) => (
                   <div key={attempt.id} className="rounded border border-cockpit-700 px-2 py-1 text-[10px] text-cockpit-400">
-                    #{attempt.attemptNumber} {attempt.state} at {new Date(attempt.attemptedAt).toLocaleString()} / realNetwork: false
+                    #{attempt.attemptNumber} {attempt.state} at {new Date(attempt.attemptedAt).toLocaleString()} / realNetwork: {String((attempt.deliveryResult as Record<string, unknown>)?.realNetwork ?? false)} / writeback: {String((attempt.deliveryResult as Record<string, unknown>)?.writebackEnabled ?? false)}
                   </div>
                 ))}
               </div>

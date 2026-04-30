@@ -44,6 +44,7 @@ export interface EgressPolicyDecision {
   allowed: boolean;
   decision:
     | 'allowed_local_zammad_sandbox_read'
+    | 'allowed_local_zammad_sandbox_writeback'
     | 'blocked_by_default_deny'
     | 'blocked_external_url'
     | 'blocked_production_like_url'
@@ -109,11 +110,51 @@ export function evaluateEgressPolicy(input: EgressPolicyInput): EgressPolicyDeci
   }
 
   if (input.operation === 'writeback') {
+    if (!writebackEnabled) {
+      return {
+        ...base,
+        allowed: false,
+        decision: 'blocked_writeback_disabled',
+        reason: 'Real writeback is disabled.',
+      };
+    }
+    if (killSwitchEnabled) {
+      return {
+        ...base,
+        allowed: false,
+        decision: 'blocked_by_kill_switch',
+        reason: 'Network operation is blocked by the tenant kill switch.',
+      };
+    }
+    if (!parsed) {
+      return {
+        ...base,
+        allowed: false,
+        decision: 'blocked_by_default_deny',
+        reason: 'Network operation is denied because no valid allowlisted URL was provided.',
+      };
+    }
+    if (PRODUCTION_LIKE_HOST_PATTERNS.some((pattern) => pattern.test(host))) {
+      return {
+        ...base,
+        allowed: false,
+        decision: 'blocked_production_like_url',
+        reason: 'Production-looking connector URLs are blocked in the local sandbox.',
+      };
+    }
+    if (!sandboxAllowlisted) {
+      return {
+        ...base,
+        allowed: false,
+        decision: 'blocked_external_url',
+        reason: 'Connector egress is deny-by-default and this URL is not on the sandbox allowlist.',
+      };
+    }
     return {
       ...base,
-      allowed: false,
-      decision: 'blocked_writeback_disabled',
-      reason: 'Real writeback is blocked until the BL-111 sandbox-only writeback gate is implemented.',
+      allowed: true,
+      decision: 'allowed_local_zammad_sandbox_writeback',
+      reason: 'Sandbox-only Zammad internal note writeback is allowed by the local sandbox allowlist.',
     };
   }
 

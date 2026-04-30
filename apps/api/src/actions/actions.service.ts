@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { createConnection } from 'net';
 import { AckPolicy, connect, StorageType, StringCodec } from 'nats';
 import {
   ActionOutboxAttempt,
@@ -675,6 +676,8 @@ export class ActionsService {
       connectorType: 'zammad',
       operation: 'writeback',
       url: zammadBaseUrl,
+      writebackEnabled: true,
+      killSwitchEnabled: false,
     });
     if (!egress.allowed) {
       const errorMessage = `Egress policy blocked sandbox writeback: ${egress.reason}`;
@@ -1002,20 +1005,111 @@ export class ActionsService {
     const port = parseInt(portStr ?? '1025', 10);
 
     const subject = 'SupportPlane sandbox writeback completed';
-    const body = `Local sandbox notification only.\nNo production email was sent.\nNo customer email was contacted.\n\nOutbox item: ${item.id}\nAction: ${action.id}\nSession: ${item.sessionId}\nWorker: ${workerId}\nResult: ${JSON.stringify(deliveryResult, null, 2)}`;
+    const body = `Local sandbox notification only.\nNo production email was sent.\nNo customer email was contacted.\n\nOutbox item: ${item.id}\nAction: ${action.id}\nSession: ${item.sessionId}\nWorker: ${workerId}`;
 
-    // Simple SMTP envelope using raw socket is too complex; use a minimal HTTP-based approach if available.
-    // Mailpit does not have a send-via-HTTP API for outgoing SMTP. We'll record the notification intent.
-    // For proof, we store the notification metadata in the delivery result.
+    let capturedMessageId: string | undefined;
+    let smtpStatus = 'recorded_intent_only';
+    let smtpError: string | undefined;
+
+    try {
+      capturedMessageId = await this.sendSmtp(host, port, 'worker@supportplane.local', ['admin@supportplane.local'], subject, body);
+      smtpStatus = 'captured';
+    } catch (err) {
+      smtpError = err instanceof Error ? err.message : 'SMTP send failed';
+      smtpStatus = 'failed';
+    }
+
     (deliveryResult as Record<string, unknown>)['mailpitNotification'] = {
       smtpHost: host,
       smtpPort: port,
       subject,
       bodyPreview: body.slice(0, 200),
-      status: 'recorded_intent_only',
+      status: smtpStatus,
+      capturedMessageId,
+      smtpError,
       disclaimer: 'Local sandbox notification only. No production email was sent.',
       capturedAt: new Date().toISOString(),
     };
+  }
+
+  private sendSmtp(
+    host: string,
+    port: number,
+    from: string,
+    to: string[],
+    subject: string,
+    body: string
+  ): Promise<string | undefined> {
+    return new Promise((resolve, reject) => {
+      const socket = createConnection({ host, port });
+      let step = 0;
+      const steps = [
+        `EHLO supportplane.local\r\n`,
+        `MAIL FROM:<${from}>\r\n`,
+        ...to.map((t) => `RCPT TO:<${t}>\r\n`),
+        `DATA\r\n`,
+        `Subject: ${subject}\r\nFrom: ${from}\r\nTo: ${to.join(', ')}\r\n\r\n${body}\r\n.\r\n`,
+        `QUIT\r\n`,
+      ];
+      const messageId = `sp-sandbox-${Date.now()}@supportplane.local`;
+      let buffer = '';
+      let done = false;
+
+      socket.on('connect', () => {
+        // wait for server greeting
+      });
+
+      socket.on('data', (data) => {
+        buffer += data.toString();
+        const lines = buffer.split('\r\n');
+        buffer = lines.pop() ?? '';
+        for (const line of lines) {
+          if (!line.match(/^\d{3}/)) continue;
+          const code = parseInt(line.slice(0, 3), 10);
+          if (code >= 400 && !done) {
+            done = true;
+            socket.end();
+            reject(new Error(`SMTP error at step ${step}: ${line}`));
+            return;
+          }
+          if (step === 0 && (code === 220)) {
+            // greeting received, send EHLO
+            socket.write(steps[step]);
+            step++;
+          } else if (step > 0 && step < steps.length && (code >= 200 && code < 400)) {
+            socket.write(steps[step]);
+            step++;
+            if (step >= steps.length) {
+              done = true;
+              socket.end();
+              resolve(messageId);
+            }
+          }
+        }
+      });
+
+      socket.on('error', (err) => {
+        if (!done) {
+          done = true;
+          reject(err);
+        }
+      });
+
+      socket.on('close', () => {
+        if (!done) {
+          done = true;
+          resolve(messageId);
+        }
+      });
+
+      socket.setTimeout(10000, () => {
+        if (!done) {
+          done = true;
+          socket.destroy();
+          reject(new Error('SMTP connection timeout'));
+        }
+      });
+    });
   }
 
   private async handlePolicyBlock(
