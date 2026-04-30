@@ -1818,3 +1818,10 @@ and must be protected from quiet regression.
     1. Committed untracked evidence folder and verification script to make worktree clean.
     2. Fixed boundary matrix contradiction: Zammad internal-note writeback and MinIO evidence persistence are now marked as real sandbox accepted, not mock-only.
     3. Proved MinIO direct object read/checksum via boto3 (ContentLength=1643, SHA-256=dfb12da6916febe8d5e186dced66cdb2f854d6b37894b98bcc0f6c54b08f8675); removed the previous limitation about direct access being blocked.
+    4. Fixed canonical verifier script `scripts/verify_bl116_real_sandbox_freeze.sh`:
+       - Added `connectorInstallationId` to action create payload so policy evaluation finds the seeded delivery policy (fixes `deliveryMode=mock` fallback).
+       - Fixed jq paths for policy decision and outbox status to match actual API response shapes.
+       - Fetched Zammad API token from k8s secret instead of invalid `TestToken` default.
+       - Updated Zammad body check to match actual sandbox writeback template.
+       - Added outbox polling loop to handle NATS worker auto-claim race condition.
+       - Verifier now passes 3/3 consecutive end-to-end runs with exit code 0.
