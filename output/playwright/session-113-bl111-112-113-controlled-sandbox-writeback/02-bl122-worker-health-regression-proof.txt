@@ -1,0 +1,67 @@
+=== BL-122 Worker Service Auth Verification ===
+
+1. Worker pod status:
+NAME                                   READY   STATUS    RESTARTS   AGE
+supportplane-worker-7fb7b6667c-q9pmm   1/1     Running   0          101s
+
+2. POST /outbox/process-once WITHOUT token:
+{
+  "message": "Authentication required",
+  "error": "Unauthorized",
+  "statusCode": 401
+}
+
+3. POST /outbox/process-once WITH invalid token:
+{
+  "message": "Authentication required",
+  "error": "Unauthorized",
+  "statusCode": 401
+}
+
+4. POST /outbox/process-once WITH valid service token:
+{
+  "processed": false,
+  "reason": "no_eligible_outbox_item",
+  "workerId": "test",
+  "mode": "sandbox"
+}
+
+5. Worker status endpoint:
+{
+  "mode": "local_mock_worker",
+  "status": "available",
+  "consumerEnabled": true,
+  "queueBackend": "nats-jetstream",
+  "fallbackQueueBackend": "postgres-local-outbox",
+  "nats": {
+    "enabled": true,
+    "urlConfigured": true,
+    "streamName": "SUPPORTPLANE_OUTBOX",
+    "subject": "supportplane.outbox.ready",
+    "consumerName": "SUPPORTPLANE_WORKER",
+    "bridgeMode": "postgres-canonical-jetstream-bridge"
+  },
+  "storeMode": "postgres",
+  "deliveryMode": "sandbox_available",
+  "realNetwork": true,
+  "writebackEnabled": true,
+  "externalWriteAttempted": false,
+  "summary": {
+    "total": 6,
+    "queued": 0,
+    "processing": 0,
+    "mock_delivered": 6,
+    "failed": 0,
+    "retry_scheduled": 0,
+    "dead_lettered": 0,
+    "cancelled": 0
+  },
+  "warnings": [
+    "NATS JetStream bridge is local sandbox only; PostgreSQL remains canonical outbox truth.",
+    "Sandbox writeback is enabled. Only internal notes to local Zammad sandbox. No public replies. No production."
+  ],
+  "checkedAt": "2026-04-30T07:07:22.266Z",
+  "mockDevOnly": false
+}
+
+=== Verification complete ===
