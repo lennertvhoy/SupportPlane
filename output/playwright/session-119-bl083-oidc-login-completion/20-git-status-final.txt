@@ -1,0 +1,19 @@
+# Git Status Final
+## main
+?? output/playwright/session-119-bl083-oidc-login-completion/02-keycloak-realm-bootstrap-proof.txt
+?? output/playwright/session-119-bl083-oidc-login-completion/03-oidc-config-and-discovery-proof.txt
+?? output/playwright/session-119-bl083-oidc-login-completion/06-session-and-cookie-proof.txt
+?? output/playwright/session-119-bl083-oidc-login-completion/07-role-tenant-mapping-proof.txt
+?? output/playwright/session-119-bl083-oidc-login-completion/09-mfa-hook-proof.txt
+?? output/playwright/session-119-bl083-oidc-login-completion/10-security-no-secret-proof.txt
+?? output/playwright/session-119-bl083-oidc-login-completion/11-bl116-bl117-regression-proof.txt
+?? output/playwright/session-119-bl083-oidc-login-completion/12-validation-gate.txt
+?? output/playwright/session-119-bl083-oidc-login-completion/13-cluster-redeploy-proof.txt
+?? output/playwright/session-119-bl083-oidc-login-completion/20-git-status-final.txt
+
+## Git Log (last 5)
+83b1a33 fix(bl116): repair Zammad read regression and complete BL-083 closure
+1c2ad18 BL-083: Complete OIDC role mapping and session resolution
+60e221f BL-118: Reconcile hardening closure and OIDC readiness
+953f97d BL-083/086/087/090: Final git status evidence
+121121d BL-083/086/087/090: Reconcile evidence and state docs

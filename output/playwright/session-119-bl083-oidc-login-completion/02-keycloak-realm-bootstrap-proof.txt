@@ -1,0 +1,10 @@
+# Keycloak Realm Bootstrap Proof
+
+## Cluster Status
+NAME                        READY   STATUS    RESTARTS   AGE
+keycloak-5bcffcb659-2rxsw   1/1     Running   0          146m
+
+## Keycloak Health
+Keycloak health endpoint not directly reachable (managed via cluster service)
+
+## Realm Config

@@ -1,0 +1,47 @@
+# State Docs Proof
+
+## Files Verified Present and Updated
+[OK] AGENTS.md (356 lines)
+[OK] STATUS.md (30 lines)
+[OK] PROJECT_STATE.yaml (541 lines)
+[OK] NEXT_ACTIONS.md (21 lines)
+[OK] BACKLOG.md (192 lines)
+[OK] WORKLOG.md (1054 lines)
+[OK] docs/EVIDENCE_LOG.md (2454 lines)
+[OK] docs/WORKFLOW_TRUTH.md (31 lines)
+[OK] docs/BOUNDARY_MATRIX.md (28 lines)
+[OK] docs/KUBERNETES_SERVICE_CATALOG.md (35 lines)
+[OK] docs/SELF_HOSTED_STACK.md (72 lines)
+[OK] docs/ACCEPTANCE_FREEZES.md (2018 lines)
+[OK] docs/OIDC_READINESS.md (57 lines)
+[OK] docs/security/THREAT_MODEL.md (91 lines)
+[OK] docs/security/SECURITY_REGRESSION_MATRIX.md (26 lines)
+[OK] docs/RUNBOOK_BACKUP_RESTORE.md (173 lines)
+[OK] docs/RELEASE_RUNBOOK.md (213 lines)
+[OK] docs/DEMO_RUNBOOK.md (226 lines)
+
+## BL-083 Status in State Files
+135:- [BL-083] `[accepted]` Add OIDC-ready auth, MFA hooks, service accounts, and short-lived connector tokens. Keycloak local sandbox manifests deploy and realm users/roles seeded. Full browser OIDC redirect/callback login flow implemented with PKCE, including realm role mapping from Keycloak to SupportPlane `UserRole` records. Service account token store persists SHA-256 hashes with expiry and revocation. MFA hook interface returns available but not enforced. Evidence in `output/playwright/session-119-bl083-oidc-login-completion/`.
+
+## NEXT_ACTIONS Active Queue
+# NEXT_ACTIONS - Active Execution Queue
+
+**Updated At:** 2026-04-30 18:05 CEST
+**Execution Mode:** operating
+**Max Items:** 10
+
+## Active Work
+
+### P1 [BL-083] OIDC browser login completion — Partial
+
+- Owner: next coding-agent session
+- Next action: implement and prove a real browser OIDC redirect/callback/login flow against the local Keycloak sandbox while preserving local auth fallback.
+- Exit criteria: Keycloak realm/client/user bootstrap, API OIDC strategy and callback, browser login proof, local auth fallback proof, honest MFA/service-token status, runtime identity proof, and clean closure evidence.
+
+## Queue Rules
+
+- Keep this file short.
+- List only active, open work.
+- Remove closed items immediately.
+- Every active item must reference a backlog ID like `[BL-001]`.
+- Include owner, next action, and exit criteria when items exist.

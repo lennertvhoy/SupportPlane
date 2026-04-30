@@ -6,11 +6,11 @@
 
 ## Active Work
 
-### P1 [BL-083] OIDC browser login completion — Partial
+### P1 [BL-076] Policy editor for tools, risk levels, approvals, model policies, and retention settings
 
 - Owner: next coding-agent session
-- Next action: implement and prove a real browser OIDC redirect/callback/login flow against the local Keycloak sandbox while preserving local auth fallback.
-- Exit criteria: Keycloak realm/client/user bootstrap, API OIDC strategy and callback, browser login proof, local auth fallback proof, honest MFA/service-token status, runtime identity proof, and clean closure evidence.
+- Next action: implement tenant policy editor foundation with delivery, connector, AI/model, and retention policies.
+- Exit criteria: policy CRUD API endpoints, RBAC enforcement, safety validation, audit events, compact UI panel, tests, and evidence.
 
 ## Queue Rules
 

@@ -1,0 +1,21 @@
+# Cluster Redeploy Proof
+
+## Git HEAD
+83b1a337d44f508b6f8a160fcd16e21cf42711c5
+
+## API Runtime HEAD
+83b1a337d44f508b6f8a160fcd16e21cf42711c5
+
+## Match Status
+MATCH: runtime HEAD equals git HEAD
+
+## Pod Status
+NAME                                   READY   STATUS    RESTARTS   AGE
+supportplane-api-65bb48c8bd-ws6vr      1/1     Running   0          5m19s
+supportplane-web-7c88b66d86-d2dtj      1/1     Running   0          7m4s
+supportplane-worker-7d54d696cf-vrpth   1/1     Running   0          7m4s
+
+## Image IDs
+supportplane-api-65bb48c8bd-ws6vr	localhost/supportplane-api:local-k8s
+supportplane-web-7c88b66d86-d2dtj	localhost/supportplane-web:local-k8s
+supportplane-worker-7d54d696cf-vrpth	localhost/supportplane-worker:local-k8s

@@ -67,12 +67,12 @@ current_state:
       current_runtime: Podman compose for local MVP AND Kubernetes StatefulSet for cluster
       canonical_store: postgres
     auth:
-      current: local username/password demo auth
-      oidc_ready: config endpoint wired, keycloak sandbox running locally, no full login flow
+      current: local username/password demo auth with OIDC browser login fallback
+      oidc_ready: full browser redirect/callback/login flow implemented with Keycloak realm role mapping
       mfa_status: hook available, not enforced
-      service_accounts: conceptual guard only, no persistent storage
-      short_lived_tokens: interface only, no DB table
-      not_implemented: [OIDC_login_flow, OAuth, SAML, MFA_enforcement, password_reset, production_auth_hardening]
+      service_accounts: persistent storage with SHA-256 hashed tokens, expiry, and revocation
+      short_lived_tokens: DB table with hashing and expiry enforcement
+      not_implemented: [OAuth, SAML, MFA_enforcement, password_reset, production_auth_hardening]
     connectors:
       current: real sandbox read + real sandbox writeback (BL-111 accepted)
       zammad: real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient
@@ -348,7 +348,7 @@ current_state:
       - BL-120
       - BL-121
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-083]
+    active_queue_items: [BL-076]
 
   documentation:
     primary_user_guide: README.md

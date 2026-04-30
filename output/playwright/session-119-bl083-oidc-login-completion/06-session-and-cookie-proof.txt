@@ -1,0 +1,31 @@
+# Session and Cookie Proof
+
+## Local Auth Session Cookie
+Set-Cookie: supportplane_session=Qti7hX41lJDckbTHsrtMuTxPGtVSE8AUuDlQk6ko5wU; Path=/; Expires=Fri, 01 May 2026 04:59:06 GMT; HttpOnly; SameSite=Lax
+
+## Operator Session Cookie
+Set-Cookie: supportplane_session=J4-JmpGUElWLCevnmBDmTSpHdbsj__hbJpfRsATPnpA; Path=/; Expires=Fri, 01 May 2026 04:59:06 GMT; HttpOnly; SameSite=Lax
+
+## Viewer Session Cookie
+Set-Cookie: supportplane_session=B4kuxeFviUyXmmGPGrwHGg4wXwU6Bc5BODE2YcszMmE; Path=/; Expires=Fri, 01 May 2026 04:59:06 GMT; HttpOnly; SameSite=Lax
+
+## Auth Mode Verification
+{
+    "identity": {
+        "tenantId": "dev-tenant",
+        "tenantName": "Acme Support Demo",
+        "tenantSlug": "dev-tenant",
+        "userId": "dev-admin",
+        "userEmail": "admin@supportplane.local",
+        "userName": "Demo Admin",
+        "userRole": "admin",
+        "roles": [
+            "admin"
+        ],
+        "permissions": [
+            "*"
+        ],
+        "authMode": "local"
+    },
+    "authMode": "local"
+}

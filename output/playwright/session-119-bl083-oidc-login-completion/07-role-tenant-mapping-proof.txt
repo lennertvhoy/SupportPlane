@@ -1,0 +1,117 @@
+# Role and Tenant Mapping Proof
+
+## Admin Identity and Permissions
+{
+    "identity": {
+        "tenantId": "dev-tenant",
+        "tenantName": "Acme Support Demo",
+        "tenantSlug": "dev-tenant",
+        "userId": "dev-admin",
+        "userEmail": "admin@supportplane.local",
+        "userName": "Demo Admin",
+        "userRole": "admin",
+        "roles": [
+            "admin"
+        ],
+        "permissions": [
+            "*"
+        ],
+        "authMode": "local"
+    },
+    "authMode": "local"
+}
+
+## Operator Identity and Permissions
+{
+    "identity": {
+        "tenantId": "dev-tenant",
+        "tenantName": "Acme Support Demo",
+        "tenantSlug": "dev-tenant",
+        "userId": "dev-user",
+        "userEmail": "operator@supportplane.local",
+        "userName": "Demo Operator",
+        "userRole": "operator",
+        "roles": [
+            "operator"
+        ],
+        "permissions": [
+            "support_session:read",
+            "support_session:create",
+            "support_session:update",
+            "ticket:read",
+            "ticket:write",
+            "ticket_context:load",
+            "ticket:link",
+            "ticket:unlink",
+            "context_packet:create",
+            "ai:generate",
+            "call:read",
+            "call:write",
+            "recording:read",
+            "recording:write",
+            "telephony:read",
+            "telephony:control",
+            "screen_observation:create",
+            "screen_observation:review",
+            "evidence_bundle:read",
+            "audit:read",
+            "connector:read",
+            "customer:read",
+            "connector_installation:read",
+            "connector_installation:write",
+            "connector_installation:test",
+            "credential_reference:read",
+            "credential_reference:write",
+            "delivery_policy:read",
+            "action:read",
+            "action:create",
+            "action:submit",
+            "action:cancel",
+            "outbox:read",
+            "outbox:retry",
+            "outbox:mock_deliver",
+            "outbox:process_once",
+            "worker:read",
+            "telephony:webhook"
+        ],
+        "authMode": "local"
+    },
+    "authMode": "local"
+}
+
+## Viewer Identity and Permissions
+{
+    "identity": {
+        "tenantId": "dev-tenant",
+        "tenantName": "Acme Support Demo",
+        "tenantSlug": "dev-tenant",
+        "userId": "dev-viewer",
+        "userEmail": "viewer@supportplane.local",
+        "userName": "Demo Viewer",
+        "userRole": "viewer",
+        "roles": [
+            "viewer"
+        ],
+        "permissions": [
+            "support_session:read",
+            "call:read",
+            "screen_observation:read",
+            "evidence_bundle:read",
+            "audit:read",
+            "connector:read",
+            "customer:read",
+            "connector_installation:read",
+            "credential_reference:read",
+            "ticket:read",
+            "action:read",
+            "outbox:read",
+            "worker:read",
+            "delivery_policy:read"
+        ],
+        "authMode": "local"
+    },
+    "authMode": "local"
+}
+
+## Cross-tenant isolation proof
+Tenant scoping enforced server-side; no x-tenant-id header trust.

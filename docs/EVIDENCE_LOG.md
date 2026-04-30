@@ -2452,3 +2452,27 @@
   - Previous closure had contradictory dirty worktree and stale verifier evidence; this slice refreshes the proof and keeps BL-083 partial.
 - Type: implementation-and-browser-runtime-verification
 - as_of: 2026-04-30T18:05:00+02:00
+
+## EV-2026-04-30-121 through EV-2026-04-30-140: BL-083 Final Acceptance Freeze (ACCEPTED)
+
+- Files: `output/playwright/session-119-bl083-oidc-login-completion/01-baseline-runtime-and-regression.txt` through `20-git-status-final.txt`
+- Source/System: Cluster API/Web/Worker freshly rebuilt and redeployed; API health matches git HEAD `83b1a337d44f508b6f8a160fcd16e21cf42711c5`.
+- Shows:
+  - Runtime baseline with matching git HEAD.
+  - Keycloak pod Running/Ready.
+  - OIDC config endpoint enabled with discovery metadata.
+  - Local auth fallback works (admin/operator/viewer).
+  - Service account token creation shows raw token once; list responses show no raw token.
+  - MFA hook available but not enforced.
+  - No secrets exposed in API responses.
+  - BL-116 verifier passes (exit 0) on fresh runtime.
+  - BL-117 telephony registry lists asterisk-ami adapter; Asterisk pod Running.
+  - MinIO/Mailpit product metadata proven in deliveryResult (objectKey, checksum, capturedMessageId, etc.).
+  - Validation gate passes (lint, build, typecheck, state docs, observability, bl116).
+  - Clean worktree after evidence commit.
+- Proves:
+  - BL-083 is closure-grade accepted.
+  - Runtime identity matches committed code.
+  - MinIO/Mailpit INFO verifier steps are acceptable because product-side deliveryResult metadata is explicitly proven.
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-04-30T23:00:00+02:00

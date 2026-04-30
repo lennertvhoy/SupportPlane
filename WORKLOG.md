@@ -1052,3 +1052,67 @@ Screenshots: 2 (no duplicates)
 - Refresh canonical BL-083/086/087/090 evidence files.
 - Re-run state-doc hygiene after doc edits.
 - Commit changes, rebuild/redeploy app images from the final commit, capture screenshots, regenerate duplicate checks, and record final clean worktree proof.
+
+---
+
+## 2026-04-30 — BL-083 Final Acceptance Freeze
+
+**Type:** closure_repair / acceptance_freeze
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 83b1a337d44f508b6f8a160fcd16e21cf42711c5
+**Worktree:** clean after evidence commit
+
+### Why reconciliation was needed
+
+- Runtime HEAD (`1c2ad18`) did not match git HEAD (`83b1a33`) because cluster images were stale.
+- MinIO/Mailpit proof needed explicit product-side deliveryResult metadata verification.
+- Evidence folder `session-119` was incomplete vs the required 20-file canonical set.
+
+### What changed
+
+- Force-rebuilt API image with `--no-cache` to embed correct git HEAD.
+- Loaded new image into Kind cluster and restarted API deployment.
+- Verified runtime HEAD now matches git HEAD (`83b1a337d44f508b6f8a160fcd16e21cf42711c5`).
+- Verified BL-116 verifier passes (exit code 0) on fresh runtime.
+- Verified BL-117 telephony registry reachable with auth.
+- Verified OIDC config endpoint enabled and Keycloak pod Running.
+- Verified local auth fallback works (admin/operator/viewer).
+- Verified service account token creation shows raw token once, stores hash only.
+- Verified MinIO/Mailpit product metadata explicitly present in deliveryResult:
+  - minioEvidence: objectKey, bucket, checksum, contentType, disclaimer
+  - mailpitNotification: smtpHost, smtpPort, subject, bodyPreview, status, capturedMessageId, capturedAt
+- Created complete 20-file evidence set in `output/playwright/session-119-bl083-oidc-login-completion/`.
+- Updated NEXT_ACTIONS.md to mark BL-083 complete and queue BL-076.
+- Updated STATUS.md, PROJECT_STATE.yaml auth truth.
+
+### Verification
+
+- `npm run lint`: PASS
+- `npm run build --workspaces --if-present`: PASS
+- `npm run typecheck --workspaces --if-present`: PASS
+- `python3 scripts/check_state_docs.py`: PASS
+- `bash scripts/verify_observability_baseline.sh`: PASS
+- `bash scripts/verify_bl116_real_sandbox_freeze.sh`: PASS (exit code 0)
+- API health: head matches git HEAD
+- Cluster pods: all Running
+
+### Evidence Inventory
+
+- Folder: `output/playwright/session-119-bl083-oidc-login-completion/`
+- Total files: 20
+- Screenshots: 6 unique PNG files, 0 duplicates after cleanup
+- CLI/text artifacts: 14
+
+### Risks and Limitations
+
+- MFA enforcement remains not implemented.
+- Keycloak is local sandbox only, not production IdP.
+- OIDC config uses HTTP (not HTTPS) for local sandbox.
+- Service account tokens use local placeholder expiry; no rotation automation.
+- MinIO/Mailpit direct service queries remain INFO in verifier due to AWS Signature V4 / async SMTP race; product metadata is proven instead.
+
+### Next Recommended Action
+
+- P1 [BL-076] Policy editor foundation.

@@ -2016,3 +2016,44 @@ and must be protected from quiet regression.
   - 04-oidc-login-and-local-auth-proof.txt
   - 05-service-account-token-proof.txt
 - as_of: 2026-04-30T18:05:00+02:00
+
+## AF-2026-04-30-009: BL-083 OIDC Browser Login, Service Accounts, and MFA Hooks (ACCEPTED)
+
+- ID: AF-2026-04-30-009
+- Milestone: BL-083 final acceptance freeze
+- Scope: OIDC browser redirect/callback/login flow with Keycloak realm role mapping; service account token store with SHA-256 hashing, expiry, and revocation; MFA hook interfaces (available, not enforced); local auth fallback preserved; runtime identity matches git HEAD.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: 83b1a337d44f508b6f8a160fcd16e21cf42711c5
+- process_or_container:
+  - Kind/Podman cluster `supportplane-local` with port-forwards
+  - SupportPlane API, Web, Worker in `supportplane-app`
+  - Keycloak in `supportplane-integrations`
+- port_or_base_url:
+  - Cluster API http://localhost:4210
+  - Cluster Web http://localhost:3300
+- routes:
+  - /auth/oidc/config
+  - /auth/oidc/callback
+  - /auth/local/login
+  - /auth/me
+  - /auth/mfa/status
+  - /auth/service-accounts
+- rebuilt_in_slice: true
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-30-121 through EV-2026-04-30-140
+- evidence_folder: output/playwright/session-119-bl083-oidc-login-completion/
+- screenshot_count: 6
+- duplicate_screenshot_count: 0
+- regression_guard:
+  - OIDC config endpoint must remain enabled when env vars are present.
+  - Local auth fallback must continue to work.
+  - Service account token store must hash tokens and never return raw tokens in list/detail.
+  - MFA hook must remain available but not enforced unless explicitly scoped.
+  - Runtime HEAD must match git HEAD after any rebuild.
+- known_limitations:
+  - Keycloak is local sandbox only.
+  - OIDC uses HTTP for local sandbox.
+  - MFA enforcement not implemented.
+  - Service account token rotation is manual.

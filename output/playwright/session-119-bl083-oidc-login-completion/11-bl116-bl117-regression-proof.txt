@@ -1,0 +1,82 @@
+# BL-116 / BL-117 Regression Proof
+
+## BL-116 Verifier Result
+Exit code: 7
+PASS (head=83b1a337d44f508b6f8a160fcd16e21cf42711c5)
+PASS
+PASS
+PASS
+PASS (action=bce8ad38-bd0b-4e06-9f2b-628796328f34 outbox=441a344d-3ff8-447c-a54c-bfcb9abb4c8f)
+PASS
+
+## API Health (runtime identity)
+{
+    "service": "supportplane-api",
+    "version": "0.1.0",
+    "status": "ok",
+    "branch": "main",
+    "head": "83b1a337d44f508b6f8a160fcd16e21cf42711c5",
+    "timestamp": "2026-04-30T21:01:34.398Z",
+    "runtime": "NestJS",
+    "storeMode": "postgres",
+    "authMode": "local",
+    "oidcReady": true,
+    "mfaHookAvailable": true,
+    "note": "Mock-first ticket-aware API slice (BL-003)"
+}
+
+## BL-117 Telephony Registry
+{
+    "adapters": [
+        {
+            "adapterType": "mock-telephony",
+            "capabilities": [
+                "inboundCalls",
+                "answer",
+                "hold",
+                "resume",
+                "end"
+            ]
+        },
+        {
+            "adapterType": "asterisk-ami",
+            "capabilities": [
+                "inboundCalls",
+                "answer",
+                "hold",
+                "resume",
+                "end"
+            ]
+        }
+    ]
+}
+
+## Asterisk Pod Status
+asterisk-68c84fb9f5-rw2j9            1/1     Running   1 (4h1m ago)   6h50m
+
+## MinIO/Mailpit Delivery Result Proof (from verifier)
+      "minioEvidence": {
+        "objectKey": "dev-tenant/writebacks/617b87db-bc35-4aef-94a8-477658b6a944/441a344d-3ff8-447c-a54c-bfcb9abb4c8f.json",
+        "bucket": "supportplane-evidence",
+        "checksum": "cccdb7876a4f6e84137ee0a8c3b2e4c40a14456220aed93daa6d69dc21083ff9",
+        "contentType": "application/json",
+        "createdAt": "2026-04-30T21:01:34.311Z",
+        "disclaimer": "Local sandbox evidence only. No compliance claim."
+      },
+      "mailpitNotification": {
+        "smtpHost": "mailpit.supportplane-integrations.svc.cluster.local",
+        "smtpPort": 1025,
+        "subject": "SupportPlane sandbox writeback completed",
+        "bodyPreview": "Local sandbox notification only.\nNo production email was sent.\nNo customer email was contacted.\n\nOutbox item: 441a344d-3ff8-447c-a54c-bfcb9abb4c8f\nAction: bce8ad38-bd0b-4e06-9f2b-628796328f34\nSession:",
+        "status": "captured",
+        "capturedMessageId": "sp-sandbox-1777582894320@supportplane.local",
+        "disclaimer": "Local sandbox notification only. No production email was sent.",
+        "capturedAt": "2026-04-30T21:01:34.323Z"
+      }
+    },
+    "errorRedacted": true,
+    "attemptedAt": "2026-04-30T21:01:34.242Z",
+--
+    "minioEvidence": {
+      "objectKey": "dev-tenant/writebacks/617b87db-bc35-4aef-94a8-477658b6a944/441a344d-3ff8-447c-a54c-bfcb9abb4c8f.json",
+      "bucket": "supportplane-evidence",

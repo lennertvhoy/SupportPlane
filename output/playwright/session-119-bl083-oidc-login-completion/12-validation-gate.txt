@@ -1,0 +1,21 @@
+# Validation Gate
+
+## Commands Run
+1. npm run lint
+PASS
+
+2. npm run build
+PASS
+
+3. npm run typecheck --workspaces --if-present
+PASS
+
+4. python3 scripts/check_state_docs.py
+PASS
+
+5. bash scripts/verify_observability_baseline.sh
+PASS
+
+6. bash scripts/verify_bl116_real_sandbox_freeze.sh
+PASS (exit code 0)
+

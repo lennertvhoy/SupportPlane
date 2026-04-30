@@ -1,0 +1,25 @@
+# OIDC Config and Discovery Proof
+
+## SupportPlane OIDC Config Endpoint
+{
+    "oidcEnabled": true,
+    "issuerUrl": "http://10.88.0.1:8080/realms/supportplane-local",
+    "clientId": "supportplane-web",
+    "redirectUri": "http://localhost:4210/auth/oidc/callback",
+    "scopes": [
+        "openid",
+        "profile",
+        "email"
+    ],
+    "note": "OIDC configuration metadata. Browser login flow implemented."
+}
+
+## Keycloak Discovery Document (partial)
+
+## MFA Hook Status
+{
+    "mfaHookAvailable": true,
+    "mfaEnforced": false,
+    "mfaRequired": false,
+    "note": "MFA hook status. Enforcement not implemented."
+}

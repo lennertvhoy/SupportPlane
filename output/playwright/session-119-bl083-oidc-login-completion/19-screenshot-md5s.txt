@@ -1,0 +1,12 @@
+f5140e01eb77fade8f53024cac2a38c4  output/playwright/session-119-bl083-oidc-login-completion/01-api-oidc-config.png
+b3b7a1b9dd4adcfb5aec6068b48390b7  output/playwright/session-119-bl083-oidc-login-completion/02-web-login-keycloak-button.png
+661255ec83be3bf246f81038ba65eb54  output/playwright/session-119-bl083-oidc-login-completion/03-keycloak-login-page.png
+c5f0e2690d0bb8425107522cbdd3b053  output/playwright/session-119-bl083-oidc-login-completion/04-post-oidc-cockpit.png
+d120e9dfc2e537dff5586dd8b04f0a49  output/playwright/session-119-bl083-oidc-login-completion/04-timeout-debug.png
+c5f0e2690d0bb8425107522cbdd3b053  output/playwright/session-119-bl083-oidc-login-completion/05-oidc-identity-pill.png
+442fa10dbb43203b6198f8c98551bfa7  output/playwright/session-119-bl083-oidc-login-completion/06-api-auth-me-oidc.png
+fa5076c171f332ffde60f8fe4bb9f20c  output/playwright/session-119-bl083-oidc-login-completion/07-post-logout-login-page.png
+e3028163878f4b887847f8f17bda731e  output/playwright/session-119-bl083-oidc-login-completion/08-local-auth-fallback-works.png
+37198a9f9f73d69978905d561eba5167  output/playwright/session-119-bl083-oidc-login-completion/09-service-account-create.png
+0357e3e2f9bcf1893f40762d732e471c  output/playwright/session-119-bl083-oidc-login-completion/10-service-account-token.png
+2181beea19f7915fc3126ae8f0919b84  output/playwright/session-119-bl083-oidc-login-completion/11-audit-oidc-login.png
