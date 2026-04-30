@@ -388,6 +388,11 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                         ({inst.capabilities.join(', ')})
                       </span>
                     )}
+                    {inst.adapterType === 'osticket' && (
+                      <span className="ml-2 inline-flex items-center gap-1 rounded bg-amber-900/30 px-1.5 py-0.5 text-[9px] text-amber-300">
+                        <Lock size={8} /> Fixture-only
+                      </span>
+                    )}
                   </div>
                   {inst.description && (
                     <div className="mt-0.5 text-[10px] text-cockpit-500">{inst.description}</div>
@@ -516,7 +521,11 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                     <div className="mt-2 space-y-2 rounded border border-cockpit-700 bg-cockpit-800/30 p-2">
                       <div className="flex items-center justify-between">
                         <div className="text-[10px] font-semibold text-cockpit-300">Installation Settings</div>
-                        {inst.mockMode ? (
+                        {inst.adapterType === 'osticket' ? (
+                          <span className="inline-flex items-center gap-1 rounded bg-amber-900/30 px-1.5 py-0.5 text-[9px] text-amber-300">
+                            <Lock size={8} /> Fixture-only — not a real service
+                          </span>
+                        ) : inst.mockMode ? (
                           <span className="inline-flex items-center gap-1 rounded bg-amber-900/30 px-1.5 py-0.5 text-[9px] text-amber-300">
                             <Lock size={8} /> Mock-only
                           </span>

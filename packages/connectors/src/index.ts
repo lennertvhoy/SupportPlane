@@ -84,6 +84,24 @@ export {
   getRegisteredAdapterTypes,
 } from './registry.js';
 export {
+  registerTelephonyAdapter,
+  getTelephonyAdapterFactory,
+  listTelephonyAdapters,
+  clearTelephonyAdapterRegistry,
+  getRegisteredTelephonyAdapterTypes,
+  createMockTelephonyAdapterFactory,
+  createAsteriskAmiAdapterFactory,
+  MockTelephonyAdapterFactory,
+  AsteriskAmiAdapterFactory,
+  type TelephonyAdapterFactory,
+  type TelephonyAdapterClient,
+  type TelephonyRuntimeContext,
+  type TelephonyHealth,
+  type TelephonyEvent,
+  type CanonicalCallEvent,
+  type RegisteredTelephonyAdapterSummary,
+} from './telephony-registry.js';
+export {
   resolveAdapterRuntime,
   AdapterRuntimeResolverError,
 } from './runtime-resolver.js';

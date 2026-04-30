@@ -335,7 +335,9 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
                       <Lock size={10} className="inline mr-1" />
                       {readiness.sandboxWritebackReady
                         ? 'Sandbox internal-note writeback enabled; no public reply; no production writeback.'
-                        : 'Sandbox writeback not ready; production writeback blocked.'}
+                        : !readiness.connectorSupportsActionType
+                        ? 'Action type not supported by this connector. Sandbox writeback disabled for this action.'
+                        : 'Sandbox writeback disabled; production writeback blocked.'}
                     </div>
                     <div className="text-cockpit-500">Policy: {readiness.policyDecision}</div>
                   </div>
