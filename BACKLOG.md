@@ -122,7 +122,7 @@ Status markers:
 ## Admin, Governance, And Compliance Evidence
 
 - [BL-075] `[partial/local-mock]` Build Admin users, roles, teams, tenants, and connector installation screens. (basic policy panel and auth UI exist; full admin screens not yet built)
-- [BL-076] `[planned]` Build policy editor for tools, risk levels, approvals, model policies, and retention settings.
+- [BL-076] `[accepted]` Build policy editor for tools, risk levels, approvals, model policies, and retention settings. Admin CRUD API endpoints with RBAC enforcement, safety validation (rejects real network/cloud AI/autonomous send), audit events with redacted before/after diffs, compact tabbed UI panel. Runtime verified in Kind cluster.
 - [BL-077] `[planned]` Build audit explorer with filtering by tenant, session, actor, decision, target, and event type.
 - [BL-078] `[partial/local-mock]` Build evidence bundle viewer with timeline, AI context used, actions proposed, approvals, blocked actions, and writebacks. (summary/JSON/Markdown tabs exist; full viewer not yet built)
 - [BL-079] `[planned]` Add evidence export to JSON and Markdown, then PDF later.

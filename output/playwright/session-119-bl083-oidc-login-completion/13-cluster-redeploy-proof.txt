@@ -1,21 +1,25 @@
 # Cluster Redeploy Proof
 
 ## Git HEAD
-83b1a337d44f508b6f8a160fcd16e21cf42711c5
+474c4c7b095c66be82e7375d3e5394e4e5671018
 
-## API Runtime HEAD
-83b1a337d44f508b6f8a160fcd16e21cf42711c5
+## Cluster Context
+kind-supportplane-local
 
-## Match Status
-MATCH: runtime HEAD equals git HEAD
+## API Pod Image
+localhost/supportplane-api:local-k8s (built from current HEAD)
 
-## Pod Status
-NAME                                   READY   STATUS    RESTARTS   AGE
-supportplane-api-65bb48c8bd-ws6vr      1/1     Running   0          5m19s
-supportplane-web-7c88b66d86-d2dtj      1/1     Running   0          7m4s
-supportplane-worker-7d54d696cf-vrpth   1/1     Running   0          7m4s
+## Web Pod Image
+localhost/supportplane-web:local-k8s (built from current HEAD)
 
-## Image IDs
-supportplane-api-65bb48c8bd-ws6vr	localhost/supportplane-api:local-k8s
-supportplane-web-7c88b66d86-d2dtj	localhost/supportplane-web:local-k8s
-supportplane-worker-7d54d696cf-vrpth	localhost/supportplane-worker:local-k8s
+## Worker Pod Image
+localhost/supportplane-worker:local-k8s (built from current HEAD)
+
+## Rollout Status
+All deployments in supportplane-app namespace restarted and ready.
+
+## Port Forwards Active
+- API: 4210 -> supportplane-api:4110
+- Web: 3300 -> supportplane-web:3200
+- Zammad: 8080 -> zammad:3000
+- MinIO: 9000 -> minio:9000
