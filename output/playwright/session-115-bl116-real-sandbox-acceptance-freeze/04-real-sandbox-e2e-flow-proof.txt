@@ -1,93 +1,100 @@
 === BL-116 Fresh Real Sandbox E2E Flow Proof ===
-Generated: 2026-04-30T11:48+02:00
+Generated: 2026-04-30T12:30:47+02:00
 Git HEAD: 1e6298a5586e30400f9a600a62f82e6128445e81
-
-Session ID: 12b786cf-c60e-4b19-9403-808cbe9fe663
-Action ID: 225a543a-5bb4-48a4-a2b2-986f8aca0893
-Outbox ID: 91ac6128-f76e-47f1-872b-02bae63a3b9a
-Zammad Article ID: 17
+Session ID: f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5
+Action ID: be05e621-3279-49a1-ba34-9d0616c7e886
+Outbox ID: 605b6a1d-b4be-4050-9688-74ce6fb6db89
 
 === Step 1: API Health ===
-status: ok, head: 1e6298a5586e30400f9a600a62f82e6128445e81, storeMode: postgres, authMode: local
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"1e6298a5586e30400f9a600a62f82e6128445e81","timestamp":"2026-04-30T10:30:39.659Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","note":"Mock-first ticket-aware API slice (BL-003)"}
 
-=== Step 2: Login operator/admin/viewer ===
-PASS (all three roles authenticated)
+=== Step 2: Session Created ===
+{"id":"f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5","tenantId":"dev-tenant","status":"open","priority":"high","title":"BL-116 freeze E2E","assignedUserId":"dev-user","linkedTicketIds":[],"aiContextPacketIds":[],"screenObservationIds":[],"callEventIds":[],"auditEventIds":[],"startedAt":"2026-04-30T10:30:39.818Z","createdAt":"2026-04-30T10:30:39.818Z","updatedAt":"2026-04-30T10:30:39.818Z"}
 
 === Step 3: Real Zammad Ticket/Customer ===
-Customer: Acme BVBA
-Connector mode: zammad
-Ticket: 2 (68002)
+{"ticketReference":{"id":"zammad-tr-2","tenantId":"dev-tenant","adapterId":"zammad-adapter-001","externalTicketId":"2","subject":"VPN connection issue for remote office - TICKET-101","status":"open","priority":"normal","customerEmail":"support@acme.example","customerName":"Acme BVBA","rawData":{"id":2,"group_id":1,"priority_id":2,"state_id":2,"organization_id":null,"number":"68002","title":"VPN connection issue for remote office - TICKET-101","owner_id":2,"customer_id":5,"note":null,"first_response_at":null,"first_response_escalation_at":null,"first_response_in_min":null,"first_response_diff_in_min":null,"close_at":null,"close_escalation_at":null,"close_in_min":null,"close_diff_in_min":null,"update_escalation_at":null,"update_in_min":null,"update_diff_in_min":null,"last_close_at":null,"last_contact_at":null,"last_contact_agent_at":null,"last_contact_customer_at":null,"last_owner_update_at":"2026-04-29T16:01:14.883Z","create_article_type_id":10,"create_article_sender_id":2,"article_count":23,"escalation_at":null,"pending_time":null,"type":null,"time_unit":null,"preferences":{},"updated_by_id":2,"created_by_id":2,"created_at":"2026-04-29T15:56:11.912Z","updated_at":"2026-04-30T10:27:33.824Z","checklist_id":null},"lastSyncedAt":"2026-04-30T10:30:39.856Z","createdAt":"2026-04-29T15:56:11.912Z","updatedAt":"2026-04-30T10:27:33.824Z"},"contextPacket":{"id":"d0757823-da3a-4850-8f1b-ada4bca7b42f","tenantId":"dev-tenant","sessionId":"f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5","provenance":"ticket","sourceTicketIds":["zammad-tr-2"],"sourceAdapterId":"zammad-adapter-001","payload":{"ticketSubject":"VPN connection issue for remote office - TICKET-101","ticketStatus":"open","ticketPriority":"normal","customerEmail":"support@acme.example","customerName":"Acme BVBA","connectorMode":"zammad","connectorInstallationProvenance":{"installationId":"conn-inst-dev-001","installationDisplayName":"Local Zammad Sandbox","adapterType":"zammad","capabilities":["read_tickets","read_customers","write_notes"],"credentialReferencesLinked":true,"linkedCredentialReferenceCount":1,"realNetwork":true,"writebackEnabled":false,"noRealNetworkCall":false,"credentialResolver":{"tenantId":"dev-tenant","credentialReferenceId":"cred-ref-dev-001","resolver":"openbao","resolverMode":"local-sandbox","secretPath":".../dev/zammad","status":"resolved","resolvedAt":"2026-04-30T10:30:39.839Z","secretExposed":false,"persistedRawSecret":false,"safeLabel":"OpenBao sandbox resolver","secretRefHash":"1c7fe957d954e4d6e08a726e53a06c934324b301d04b925d0e4dc16d6eb1c512"},"egressDecision":"allowed_local_zammad_sandbox_read"}},"redactionLog":[],"createdAt":"2026-04-30T10:30:39.882Z"},"session":{"id":"f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5","tenantId":"dev-tenant","status":"open","priority":"high","title":"BL-116 freeze E2E","assignedUserId":"dev-user","linkedTicketIds":["zammad-tr-2"],"aiContextPacketIds":["d0757823-da3a-4850-8f1b-ada4bca7b42f"],"screenObservationIds":[],"callEventIds":[],"auditEventIds":[],"startedAt":"2026-04-30T10:30:39.818Z","createdAt":"2026-04-30T10:30:39.818Z","updatedAt":"2026-04-30T10:30:39.885Z"}}
 
-=== Step 4: Gemma/Ollama Draft ===
-Provider: ollama
-Model: gemma4:e4b
-fallbackUsed: false
-noCloudCall: true
-autonomousSend: false
-latencyMs: ~10089
+=== Step 4: Gemma/Ollama Draft (fallbackUsed=false, noCloudCall=true) ===
+{"draft":"[OLLAMA LOCAL DRAFT - no cloud AI - review required before any writeback]\n**Internal Support Note Draft**\n\n**Ticket Summary/Update:**\n*   **Customer:** Acme BVBA\n*   **Source:** Zammad\n*   **Ticket ID:** zammad-tr-2 (External: TICKET-101 / 68002)\n*   **Subject:** VPN connection issue for remote office - TICKET-101\n*   **Status:** Open (Normal Priority)\n*   **Last Updated:** 2026-04-30T10:27:33.824Z\n*   **Context:** Review of the sandbox ticket details for \"VPN connection issue for remote office.\" The ticket is actively open.","provider":"ollama","model":"gemma4:e4b","prompt":{"id":"support-note-draft","version":"ollama-local-v1","purpose":"Draft a reviewable internal support note from redacted local SupportPlane context."},"contextHash":"1985b3864bb9031f0c82e00eb12514cc08b03e45a051cb26496c7f76fb3ae1d1","usage":{"latencyMs":7255,"placeholder":false,"providerMode":"local","runtime":"ollama","runtimeBaseUrlRedacted":"http://10.88.0.1/...","fallbackUsed":false,"noCloudCall":true},"safety":{"mockOnly":false,"externalCallMade":false,"cloudCallMade":false,"localProviderCallMade":true,"fallbackUsed":false,"policyChecks":["ollama_local_provider","redaction_before_provider_call","review_required","writeback_disabled"],"reviewRequired":true,"writebackAllowed":false,"autonomousSend":false,"redactionApplied":true,"runtime":"ollama"},"generatedAt":"2026-04-30T10:30:39.910Z"}
 
-=== Step 5: Action Created/Submitted/Approved/Queued ===
-connectorInstallationId: conn-inst-dev-001
-policyDecision: sandbox_allowed
-deliveryMode: sandbox
-status after queue: queued
+=== Step 5: Action Submitted/Approved/Queued (deliveryMode=sandbox) ===
+{"action":{"id":"be05e621-3279-49a1-ba34-9d0616c7e886","tenantId":"dev-tenant","sessionId":"f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5","connectorInstallationId":"conn-inst-dev-001","actionType":"ticket_note","status":"queued","idempotencyKey":"dev-tenant:f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh","requestedBy":"dev-user","submittedAt":"2026-04-30T10:30:47.198Z","reviewedBy":"dev-admin","reviewDecision":"approved","reviewReason":"BL-116 freeze approval","reviewedAt":"2026-04-30T10:30:47.209Z","queuedAt":"2026-04-30T10:30:47.223Z","payloadSummary":{"subject":"BL-116 Freeze","localOnly":true,"bodyLength":51,"redactedPreview":"BL-116 sandbox internal note writeback freeze test.","externalTicketId":"2","mockDeliveryScenario":"success","policyDecision":"sandbox_allowed"},"safeBodyPreview":"BL-116 sandbox internal note writeback freeze test.","mockDevOnly":true,"createdAt":"2026-04-30T10:30:47.184Z","updatedAt":"2026-04-30T10:30:47.223Z"},"outboxItem":{"id":"605b6a1d-b4be-4050-9688-74ce6fb6db89","tenantId":"dev-tenant","supportActionId":"be05e621-3279-49a1-ba34-9d0616c7e886","sessionId":"f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5","connectorInstallationId":"conn-inst-dev-001","actionType":"ticket_note","status":"queued","idempotencyKey":"dev-tenant:f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox","deliveryMode":"sandbox","deliveryIntent":{"mode":"sandbox","actionType":"ticket_note","deliveryClaim":"queued_for_sandbox_delivery","mockDeliveryScenario":"success","realNetwork":true,"writebackEnabled":true,"externalWriteAttempted":false,"policyDecision":"sandbox_allowed","policyVersion":1,"correlationId":"sp-fe18a291-3b1a-4ad3-853f-63e843b89aa5"},"attemptCount":0,"maxAttempts":3,"queuedAt":"2026-04-30T10:30:47.223Z","lastErrorRedacted":true,"safetyFlags":{"mode":"sandbox","realNetwork":true,"writebackEnabled":true,"externalWriteAttempted":false,"noSecrets":true,"noRawMedia":true,"localMockOnly":false,"sandboxOnly":true},"mockDevOnly":false,"createdAt":"2026-04-30T10:30:47.223Z","updatedAt":"2026-04-30T10:30:47.223Z"},"idempotentReplay":false}
 
-=== Step 6: NATS Envelope Published ===
-stream: SUPPORTPLANE_OUTBOX
-subject: supportplane.outbox.ready
-consumer: SUPPORTPLANE_WORKER
-mode: sandbox
-result: success
+=== Step 6: Outbox Processed ===
+{"processed":true,"action":{"id":"be05e621-3279-49a1-ba34-9d0616c7e886","tenantId":"dev-tenant","sessionId":"f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5","connectorInstallationId":"conn-inst-dev-001","actionType":"ticket_note","status":"sandbox_delivered","idempotencyKey":"dev-tenant:f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh","requestedBy":"dev-user","submittedAt":"2026-04-30T10:30:47.198Z","reviewedBy":"dev-admin","reviewDecision":"approved","reviewReason":"BL-116 freeze approval","reviewedAt":"2026-04-30T10:30:47.209Z","queuedAt":"2026-04-30T10:30:47.223Z","mockDeliveredAt":"2026-04-30T10:30:47.288Z","payloadSummary":{"subject":"BL-116 Freeze","localOnly":true,"bodyLength":51,"policyDecision":"sandbox_allowed","redactedPreview":"BL-116 sandbox internal note writeback freeze test.","externalTicketId":"2","mockDeliveryScenario":"success"},"safeBodyPreview":"BL-116 sandbox internal note writeback freeze test.","mockDevOnly":true,"createdAt":"2026-04-30T10:30:47.184Z","updatedAt":"2026-04-30T10:30:47.288Z"},"outboxItem":{"id":"605b6a1d-b4be-4050-9688-74ce6fb6db89","tenantId":"dev-tenant","supportActionId":"be05e621-3279-49a1-ba34-9d0616c7e886","sessionId":"f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5","connectorInstallationId":"conn-inst-dev-001","actionType":"ticket_note","status":"sandbox_delivered","idempotencyKey":"dev-tenant:f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox","deliveryMode":"sandbox","deliveryIntent":{"mode":"sandbox","actionType":"ticket_note","realNetwork":true,"correlationId":"sp-fe18a291-3b1a-4ad3-853f-63e843b89aa5","deliveryClaim":"queued_for_sandbox_delivery","policyVersion":1,"policyDecision":"sandbox_allowed","writebackEnabled":true,"mockDeliveryScenario":"success","externalWriteAttempted":false},"attemptCount":1,"maxAttempts":3,"latestAttemptState":"sandbox_delivered","queuedAt":"2026-04-30T10:30:47.223Z","processingStartedAt":"2026-04-30T10:30:47.279Z","mockDeliveredAt":"2026-04-30T10:30:47.288Z","lastErrorRedacted":true,"safetyFlags":{"mode":"sandbox","noSecrets":true,"noRawMedia":true,"realNetwork":true,"sandboxOnly":true,"localMockOnly":false,"writebackEnabled":true,"externalWriteAttempted":false},"mockDevOnly":false,"createdAt":"2026-04-30T10:30:47.223Z","updatedAt":"2026-04-30T10:30:47.288Z"},"attempt":{"id":"32269278-fcb4-44cb-9519-586a3b28ca77","tenantId":"dev-tenant","outboxItemId":"605b6a1d-b4be-4050-9688-74ce6fb6db89","supportActionId":"be05e621-3279-49a1-ba34-9d0616c7e886","attemptNumber":1,"state":"sandbox_delivered","deliveryResult":{"mode":"sandbox","realNetwork":true,"writebackEnabled":true,"externalWriteAttempted":true,"deliveryClaim":"sandbox_writeback_succeeded","externalReferenceId":"25","responseSummary":"Sandbox internal note written to Zammad.","zammadTicketId":"2","idempotencyKey":"dev-tenant:f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox","credentialMetadata":{"tenantId":"dev-tenant","credentialReferenceId":"cred-ref-dev-001","resolver":"openbao","resolverMode":"local-sandbox","secretPath":".../dev/zammad","status":"resolved","resolvedAt":"2026-04-30T10:30:47.292Z","secretExposed":false,"persistedRawSecret":false,"safeLabel":"OpenBao sandbox resolver","secretRefHash":"1c7fe957d954e4d6e08a726e53a06c934324b301d04b925d0e4dc16d6eb1c512"},"workerId":"bl116-freeze-worker","correlationId":"sp-fe18a291-3b1a-4ad3-853f-63e843b89aa5","deliveredAt":"2026-04-30T10:30:47.288Z","minioEvidence":{"objectKey":"dev-tenant/writebacks/f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5/605b6a1d-b4be-4050-9688-74ce6fb6db89.json","bucket":"supportplane-evidence","checksum":"1953949df49e607a69068f88214b4e58fd702953d020a99a6e52ffeb59b10b16","contentType":"application/json","createdAt":"2026-04-30T10:30:47.341Z","disclaimer":"Local sandbox evidence only. No compliance claim."},"mailpitNotification":{"smtpHost":"mailpit.supportplane-integrations.svc.cluster.local","smtpPort":1025,"subject":"SupportPlane sandbox writeback completed","bodyPreview":"Local sandbox notification only.\nNo production email was sent.\nNo customer email was contacted.\n\nOutbox item: 605b6a1d-b4be-4050-9688-74ce6fb6db89\nAction: be05e621-3279-49a1-ba34-9d0616c7e886\nSession:","status":"captured","capturedMessageId":"sp-sandbox-1777545047350@supportplane.local","disclaimer":"Local sandbox notification only. No production email was sent.","capturedAt":"2026-04-30T10:30:47.352Z"}},"errorRedacted":true,"attemptedAt":"2026-04-30T10:30:47.279Z","completedAt":"2026-04-30T10:30:47.288Z","mockDevOnly":false},"delivery":{"mode":"sandbox","realNetwork":true,"writebackEnabled":true,"externalWriteAttempted":true,"deliveryClaim":"sandbox_writeback_succeeded","externalReferenceId":"25","responseSummary":"Sandbox internal note written to Zammad.","zammadTicketId":"2","idempotencyKey":"dev-tenant:f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox","credentialMetadata":{"tenantId":"dev-tenant","credentialReferenceId":"cred-ref-dev-001","resolver":"openbao","resolverMode":"local-sandbox","secretPath":".../dev/zammad","status":"resolved","resolvedAt":"2026-04-30T10:30:47.292Z","secretExposed":false,"persistedRawSecret":false,"safeLabel":"OpenBao sandbox resolver","secretRefHash":"1c7fe957d954e4d6e08a726e53a06c934324b301d04b925d0e4dc16d6eb1c512"},"workerId":"bl116-freeze-worker","correlationId":"sp-fe18a291-3b1a-4ad3-853f-63e843b89aa5","deliveredAt":"2026-04-30T10:30:47.288Z","minioEvidence":{"objectKey":"dev-tenant/writebacks/f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5/605b6a1d-b4be-4050-9688-74ce6fb6db89.json","bucket":"supportplane-evidence","checksum":"1953949df49e607a69068f88214b4e58fd702953d020a99a6e52ffeb59b10b16","contentType":"application/json","createdAt":"2026-04-30T10:30:47.341Z","disclaimer":"Local sandbox evidence only. No compliance claim."},"mailpitNotification":{"smtpHost":"mailpit.supportplane-integrations.svc.cluster.local","smtpPort":1025,"subject":"SupportPlane sandbox writeback completed","bodyPreview":"Local sandbox notification only.\nNo production email was sent.\nNo customer email was contacted.\n\nOutbox item: 605b6a1d-b4be-4050-9688-74ce6fb6db89\nAction: be05e621-3279-49a1-ba34-9d0616c7e886\nSession:","status":"captured","capturedMessageId":"sp-sandbox-1777545047350@supportplane.local","disclaimer":"Local sandbox notification only. No production email was sent.","capturedAt":"2026-04-30T10:30:47.352Z"}},"workerId":"bl116-freeze-worker"}
 
-=== Step 7: Outbox Processing ===
-status: sandbox_delivered
-attemptCount: 1
-workerId: local-worker-1
-mode: sandbox
-result: sandbox_delivered
+=== Step 7: Outbox Status (sandbox_delivered) ===
+{"outboxItem":{"id":"605b6a1d-b4be-4050-9688-74ce6fb6db89","tenantId":"dev-tenant","supportActionId":"be05e621-3279-49a1-ba34-9d0616c7e886","sessionId":"f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5","connectorInstallationId":"conn-inst-dev-001","actionType":"ticket_note","status":"sandbox_delivered","idempotencyKey":"dev-tenant:f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox","deliveryMode":"sandbox","deliveryIntent":{"mode":"sandbox","actionType":"ticket_note","realNetwork":true,"correlationId":"sp-fe18a291-3b1a-4ad3-853f-63e843b89aa5","deliveryClaim":"queued_for_sandbox_delivery","policyVersion":1,"policyDecision":"sandbox_allowed","writebackEnabled":true,"mockDeliveryScenario":"success","externalWriteAttempted":false},"attemptCount":1,"maxAttempts":3,"latestAttemptState":"sandbox_delivered","queuedAt":"2026-04-30T10:30:47.223Z","processingStartedAt":"2026-04-30T10:30:47.279Z","mockDeliveredAt":"2026-04-30T10:30:47.288Z","lastErrorRedacted":true,"safetyFlags":{"mode":"sandbox","noSecrets":true,"noRawMedia":true,"realNetwork":true,"sandboxOnly":true,"localMockOnly":false,"writebackEnabled":true,"externalWriteAttempted":false},"mockDevOnly":false,"createdAt":"2026-04-30T10:30:47.223Z","updatedAt":"2026-04-30T10:30:47.288Z"},"attempts":[{"id":"32269278-fcb4-44cb-9519-586a3b28ca77","tenantId":"dev-tenant","outboxItemId":"605b6a1d-b4be-4050-9688-74ce6fb6db89","supportActionId":"be05e621-3279-49a1-ba34-9d0616c7e886","attemptNumber":1,"state":"sandbox_delivered","deliveryResult":{"mode":"sandbox","workerId":"bl116-freeze-worker","deliveredAt":"2026-04-30T10:30:47.288Z","realNetwork":true,"correlationId":"sp-fe18a291-3b1a-4ad3-853f-63e843b89aa5","deliveryClaim":"sandbox_writeback_succeeded","minioEvidence":{"bucket":"supportplane-evidence","checksum":"1953949df49e607a69068f88214b4e58fd702953d020a99a6e52ffeb59b10b16","createdAt":"2026-04-30T10:30:47.341Z","objectKey":"dev-tenant/writebacks/f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5/605b6a1d-b4be-4050-9688-74ce6fb6db89.json","disclaimer":"Local sandbox evidence only. No compliance claim.","contentType":"application/json"},"idempotencyKey":"dev-tenant:f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox","zammadTicketId":"2","responseSummary":"Sandbox internal note written to Zammad.","writebackEnabled":true,"credentialMetadata":{"status":"resolved","resolver":"openbao","tenantId":"dev-tenant","safeLabel":"OpenBao sandbox resolver","resolvedAt":"2026-04-30T10:30:47.292Z","secretPath":".../dev/zammad","resolverMode":"local-sandbox","secretExposed":false,"secretRefHash":"1c7fe957d954e4d6e08a726e53a06c934324b301d04b925d0e4dc16d6eb1c512","persistedRawSecret":false,"credentialReferenceId":"cred-ref-dev-001"},"externalReferenceId":"25","mailpitNotification":{"status":"captured","subject":"SupportPlane sandbox writeback completed","smtpHost":"mailpit.supportplane-integrations.svc.cluster.local","smtpPort":1025,"capturedAt":"2026-04-30T10:30:47.352Z","disclaimer":"Local sandbox notification only. No production email was sent.","bodyPreview":"Local sandbox notification only.\nNo production email was sent.\nNo customer email was contacted.\n\nOutbox item: 605b6a1d-b4be-4050-9688-74ce6fb6db89\nAction: be05e621-3279-49a1-ba34-9d0616c7e886\nSession:","capturedMessageId":"sp-sandbox-1777545047350@supportplane.local"},"externalWriteAttempted":true},"errorRedacted":true,"attemptedAt":"2026-04-30T10:30:47.279Z","completedAt":"2026-04-30T10:30:47.288Z","mockDevOnly":false}]}
 
-=== Step 8: Zammad Article ===
-Article ID: 17
-Ticket ID: 2
-Created: 2026-04-30T09:48:16.445Z
-Subject: Internal note
-Body contains: [SupportPlane sandbox internal note]
+=== Step 8: Zammad Articles on Ticket 2 ===
+Total articles: 24
+Articles containing BL-116: 0
 
 === Step 9: MinIO Evidence ===
-API log: minio_evidence_persisted success
-Bucket: supportplane-evidence
-Object key: dev-tenant/writebacks/12b786cf-c60e-4b19-9403-808cbe9fe663/91ac6128-f76e-47f1-872b-02bae63a3b9a.json
-Direct object verification (boto3 from host via port-forward localhost:9000):
-  - HEAD: ContentLength=1643, ETag="ec036747a3c037ac25f02968d018e649", ContentType=application/json
-  - GET: length=1643, SHA-256=dfb12da6916febe8d5e186dced66cdb2f854d6b37894b98bcc0f6c54b08f8675
-  - No raw secrets in object content (only metadata hashes and safety flags)
+<?xml version="1.0" encoding="UTF-8"?>
+<Error><Code>InvalidRequest</Code><Message>The authorization mechanism you have provided is not supported. Please use AWS4-HMAC-SHA256.</Message><Resource>/supportplane-evidence</Resource><RequestId>18AB1BCD87452745</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>
 
-=== Step 10: Mailpit Notification ===
-API log: mailpit_notification_recorded captured
-SMTP host: mailpit.supportplane-integrations.svc.cluster.local:1025
-Mailpit cluster UI (port 18025): 14 messages total
-Latest message: Subject "SupportPlane sandbox writeback completed"
-Created: 2026-04-30T09:48:16.566Z
-Outbox item: 91ac6128-f76e-47f1-872b-02bae63a3b9a
+=== Step 10: Mailpit Messages ===
+Total: 0
+{"total":0,"unread":0,"count":0,"messages_count":0,"start":0,"tags":[],"messages":[]}
 
 === Step 11: Audit Events ===
-- session_created
-- ticket_linked
-- ai_context_loaded
-- zammad_ticket_loaded
-- ai_draft_generated
-- action_created
-- action_submitted_for_review
-- action_approved
-- delivery_policy_evaluated
-- action_queued
-- outbox_item_created
-- outbox_processing_started
-- outbox_item_attempted
-- outbox_processing_succeeded
-- action_sandbox_delivered
-
-=== E2E Flow Verdict ===
-PASS: Full sandbox E2E flow completed with real Zammad read, real Gemma/Ollama draft,
-approval gates, sandbox delivery, Zammad internal note writeback, MinIO evidence,
-Mailpit notification, and terminal audit events.
+[
+  {
+    "id": "62db8fda-efea-4788-96d9-2f53dea21860",
+    "tenantId": "dev-tenant",
+    "sessionId": "f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5",
+    "eventType": "action_sandbox_delivered",
+    "actorType": "user",
+    "actorId": "dev-admin",
+    "action": "action_sandbox_delivered",
+    "resourceType": "support_action",
+    "resourceId": "be05e621-3279-49a1-ba34-9d0616c7e886",
+    "metadata": {
+      "mode": "sandbox",
+      "workerId": "bl116-freeze-worker",
+      "deliveredAt": "2026-04-30T10:30:47.288Z",
+      "realNetwork": true,
+      "correlationId": "sp-86804dea-eff6-4cae-98f8-63d17d0abc4e",
+      "deliveryClaim": "sandbox_writeback_succeeded",
+      "minioEvidence": {
+        "bucket": "supportplane-evidence",
+        "checksum": "1953949df49e607a69068f88214b4e58fd702953d020a99a6e52ffeb59b10b16",
+        "createdAt": "2026-04-30T10:30:47.341Z",
+        "objectKey": "dev-tenant/writebacks/f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5/605b6a1d-b4be-4050-9688-74ce6fb6db89.json",
+        "disclaimer": "Local sandbox evidence only. No compliance claim.",
+        "contentType": "application/json"
+      },
+      "idempotencyKey": "dev-tenant:f2d29ea6-ef7d-4e05-a65d-c9d1054fdff5:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox",
+      "zammadTicketId": "2",
+      "responseSummary": "Sandbox internal note written to Zammad.",
+      "writebackEnabled": true,
+      "credentialMetadata": {
+        "status": "resolved",
+        "resolver": "openbao",
+        "tenantId": "dev-tenant",
+        "safeLabel": "OpenBao sandbox resolver",
+        "resolvedAt": "2026-04-30T10:30:47.292Z",
+        "secretPath": ".../dev/zammad",
+        "resolverMode": "local-sandbox",
+        "secretExposed": false,
+        "secretRefHash": "1c7fe957d954e4d6e08a726e53a06c934324b301d04b925d0e4dc16d6eb1c512",
+        "persistedRawSecret": false,
+        "credentialReferenceId": "cred-ref-dev-001"
+      },
+      "externalReferenceId": "25",
+      "mailpitNotification": {
+        "status": "captured",
+        "subject": "SupportPlane sandbox writeback completed",
+        "smtpHost": "mailpit.supportplane-integrations.svc.cluster.local",
+        "smtpPort": 1025,
+        "capturedAt": "2026-04-30T10:30:47.352Z",
+        "disclaimer": "Local sandbox notification only. No production email was sent.",
+        "bodyPreview": "Local sandbox notification only.\nNo production email was sent.\nNo customer email was contacted.\n\nOutbox item: 605b6a1d-b4be-4050-9688-74ce6fb6db89\nAction: be05e621-3279-49a1-ba34-9d0616c7e886\nSession:",
+        "capturedMessageId": "sp-sandbox-1777545047350@supportplane.local"
+      },
+      "externalWriteAttempted": true
+    },
+    "createdAt": "2026-04-30T10:30:47.366Z"
+  }
+]
