@@ -41,6 +41,11 @@ resources:
   - integrations/zammad/zammad-secret.yaml
   - integrations/zammad/zammad-statefulset.yaml
   - integrations/zammad/zammad-service.yaml
+  # Asterisk sandbox (Asterisk-only; FreePBX deferred)
+  - integrations/asterisk/asterisk-configmap.yaml
+  - integrations/asterisk/asterisk-secret.yaml
+  - integrations/asterisk/asterisk-deployment.yaml
+  - integrations/asterisk/asterisk-service.yaml
   # Observability services
   - observability/otel-collector-configmap.yaml
   - observability/otel-collector-deployment.yaml

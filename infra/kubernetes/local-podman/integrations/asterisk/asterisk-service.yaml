@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: asterisk
+  namespace: supportplane-integrations
+  labels:
+    app.kubernetes.io/name: asterisk
+    app.kubernetes.io/part-of: supportplane
+    supportplane.local/component: asterisk-sandbox
+spec:
+  selector:
+    app.kubernetes.io/name: asterisk
+  ports:
+    - name: ami
+      port: 5038
+      targetPort: 5038
+      protocol: TCP
+  type: ClusterIP
+  # AMI is available cluster-internal only.
+  # No SIP trunk ports are exposed.
+  # No RTP ports are required (no real audio).

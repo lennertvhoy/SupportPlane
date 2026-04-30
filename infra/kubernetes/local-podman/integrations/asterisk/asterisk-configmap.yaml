@@ -7,7 +7,8 @@ metadata:
     app.kubernetes.io/name: asterisk
     app.kubernetes.io/part-of: supportplane
     supportplane.local/component: asterisk-sandbox
-    supportplane.local/note: Asterisk-only local sandbox. FreePBX deferred.
+  annotations:
+    supportplane.local/note: "Asterisk-only local sandbox. FreePBX deferred."
 data:
   asterisk.conf: |
     [directories]
