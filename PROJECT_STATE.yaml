@@ -68,7 +68,7 @@ current_state:
       canonical_store: postgres
     auth:
       current: local username/password demo auth
-      oidc_ready: config endpoint wired, keycloak sandbox deployed, no full login flow
+      oidc_ready: config endpoint wired, keycloak sandbox running locally, no full login flow
       mfa_status: hook available, not enforced
       service_accounts: conceptual guard only, no persistent storage
       short_lived_tokens: interface only, no DB table
@@ -337,19 +337,18 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-128
-    accepted_current_slice: BL-118
+    accepted_current_slice: BL-086_BL-087_BL-090
     planned_real_e2e_items:
       - BL-111
       - BL-112
       - BL-113
       - BL-116
       - BL-117
-      - BL-118
       - BL-119
       - BL-120
       - BL-121
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-076]
+    active_queue_items: [BL-083]
 
   documentation:
     primary_user_guide: README.md

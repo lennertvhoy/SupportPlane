@@ -1,21 +1,21 @@
 # Connector Runtime Contract
 
 **Product:** SupportPlane  
-**Scope:** BL-099 Connector Runtime Test Coverage + Documentation Hardening  
-**Last updated:** 2026-04-28
+**Scope:** BL-099 Connector Runtime Test Coverage + Documentation Hardening; updated by later sandbox slices  
+**Last updated:** 2026-04-30
 
 ## Overview
 
-The connector runtime layer provides a mock-only, tenant-scoped, auditable boundary for connector configuration validation, runtime readiness checks, and runtime resolution. All behavior is intentionally local/mock-only. No real network calls, no secret resolution, and no writeback are implemented.
+The connector runtime layer began as a mock-only, tenant-scoped, auditable boundary for connector configuration validation, runtime readiness checks, and runtime resolution. Later sandbox slices add a narrow local Zammad sandbox path with OpenBao credential resolution and policy-gated internal-note writeback. Production connector behavior remains not implemented.
 
-## Implemented Behavior (Local / Mock Only)
+## Implemented Behavior (Local / Mock And Narrow Sandbox)
 
 | Endpoint | Method | RBAC | Implemented Behavior |
 |----------|--------|------|---------------------|
 | `/connector-installations/:id/config-schema` | GET | `connector_installation:read` | Returns hardcoded mock-only JSON schema with `mockMode: true` const, safe fields list, rejected fields list |
 | `/connector-installations/:id/validate-config` | POST | `connector_installation:test` | Validates config against mock-only safety rules: `mockMode` must be `true`, rejects secret-like keys, rejects real-network implying keys, warns on unknown fields |
-| `/connector-installations/:id/runtime-readiness` | POST | `connector_installation:test` | Returns `mockReady` based on `mockMode && enabled`, `realReady: false`, `realNetwork: false`, `writebackEnabled: false` |
-| `/connector-installations/runtime/resolve` | GET | `connector_installation:read` | Returns tenant-scoped enabled installation with credential reference metadata only (no `secretRef`) |
+| `/connector-installations/:id/runtime-readiness` | POST | `connector_installation:test` | Returns mock readiness for mock installs and sandbox readiness fields for the accepted local Zammad sandbox path. Production readiness remains false. |
+| `/connector-installations/runtime/resolve` | GET | `connector_installation:read` | Returns tenant-scoped enabled installation with credential reference metadata only (no `secretRef`); mode may be `mock` or accepted local `sandbox`. |
 
 ## Mock-Only Safety Rules
 
@@ -49,11 +49,11 @@ The connector runtime layer provides a mock-only, tenant-scoped, auditable bound
 - No secret resolution is implemented.
 - Evidence bundles include credential reference summaries without secrets.
 
-## No Real Writeback
+## No Production Writeback
 
-- All policy decisions return `realNetworkAllowed: false` and `writebackEnabled: false`.
-- Delivery policy controls enforce mock-only safety.
-- Real writeback toggle requests return `400` with explicit rejection.
+- Production writeback remains blocked.
+- The only accepted non-mock writeback is local Zammad sandbox internal notes behind approval, kill-switch, egress, idempotency, audit, and evidence gates.
+- Public replies, production URLs, uncontrolled egress, and hidden connector writes remain blocked.
 
 ## Audit Events
 

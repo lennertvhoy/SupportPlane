@@ -72,6 +72,7 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 - Connector network egress is deny-by-default; the current allowlist permits local Zammad sandbox read only and blocks uncontrolled external or production-looking URLs.
 - Ollama is reached through the explicit host-controlled `OLLAMA_BASE_URL` setting; it is not deployed in-cluster.
 - OpenBao and NATS JetStream are local sandbox services only, not production secret/broker infrastructure.
+- Keycloak is local sandbox only; it is deployed for BL-083 readiness, but SupportPlane browser OIDC redirect/callback auth is not implemented yet.
 
 ## Storage Strategy
 
@@ -80,6 +81,7 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 | PostgreSQL | PVC `postgres-data` 1Gi in `supportplane-data` | Bound, restart survival verified in BL-105. |
 | Zammad | PVC `zammad-storage` 512Mi in `supportplane-integrations`; PVC `zammad-postgres-data` 512Mi | Bound. |
 | Zammad search | Disabled (`ELASTICSEARCH_ENABLED=false`) | Database search used for sandbox. |
+| Keycloak PostgreSQL | PVC `keycloak-postgres-data` 256Mi in `supportplane-integrations` | Bound. |
 | OpenBao | PVC `openbao-data` 256Mi in `supportplane-integrations` | Bound. |
 | MinIO | PVC `minio-data` 1Gi in `supportplane-data` | Bound. |
 | NATS JetStream | PVC `nats-jetstream-data` 512Mi in `supportplane-integrations` | Bound. |

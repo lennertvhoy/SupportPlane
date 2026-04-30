@@ -1,62 +1,76 @@
-=== Git ===
+BL-118 Closure Reconciliation — Baseline Runtime and Regression
+============================================================
+2026-04-30T18:07:25+02:00
+
+=== Git status at start of reconciliation proof ===
 ## main
-?? output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/
+ M BACKLOG.md
+ M NEXT_ACTIONS.md
+ M PROJECT_STATE.yaml
+ M STATUS.md
+ M WORKLOG.md
+ M apps/api/src/audit/security-audit.service.ts
+ M apps/api/src/auth/auth.controller.ts
+ M apps/api/src/common/validation.guard.ts
+ M apps/api/src/support-sessions/support-sessions.service.ts
+ M apps/api/src/telephony/telephony.service.ts
+ M apps/api/test/security-hardening.test.ts
+ M docs/ACCEPTANCE_FREEZES.md
+ M docs/BOUNDARY_MATRIX.md
+ M docs/CONNECTOR_RUNTIME_CONTRACT.md
+ M docs/EVIDENCE_LOG.md
+ M docs/KUBERNETES_SERVICE_CATALOG.md
+ M docs/LOCAL_KUBERNETES_PODMAN_TARGET.md
+ M docs/OIDC_READINESS.md
+ M docs/SELF_HOSTED_STACK.md
+ M docs/WORKFLOW_TRUTH.md
+ M docs/security/SECURITY_REGRESSION_MATRIX.md
+ M docs/security/THREAT_MODEL.md
+ M infra/kubernetes/local-podman/integrations/keycloak/keycloak-deployment.yaml
+ M output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/04-real-sandbox-e2e-flow-proof.txt
+ M output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/01-baseline-runtime-and-regression.txt
+ M packages/connectors/src/osticket-adapter-factory.ts
+ M packages/connectors/src/runtime-resolver.ts
+ M packages/connectors/src/telephony-registry.test.ts
+ M packages/connectors/src/telephony-registry.ts
+ M packages/connectors/src/zammad-adapter-factory.ts
+ M scripts/reset_demo_data.sh
+ M scripts/restore_local_sandbox.sh
 
-=== Recent commits ===
-a58225e BL-117: Final WORKLOG commit list
-b6fc56b BL-117: Update ACCEPTANCE_FREEZES with final commit hashes
-e09f8c1 BL-117: List both commits in WORKLOG
-a57376d BL-117: Update WORKLOG with final commit hash
-c3189f8 BL-117: Local Asterisk AMI call-event bridge
-3928d4b BL-131: Add local Asterisk sandbox topology with AMI config
-fd5d16f BL-117: fix registry truth gaps and telephony bridge baseline
-1a5d418 docs: BL-089/123-127 evidence, state docs, acceptance freeze, worklog
-5e5fc22 BL-089/123/124/125/126/127: registry closure, sandbox truth fields, osTicket adapter, canonical IDs, contract tests fix
-c4d0fa6 BL-123/124/125: Expand connector runtime contracts for sandbox truth
+=== API health before final rebuild (stale image identity expected until final deploy) ===
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"a58225e165ce03df83b4e7095359e354f989cd86","timestamp":"2026-04-30T16:07:25.669Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","oidcReady":false,"mfaHookAvailable":true,"note":"Mock-first ticket-aware API slice (BL-003)"}
 
-=== Runtime ===
-kind-supportplane-local
-NAMESPACE                    NAME                                                       READY   STATUS    RESTARTS       AGE
-kube-system                  coredns-7c65d6cfc9-dkrl8                                   1/1     Running   1 (22h ago)    24h
-kube-system                  coredns-7c65d6cfc9-p944w                                   1/1     Running   1 (22h ago)    24h
-kube-system                  etcd-supportplane-local-control-plane                      1/1     Running   0              22h
-kube-system                  kindnet-b22zl                                              1/1     Running   1 (22h ago)    24h
-kube-system                  kube-apiserver-supportplane-local-control-plane            1/1     Running   13 (16h ago)   22h
-kube-system                  kube-controller-manager-supportplane-local-control-plane   1/1     Running   17 (16h ago)   24h
-kube-system                  kube-proxy-56jnx                                           1/1     Running   1 (22h ago)    24h
-kube-system                  kube-scheduler-supportplane-local-control-plane            1/1     Running   16 (16h ago)   24h
-local-path-storage           local-path-provisioner-6fdc965494-tvjgz                    1/1     Running   2 (22h ago)    24h
-supportplane-app             supportplane-api-7bcb8c47fc-lxdrt                          1/1     Running   0              18m
-supportplane-app             supportplane-web-5d7f68659c-4czq8                          1/1     Running   0              25m
-supportplane-app             supportplane-worker-6974c5dc88-4xkjv                       1/1     Running   0              25m
-supportplane-data            minio-855cfdc549-grxrr                                     1/1     Running   1 (22h ago)    23h
-supportplane-data            postgres-0                                                 1/1     Running   1 (22h ago)    24h
-supportplane-integrations    asterisk-68c84fb9f5-rw2j9                                  1/1     Running   0              34m
-supportplane-integrations    mailpit-6bc6cdfb55-4c26r                                   1/1     Running   1 (22h ago)    23h
-supportplane-integrations    nats-0                                                     1/1     Running   0              19h
-supportplane-integrations    openbao-5bc456ddfc-ks44c                                   1/1     Running   1 (22h ago)    23h
-supportplane-integrations    zammad-0                                                   1/1     Running   7              22h
-supportplane-integrations    zammad-postgres-0                                          1/1     Running   1 (22h ago)    23h
-supportplane-integrations    zammad-redis-bb685c5fb-zrxz2                               1/1     Running   1 (22h ago)    23h
-supportplane-observability   grafana-745d7b9546-zzrfq                                   1/1     Running   0              5h31m
-supportplane-observability   loki-85f59df588-8hmj7                                      1/1     Running   0              5h31m
-supportplane-observability   otel-collector-5499c8ccc9-kt7dr                            1/1     Running   0              5h31m
-supportplane-observability   prometheus-68bdbfb7ff-2kkcl                                1/1     Running   0              5h31m
+=== OIDC config ===
+{"oidcEnabled":false,"note":"OIDC not configured. Set OIDC_ISSUER_URL, OIDC_CLIENT_ID, and OIDC_REDIRECT_URI environment variables."}
 
-=== API Health ===
-{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":null,"head":null,"timestamp":"2026-04-30T14:45:24.995Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","note":"Mock-first ticket-aware API slice (BL-003)"}
-=== Telephony Registry ===
-{"message":"Authentication required","error":"Unauthorized","statusCode":401}
-=== BL-116 Verifier ===
-=== BL-116 Real Self-Hosted Sandbox Freeze Verification ===
-API: http://localhost:4210
-Web: http://localhost:3300
-Artifacts: output/playwright/session-115-bl116-real-sandbox-acceptance-freeze
-1. API health
-PASS (head=null)
-2. Login operator/admin/viewer
-PASS
-3. Real Zammad sandbox read
-PASS
-4. Real Gemma/Ollama draft
-BL-116 verifier failed
+=== BL-116 verifier fresh result ===
+bash scripts/verify_bl116_real_sandbox_freeze.sh: PASS (12-step script completed; draft fallbackUsed=false; sandbox delivery reached sandbox_delivered; audit events present).
+Notes: MinIO direct list returned AWS4 auth warning and Mailpit had 0 messages; verifier treats both as INFO and exited 0.
+
+=== BL-117 telephony regression ===
+{
+  "adapters": [
+    {
+      "adapterType": "mock-telephony",
+      "capabilities": [
+        "inboundCalls",
+        "answer",
+        "hold",
+        "resume",
+        "end"
+      ]
+    },
+    {
+      "adapterType": "asterisk-ami",
+      "capabilities": [
+        "inboundCalls",
+        "answer",
+        "hold",
+        "resume",
+        "end"
+      ]
+    }
+  ]
+}
+NAME                        READY   STATUS    RESTARTS   AGE
+asterisk-68c84fb9f5-rw2j9   1/1     Running   0          116m

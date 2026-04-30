@@ -93,7 +93,7 @@ export class AuthController {
 
   @Get('service-accounts')
   serviceAccounts(@Req() req: Request) {
-    const identity = getCurrentIdentity(req);
+    getCurrentIdentity(req);
     // Protected by authentication middleware. Full implementation would restrict
     // writes to service-authenticated requests only.
     return {

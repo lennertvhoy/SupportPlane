@@ -35,7 +35,6 @@ import {
 import { computeIntegrityHash } from '@supportplane/audit';
 import {
   createZammadAdapter,
-  type TicketingAdapterDriver,
   type TicketingAdapterClient,
   getTicketingAdapterFactory,
   resolveAdapterRuntime,

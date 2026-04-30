@@ -80,6 +80,7 @@ This threat model covers the SupportPlane MVP runtime: API, Web, Worker, and int
 ## Accepted Risks
 - **Local sandbox only**: No production Zammad or cloud LLM connectivity is claimed.
 - **Dev-mode auth**: `SUPPORTPLANE_AUTH_MODE=local` trusts identity headers; not suitable for production.
+- **OIDC partial**: Keycloak is deployed as a local sandbox, but SupportPlane does not yet implement browser OIDC redirect/callback login, token/session persistence, or MFA enforcement.
 - **In-cluster secrets**: OpenBao and Postgres credentials are in-cluster; production would use external secret management.
 
 ## Verification Artifacts

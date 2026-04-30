@@ -6,7 +6,7 @@ import supertest from 'supertest';
 import type { Request, Response } from 'express';
 import { AppModule } from '../src/app.module.js';
 import { RateLimitGuard, RateLimitExceeded } from '../src/common/rate-limit.guard.js';
-import { ValidateAdapterTypeGuard, ValidateTelephonyEventGuard, ValidateTenantContextGuard } from '../src/common/validation.guard.js';
+import { ValidateAdapterTypeGuard, ValidateTelephonyEventGuard } from '../src/common/validation.guard.js';
 import { UnsafeFieldGuard } from '../src/common/unsafe-field.guard.js';
 import { BodyLimitGuard } from '../src/common/body-limit.guard.js';
 import { bodyLimitMiddleware } from '../src/common/body-limit.middleware.js';
@@ -23,13 +23,13 @@ class TestGuardsController {
 
   @Post('telephony-event')
   @UseGuards(ValidateTelephonyEventGuard)
-  telephonyEvent(@Body() body: unknown) {
+  telephonyEvent(@Body() _body: unknown) {
     return { received: true };
   }
 
   @Post('unsafe-field')
   @UseGuards(UnsafeFieldGuard)
-  unsafeField(@Body() body: unknown) {
+  unsafeField(@Body() _body: unknown) {
     return { received: true };
   }
 }

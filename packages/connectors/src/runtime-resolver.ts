@@ -1,7 +1,6 @@
 import type {
   RuntimeResolverInput,
   RuntimeResolverOutput,
-  TicketingAdapterClient,
 } from './types.js';
 import { getTicketingAdapterFactory } from './registry.js';
 

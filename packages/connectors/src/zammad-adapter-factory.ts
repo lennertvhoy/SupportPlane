@@ -1,27 +1,10 @@
-import { ZammadConfig, ConnectorErrorCode } from '@supportplane/contracts';
-import type { InternalNoteWritebackResult as InternalNoteWritebackResultShape } from '@supportplane/contracts';
+import { ZammadConfig } from '@supportplane/contracts';
 import type {
   TicketingAdapterFactory,
   TicketingAdapterClient,
   TicketingAdapterConfigValidation,
-  AdapterRuntimeContext,
 } from './types.js';
 import { ZammadConnectorAdapter, MockZammadConnectorAdapter } from './zammad-adapter.js';
-
-function buildConnectorError(code: ConnectorErrorCode, message: string) {
-  return {
-    code,
-    message,
-    safeToDisplay: false,
-    metadata: {},
-  };
-}
-
-function sanitizeErrorForPublic(error: Error, fallbackCode: ConnectorErrorCode = ConnectorErrorCode.enum.UNKNOWN) {
-  const message = error.message ?? 'Unknown connector error';
-  const safeMessage = message.replace(/token=[^\s&]+/gi, 'token=<redacted>');
-  return buildConnectorError(fallbackCode, safeMessage);
-}
 
 export class ZammadAdapterFactory implements TicketingAdapterFactory {
   readonly adapterType = 'zammad';

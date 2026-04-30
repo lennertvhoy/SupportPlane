@@ -94,36 +94,42 @@ fi
 
 DATABASE_URL="${DATABASE_URL:-}"
 if [[ -z "$DATABASE_URL" ]]; then
-  log_fatal "DATABASE_URL is not set."
+  if [[ "$DRY_RUN" == true ]]; then
+    log_dry "DATABASE_URL is not set; live reset would be refused before touching data."
+  else
+    log_fatal "DATABASE_URL is not set."
+  fi
 fi
 
 # Extract host for stricter validation
-DB_HOST="$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')"
-if [[ -z "$DB_HOST" ]]; then
-  DB_HOST="$(echo "$DATABASE_URL" | sed -n 's/.*@\([^/]*\)\/.*/\1/p')"
-fi
+if [[ -n "$DATABASE_URL" ]]; then
+  DB_HOST="$(echo "$DATABASE_URL" | sed -n 's/.*@\([^:]*\):.*/\1/p')"
+  if [[ -z "$DB_HOST" ]]; then
+    DB_HOST="$(echo "$DATABASE_URL" | sed -n 's/.*@\([^/]*\)\/.*/\1/p')"
+  fi
 
-# Accept localhost, 127.0.0.1, ::1, or local cluster DNS
-if [[ ! "$DB_HOST" =~ ^(localhost|127\.0\.0\.1|::1|postgres\.supportplane-data\.svc\.cluster\.local)$ ]]; then
-  echo "ERROR: Demo reset refused because DATABASE_URL does not point to a local host." >&2
-  echo "Current DATABASE_URL host: ${DB_HOST}" >&2
-  echo "This script is intended for local development only." >&2
-  exit 1
-fi
+  # Accept localhost, 127.0.0.1, ::1, or local cluster DNS
+  if [[ ! "$DB_HOST" =~ ^(localhost|127\.0\.0\.1|::1|postgres\.supportplane-data\.svc\.cluster\.local)$ ]]; then
+    echo "ERROR: Demo reset refused because DATABASE_URL does not point to a local host." >&2
+    echo "Current DATABASE_URL host: ${DB_HOST}" >&2
+    echo "This script is intended for local development only." >&2
+    exit 1
+  fi
 
-# Also reject production-looking hosts as an extra safeguard
-if [[ "$DB_HOST" =~ \.rds\.amazonaws\.com$ ]] || \
-   [[ "$DB_HOST" =~ \.cloud\.google\.com$ ]] || \
-   [[ "$DB_HOST" =~ \.azure\.com$ ]] || \
-   [[ "$DB_HOST" =~ \.database\.cloud\.ovh\.net$ ]] || \
-   [[ "$DB_HOST" =~ \.db\.ondigitalocean\.com$ ]] || \
-   [[ "$DB_HOST" =~ ^prod- ]] || \
-   [[ "$DB_HOST" =~ -production- ]]; then
-  log_fatal "Demo reset refused: DATABASE_URL host '${DB_HOST}' looks like a production endpoint."
-fi
+  # Also reject production-looking hosts as an extra safeguard
+  if [[ "$DB_HOST" =~ \.rds\.amazonaws\.com$ ]] || \
+     [[ "$DB_HOST" =~ \.cloud\.google\.com$ ]] || \
+     [[ "$DB_HOST" =~ \.azure\.com$ ]] || \
+     [[ "$DB_HOST" =~ \.database\.cloud\.ovh\.net$ ]] || \
+     [[ "$DB_HOST" =~ \.db\.ondigitalocean\.com$ ]] || \
+     [[ "$DB_HOST" =~ ^prod- ]] || \
+     [[ "$DB_HOST" =~ -production- ]]; then
+    log_fatal "Demo reset refused: DATABASE_URL host '${DB_HOST}' looks like a production endpoint."
+  fi
 
-DB_URL_REDACTED="${DATABASE_URL//:*@/:***@}"
-log_info "DATABASE_URL host check passed (redacted): ${DB_URL_REDACTED}"
+  DB_URL_REDACTED="${DATABASE_URL//:*@/:***@}"
+  log_info "DATABASE_URL host check passed (redacted): ${DB_URL_REDACTED}"
+fi
 
 # Optional: check store mode if set
 STORE_MODE="${SUPPORTPLANE_STORE:-postgres}"

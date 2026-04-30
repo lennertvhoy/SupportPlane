@@ -3,7 +3,7 @@
 ## Current Truth
 
 - **Local auth only**: The only working authentication path is `local` (email + password against the seeded Postgres database) and `dev` (header-based identity for development).
-- **OIDC target**: Keycloak local sandbox manifests are provided under `infra/kubernetes/local-podman/integrations/keycloak/`. These are **not production hardened**.
+- **OIDC target**: Keycloak local sandbox manifests are provided under `infra/kubernetes/local-podman/integrations/keycloak/`. The local pod has been verified Running/Ready after increasing local sandbox resources and moving health probes to Keycloak's management port. These manifests are **not production hardened**.
 - **No browser OIDC login flow**: Passport OIDC strategy, redirect handlers, and callback routes are **not implemented**.
 - **No Prisma schema changes**: No migration was added for OIDC sessions, service accounts, or short-lived tokens.
 
@@ -12,6 +12,7 @@
 1. **Keycloak Local Sandbox**
    - Kubernetes manifests for Keycloak 25.0 + Postgres 16-alpine.
    - ConfigMap, Secret, Deployment, Service, Postgres PVC/Deployment/Service.
+   - Resource/probe settings support the local sandbox: 1Gi request, 1536Mi limit, startup probe, and management health probes on port 9000.
    - Marked with honest comments: *Local sandbox only. Not production hardened.*
 
 2. **OIDC Configuration Hooks**
@@ -53,4 +54,4 @@
 
 ## Honest Summary
 
-BL-083 is **partially complete**: local Keycloak manifests are ready, OIDC config endpoints are wired, and MFA/service-account hooks are in place. The **full OIDC login flow is intentionally not claimed** because no Passport strategy or browser redirect handling exists.
+BL-083 is **partially complete**: local Keycloak manifests are deployed and Ready, OIDC config endpoints are wired, and MFA/service-account hooks are in place. The **full OIDC login flow is intentionally not claimed** because no Passport strategy or browser redirect handling exists.

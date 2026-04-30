@@ -1,6 +1,6 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-30 17:45 CEST
+**Updated At:** 2026-04-30 18:05 CEST
 **Execution Mode:** operating
 **Project State:** bl_118_production_readiness_accepted
 **Public URL:** not configured
@@ -10,8 +10,8 @@
 - **BL-104 through BL-117, BL-121, and BL-122 are accepted.** BL-116 freezes the complete real self-hosted sandbox milestone. BL-117 adds local Asterisk AMI bridge.
 - **BL-083/086/087/090 accepted (BL-083 partial).** Production-readiness hardening wave: OIDC-ready auth with Keycloak sandbox deployment, API gateway hardening (rate limits, body limits, validation, security headers, audit events), backup/restore runbooks, and release packaging with demo reset.
 - **BL-128 blocked.** osTicket integration blocked by no official container image, no PostgreSQL support, and no read API in v1.x.
-- **Cluster foundation:** Kind/Podman control-plane Ready; CoreDNS, kube-proxy, local-path-provisioner running; API/web/worker pods running fresh images.
-- **Self-hosted topology:** Zammad seeded and reachable; OpenBao initialized/unsealed; NATS JetStream file-backed; Mailpit capturing SMTP; MinIO healthy; Ollama host-controlled with AMD GPU; Keycloak sandbox deployed (initializing); observability baseline active.
+- **Cluster foundation:** Kind/Podman control-plane Ready; CoreDNS, kube-proxy, local-path-provisioner running; API/web/worker pods running local images.
+- **Self-hosted topology:** Zammad seeded and reachable; OpenBao initialized/unsealed; NATS JetStream file-backed; Mailpit capturing SMTP; MinIO healthy; Ollama host-controlled with AMD GPU; Keycloak sandbox Running/Ready after local resource/probe repair; observability baseline active.
 - **What is real now:** OIDC config endpoint, service account guard, MFA hook interfaces, in-memory rate limiting, body limits, request validation, security headers, security audit service, backup/restore scripts, release/demo runbooks, Security Readiness UI panel.
 - **What remains partial/mock/deferred:** Full browser OIDC login flow, persistent service token storage, MFA enforcement, distributed rate limiting, production secrets, production monitoring, osTicket real integration.
 
@@ -20,7 +20,7 @@
 - OpenBao is local sandbox credential resolution only, not production secret management.
 - NATS is local sandbox JetStream only, not production broker HA.
 - Observability is local sandbox only, not production monitoring or alerting.
-- Keycloak is local sandbox only, not production auth; full OIDC login flow not implemented.
+- Keycloak is local sandbox only, not production auth; full OIDC browser redirect/callback login flow not implemented.
 - osTicket integration blocked by upstream limitations.
 
 ## Notes

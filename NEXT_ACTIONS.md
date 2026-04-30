@@ -1,16 +1,16 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-30 17:45 CEST
+**Updated At:** 2026-04-30 18:05 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-076] Policy editor for tools, risk levels, approvals, model policies, and retention settings — Planned
+### P1 [BL-083] OIDC browser login completion — Partial
 
 - Owner: next coding-agent session
-- Next action: design policy editor UI and backend APIs for tool risk levels, approval workflows, model policies, and retention settings
-- Exit criteria: admin-facing policy editor with CRUD for policies, RBAC enforcement, and audit events
+- Next action: implement and prove a real browser OIDC redirect/callback/login flow against the local Keycloak sandbox while preserving local auth fallback.
+- Exit criteria: Keycloak realm/client/user bootstrap, API OIDC strategy and callback, browser login proof, local auth fallback proof, honest MFA/service-token status, runtime identity proof, and clean closure evidence.
 
 ## Queue Rules
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { createHash, randomUUID } from 'crypto';
+import { createHash } from 'crypto';
 import type { Request } from 'express';
 import { telemetry } from '../telemetry/telemetry.service.js';
 import { getCorrelationId } from '../telemetry/correlation.js';

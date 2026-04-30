@@ -1,29 +1,67 @@
 03 Keycloak OIDC Topology Proof (BL-083)
+=========================================
+2026-04-30T18:07:25+02:00
 
-Files created under infra/kubernetes/local-podman/integrations/keycloak/:
+Manifest files under infra/kubernetes/local-podman/integrations/keycloak/:
   keycloak-configmap.yaml
-  keycloak-secret.yaml
   keycloak-deployment.yaml
-  keycloak-service.yaml
   keycloak-postgres-deployment.yaml
-  keycloak-postgres-service.yaml
   keycloak-postgres-pvc.yaml
+  keycloak-postgres-service.yaml
+  keycloak-secret.yaml
+  keycloak-service.yaml
 
-Topology:
-- Namespace: supportplane-integrations
-- Keycloak Deployment (quay.io/keycloak/keycloak:25.0) exposes port 8080
-  - Reads config from ConfigMap (DB, hostname, proxy settings)
-  - Reads admin credentials and DB password from Secret
-  - Liveness/readiness probes on /health (KC_HEALTH_ENABLED)
-  - start-dev mode (local sandbox, not production hardened)
-- Keycloak Service: ClusterIP on 8080
-- Postgres Deployment (postgres:16-alpine) for Keycloak DB
-  - PVC: keycloak-postgres-data (256Mi)
-  - Service: keycloak-postgres on 5432
-  - Password from same Secret
+Fresh cluster status:
+NAME                                READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/asterisk            1/1     1            1           117m
+deployment.apps/keycloak            1/1     1            1           37m
+deployment.apps/keycloak-postgres   1/1     1            1           37m
+deployment.apps/mailpit             1/1     1            1           25h
+deployment.apps/openbao             1/1     1            1           25h
+deployment.apps/zammad-redis        1/1     1            1           25h
+
+NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+service/asterisk            ClusterIP   10.96.174.221   <none>        5038/TCP            117m
+service/keycloak            ClusterIP   10.96.217.180   <none>        8080/TCP            37m
+service/keycloak-postgres   ClusterIP   10.96.26.101    <none>        5432/TCP            37m
+service/mailpit             ClusterIP   10.96.180.37    <none>        1025/TCP,8025/TCP   25h
+service/nats                ClusterIP   10.96.241.45    <none>        4222/TCP,8222/TCP   25h
+service/openbao             ClusterIP   10.96.35.167    <none>        8200/TCP            25h
+service/zammad              ClusterIP   10.96.245.120   <none>        3000/TCP            25h
+service/zammad-postgres     ClusterIP   10.96.68.79     <none>        5432/TCP            25h
+service/zammad-redis        ClusterIP   10.96.42.201    <none>        6379/TCP            25h
+
+NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/keycloak-postgres-data    Bound    pvc-fd08836d-3eea-4c33-a220-60d212084d0e   256Mi      RWO            standard       <unset>                 37m
+persistentvolumeclaim/nats-jetstream-data       Bound    pvc-d1b13e35-d9f0-45be-aec8-d7b0cd032f4f   512Mi      RWO            standard       <unset>                 25h
+persistentvolumeclaim/openbao-data              Bound    pvc-a64edaea-5235-4146-98b2-fa357bf6be96   256Mi      RWO            standard       <unset>                 25h
+persistentvolumeclaim/zammad-postgres-data      Bound    pvc-c343618e-99b9-4888-8764-db93dc780f14   512Mi      RWO            standard       <unset>                 25h
+persistentvolumeclaim/zammad-storage-zammad-0   Bound    pvc-723541df-734e-41e1-973a-52a3a686613b   512Mi      RWO            standard       <unset>                 25h
+
+Keycloak pod status:
+NAME                        READY   STATUS    RESTARTS   AGE     IP             NODE                               NOMINATED NODE   READINESS GATES
+keycloak-6655c6dc85-lbr5t   1/1     Running   0          8m10s   10.244.0.115   supportplane-local-control-plane   <none>           <none>
+
+Keycloak logs (tail, no secrets):
+Updating the configuration and installing your custom providers, if any. Please wait.
+2026-04-30 15:59:17,065 WARN  [org.key.qua.run.cli.Picocli] (main) The following used options or option values are DEPRECATED and will be removed or their behaviour changed in a future release:
+	- proxy: Use proxy-headers.
+Consult the Release Notes for details.
+2026-04-30 15:59:39,859 INFO  [io.qua.dep.QuarkusAugmentor] (main) Quarkus augmentation completed in 20643ms
+2026-04-30 15:59:41,170 WARN  [org.keycloak.quarkus.runtime.cli.Picocli] (main) The following used options or option values are DEPRECATED and will be removed or their behaviour changed in a future release:
+	- proxy: Use proxy-headers.
+Consult the Release Notes for details.
+2026-04-30 15:59:46,659 INFO  [org.infinispan.CONTAINER] (ForkJoinPool.commonPool-worker-1) ISPN000556: Starting user marshaller 'org.infinispan.jboss.marshalling.core.JBossUserMarshaller'
+2026-04-30 15:59:47,670 INFO  [org.keycloak.connections.infinispan.DefaultInfinispanConnectionProviderFactory] (main) Node name: node_304113, Site name: null
+2026-04-30 15:59:47,776 INFO  [org.keycloak.broker.provider.AbstractIdentityProviderMapper] (main) Registering class org.keycloak.broker.provider.mappersync.ConfigSyncEventListener
+2026-04-30 15:59:49,189 INFO  [io.quarkus] (main) Keycloak 25.0.6 on JVM (powered by Quarkus 3.8.5) started in 9.126s. Listening on: http://0.0.0.0:8080. Management interface listening on http://0.0.0.0:9000.
+2026-04-30 15:59:49,189 INFO  [io.quarkus] (main) Profile dev activated. 
+2026-04-30 15:59:49,189 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, jdbc-postgresql, keycloak, logging-gelf, narayana-jta, reactive-routes, resteasy-reactive, resteasy-reactive-jackson, smallrye-context-propagation, smallrye-health, vertx]
+2026-04-30 15:59:49,192 WARN  [org.keycloak.quarkus.runtime.KeycloakMain] (main) Running the server in development mode. DO NOT use this configuration in production.
 
 Honest status:
-- Manifests are real and follow the existing local-podman integration style.
-- No Keycloak realm bootstrap Job is included.
-- Not production hardened: no TLS, no replica count >1, no network policies.
-- The running topology has not been deployed or verified in this slice.
+- Keycloak local sandbox is deployed and Running/Ready.
+- Resource/probe repair: memory request 1Gi, memory limit 1536Mi, startup probe, health/readiness on management port 9000.
+- No realm bootstrap Job is included.
+- No SupportPlane Passport/OIDC redirect/callback flow is implemented.
+- Not production hardened: no TLS, no HA, no network policies, local placeholder Secret only.

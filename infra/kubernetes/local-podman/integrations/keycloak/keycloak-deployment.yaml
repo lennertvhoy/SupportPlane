@@ -45,26 +45,35 @@ spec:
           ports:
             - containerPort: 8080
               name: http
+            - containerPort: 9000
+              name: management
           livenessProbe:
             httpGet:
               path: /health
-              port: 8080
+              port: 9000
               scheme: HTTP
             initialDelaySeconds: 60
             periodSeconds: 30
             failureThreshold: 5
           readinessProbe:
             httpGet:
-              path: /health
-              port: 8080
+              path: /health/ready
+              port: 9000
               scheme: HTTP
             initialDelaySeconds: 30
             periodSeconds: 10
             failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 9000
+              scheme: HTTP
+            periodSeconds: 10
+            failureThreshold: 60
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: "1Gi"
+              cpu: "250m"
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: "1536Mi"
+              cpu: "1000m"

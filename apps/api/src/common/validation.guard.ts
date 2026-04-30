@@ -10,17 +10,6 @@ const REGISTERED_ADAPTERS = new Set([
   'mock-telephony',
 ]);
 
-const TELEPHONY_EVENT_TYPES = new Set([
-  'newchannel',
-  'newstate',
-  'hangup',
-  'bridgeenter',
-  'bridgeleave',
-  'dial',
-  'originate',
-  'cdr',
-]);
-
 function isPrivateIp(host: string): boolean {
   // IPv4 private ranges
   const privateRanges = [

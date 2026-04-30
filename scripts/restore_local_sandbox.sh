@@ -87,10 +87,14 @@ fi
 # Safeguard 3: environment variable gate
 # ------------------------------------------------------------------
 
-if [[ "${SUPPORTPLANE_ALLOW_RESTORE_LOCAL:-0}" != "1" ]]; then
+if [[ "${SUPPORTPLANE_ALLOW_RESTORE_LOCAL:-0}" != "1" && "$DRY_RUN" == false ]]; then
   log_fatal "Restore refused: SUPPORTPLANE_ALLOW_RESTORE_LOCAL is not set to 1."
 fi
-log_info "SUPPORTPLANE_ALLOW_RESTORE_LOCAL=1 detected."
+if [[ "${SUPPORTPLANE_ALLOW_RESTORE_LOCAL:-0}" == "1" ]]; then
+  log_info "SUPPORTPLANE_ALLOW_RESTORE_LOCAL=1 detected."
+else
+  log_dry "SUPPORTPLANE_ALLOW_RESTORE_LOCAL is not set; live restore would be refused."
+fi
 
 # ------------------------------------------------------------------
 # Safeguard 4: require --confirm for non-dry-run

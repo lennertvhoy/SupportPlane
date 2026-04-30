@@ -2407,13 +2407,13 @@
   - API Deployment `supportplane-api` in `supportplane-app` rebuilt, reloaded, and rolled out from local images with BL-083/086 code.
   - Web Deployment `supportplane-web` in `supportplane-app` rebuilt with BL-083 SecurityReadinessPanel.
   - Worker Deployment `supportplane-worker` in `supportplane-app` rebuilt and rolled out.
-  - Keycloak Deployment `keycloak` in `supportplane-integrations` created and initializing.
+  - Keycloak Deployment `keycloak` in `supportplane-integrations` Running/Ready after local resource/probe repair.
   - All other sandbox services (Zammad, OpenBao, NATS, Mailpit, MinIO, Asterisk) remain healthy.
 - Shows:
   - Security & Release Readiness panel with local auth, OIDC ready, MFA hook, service-auth, rate limits, body limits, validation, runbooks.
   - API health JSON with oidcReady=false, mfaHookAvailable=true (honest disabled state).
   - Cockpit header with DEV/MOCK DATA, local auth, postgres store badges.
-  - Keycloak manifest listing and topology description.
+  - Keycloak manifest listing, topology description, and fresh pod readiness proof.
   - Auth architecture documentation with honest partial status.
   - Service account token guard validation.
   - API hardening overview with rate limits, body limits, security headers, validation guards.
@@ -2446,9 +2446,9 @@
   - BL-086 accepted: rate limits, body limits, validation guards, security headers, and audit events all implemented and tested.
   - BL-087 accepted: backup/restore scripts and runbook created with dry-run defaults and safeguards.
   - BL-090 accepted: release packaging, demo runbook, and demo reset script created.
-  - BL-083 partial: OIDC config hooks, Keycloak deployment, service account guard, and MFA hook interfaces implemented. No full browser OIDC login flow.
+  - BL-083 partial: OIDC config hooks, Keycloak deployment readiness, service account guard, and MFA hook interfaces implemented. No full browser OIDC login flow.
   - BL-128 blocked: osTicket integration blocked by upstream limitations (no official image, no PostgreSQL, no read API).
   - 3 unique screenshots, 0 duplicates, max-20 cap respected.
-  - Worktree clean at final commit `b1a7656`.
+  - Previous closure had contradictory dirty worktree and stale verifier evidence; this slice refreshes the proof and keeps BL-083 partial.
 - Type: implementation-and-browser-runtime-verification
-- as_of: 2026-04-30T17:45:00+02:00
+- as_of: 2026-04-30T18:05:00+02:00

@@ -6,8 +6,6 @@ import {
   listTelephonyAdapters,
   clearTelephonyAdapterRegistry,
   getRegisteredTelephonyAdapterTypes,
-  MockTelephonyAdapterFactory,
-  AsteriskAmiAdapterFactory,
   createMockTelephonyAdapterFactory,
   createAsteriskAmiAdapterFactory,
 } from './telephony-registry.js';

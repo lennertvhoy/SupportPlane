@@ -2,7 +2,6 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
   AuditEventType,
-  CallDirection,
   CallStatus,
   TelephonyAdapterStatus,
   TelephonyCallControlAction,

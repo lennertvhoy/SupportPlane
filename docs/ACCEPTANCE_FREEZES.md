@@ -1942,6 +1942,7 @@ and must be protected from quiet regression.
   - `npm run lint`: pass
   - `npm run typecheck --workspaces --if-present`: pass
   - `bash scripts/verify_bl116_real_sandbox_freeze.sh`: pass (regression preserved)
+  - 2026-04-30 closure reconciliation: `npm run lint` repaired and passed; full workspace build/typecheck/test gate passed
 - commits:
   - b1a7656 BL-083/086: Add OIDC-ready auth and API hardening
 - evidence_folder: output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/
@@ -1949,7 +1950,7 @@ and must be protected from quiet regression.
   - 06-api-hardening-proof.txt
   - 07-rate-body-validation-proof.txt
   - 08-security-audit-proof.txt
-- as_of: 2026-04-30T17:45:00+02:00
+- as_of: 2026-04-30T18:05:00+02:00
 
 ## AF-011: BL-087 Backup/Restore Runbook
 
@@ -1958,14 +1959,14 @@ and must be protected from quiet regression.
 - scope: Backup and restore runbook for PostgreSQL, object storage, and configuration
 - verification:
   - `bash scripts/backup_local_sandbox.sh --dry-run`: pass
-  - `bash scripts/restore_local_sandbox.sh --dry-run`: pass (safeguard triggered)
+  - `bash scripts/restore_local_sandbox.sh --dry-run`: pass (safeguards reported without destructive env gate)
   - `python3 scripts/check_state_docs.py`: pass
 - commits:
   - b1a7656 BL-083/086: Add OIDC-ready auth and API hardening
 - evidence_folder: output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/
 - key_artifacts:
   - 09-backup-restore-proof.txt
-- as_of: 2026-04-30T17:45:00+02:00
+- as_of: 2026-04-30T18:05:00+02:00
 
 ## AF-012: BL-090 Release Packaging and Demo Reset
 
@@ -1974,7 +1975,7 @@ and must be protected from quiet regression.
 - scope: Release packaging, demo dataset reset, and operator deployment documentation
 - verification:
   - `bash scripts/package_local_release.sh --dry-run`: pass
-  - `bash scripts/reset_demo_data.sh --dry-run`: pass
+  - `bash scripts/reset_demo_data.sh --dry-run`: pass (reports missing `DATABASE_URL` as live-reset safeguard, no data touched)
   - `python3 scripts/check_state_docs.py`: pass
 - commits:
   - b1a7656 BL-083/086: Add OIDC-ready auth and API hardening
@@ -1982,7 +1983,7 @@ and must be protected from quiet regression.
 - key_artifacts:
   - 10-release-package-proof.txt
   - 11-demo-reset-proof.txt
-- as_of: 2026-04-30T17:45:00+02:00
+- as_of: 2026-04-30T18:05:00+02:00
 
 ## AF-013: BL-083 OIDC-Ready Auth (Partial)
 
@@ -1993,10 +1994,10 @@ and must be protected from quiet regression.
   - GET /auth/oidc/config returns honest disabled state
   - GET /auth/mfa/status returns hook available, not enforced
   - ServiceAccountGuard rejects invalid X-Service-Token with 401
-  - Keycloak sandbox manifests deployed in cluster
+  - Keycloak sandbox manifests deployed in cluster and pod Running/Ready after resource/probe repair
   - `npm test --workspace=@supportplane/api`: 166/166 pass
 - what_is_real:
-  - Keycloak local sandbox deployment
+  - Keycloak local sandbox deployment Running/Ready
   - OIDC config endpoint with honest status
   - MFA hook interface
   - Service account guard (format validation only)
@@ -2014,4 +2015,4 @@ and must be protected from quiet regression.
   - 03-keycloak-oidc-topology-proof.txt
   - 04-oidc-login-and-local-auth-proof.txt
   - 05-service-account-token-proof.txt
-- as_of: 2026-04-30T17:45:00+02:00
+- as_of: 2026-04-30T18:05:00+02:00

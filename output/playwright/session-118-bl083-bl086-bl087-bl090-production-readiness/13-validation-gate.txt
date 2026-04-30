@@ -1,50 +1,50 @@
 BL-118 — Validation Gate
 ========================
-
-Date: 2026-04-30
+2026-04-30T18:07:25+02:00
 
 1. npm run lint
-   Result: PASS
+   Result: PASS (after unused import/variable repair)
 
-2. npm run typecheck --workspaces --if-present
-   Result: PASS (all workspaces)
+2. npm run build
+   Result: PASS (all workspaces with build scripts)
 
-3. npm test --workspaces --if-present
+3. npm run typecheck --workspaces --if-present
+   Result: PASS (api, web, worker, ai, audit, connectors, contracts, policy, ui)
+
+4. npm test --workspaces --if-present
    Result: PASS
-   - API tests: 166/166 pass (147 existing + 19 security-hardening)
-   - Contract tests: 47/47 pass
+   - API tests: 166/166 pass (including 19 security-hardening tests)
+   - Contracts tests: 47/47 pass
    - Policy tests: 7/7 pass
-   - Connector tests: 7/7 pass
+   - Connectors tests: 23/23 pass
+   - AI tests: 12/12 pass
+   - Audit/UI workspaces: no tests yet
 
-4. python3 scripts/check_state_docs.py
+5. python3 scripts/check_state_docs.py
+   Result: PASS (rerun after state/doc reconciliation)
+
+6. bash scripts/verify_observability_baseline.sh
    Result: PASS
 
-5. bash scripts/verify_observability_baseline.sh
+7. bash scripts/verify_bl116_real_sandbox_freeze.sh
+   Result: PASS (script exited 0; fresh Gemma/Ollama draft fallbackUsed=false; sandbox delivery reached sandbox_delivered)
+
+8. bash scripts/backup_local_sandbox.sh --dry-run
    Result: PASS
 
-6. bash scripts/verify_bl116_real_sandbox_freeze.sh
-   Result: PASS (all 11 steps, exit code 0)
+9. bash scripts/restore_local_sandbox.sh --dry-run
+   Result: PASS after dry-run safeguard repair
 
-7. bash scripts/backup_local_sandbox.sh --dry-run
-   Result: PASS
-
-8. bash scripts/restore_local_sandbox.sh --dry-run
-   Result: PASS (safeguard triggered, no destructive action)
-
-9. bash scripts/package_local_release.sh --dry-run
-   Result: PASS
-
-10. bash scripts/reset_demo_data.sh --dry-run
+10. bash scripts/package_local_release.sh --dry-run
     Result: PASS
 
-11. Cluster build and load images
-    Result: PASS (localhost/supportplane-api:local-k8s, web, worker)
+11. bash scripts/reset_demo_data.sh --dry-run
+    Result: PASS after dry-run safeguard repair
 
-12. kubectl apply -k infra/kubernetes/local-podman
-    Result: PASS (Keycloak resources created)
-
-13. kubectl rollout restart deployments
-    Result: PASS (API, Web, Worker all rolled out)
+12. kubectl rollout status deployment/keycloak -n supportplane-integrations --timeout=300s
+    Result: PASS
 
 BL-116 Regression: PRESERVED
-BL-117 Regression: PRESERVED (Asterisk pod Running)
+BL-117 Regression: PRESERVED (telephony registry lists mock-telephony and asterisk-ami; Asterisk pod Running)
+BL-083 Closure Verdict: PARTIAL
+BL-086/087/090 Closure Verdict: ACCEPTED pending final clean worktree and final runtime identity redeploy

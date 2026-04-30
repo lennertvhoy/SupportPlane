@@ -1010,3 +1010,45 @@ Screenshots: 2 (no duplicates)
 ### Next Recommended Action
 
 - P1 [BL-076] Policy editor for tools, risk levels, approvals, model policies, and retention settings
+
+
+## 2026-04-30 — BL-118 Closure Reconciliation / BL-083 Gate
+
+**Type:** closure reconciliation / repair
+**Status:** In progress at handoff
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+
+### What changed
+
+- Reconciled the previous BL-083/086/087/090 closure contradictions before BL-076.
+- Kept BL-083 partial: Keycloak local sandbox is Running/Ready, but there is still no browser OIDC redirect/callback login flow, no token/session persistence, no MFA enforcement, and no DB-backed service-token storage.
+- Repaired Keycloak local sandbox resources/probes:
+  - memory request 1Gi, limit 1536Mi
+  - CPU request 250m, limit 1000m
+  - startup probe added
+  - health/readiness probes moved to Keycloak management port 9000
+- Repaired lint failures from unused imports/variables.
+- Repaired dry-run behavior so `restore_local_sandbox.sh --dry-run` and `reset_demo_data.sh --dry-run` report safeguards without requiring live-destructive prerequisites.
+- Updated state docs to move `NEXT_ACTIONS.md` from BL-076 back to BL-083 completion.
+
+### Verification performed so far
+
+- `npm run lint`: PASS after lint repair.
+- `npm run build`: PASS for all workspaces.
+- `npm run typecheck --workspaces --if-present`: PASS for all workspaces.
+- `npm test --workspaces --if-present`: PASS across API/contracts/policy/connectors/ai workspaces.
+- `python3 scripts/check_state_docs.py`: PASS before final doc reconciliation; rerun required after final edits.
+- `bash scripts/verify_observability_baseline.sh`: PASS.
+- `bash scripts/verify_bl116_real_sandbox_freeze.sh`: PASS; the script rewrote BL-116 proof artifact during verification.
+- `bash scripts/backup_local_sandbox.sh --dry-run`: PASS.
+- `bash scripts/restore_local_sandbox.sh --dry-run`: PASS after dry-run repair.
+- `bash scripts/package_local_release.sh --dry-run`: PASS.
+- `bash scripts/reset_demo_data.sh --dry-run`: PASS after dry-run repair.
+- Keycloak deployment: `kubectl rollout status deployment/keycloak -n supportplane-integrations --timeout=300s`: PASS.
+
+### Remaining in this session
+
+- Refresh canonical BL-083/086/087/090 evidence files.
+- Re-run state-doc hygiene after doc edits.
+- Commit changes, rebuild/redeploy app images from the final commit, capture screenshots, regenerate duplicate checks, and record final clean worktree proof.

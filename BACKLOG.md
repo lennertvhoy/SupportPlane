@@ -132,7 +132,7 @@ Status markers:
 
 ## Production Hardening
 
-- [BL-083] `[partial/local-mock]` Add OIDC-ready auth, MFA hooks, service accounts, and short-lived connector tokens. Keycloak local sandbox manifests deployed. OIDC config endpoint wired and returns honest disabled state. Service account guard validates X-Service-Token format. MFA hook interface returns available but not enforced. No full browser OIDC login flow implemented. No persistent token storage.
+- [BL-083] `[partial/local-mock]` Add OIDC-ready auth, MFA hooks, service accounts, and short-lived connector tokens. Keycloak local sandbox manifests deploy and the Keycloak pod is Running/Ready after local resource/probe repair. OIDC config endpoint wired and returns honest disabled state. Service account guard validates X-Service-Token format. MFA hook interface returns available but not enforced. No full browser OIDC redirect/callback login flow implemented. No persistent token storage.
 - [BL-084] `[superseded by BL-109]` Add secrets encryption, secret references, and server-side credential broker boundaries. BL-109 now narrows the next step to local OpenBao sandbox credential resolution, not production secrets.
 - [BL-085] `[superseded by BL-114]` Add OpenTelemetry traces, structured logs, metrics, and correlation IDs.
 - [BL-086] `[accepted]` Add rate limits, request validation, body limits, and audit coverage for API gateway paths. In-memory rate limiting, path-specific body limits, security headers, request validation guards, and security audit service with safe metadata all implemented. 166/166 API tests pass. Evidence in `output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/`.

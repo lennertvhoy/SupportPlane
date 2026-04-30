@@ -1,6 +1,5 @@
 import {
   CallEvent,
-  TelephonyAdapterStatus,
   type TelephonyWebhookEvent,
 } from '@supportplane/contracts';
 import {

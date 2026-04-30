@@ -1,19 +1,9 @@
-import { ConnectorErrorCode } from '@supportplane/contracts';
 import type { InternalNoteWritebackResult as InternalNoteWritebackResultShape } from '@supportplane/contracts';
 import type {
   TicketingAdapterFactory,
   TicketingAdapterClient,
   TicketingAdapterConfigValidation,
 } from './types.js';
-
-function buildConnectorError(code: ConnectorErrorCode, message: string) {
-  return {
-    code,
-    message,
-    safeToDisplay: false,
-    metadata: {},
-  };
-}
 
 class OsTicketConnectorAdapter implements TicketingAdapterClient {
   readonly adapterType = 'osticket';
