@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { createHmac, randomUUID } from 'crypto';
+import { createHash, createHmac, randomUUID } from 'crypto';
 import { createConnection } from 'net';
 import { AckPolicy, connect, StorageType, StringCodec } from 'nats';
 import {
@@ -75,7 +75,7 @@ function signAwsV4(
 }
 
 function hashSha256(data: string): string {
-  return createHmac('sha256', '').update(data).digest('hex');
+  return createHash('sha256').update(data).digest('hex');
 }
 
 function getSignatureKey(key: string, dateStamp: string, region: string, service: string): Buffer {
@@ -1020,7 +1020,7 @@ export class ActionsService {
       disclaimer: 'Local sandbox evidence only. No compliance claim.',
     };
 
-    const objectKey = `supportplane-evidence/${item.tenantId}/writebacks/${item.sessionId}/${item.id}.json`;
+    const objectKey = `${item.tenantId}/writebacks/${item.sessionId}/${item.id}.json`;
     const payload = JSON.stringify(artifact, null, 2);
 
     // Simple MinIO S3-compatible put using fetch
