@@ -147,18 +147,18 @@
 - **Must not claim:** production monitoring.
 - **Exit criteria:** basic local telemetry query works by correlation ID.
 
-## Phase 11 - Optional PBX/CTI
+## Phase 11 - Optional PBX/CTI (ACCEPTED as BL-117)
 
 - **Goal:** Asterisk/FreePBX only after core flow works; internal SIP/test call only.
-- **Files likely touched:** telephony adapter, integration namespace, call console.
+- **Files touched:** `packages/connectors/src/telephony-registry.ts`, `apps/api/src/telephony/telephony.controller.ts`, `apps/api/src/telephony/telephony.service.ts`, `apps/web/app/call-console/page.tsx`, `infra/kubernetes/local-podman/integrations/asterisk/*`, `scripts/asterisk_ami_bridge.js`.
 - **Backlog IDs:** BL-117.
-- **Tests required:** internal call-event bridge, no PSTN, RBAC/audit.
-- **Browser proof required:** Call Console real sandbox CTI marker.
-- **API proof required:** signed/internal call event ingestion.
-- **Safety gates:** no PSTN, no audio/recording claim unless explicitly built.
+- **Tests completed:** 7 unit tests (telephony-registry.test.ts), internal call-event bridge, no PSTN, RBAC/audit via `CurrentIdentityMiddleware`.
+- **Browser proof completed:** Call Console real sandbox CTI marker + telephony registry JSON.
+- **API proof completed:** `POST /telephony/ami-events` with service-token auth; caller match; session auto-create.
+- **Safety gates:** no PSTN, no audio/recording claim.
 - **Rollback plan:** disable PBX adapter.
-- **Must not claim:** production call-center integration.
-- **Exit criteria:** internal test call event reaches SupportPlane safely.
+- **Must not claim:** production call-center integration, FreePBX GUI, PSTN.
+- **Exit criteria met:** internal test call event reaches SupportPlane safely (BL-117 accepted).
 
 ## Phase 12 - Optional Endpoint Agent / Operator Companion / Screen Context
 

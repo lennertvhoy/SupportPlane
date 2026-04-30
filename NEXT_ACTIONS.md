@@ -1,18 +1,12 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-30 14:00 CEST
+**Updated At:** 2026-04-30 16:35 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-117] Asterisk/FreePBX call-event bridge — Research
-
-- Owner: CTO lane
-- Next action: evaluate whether BL-117 should proceed or be deferred until telephony priority is confirmed
-- Exit criteria: decision to implement, defer, or mark as `wontfix`
-
-### P2 [BL-128] osTicket real integration test — Future
+### P1 [BL-128] osTicket real integration test — Future
 
 - Owner: next coding-agent session when osTicket instance is available
 - Next action: deploy small osTicket fixture or test instance; verify read path against real HTTP API

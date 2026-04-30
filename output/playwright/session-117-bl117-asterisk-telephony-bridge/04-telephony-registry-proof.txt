@@ -1,0 +1,34 @@
+Telephony Registry Proof — BL-130
+==================================
+Generated: 2026-04-30
+
+=== Registry Implementation ===
+File: packages/connectors/src/telephony-registry.ts
+
+Registered adapters:
+1. mock-telephony
+   - capabilities: ['inbound_calls', 'answer', 'hold', 'resume', 'end']
+   - health: healthy, connected: true
+
+2. asterisk-ami
+   - capabilities: ['inbound_calls', 'answer', 'hold', 'end']
+   - health: local_sandbox, connected: false
+   - reason: Asterisk sandbox not yet deployed (will be updated after deployment)
+
+=== Registry Behavior ===
+- Duplicate registration: throws Error("Telephony adapter 'mock-telephony' is already registered")
+- Unknown adapter: returns undefined
+- listTelephonyAdapters: returns both adapters with metadata
+
+=== API Endpoint ===
+GET /telephony/registry
+Returns: { adapters: [{ adapterType, capabilities }] }
+
+=== Tests ===
+File: packages/connectors/src/telephony-registry.test.ts
+Tests: 7/7 PASS
+
+=== Contract Compliance ===
+- No secrets in registry output
+- No PSTN claim in adapter metadata
+- sandboxOnly: true on AMI adapter

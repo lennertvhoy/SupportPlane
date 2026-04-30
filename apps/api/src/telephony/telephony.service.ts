@@ -2,6 +2,7 @@ import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
   AuditEventType,
+  CallDirection,
   CallStatus,
   TelephonyAdapterStatus,
   TelephonyCallControlAction,
@@ -291,5 +292,40 @@ export class TelephonyService {
         completedAt: new Date().toISOString(),
       };
     }
+  }
+
+  async receiveAsteriskAmiEvent(
+    identity: DevIdentity,
+    body: {
+      tenantId?: string;
+      externalCallId: string;
+      eventType: string;
+      callerNumber: string;
+      calleeNumber?: string;
+      direction?: string;
+      status?: string;
+      rawEvent?: Record<string, unknown>;
+      autoCreateSession?: boolean;
+      preferredSessionTitle?: string;
+      preferredPriority?: string;
+    }
+  ) {
+    requirePermission(identity, 'telephony:webhook');
+
+    const result = await this.callsService.createFromAsteriskAmiEvent(identity, {
+      ...body,
+      tenantId: body.tenantId ?? identity.tenantId,
+    });
+
+    return {
+      callEvent: result.callEvent,
+      autoCreateResult: result.autoCreateResult,
+      createdSession: result.createdSession,
+      source: 'asterisk-ami',
+      sandboxOnly: true,
+      pstn: false,
+      recording: false,
+      receivedAt: result.receivedAt,
+    };
   }
 }

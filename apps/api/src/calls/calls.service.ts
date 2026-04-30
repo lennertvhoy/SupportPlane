@@ -260,6 +260,179 @@ export class CallsService {
     return { callEvent, receivedAt: now };
   }
 
+  async createFromAsteriskAmiEvent(
+    identity: DevIdentity,
+    dto: {
+      tenantId: string;
+      externalCallId: string;
+      eventType: string;
+      callerNumber: string;
+      calleeNumber?: string;
+      direction?: string;
+      status?: string;
+      rawEvent?: Record<string, unknown>;
+      autoCreateSession?: boolean;
+      preferredSessionTitle?: string;
+      preferredPriority?: string;
+    }
+  ): Promise<{ callEvent: CallEventShape; autoCreateResult: AutoCreateSessionResult; createdSession?: SupportSessionShape; receivedAt: string }> {
+    requirePermission(identity, 'call:write');
+    const normalized = normalizePhoneNumber(dto.callerNumber);
+    const callerMatch = matchCallerByPhone(normalized);
+    const now = new Date().toISOString();
+
+    const callEvent: CallEventShape = CallEvent.parse({
+      id: randomUUID(),
+      tenantId: dto.tenantId,
+      provider: 'asterisk-ami',
+      source: 'asterisk-ami',
+      externalCallId: dto.externalCallId,
+      direction: CallDirection.enum.inbound,
+      status: CallStatus.enum.ringing,
+      caller: {
+        rawNumber: dto.callerNumber,
+        normalizedNumber: normalized.normalized,
+        displayName: undefined,
+        countryCodeHint: normalized.countryCode,
+      },
+      callerMatch,
+      startedAt: now,
+      metadata: {
+        eventType: dto.eventType,
+        calleeNumber: dto.calleeNumber,
+        rawEventRedacted: true,
+        amiEvent: true,
+        sandboxOnly: true,
+        pstn: false,
+        recording: false,
+        localAmiTestEvent: dto.rawEvent?.['LocalTestEvent'] === true,
+      },
+      mockDevOnly: false,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await this.store.saveCallEvent(callEvent);
+
+    await this.appendAuditEvent(identity, undefined, AuditEventType.enum.call_event_received, 'call_event', callEvent.id, {
+      externalCallId: callEvent.externalCallId,
+      provider: callEvent.provider,
+      source: callEvent.source,
+      normalizedNumber: normalized.normalized,
+      amiEvent: true,
+      sandboxOnly: true,
+      pstn: false,
+      recording: false,
+    });
+
+    if (callerMatch.status === 'matched') {
+      await this.appendAuditEvent(identity, undefined, AuditEventType.enum.caller_matched, 'call_event', callEvent.id, {
+        externalCallId: callEvent.externalCallId,
+        normalizedNumber: normalized.normalized,
+        matchStatus: callerMatch.status,
+        matchConfidence: callerMatch.confidence,
+        customerId: callerMatch.customerId,
+        customerName: callerMatch.customerName,
+        amiEvent: true,
+        sandboxOnly: true,
+      });
+    }
+
+    let autoCreateResult: AutoCreateSessionResult = AutoCreateSessionResult.enum.not_requested;
+    let createdSession: SupportSessionShape | undefined;
+
+    if (dto.autoCreateSession) {
+      if (!normalized.valid || callerMatch.status === 'invalid_number') {
+        autoCreateResult = AutoCreateSessionResult.enum.skipped_invalid_phone;
+      } else if (callerMatch.status !== 'matched') {
+        autoCreateResult = AutoCreateSessionResult.enum.skipped_no_match;
+      } else {
+        const sessionTitle =
+          dto.preferredSessionTitle ??
+          (callerMatch.customerName
+            ? `Incoming call from ${callerMatch.customerName}`
+            : `Incoming call from ${normalized.normalized ?? dto.callerNumber}`);
+
+        let priority: SupportSessionPriority = SupportSessionPriority.enum.normal;
+        if (dto.preferredPriority) {
+          const parsed = SupportSessionPriority.safeParse(dto.preferredPriority);
+          if (parsed.success) {
+            priority = parsed.data;
+          }
+        }
+
+        const sessionId = randomUUID() as SupportSessionId;
+        const session: SupportSessionShape = {
+          id: sessionId,
+          tenantId: dto.tenantId as TenantId,
+          status: SupportSessionStatus.enum.open,
+          priority,
+          title: sessionTitle,
+          description: `Auto-created from Asterisk AMI event ${dto.externalCallId}. Normalized: ${normalized.normalized ?? 'n/a'}`,
+          assignedUserId: identity.userId,
+          linkedTicketIds: callerMatch.matchedTicketIds ?? [],
+          aiContextPacketIds: [],
+          screenObservationIds: [],
+          callEventIds: [callEvent.id],
+          auditEventIds: [],
+          startedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        await this.store.saveSession(session);
+        createdSession = session;
+
+        const updatedCall: CallEventShape = {
+          ...callEvent,
+          sessionId: session.id,
+          status: CallStatus.enum.answered,
+          answeredAt: now,
+          updatedAt: now,
+        };
+        await this.store.saveCallEvent(updatedCall);
+
+        autoCreateResult = AutoCreateSessionResult.enum.auto_created;
+
+        await this.appendAuditEvent(
+          identity,
+          session.id,
+          AuditEventType.enum.support_session_auto_created,
+          'support_session',
+          session.id,
+          {
+            externalCallId: callEvent.externalCallId,
+            normalizedNumber: normalized.normalized,
+            customerId: callerMatch.customerId,
+            customerName: callerMatch.customerName,
+            matchedTicketIds: callerMatch.matchedTicketIds,
+            source: 'asterisk-ami',
+            sandboxOnly: true,
+          }
+        );
+
+        await this.appendAuditEvent(
+          identity,
+          session.id,
+          AuditEventType.enum.call_auto_linked_to_session,
+          'call_event',
+          callEvent.id,
+          {
+            externalCallId: callEvent.externalCallId,
+            sessionId: session.id,
+            normalizedNumber: normalized.normalized,
+            source: 'asterisk-ami',
+            sandboxOnly: true,
+          }
+        );
+
+        return { callEvent: updatedCall, autoCreateResult, createdSession, receivedAt: now };
+      }
+    }
+
+    return { callEvent, autoCreateResult, createdSession, receivedAt: now };
+  }
+
   async listRecentCalls(identity: DevIdentity): Promise<CallEventShape[]>{
     requirePermission(identity, 'call:read');
     return await this.store.listCallEvents(identity.tenantId);

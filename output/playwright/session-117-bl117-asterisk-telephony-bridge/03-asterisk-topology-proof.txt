@@ -1,0 +1,11 @@
+Asterisk Topology Proof — BL-131
+================================
+Generated: 2026-04-30
+
+=== Manifests ===
+infra/kubernetes/local-podman/integrations/asterisk/asterisk-configmap.yaml
+infra/kubernetes/local-podman/integrations/asterisk/asterisk-secret.yaml
+infra/kubernetes/local-podman/integrations/asterisk/asterisk-deployment.yaml
+infra/kubernetes/local-podman/integrations/asterisk/asterisk-service.yaml
+
+=== Pod Status ===

@@ -1,0 +1,49 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e3]
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "SupportPlane" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Mock Call Console
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - img [ref=e15]
+          - text: No real telephony connected
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - img [ref=e19]
+            - text: Demo Admin / Acme Support Demo / admin
+          - button "Logout" [ref=e22] [cursor=pointer]:
+            - img [ref=e23]
+            - text: Logout
+        - button "Support Cockpit" [ref=e26] [cursor=pointer]:
+          - img [ref=e27]
+          - text: Support Cockpit
+    - generic [ref=e29]:
+      - complementary [ref=e30]:
+        - generic [ref=e31]: Recent incoming calls
+        - generic [ref=e32]:
+          - button "answered 4:21:48 PM +32 3 555 01 01 Acme BVBA Linked to session" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]:
+              - generic [ref=e35]:
+                - img [ref=e36]
+                - generic [ref=e38]: answered
+              - generic [ref=e39]: 4:21:48 PM
+            - generic [ref=e40]: +32 3 555 01 01
+            - generic [ref=e41]: Acme BVBA
+            - generic [ref=e42]:
+              - img [ref=e43]
+              - text: Linked to session
+          - button "ringing 4:21:11 PM +32 2 345 67 89" [ref=e46] [cursor=pointer]:
+            - generic [ref=e47]:
+              - generic [ref=e48]:
+                - img [ref=e49]
+                - generic [ref=e51]: ringing
+              - generic [ref=e52]: 4:21:11 PM
+            - generic [ref=e53]: +32 2 345 67 89
+      - main [ref=e54]:
+        - generic [ref=e56]:
+          - img [ref=e57]
+          - paragraph [ref=e59]: Select a call from the list to view details

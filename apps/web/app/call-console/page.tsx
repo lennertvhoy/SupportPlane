@@ -565,7 +565,7 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
         {/* Left: Recent calls */}
         <aside className="w-80 shrink-0 overflow-y-auto border-r border-cockpit-700 bg-cockpit-800/40 p-3">
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-cockpit-400">
-            Recent fake incoming calls
+            Recent incoming calls
           </div>
 
           {callsLoading && (
@@ -622,7 +622,7 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
 
             {calls.length === 0 && !callsLoading && (
               <div className="rounded border border-cockpit-700 bg-cockpit-900/30 px-3 py-4 text-center text-xs text-cockpit-500">
-                No calls yet. Use the Call Simulator in the Support Cockpit to create a fake incoming call.
+                No calls yet. Use the Call Simulator in the Support Cockpit to create a fake incoming call, or trigger an Asterisk AMI test event.
               </div>
             )}
           </div>
@@ -646,7 +646,7 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                     <Phone size={16} className={statusColor(selectedCall.status)} />
                     <div>
                       <div className="text-sm font-semibold text-cockpit-100">
-                        Fake incoming call — {selectedCall.externalCallId}
+                        {selectedCall.source === 'asterisk-ami' ? 'Asterisk AMI local event' : 'Fake incoming call'} — {selectedCall.externalCallId}
                       </div>
                       <div className="text-xs text-cockpit-400">
                         {selectedCall.caller.normalizedNumber ?? selectedCall.caller.rawNumber}
@@ -658,7 +658,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                   </Badge>
                 </div>
                 <div className="mt-2 text-[10px] text-cockpit-500">
-                  Mock caller matching • No real PBX connected • Not spoken or sent automatically
+                  {selectedCall.source === 'asterisk-ami'
+                    ? 'Asterisk AMI local sandbox • No PSTN • No recording • No transcription • Caller matched from local sandbox data'
+                    : 'Mock caller matching • No real PBX connected • Not spoken or sent automatically'}
                 </div>
               </div>
 
@@ -677,7 +679,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                           Telephony bridge boundary
                         </div>
                         <div className="mt-0.5 text-[10px] text-amber-400/80">
-                          Mock mode. No real PBX connected. No media or voice connected. Controls update local mock state only.
+                          {selectedCall.source === 'asterisk-ami'
+                            ? 'Asterisk local sandbox AMI event bridge. No PSTN. No recording. No transcription. No public phone network.'
+                            : 'Mock mode. No real PBX connected. No media or voice connected. Controls update local mock state only.'}
                         </div>
                       </div>
                       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
@@ -687,8 +691,10 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                         <dd className="text-cockpit-100">{telephonyStatus?.mode ?? 'mock'}</dd>
                         <dt className="text-cockpit-500">Verification</dt>
                         <dd className="text-cockpit-100">{telephonyStatus?.webhookVerification.status ?? 'not_required'}</dd>
+                        <dt className="text-cockpit-500">Source</dt>
+                        <dd className="text-cockpit-100">{selectedCall.source === 'asterisk-ami' ? 'asterisk-ami' : (telephonyStatus?.providerType ?? 'mock')}</dd>
                         <dt className="text-cockpit-500">Mock/dev-only</dt>
-                        <dd className="text-cockpit-100">{telephonyStatus?.mockDevOnly === false ? 'No' : 'Yes'}</dd>
+                        <dd className="text-cockpit-100">{selectedCall.source === 'asterisk-ami' ? 'No (local sandbox AMI)' : (telephonyStatus?.mockDevOnly === false ? 'No' : 'Yes')}</dd>
                       </dl>
                       <div className="flex flex-wrap gap-1">
                         {telephonyStatus &&
@@ -717,7 +723,7 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                           className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-200 hover:bg-cockpit-800 disabled:opacity-50"
                         >
                           <PhoneIncoming size={10} />
-                          Fake provider webhook
+                          Fake webhook simulator
                         </button>
                       </div>
                       {lastBridgeTest && (

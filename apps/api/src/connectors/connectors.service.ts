@@ -17,6 +17,9 @@ import {
   createOsTicketAdapterFactory,
   createMockOsTicketAdapterFactory,
   resolveCanonicalAdapterId,
+  registerTelephonyAdapter,
+  createMockTelephonyAdapterFactory,
+  createAsteriskAmiAdapterFactory,
   type TicketingAdapterClient,
 } from '@supportplane/connectors';
 import { evaluateEgressPolicy } from '@supportplane/policy';
@@ -35,6 +38,9 @@ function ensureRegistry() {
   // Register osTicket adapter (read-only, no writeback in this slice)
   registerTicketingAdapter(createOsTicketAdapterFactory());
   registerTicketingAdapter(createMockOsTicketAdapterFactory());
+  // Register telephony adapters
+  registerTelephonyAdapter(createMockTelephonyAdapterFactory());
+  registerTelephonyAdapter(createAsteriskAmiAdapterFactory());
   registryInitialized = true;
 }
 

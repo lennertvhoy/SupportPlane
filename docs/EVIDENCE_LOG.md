@@ -2349,3 +2349,50 @@
   - `18-zammad-migration-proof.txt`
   - `19-ai-registry-proof.txt`
   - `20-git-status-proof.txt`
+
+
+## EV-2026-04-30-137 through EV-2026-04-30-152: BL-117 Local Asterisk AMI Call-Event Bridge (ACCEPTED)
+
+- Files: `output/playwright/session-117-bl117-asterisk-telephony-bridge/01-baseline-runtime-and-bl116-regression.txt` through `17-proof-mapping-table.md`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus terminal-rendered JSON/text proof pages, plus kubectl cluster introspection.
+- Store/Auth mode for runtime screenshots: cluster `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Cluster proof:
+  - API deployment rebuilt with `--no-cache` and rolled out; pod `supportplane-api-7bcb8c47fc-lxdrt` running fresh image.
+  - Asterisk deployment `asterisk-68c84fb9f5-rw2j9` running in `supportplane-integrations` with image `andrius/asterisk:latest` (Asterisk 22.8.2).
+  - AMI login verified cluster-internal via `scripts/asterisk_ami_bridge.js`.
+  - Test AMI event injected via API endpoint `POST /telephony/ami-events` with service token auth.
+  - Caller match found for normalized phone `+32...` → Acme BVBA fixture.
+  - Support session auto-created from call event.
+- Shows:
+  - Telephony registry JSON listing `mock-telephony` and `asterisk-ami` adapters with capabilities.
+  - Call Console UI showing Asterisk-sourced call with Acme BVBA caller match.
+  - API response for AMI event ingestion with `sandboxOnly: true`, `pstn: false`, `recording: false`.
+  - Cluster pod states for API, Web, Worker, Asterisk.
+  - Security boundary proof: no PSTN, no SIP trunk, no recording, no secret exposure.
+  - FreePBX deferred; only raw Asterisk AMI bridge implemented.
+  - BL-116 baseline regression preserved.
+- CLI artifacts:
+  - `01-baseline-runtime-and-bl116-regression.txt`
+  - `02-telephony-architecture-proof.md`
+  - `03-asterisk-topology-proof.txt`
+  - `04-telephony-registry-proof.txt`
+  - `05-asterisk-ami-connection-proof.txt`
+  - `06-real-call-event-ingestion-proof.txt`
+  - `07-caller-match-session-proof.txt`
+  - `09-blocked-pbx-actions-proof.txt`
+  - `10-no-secret-no-pstn-boundary-proof.txt`
+  - `11-ai-registry-direct-proof.txt`
+  - `12-registry-truth-cleanup-proof.txt`
+  - `13-cluster-redeploy-proof.txt`
+  - `14-validation-gate-summary.txt`
+  - `17-proof-mapping-table.md`
+- Proves:
+  - BL-117 now accepted: local Asterisk AMI bridge with canonical call event ingestion, caller matching, and session auto-creation.
+  - Telephony registry follows same Map-based pattern as ticketing registry.
+  - No PSTN, no SIP trunk, no recording, no transcription.
+  - AMI credentials never exposed in UI, API responses, logs, or evidence.
+  - FreePBX GUI explicitly deferred.
+  - 2 unique screenshots, 0 duplicates, max-20 cap respected.
+  - Worktree clean at final commit.
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-04-30T16:35:00+02:00

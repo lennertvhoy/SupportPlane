@@ -851,3 +851,73 @@ Screenshots: 2 (no duplicates)
 
 - CTO lane: Decide whether to proceed with BL-117 (Asterisk/FreePBX bridge) or defer.
 - Future coding-agent: When osTicket test instance is available, verify BL-127 read path against real HTTP API.
+
+
+## 2026-04-30 - BL-117: Local Asterisk AMI Call-Event Bridge (ACCEPTED)
+
+**Type:** implementation / closure
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 8c9228a8207cc6c3a430f9340c1bd9e5a3505e8a
+**Worktree:** clean
+
+### What changed
+
+- Created `packages/connectors/src/telephony-registry.ts` with `TelephonyAdapterFactory`/`TelephonyAdapterClient` interfaces, `TelephonyRuntimeContext`, `TelephonyHealth`, `TelephonyEvent`, `CanonicalCallEvent` types.
+- Implemented `MockTelephonyAdapterFactory` and `AsteriskAmiAdapterFactory` (stub returning `local_sandbox` / `connected: false`).
+- Added 7 unit tests in `packages/connectors/src/telephony-registry.test.ts` — all pass.
+- Extended `apps/api/src/telephony/telephony.service.ts` to register both adapters in constructor.
+- Extended `apps/api/src/telephony/telephony.controller.ts` with `POST /telephony/ami-events` endpoint:
+  - Accepts canonical call event body with callerNumber, calleeNumber, eventType, status, etc.
+  - Normalizes phone number, matches caller by phone (Acme BVBA fixture).
+  - Creates `CallEvent` via `CallsService.createFromTelephonyWebhook`.
+  - Returns call event, auto-create result, created session, source, sandbox flags.
+- Extended `apps/api/src/calls/calls.service.ts` to support `createFromTelephonyWebhook` with caller matching and session auto-creation.
+- Updated `apps/web/app/call-console/page.tsx` with Asterisk-local-sandbox labels while preserving mock-only disclaimers.
+- Created Kubernetes manifests for Asterisk 22.8.2 sandbox:
+  - `infra/kubernetes/local-podman/integrations/asterisk/asterisk-configmap.yaml`
+  - `infra/kubernetes/local-podman/integrations/asterisk/asterisk-secret.yaml`
+  - `infra/kubernetes/local-podman/integrations/asterisk/asterisk-deployment.yaml`
+  - `infra/kubernetes/local-podman/integrations/asterisk/asterisk-service.yaml`
+- Created `scripts/asterisk_ami_bridge.js` for AMI connection test and event injection.
+- Verified AMI login successful against cluster-internal Asterisk manager.
+- Ingested real test AMI event via API endpoint; caller match found (Acme BVBA); session auto-created.
+- Captured 2 browser screenshots (Call Console + telephony registry JSON).
+- Force `--no-cache` API rebuild resolved stale image issue where telephony registry was missing.
+
+### Verification
+
+- `npx vitest run packages/connectors/src/telephony-registry.test.ts`: PASS (7/7)
+- `./scripts/build-and-deploy-api.sh --no-cache`: PASS (image rebuilt, rollout completed)
+- `curl http://localhost:4210/telephony/registry?token=...`: PASS (returns 2 adapters)
+- `curl -X POST http://localhost:4210/telephony/ami-events ...`: PASS (call event created, caller matched)
+- Playwright browser proof: PASS (Call Console shows Asterisk call, registry JSON visible)
+- BL-116 regression (sandbox writeback E2E): PASS (baseline preserved)
+- AMI connection test (cluster internal): PASS (login successful, event injected)
+
+### Evidence
+
+- Screenshot folder: `output/playwright/session-117-bl117-asterisk-telephony-bridge/`
+- Screenshot count: 2 (15-ui-call-console-asterisk-proof.png, 16-ui-telephony-registry-proof.png)
+- Duplicate count: 0
+- CLI/text artifacts: 15 (01-14, 17)
+- Reproducible screenshot script: `scripts/bl117_screenshots.js`
+
+### Risks and Limitations
+
+- FreePBX GUI deferred; only raw Asterisk AMI bridge implemented.
+- No PSTN, no SIP trunk, no RTP, no recording, no transcription.
+- AMI credentials resolved server-side only via Kubernetes Secret; never exposed in UI/API/logs.
+- Asterisk AMI adapter factory is a stub (returns `connected: false`); full AMI persistent connection not implemented.
+- osTicket remains fixture-only (no real instance).
+- AI provider registry direct proof script exists but does not change runtime behavior.
+
+### Commits
+
+- `8c9228a8207cc6c3a430f9340c1bd9e5a3505e8a` BL-117: Local Asterisk AMI call-event bridge
+
+### Next Recommended Action
+
+- BL-128: osTicket real integration test when instance is available.
+- Future: Full AMI persistent connection with event streaming (not stub).

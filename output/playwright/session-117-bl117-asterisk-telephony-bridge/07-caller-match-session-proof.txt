@@ -1,0 +1,36 @@
+Caller Match and Session Proof — BL-132
+========================================
+Generated: 2026-04-30
+
+=== Matched Caller ===
+Phone: +32 3 555 01 01
+Normalized: +32 3 555 01 01
+Customer: Acme BVBA (cust-antwerp-001)
+Email: support@acme-bvba.be
+Confidence: 1.0
+Match source: mock_fixture
+Recent tickets: TICKET-101 (VPN issue), TICKET-102 (Printer offline)
+
+=== Auto-Created Session ===
+ID: ae436719-e363-4ac6-83b1-9853d63e45d0
+Tenant: dev-tenant
+Status: open
+Priority: high
+Title: Asterisk AMI call from Acme BVBA
+Description: Auto-created from Asterisk AMI event ami-test-acme-001. Normalized: +32 3 555 01 01
+Assigned: dev-admin
+Linked tickets: TICKET-101, TICKET-102
+Call events: [aae9f1e2-a6b9-4205-a788-feda717101ad]
+
+=== Call Timeline ===
+- call_received (Asterisk AMI event)
+- caller_matched (Acme BVBA, confidence 1.0)
+- session_auto_created (from Asterisk AMI event)
+- call_linked_to_session (auto-link)
+
+=== Boundary Labels ===
+- Source: asterisk-ami
+- Sandbox only: true
+- PSTN: false
+- Recording: false
+- Local AMI test event: true

@@ -1,0 +1,38 @@
+=== BL-117 Validation Gate Summary ===
+Date: 2026-04-30T16:35+02:00
+
+1. Unit Tests (packages/connectors)
+   Command: npx vitest run packages/connectors/src/telephony-registry.test.ts
+   Result: PASS (7/7 tests)
+
+2. API Build & Rollout
+   Command: ./scripts/build-and-deploy-api.sh --no-cache
+   Result: PASS — image rebuilt, rollout completed, pod running
+
+3. Registry Endpoint (HTTP)
+   Command: curl -s http://localhost:4210/telephony/registry?token=$token
+   Result: PASS — returns mock-telephony + asterisk-ami adapters
+
+4. AMI Event Ingestion (HTTP)
+   Command: curl -s -X POST http://localhost:4210/telephony/ami-events ...
+   Result: PASS — call event created with caller match (Acme BVBA)
+
+5. Call Console UI (Browser)
+   Command: Playwright navigation + screenshot
+   Result: PASS — shows Asterisk call event with correct caller match
+
+6. BL-116 Regression (E2E sandbox writeback)
+   Command: npx playwright test tests/e2e/sandbox-writeback.spec.ts
+   Result: PASS (baseline preserved)
+
+7. AMI Connection (Cluster internal)
+   Command: kubectl exec ... node scripts/asterisk_ami_bridge.js
+   Result: PASS — AMI login successful, test event injected
+
+8. Security Boundaries
+   - No PSTN: verified (no SIP trunk, no RTP ports)
+   - No recording: verified (no MixMonitor, no recording config)
+   - No secret exposure: verified (AMI secret in K8s Secret only)
+   - Cross-tenant denial: verified (CurrentIdentityMiddleware tenant scoping)
+
+All gates PASS.

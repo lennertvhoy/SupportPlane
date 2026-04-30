@@ -91,8 +91,18 @@ current_state:
       cluster_base_url: http://10.88.0.1:11434
       model_upgrade_future: gemma4_and_qwen3.6_require_ollama_upgrade
     telephony:
-      current: fake incoming call/webhook simulation only
+      current: local_asterisk_ami_bridge_sandbox_only
       real_pbx: false
+      asterisk_ami_adapter: true
+      asterisk_version: 22.8.2
+      ami_events_ingested: true
+      caller_matching: true
+      session_auto_create: true
+      freepbx_deferred: true
+      pstn: false
+      sip_trunk: false
+      recording: false
+      transcription: false
     evidence:
       current: local sandbox JSON and Markdown bundle persisted to MinIO with direct read/checksum proof
       object_storage_artifact_persistence: true (MinIO local sandbox, direct object read/checksum proven)
@@ -313,7 +323,7 @@ current_state:
       backlog_ids: [BL-114]
     - id: Phase 11
       title: Optional PBX/CTI
-      status: later
+      status: accepted_bl_117_local_asterisk_ami_only
       backlog_ids: [BL-117]
     - id: Phase 12
       title: Optional Endpoint/Companion/Screen Context
@@ -323,7 +333,7 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-120
-    accepted_current_slice: BL-116
+    accepted_current_slice: BL-117
     planned_real_e2e_items:
       - BL-111
       - BL-112
@@ -335,7 +345,7 @@ current_state:
       - BL-120
       - BL-121
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-117, BL-128]
+    active_queue_items: [BL-128]
 
   documentation:
     primary_user_guide: README.md

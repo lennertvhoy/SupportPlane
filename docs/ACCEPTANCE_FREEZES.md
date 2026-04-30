@@ -1883,3 +1883,50 @@ and must be protected from quiet regression.
   5. Built and loaded local-k8s images, restarted deployments, verified API reports `5e5fc22`.
   6. Captured 16 evidence artifacts under max 20 budget.
   7. Updated BACKLOG.md, STATUS.md, NEXT_ACTIONS.md, PROJECT_STATE.yaml, WORKLOG.md, EVIDENCE_LOG.md, and ACCEPTANCE_FREEZES.md.
+
+
+## AF-2026-04-30-009: BL-117 Local Asterisk AMI Call-Event Bridge (ACCEPTED)
+
+- ID: AF-2026-04-30-009
+- Milestone: Local Asterisk AMI call-event bridge with canonical event ingestion, caller matching, and session auto-creation
+- Scope: Asterisk 22.8.2 sandbox deployed in `supportplane-integrations` namespace. AMI event ingestion endpoint at `POST /telephony/ami-events` accepts canonical call events with service-token auth. Telephony registry lists `mock-telephony` and `asterisk-ami` adapters. Call Console UI shows Asterisk-sourced calls with honest sandbox labels ("No PSTN", "No recording", "No transcription"). Caller matching by normalized phone number works (Acme BVBA fixture). Support sessions auto-created from matched call events. FreePBX GUI deferred. No PSTN, no SIP trunk, no RTP, no recording, no transcription.
+- repo_path: /home/ff/Documents/Projects/SupportPlane
+- branch: main
+- head: TBD after final commit
+- process_or_container:
+  - Kind/Podman cluster `supportplane-local` with port-forwards
+  - SupportPlane API, Web, Worker in `supportplane-app`
+  - PostgreSQL StatefulSet in `supportplane-data`
+  - Asterisk sandbox in `supportplane-integrations`
+  - Zammad, OpenBao, NATS, Mailpit, MinIO in `supportplane-integrations`
+- port_or_base_url:
+  - Cluster API http://localhost:4210
+  - Cluster Web http://localhost:3300
+  - Local MVP API http://localhost:4110
+  - Local MVP Web http://localhost:3200
+- routes:
+  - /call-console (cluster web)
+  - GET /telephony/registry
+  - POST /telephony/ami-events
+  - GET /health
+- rebuilt_in_slice: true (API force --no-cache rebuild)
+- duplicate_runtimes_checked: true
+- evidence_refs:
+  - EV-2026-04-30-137 through EV-2026-04-30-152
+- evidence_folder: output/playwright/session-117-bl117-asterisk-telephony-bridge/
+- screenshot_count: 2
+- duplicate_screenshot_count: 0
+- regression_guard:
+  - Telephony registry must continue to list both `mock-telephony` and `asterisk-ami` adapters.
+  - `POST /telephony/ami-events` must continue to create call events, match callers, and auto-create sessions.
+  - Call Console must continue to show Asterisk-sourced calls with sandbox labels.
+  - No PSTN, SIP trunk, recording, or transcription claims may appear.
+  - AMI credentials must never appear in API responses, UI, logs, or evidence.
+  - All other AF-008 regression guards remain in force.
+- known_limitations:
+  - FreePBX GUI is deferred; only raw Asterisk AMI bridge exists.
+  - Asterisk AMI adapter factory is a stub (returns `connected: false`); full persistent AMI connection not implemented.
+  - No real SIP trunk or PSTN connectivity.
+  - No call recording or transcription.
+  - osTicket remains fixture-only.
+- as_of: 2026-04-30T16:35:00+02:00
