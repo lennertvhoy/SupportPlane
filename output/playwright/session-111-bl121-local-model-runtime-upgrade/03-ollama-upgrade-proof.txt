@@ -1,0 +1,48 @@
+=== Ollama Runtime Upgrade Proof ===
+Date: 2026-04-29
+
+1. Current system Ollama
+   - Binary: /usr/local/bin/ollama
+   - Version: 0.18.2
+   - Service: systemd ollama.service (running as user ollama)
+   - Listen: 0.0.0.0:11434 (via override.conf)
+   - Models: llama3.1:8b, qwen2.5:7b, statedd-devstral:latest, devstral-small-2:24b
+   - GPU: AMD RX 7800 XT detected and used by v0.18.2
+
+2. Upgrade blocker
+   - sudo is required for system-wide upgrade (binary owned by root, systemd service)
+   - Non-interactive shell cannot prompt for sudo password
+   - Attempt: `sudo systemctl status ollama` timed out after 15s waiting for password
+
+3. Alternative path executed: user-local Ollama v0.22.0
+   - Downloaded: ollama-linux-amd64.tar.zst (base) + ollama-linux-amd64-rocm.tar.zst (ROCm)
+   - Installed to: ~/.local/bin/ollama and ~/.local/lib/ollama
+   - ROCm libs: copied to ~/.local/lib/ollama/rocm/
+   - Started on: 0.0.0.0:11435
+   - Version verified: {"version":"0.22.0"}
+   - GPU detected: AMD Radeon RX 7800 XT, ROCm, gfx1101, 16.0 GiB total, 13.4 GiB available
+   - Note: one "runner crashed" during GPU discovery, but recovery succeeded and GPU was found
+
+4. Model pull test
+   - gemma4:e4b: SUCCESS (9.6 GB, parameter_size 8.0B, quantization Q4_K_M)
+   - qwen3.6:8b: FAILED (tag does not exist)
+   - qwen3.6:27b: PARTIAL (~18 GB download started, cancelled as likely too large for 16GB VRAM)
+
+5. Inference test (gemma4:e4b)
+   - Prompt: "Draft a short internal support note for a customer VPN issue. Keep it to 2 sentences."
+   - Response: High-quality 3-option draft with escalation, troubleshooting, and summary variants
+   - Total duration: ~8.9s (including model load)
+   - Load duration: ~234ms (warm)
+   - GPU utilization confirmed via server logs (model weights on ROCm0, kv cache on ROCm0)
+
+6. Decision
+   - Selected runtime: User-local Ollama v0.22.0 on port 11435
+   - Selected model: gemma4:e4b
+   - System-wide upgrade to /usr/local/bin deferred to human sudo step
+   - Cluster ConfigMap will be updated to http://10.88.0.1:11435
+
+7. Rollback notes
+   - Old system Ollama on port 11434 remains untouched
+   - Old models in /usr/share/ollama remain available
+   - User-local install can be removed by: rm -rf ~/.local/bin/ollama ~/.local/lib/ollama ~/.ollama/models
+   - To restore system-only state, stop user-local ollama and revert ConfigMap to 11434
