@@ -917,6 +917,8 @@ Screenshots: 2 (no duplicates)
 
 - `c3189f846e2ccf754ad9f4c7ba4250855314ede7` BL-117: Local Asterisk AMI call-event bridge
 - `a57376d6b7d537697542253c6d1d6bba737da3ee` BL-117: Update WORKLOG with final commit hash
+- `e09f8c124067d65ad412ad4405cb41d058f00aa9` BL-117: List both commits in WORKLOG
+- `b6fc56b96ee80da8d45b14cc0a4988d6d7dea7f3` BL-117: Update ACCEPTANCE_FREEZES with final commit hashes
 
 ### Next Recommended Action
 
