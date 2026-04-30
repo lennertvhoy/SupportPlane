@@ -1046,7 +1046,7 @@ export class ActionsService {
       const payloadHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload)).then((buf) =>
         Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
       );
-      const signedHeaders = signAwsV4('PUT', putUrl.href, { 'content-type': 'application/json' }, payloadHash, minioAccessKey, minioSecretKey);
+      const signedHeaders = signAwsV4('PUT', putUrl.href, { 'content-type': 'application/json', 'content-length': String(Buffer.byteLength(payload, 'utf8')) }, payloadHash, minioAccessKey, minioSecretKey);
 
       const ok = await new Promise<boolean>((resolve, reject) => {
         const req = httpRequest(
