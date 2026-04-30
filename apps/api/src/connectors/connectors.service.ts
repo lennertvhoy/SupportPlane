@@ -9,9 +9,12 @@ import {
   type TicketingAdapterId,
 } from '@supportplane/contracts';
 import {
-  ZammadConnectorAdapter,
-  createZammadAdapter,
-  type TicketingAdapterDriver,
+  registerTicketingAdapter,
+  getTicketingAdapterFactory,
+  listTicketingAdapters,
+  createZammadAdapterFactory,
+  createMockZammadAdapterFactory,
+  type TicketingAdapterClient,
 } from '@supportplane/connectors';
 import { evaluateEgressPolicy } from '@supportplane/policy';
 
@@ -19,47 +22,54 @@ function env(name: string): string | undefined {
   return process.env[name];
 }
 
+let registryInitialized = false;
+
+function ensureRegistry() {
+  if (registryInitialized) return;
+  const modeRaw = env('ZAMMAD_CONNECTOR_MODE') ?? 'mock';
+  const isReal = modeRaw === 'zammad';
+  registerTicketingAdapter(isReal ? createZammadAdapterFactory() : createMockZammadAdapterFactory());
+  registryInitialized = true;
+}
+
 @Injectable()
 export class ConnectorsService {
   private readonly mode: ConnectorMode;
-  private readonly zammadAdapter: TicketingAdapterDriver;
 
   constructor() {
     const modeRaw = env('ZAMMAD_CONNECTOR_MODE') ?? 'mock';
     this.mode = modeRaw === 'zammad' ? ConnectorMode.enum.zammad : ConnectorMode.enum.mock;
+    ensureRegistry();
+  }
 
-    const adapterId = 'zammad-adapter-001' as TicketingAdapterId;
-    this.zammadAdapter = createZammadAdapter(this.mode, adapterId);
+  getMode(): ConnectorMode {
+    return this.mode;
+  }
 
-    if (this.mode === 'zammad' && env('OPENBAO_RESOLVER_ENABLED') !== 'true') {
-      const baseUrl = env('ZAMMAD_BASE_URL');
-      const apiToken = env('ZAMMAD_API_TOKEN');
-      if (baseUrl && apiToken) {
-        this.zammadAdapter
-          .connect({ baseUrl, apiToken, timeoutMs: 10000 })
-          .catch(() => {
-            // Connection failure is recorded in status; do not crash startup
-          });
-      }
-    }
+  getRegisteredAdapters() {
+    return listTicketingAdapters();
+  }
+
+  getAdapterFactory(adapterType: string) {
+    return getTicketingAdapterFactory(adapterType);
   }
 
   getZammadStatus(): ConnectorStatusShape {
     const isMock = this.mode === 'mock';
-    const meta = this.zammadAdapter.getAdapterMetadata?.() as
-      | { capabilities: string[]; status: string }
-      | undefined;
+    const factory = getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
+    const caps = factory?.capabilities ?? ['read_tickets', 'read_customers', 'write_notes'];
 
     return ConnectorStatus.parse({
       mode: this.mode,
       health: isMock ? ConnectorHealthStatus.enum.healthy : ConnectorHealthStatus.enum.unknown,
       adapterType: 'zammad',
-      capabilities: meta?.capabilities ?? ['read_tickets', 'read_customers', 'write_notes'],
-      connected: isMock ? true : meta?.status === 'active',
+      capabilities: caps,
+      connected: isMock ? true : !!env('ZAMMAD_BASE_URL'),
       metadata: {
         startupMode: this.mode,
         configured: isMock ? false : !!env('ZAMMAD_BASE_URL') && (env('OPENBAO_RESOLVER_ENABLED') === 'true' || !!env('ZAMMAD_API_TOKEN')),
         credentialResolver: env('OPENBAO_RESOLVER_ENABLED') === 'true' ? 'openbao-local-sandbox' : 'env-local-legacy',
+        registryPattern: true,
       },
     });
   }
@@ -72,7 +82,7 @@ export class ConnectorsService {
         mode: this.mode,
         success: true,
         latencyMs: Date.now() - start,
-        metadata: { note: 'Mock mode — no real network call was made' },
+        metadata: { note: 'Mock mode — no real network call was made', registryPattern: true },
       });
     }
 
@@ -91,7 +101,7 @@ export class ConnectorsService {
         mode: this.mode,
         success: false,
         error: egress.reason,
-        metadata: { egressDecision: egress.decision, secretExposed: false },
+        metadata: { egressDecision: egress.decision, secretExposed: false, registryPattern: true },
       });
     }
 
@@ -100,7 +110,7 @@ export class ConnectorsService {
         mode: this.mode,
         success: env('OPENBAO_RESOLVER_ENABLED') === 'true',
         error: env('OPENBAO_RESOLVER_ENABLED') === 'true' ? undefined : 'Zammad is not configured. Set ZAMMAD_BASE_URL and ZAMMAD_API_TOKEN or enable OpenBao resolver.',
-        metadata: { credentialResolver: env('OPENBAO_RESOLVER_ENABLED') === 'true' ? 'openbao-local-sandbox' : 'env-local-legacy', egressDecision: egress.decision },
+        metadata: { credentialResolver: env('OPENBAO_RESOLVER_ENABLED') === 'true' ? 'openbao-local-sandbox' : 'env-local-legacy', egressDecision: egress.decision, registryPattern: true },
       });
     }
 
@@ -110,15 +120,22 @@ export class ConnectorsService {
           mode: this.mode,
           success: true,
           latencyMs: Date.now() - start,
-          metadata: { baseUrl, credentialResolver: 'openbao-local-sandbox', egressDecision: egress.decision, noSecretExposed: true },
+          metadata: { baseUrl, credentialResolver: 'openbao-local-sandbox', egressDecision: egress.decision, noSecretExposed: true, registryPattern: true },
         });
       }
-      await this.zammadAdapter.connect({ baseUrl, apiToken, timeoutMs: 10000 });
+      const factory = getTicketingAdapterFactory('zammad');
+      if (!factory) {
+        throw new Error('Zammad adapter factory not registered');
+      }
+      const adapter = factory.createAdapter('zammad-test-001' as TicketingAdapterId);
+      if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
+        await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect({ baseUrl, apiToken, timeoutMs: 10000 });
+      }
       return ConnectorTestResult.parse({
         mode: this.mode,
         success: true,
         latencyMs: Date.now() - start,
-        metadata: { baseUrl, credentialResolver: 'env-local-legacy', egressDecision: egress.decision },
+        metadata: { baseUrl, credentialResolver: 'env-local-legacy', egressDecision: egress.decision, registryPattern: true },
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Connection test failed';
@@ -126,22 +143,26 @@ export class ConnectorsService {
         mode: this.mode,
         success: false,
         error: message,
-        metadata: {},
+        metadata: { registryPattern: true },
       });
     }
   }
 
-  getZammadAdapter(): TicketingAdapterDriver {
-    return this.zammadAdapter;
+  getZammadAdapter(): TicketingAdapterClient | undefined {
+    const factory = getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
+    if (!factory) return undefined;
+    return factory.createAdapter('zammad-adapter-001' as TicketingAdapterId);
   }
 
-  async createResolvedZammadAdapter(config: { baseUrl: string; apiToken: string; timeoutMs?: number }): Promise<TicketingAdapterDriver> {
-    const adapter = new ZammadConnectorAdapter('zammad-adapter-001' as TicketingAdapterId);
-    await adapter.connect(config);
+  async createResolvedZammadAdapter(config: { baseUrl: string; apiToken: string; timeoutMs?: number }): Promise<TicketingAdapterClient> {
+    const factory = getTicketingAdapterFactory('zammad');
+    if (!factory) {
+      throw new Error('Zammad adapter factory not registered');
+    }
+    const adapter = factory.createAdapter('zammad-adapter-001' as TicketingAdapterId);
+    if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
+      await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect(config);
+    }
     return adapter;
-  }
-
-  getMode(): ConnectorMode {
-    return this.mode;
   }
 }

@@ -128,4 +128,19 @@ export class ConnectorInstallationsController {
     }
     return this.runtimeService.resolveRuntime(identity, connectorType);
   }
+
+  // BL-124: Dynamic adapter schema discovery endpoints
+  @Get('runtime/adapters')
+  @HttpCode(200)
+  async listAdapters(@Req() req: Request) {
+    const identity = getCurrentIdentity(req);
+    return this.runtimeService.listRegisteredAdapters(identity);
+  }
+
+  @Get('runtime/adapters/:adapterType/schema')
+  @HttpCode(200)
+  async getAdapterSchema(@Req() req: Request, @Param('adapterType') adapterType: string) {
+    const identity = getCurrentIdentity(req);
+    return this.runtimeService.getAdapterSchema(identity, adapterType);
+  }
 }

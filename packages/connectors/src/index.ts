@@ -31,8 +31,8 @@ export {
 } from '@supportplane/contracts';
 
 /**
- * Placeholder interface for a ticketing adapter driver.
- * Concrete implementations (Zammad, GLPI, custom) will implement this.
+ * Legacy interface for a ticketing adapter driver.
+ * Concrete implementations (Zammad, GLPI, custom) implement this.
  */
 export interface TicketingAdapterDriver {
   readonly adapterType: string;
@@ -62,3 +62,34 @@ export {
   sanitizeTelephonyError,
   type TelephonyAdapter,
 } from './telephony-adapter.js';
+
+// Registry foundation (BL-123 / BL-124)
+export type {
+  TicketingAdapterFactory,
+  TicketingAdapterClient,
+  TicketingAdapterConfigValidation,
+  TicketingAdapterConfigIssue,
+  ResolvedCredentialSet,
+  AdapterSafetyContext,
+  AdapterRuntimeContext,
+  RegisteredAdapterSummary,
+  RuntimeResolverInput,
+  RuntimeResolverOutput,
+} from './types.js';
+export {
+  registerTicketingAdapter,
+  getTicketingAdapterFactory,
+  listTicketingAdapters,
+  clearTicketingAdapterRegistry,
+  getRegisteredAdapterTypes,
+} from './registry.js';
+export {
+  resolveAdapterRuntime,
+  AdapterRuntimeResolverError,
+} from './runtime-resolver.js';
+export {
+  ZammadAdapterFactory,
+  MockZammadAdapterFactory,
+  createZammadAdapterFactory,
+  createMockZammadAdapterFactory,
+} from './zammad-adapter-factory.js';

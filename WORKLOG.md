@@ -736,3 +736,44 @@ BL-116 closure reconciliation left the canonical verifier script `scripts/verify
 
 - `38d7b2d` fix(scripts): repair BL-116 verifier script JSON paths and Zammad token
 - `00165a0` chore(evidence): regenerate BL-116 E2E proof from passing verifier run
+
+## 2026-04-30 Session — BL-089/123/124/125 Plugin Registry + Threat Model
+
+### What Changed
+
+- **BL-123 Registry Foundation**: Created `packages/connectors/src/registry.ts` with `registerTicketingAdapter`, `getTicketingAdapterFactory`, `listTicketingAdapters`. Added `TicketingAdapterFactory` interface to `types.ts`.
+- **BL-124 Runtime Resolver**: Created `packages/connectors/src/runtime-resolver.ts` with `AdapterRuntimeResolver` and `resolveAdapterRuntime`. Validates config, resolves credentials, instantiates adapters.
+- **BL-125 Zammad Migration**: Migrated `ConnectorsService`, `SupportSessionsService`, and `ActionsService` to registry pattern. Added `registryPattern: true` to connector status metadata.
+- **BL-126 AI Provider Registry**: Created `packages/ai/src/registry.ts` with `AiProviderRegistry`, `registerAiProvider`, `getAiProvider`. Updated `createDefaultModelGateway` to populate registry.
+- **BL-089 Threat Model**: Created `docs/security/THREAT_MODEL.md` with 8 threat categories and mitigations. Created `docs/security/SECURITY_REGRESSION_MATRIX.md` with verification commands.
+- **Bug fixes**:
+  - Fixed mock-mode egress policy evaluation order in `getAdapter` (moved `isMock` check before `evaluateEgressPolicy` to prevent 403 in tests).
+  - Fixed `resolveAdapterRuntime` to use correct `adapterId` (`zammad-adapter-001`) instead of `installation.id` (`conn-inst-dev-001`) to prevent FK constraint violation on `ticket_references_adapterId_fkey`.
+  - Added `/connectors/registry` GET endpoint to `ConnectorsController`.
+  - Fixed circular dependency in `packages/ai/src/index.ts` by making `createModelGatewayFromRegistry` synchronous.
+
+### Verification
+
+- `npm run build`: PASS (all workspaces)
+- `npm test --workspace=@supportplane/api`: PASS (147/147 tests)
+- `npm test --workspace=@supportplane/connectors`: PASS (47 tests)
+- `npm test --workspace=@supportplane/policy`: PASS (7 tests)
+- `npm test --workspace=@supportplane/ai`: PASS
+- `bash scripts/verify_bl116_real_sandbox_freeze.sh`: PASS (all 11 steps, exit code 0)
+- `node scripts/bl123_bl124_bl125_evidence.js`: PASS (8 evidence artifacts generated)
+
+### Evidence
+
+- `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/01-registry-listing.json`
+- `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/02-connector-status.json`
+- `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/03-connector-installations.json`
+- `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/04-specific-installation.json`
+- `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/05-runtime-readiness.json`
+- `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/06-create-session.json`
+- `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/07-ticket-context.json`
+- `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/08-draft-suggestion.json`
+
+### Commits
+
+- `ff8e271` feat(connectors,ai): BL-123/124/125/126 registry + resolver + threat model
+

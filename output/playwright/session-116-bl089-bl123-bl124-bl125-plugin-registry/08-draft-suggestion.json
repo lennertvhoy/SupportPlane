@@ -1,0 +1,39 @@
+{
+  "draft": "[OLLAMA LOCAL DRAFT - no cloud AI - review required before any writeback]\n**Internal Support Note**\n\n**Subject:** Summary for Acme BVBA - VPN Connection Issue\n\n**Details:**\nAcme BVBA has an open ticket regarding a VPN connection issue for a remote office. The ticket reference is TICKET-101 (Zammad ID: 68002). The current status remains open.",
+  "provider": "ollama",
+  "model": "gemma4:e4b",
+  "prompt": {
+    "id": "support-note-draft",
+    "version": "ollama-local-v1",
+    "purpose": "Draft a reviewable internal support note from redacted local SupportPlane context."
+  },
+  "contextHash": "1f4df52214fe582e3f93716f2c217fe93a4d076db1c0e6a6cc94c37101fd9b7c",
+  "usage": {
+    "latencyMs": 8234,
+    "placeholder": false,
+    "providerMode": "local",
+    "runtime": "ollama",
+    "runtimeBaseUrlRedacted": "http://10.88.0.1/...",
+    "fallbackUsed": false,
+    "noCloudCall": true
+  },
+  "safety": {
+    "mockOnly": false,
+    "externalCallMade": false,
+    "cloudCallMade": false,
+    "localProviderCallMade": true,
+    "fallbackUsed": false,
+    "policyChecks": [
+      "ollama_local_provider",
+      "redaction_before_provider_call",
+      "review_required",
+      "writeback_disabled"
+    ],
+    "reviewRequired": true,
+    "writebackAllowed": false,
+    "autonomousSend": false,
+    "redactionApplied": true,
+    "runtime": "ollama"
+  },
+  "generatedAt": "2026-04-30T11:30:20.083Z"
+}

@@ -845,11 +845,22 @@ export class ActionsService {
 
     // Execute real Zammad internal note writeback
     try {
-      const adapter = await this.connectorsService.createResolvedZammadAdapter({
-        baseUrl: zammadBaseUrl,
-        apiToken,
-        timeoutMs: 10000,
-      });
+      // Registry-driven adapter instantiation (BL-125)
+      const { getTicketingAdapterFactory } = await import('@supportplane/connectors');
+      const factory = getTicketingAdapterFactory('zammad');
+      let adapter: import('@supportplane/connectors').TicketingAdapterClient;
+      if (factory) {
+        adapter = factory.createAdapter(connectorInstallation?.id ?? 'zammad-sandbox-001');
+        if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
+          await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect({ baseUrl: zammadBaseUrl, apiToken, timeoutMs: 10000 });
+        }
+      } else {
+        adapter = await this.connectorsService.createResolvedZammadAdapter({
+          baseUrl: zammadBaseUrl,
+          apiToken,
+          timeoutMs: 10000,
+        });
+      }
 
       const noteBody = `[SupportPlane sandbox internal note]\nHuman-reviewed local sandbox writeback.\nNo production data. No public reply.\nIdempotency: ${item.idempotencyKey}`;
       const writeResult = await adapter.writeInternalNote(externalTicketId, noteBody);

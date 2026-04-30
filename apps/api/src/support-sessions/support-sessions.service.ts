@@ -36,6 +36,10 @@ import { computeIntegrityHash } from '@supportplane/audit';
 import {
   createZammadAdapter,
   type TicketingAdapterDriver,
+  type TicketingAdapterClient,
+  getTicketingAdapterFactory,
+  resolveAdapterRuntime,
+  AdapterRuntimeResolverError,
 } from '@supportplane/connectors';
 import { evaluateEgressPolicy } from '@supportplane/policy';
 import {
@@ -73,17 +77,50 @@ export class SupportSessionsService {
     private readonly store: Store
   ) {}
 
-  private async getAdapter(identity: DevIdentity, installation?: { id: string; secretReferenceIds: string[] }): Promise<{
-    adapter: TicketingAdapterDriver;
+  private async getAdapter(identity: DevIdentity, installation?: { id: string; secretReferenceIds: string[]; config?: Record<string, unknown> }): Promise<{
+    adapter: TicketingAdapterClient;
     credentialResolution?: Record<string, unknown>;
     egressDecision?: ReturnType<typeof evaluateEgressPolicy>;
+    registryMetadata?: Record<string, unknown>;
   }> {
     const mode = this.connectorsService.getMode();
-    if (mode !== ConnectorMode.enum.zammad) {
-      return { adapter: this.connectorsService.getZammadAdapter() ?? this.fallbackAdapter };
+    // Registry path: prefer ConnectorInstallation config when available
+    const factory = getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
+    if (!factory) {
+      // Fallback to legacy hardcoded path
+      if (mode !== ConnectorMode.enum.zammad) {
+        return { adapter: this.connectorsService.getZammadAdapter() ?? this.fallbackAdapter };
+      }
+      // Legacy real path
+      const baseUrl = process.env['ZAMMAD_BASE_URL'];
+      const egressDecision = evaluateEgressPolicy({
+        tenantId: identity.tenantId,
+        connectorType: 'zammad',
+        operation: 'read',
+        url: baseUrl,
+      });
+      if (!egressDecision.allowed) {
+        throw new ForbiddenException({ message: egressDecision.reason, egressDecision });
+      }
+      if (!baseUrl || !installation) {
+        throw new BadRequestException('Zammad sandbox read is not configured with an active installation.');
+      }
+      const resolved = await this.credentialResolver.resolveZammadApiToken(identity.tenantId, installation as never);
+      const adapter = await this.connectorsService.createResolvedZammadAdapter({ baseUrl, apiToken: resolved.apiToken, timeoutMs: 10000 });
+      return { adapter, credentialResolution: resolved.metadata, egressDecision };
     }
 
-    const baseUrl = process.env['ZAMMAD_BASE_URL'];
+    // Registry-driven path
+    const isMock = mode !== ConnectorMode.enum.zammad;
+    if (isMock) {
+      const adapter = factory.createAdapter('zammad-adapter-001' as never);
+      if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
+        await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect({ mockMode: true });
+      }
+      return { adapter, registryMetadata: { mode: 'mock', registryPattern: true } };
+    }
+
+    const baseUrl = installation?.config?.baseUrl as string | undefined ?? process.env['ZAMMAD_BASE_URL'];
     const egressDecision = evaluateEgressPolicy({
       tenantId: identity.tenantId,
       connectorType: 'zammad',
@@ -93,24 +130,42 @@ export class SupportSessionsService {
     if (!egressDecision.allowed) {
       throw new ForbiddenException({ message: egressDecision.reason, egressDecision });
     }
+
     if (!baseUrl || !installation) {
       throw new BadRequestException('Zammad sandbox read is not configured with an active installation.');
     }
 
-    const resolved = await this.credentialResolver.resolveZammadApiToken(
-      identity.tenantId,
-      installation as never
-    );
-    const adapter = await this.connectorsService.createResolvedZammadAdapter({
-      baseUrl,
-      apiToken: resolved.apiToken,
-      timeoutMs: 10000,
-    });
-    return {
-      adapter,
-      credentialResolution: resolved.metadata,
-      egressDecision,
-    };
+    const resolved = await this.credentialResolver.resolveZammadApiToken(identity.tenantId, installation as never);
+    try {
+      const runtimeResult = await resolveAdapterRuntime({
+        adapterType: factory.adapterType,
+        adapterId: 'zammad-adapter-001',
+        installation: {
+          id: installation.id,
+          enabled: true,
+          config: { ...installation.config, baseUrl },
+          capabilities: factory.capabilities,
+        },
+        credentials: { apiToken: resolved.apiToken },
+        safety: {
+          egressPolicy: egressDecision,
+          writebackEnabled: false,
+          mockMode: false,
+          sandboxMode: true,
+        },
+      });
+      return {
+        adapter: runtimeResult.adapter,
+        credentialResolution: resolved.metadata,
+        egressDecision,
+        registryMetadata: runtimeResult.metadata,
+      };
+    } catch (err) {
+      if (err instanceof AdapterRuntimeResolverError) {
+        throw new BadRequestException(`Adapter runtime resolution failed: ${err.message}`);
+      }
+      throw err;
+    }
   }
 
   async createSession(

@@ -1,0 +1,16 @@
+{
+  "id": "2504f4c3-6e2a-41c5-acd6-8e7c67abacab",
+  "tenantId": "dev-tenant",
+  "status": "open",
+  "priority": "normal",
+  "title": "BL-123 registry proof",
+  "assignedUserId": "dev-user",
+  "linkedTicketIds": [],
+  "aiContextPacketIds": [],
+  "screenObservationIds": [],
+  "callEventIds": [],
+  "auditEventIds": [],
+  "startedAt": "2026-04-30T11:30:19.814Z",
+  "createdAt": "2026-04-30T11:30:19.814Z",
+  "updatedAt": "2026-04-30T11:30:19.814Z"
+}

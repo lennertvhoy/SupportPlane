@@ -19,6 +19,7 @@ import type { DevIdentity } from '../auth/auth.types.js';
 import { requirePermission } from '../auth/rbac.js';
 import { randomUUID } from 'crypto';
 import { CredentialResolverService } from '../credential-references/credential-resolver.service.js';
+import { getTicketingAdapterFactory, listTicketingAdapters } from '@supportplane/connectors';
 
 const UNSAFE_CONFIG_KEYS = [
   'apiToken',
@@ -76,6 +77,20 @@ export class ConnectorRuntimeService {
 
     const isMock = installation.mockMode !== false;
 
+    // Registry-driven schema discovery (BL-124)
+    const factory = getTicketingAdapterFactory(installation.adapterType);
+    if (factory) {
+      const schema = factory.getConfigSchema();
+      return {
+        installationId,
+        schema: schema as ConnectorConfigSchemaResponse['schema'],
+        safeFields: isMock ? ALLOWED_CONFIG_KEYS_MOCK : ALLOWED_CONFIG_KEYS_REAL,
+        rejectedFields: isMock ? UNSAFE_CONFIG_KEYS : [],
+        mockOnly: isMock,
+      } as ConnectorConfigSchemaResponse;
+    }
+
+    // Legacy hardcoded schema fallback
     return {
       installationId,
       schema: {
@@ -125,6 +140,13 @@ export class ConnectorRuntimeService {
         message: 'mockMode must be a boolean (true for mock, false for real).',
         code: 'MOCK_MODE_INVALID',
       });
+    }
+
+    // Registry-driven validation (BL-124)
+    const factory = getTicketingAdapterFactory(installation.adapterType);
+    if (factory) {
+      const factoryValidation = factory.validateConfig(config);
+      issues.push(...factoryValidation.issues);
     }
 
     if (isMock) {
@@ -206,6 +228,7 @@ export class ConnectorRuntimeService {
       warningCount: warnings.length,
       mockMode: isMock,
       realNetwork: result.realNetwork,
+      registryPattern: Boolean(factory),
     });
 
     return { installationId, result };
@@ -224,6 +247,9 @@ export class ConnectorRuntimeService {
     const credentialRefs = await this.resolveCredentialReferences(identity.tenantId, installation);
     const linkedCount = credentialRefs.length;
     const isMock = installation.mockMode !== false;
+
+    // Registry-driven capability check
+    const factory = getTicketingAdapterFactory(installation.adapterType);
 
     const warnings: string[] = isMock
       ? [
@@ -245,6 +271,12 @@ export class ConnectorRuntimeService {
       warnings.push('Connector installation is not enabled.');
     }
 
+    if (factory) {
+      warnings.push(`Adapter '${factory.adapterType}' is registered with capabilities: ${factory.capabilities.join(', ')}.`);
+    } else {
+      warnings.push(`Adapter '${installation.adapterType}' is not registered in the adapter registry.`);
+    }
+
     const result: ConnectorRuntimeReadinessResult = {
       mockReady: isMock && installation.enabled === true,
       realReady: !isMock && installation.enabled === true,
@@ -262,6 +294,7 @@ export class ConnectorRuntimeService {
       realReady: result.realReady,
       credentialReferencesLinked: result.credentialReferencesLinked,
       mockMode: isMock,
+      registryPattern: Boolean(factory),
     });
 
     return { installationId, result };
@@ -283,6 +316,9 @@ export class ConnectorRuntimeService {
 
     const credentialRefs = await this.resolveCredentialReferences(identity.tenantId, installation);
     const isMock = installation.mockMode !== false;
+
+    // Registry-driven runtime resolution
+    const factory = getTicketingAdapterFactory(connectorType);
 
     const readiness: ConnectorRuntimeReadinessResult = {
       mockReady: isMock && installation.enabled === true,
@@ -327,9 +363,37 @@ export class ConnectorRuntimeService {
       realNetwork: result.realNetwork,
       credentialReferenceCount: credentialRefs.length,
       mockMode: isMock,
+      registryPattern: Boolean(factory),
+      registeredCapabilities: factory?.capabilities ?? [],
     });
 
     return result;
+  }
+
+  async listRegisteredAdapters(identity: DevIdentity) {
+    requirePermission(identity, 'connector_installation:read');
+    const adapters = listTicketingAdapters();
+    return {
+      adapters: adapters.map((a: { adapterType: string; capabilities: string[] }) => ({
+        adapterType: a.adapterType,
+        capabilities: a.capabilities,
+        registryPattern: true,
+      })),
+    };
+  }
+
+  async getAdapterSchema(identity: DevIdentity, adapterType: string) {
+    requirePermission(identity, 'connector_installation:read');
+    const factory = getTicketingAdapterFactory(adapterType);
+    if (!factory) {
+      throw new NotFoundException(`Adapter type ${adapterType} is not registered.`);
+    }
+    return {
+      adapterType: factory.adapterType,
+      capabilities: factory.capabilities,
+      configSchema: factory.getConfigSchema(),
+      registryPattern: true,
+    };
   }
 
   private async resolveCredentialReferences(

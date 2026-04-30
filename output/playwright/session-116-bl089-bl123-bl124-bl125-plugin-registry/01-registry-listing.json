@@ -1,0 +1,13 @@
+{
+  "adapters": [
+    {
+      "adapterType": "zammad",
+      "capabilities": [
+        "read_tickets",
+        "read_customers",
+        "write_notes"
+      ]
+    }
+  ],
+  "_tenantId": "dev-tenant"
+}

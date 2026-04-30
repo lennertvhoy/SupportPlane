@@ -1,0 +1,24 @@
+{
+  "mode": "mock",
+  "readyForMockDelivery": false,
+  "readyForRealWriteback": false,
+  "realNetwork": false,
+  "writebackEnabled": false,
+  "externalWriteAttempted": false,
+  "policyDecision": "sandbox_allowed",
+  "connectorInstalled": true,
+  "connectorActive": true,
+  "connectorSupportsActionType": false,
+  "connectorValidationStatus": "not_run",
+  "credentialsAbsentOrRedacted": true,
+  "policyVersion": 1,
+  "lastValidationResult": null,
+  "safetyFlags": {
+    "realNetworkAllowed": true,
+    "writebackEnabled": true,
+    "externalWriteAllowed": false,
+    "mockOnly": false,
+    "localDevOnly": true,
+    "sandboxOnly": true
+  }
+}

@@ -29,4 +29,14 @@ export class ConnectorsController {
       _tenantId: identity.tenantId,
     };
   }
+
+  @Get('registry')
+  registryList(@Req() req: Request) {
+    const identity = getCurrentIdentity(req);
+    requirePermission(identity, 'connector:read');
+    return {
+      adapters: this.service.getRegisteredAdapters(),
+      _tenantId: identity.tenantId,
+    };
+  }
 }

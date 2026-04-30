@@ -599,8 +599,31 @@ export class LmStudioAiProvider implements AiProvider {
   }
 }
 
-export function createDefaultModelGateway(): ModelGateway {
-  const providers: AiProvider[] = [new MockAiProvider()];
+import {
+  registerAiProvider,
+  getRegisteredAiProviderIds,
+  getAiProvider,
+  clearAiProviderRegistry,
+} from './registry.js';
+
+export {
+  registerAiProvider,
+  getAiProvider,
+  getAiProviderRegistration,
+  listAiProviders,
+  clearAiProviderRegistry,
+  getRegisteredAiProviderIds,
+} from './registry.js';
+export type { AiProviderRegistration, AiProviderSummary } from './registry.js';
+
+function populateDefaultAiProviders(): void {
+  clearAiProviderRegistry();
+  registerAiProvider({
+    id: 'mock',
+    provider: new MockAiProvider(),
+    metadata: { runtime: 'mock', providerMode: 'mock', noCloudCall: true, fallbackEnabled: false },
+  });
+
   const providerEnv: string = process.env['SUPPORTPLANE_AI_PROVIDER'] ?? (process.env['OLLAMA_ENABLED'] === 'true' ? 'ollama' : 'mock');
   const localRuntime: string = process.env['SUPPORTPLANE_AI_LOCAL_RUNTIME'] ?? providerEnv;
 
@@ -608,12 +631,16 @@ export function createDefaultModelGateway(): ModelGateway {
     const baseUrl = process.env['OLLAMA_BASE_URL'];
     const model = process.env['OLLAMA_MODEL'] ?? 'llama3.1:8b';
     if (baseUrl) {
-      providers.push(new OllamaAiProvider({
-        baseUrl,
-        model,
-        timeoutMs: Number(process.env['OLLAMA_TIMEOUT_MS'] ?? '15000'),
-        fallbackEnabled: process.env['OLLAMA_FALLBACK_ENABLED'] !== 'false',
-      }));
+      registerAiProvider({
+        id: 'ollama',
+        provider: new OllamaAiProvider({
+          baseUrl,
+          model,
+          timeoutMs: Number(process.env['OLLAMA_TIMEOUT_MS'] ?? '15000'),
+          fallbackEnabled: process.env['OLLAMA_FALLBACK_ENABLED'] !== 'false',
+        }),
+        metadata: { runtime: 'ollama', providerMode: 'local', noCloudCall: true, fallbackEnabled: process.env['OLLAMA_FALLBACK_ENABLED'] !== 'false' },
+      });
     }
   }
 
@@ -621,15 +648,44 @@ export function createDefaultModelGateway(): ModelGateway {
     const baseUrl = process.env['LMSTUDIO_BASE_URL'];
     const model = process.env['LMSTUDIO_MODEL'] ?? 'local-model';
     if (baseUrl) {
-      providers.push(new LmStudioAiProvider({
-        baseUrl,
-        model,
-        timeoutMs: Number(process.env['LMSTUDIO_TIMEOUT_MS'] ?? '15000'),
-        fallbackEnabled: process.env['LMSTUDIO_FALLBACK_ENABLED'] !== 'false',
-      }));
+      registerAiProvider({
+        id: 'lmstudio',
+        provider: new LmStudioAiProvider({
+          baseUrl,
+          model,
+          timeoutMs: Number(process.env['LMSTUDIO_TIMEOUT_MS'] ?? '15000'),
+          fallbackEnabled: process.env['LMSTUDIO_FALLBACK_ENABLED'] !== 'false',
+        }),
+        metadata: { runtime: 'lmstudio', providerMode: 'local', noCloudCall: true, fallbackEnabled: process.env['LMSTUDIO_FALLBACK_ENABLED'] !== 'false' },
+      });
     }
   }
+}
 
+export function createDefaultModelGateway(): ModelGateway {
+  populateDefaultAiProviders();
+  const ids = getRegisteredAiProviderIds();
+  if (ids.length === 0) {
+    return new ModelGateway([new MockAiProvider()]);
+  }
+  const providers: AiProvider[] = ids.map((id) => getAiProvider(id)!).filter(Boolean);
+  return new ModelGateway(providers);
+}
+
+/**
+ * Create a ModelGateway from the AI provider registry (BL-126).
+ * Falls back to a mock-only gateway if registry is empty.
+ */
+export function createModelGatewayFromRegistry(): ModelGateway {
+  const ids = getRegisteredAiProviderIds();
+  if (ids.length === 0) {
+    populateDefaultAiProviders();
+  }
+  const finalIds = getRegisteredAiProviderIds();
+  if (finalIds.length === 0) {
+    return new ModelGateway([new MockAiProvider()]);
+  }
+  const providers: AiProvider[] = finalIds.map((id) => getAiProvider(id)!).filter(Boolean);
   return new ModelGateway(providers);
 }
 

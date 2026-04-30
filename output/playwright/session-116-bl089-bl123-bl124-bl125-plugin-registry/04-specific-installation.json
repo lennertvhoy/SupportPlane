@@ -1,0 +1,43 @@
+{
+  "installation": {
+    "id": "conn-inst-dev-001",
+    "tenantId": "dev-tenant",
+    "name": "Local Zammad Sandbox",
+    "displayName": "Local Zammad Sandbox",
+    "description": "Real local Zammad sandbox read connector. Read-only; writeback remains blocked.",
+    "adapterType": "zammad",
+    "capabilities": [
+      "read_tickets",
+      "read_customers",
+      "write_notes"
+    ],
+    "config": {
+      "enabled": true,
+      "mockMode": false,
+      "timeoutMs": 10000,
+      "capabilities": [
+        "read_tickets",
+        "read_customers"
+      ],
+      "baseUrlPlaceholder": "zammad.supportplane-integrations.svc.cluster.local",
+      "validateBeforeWrite": true
+    },
+    "secretReferenceIds": [
+      "cred-ref-dev-001"
+    ],
+    "status": "active",
+    "mockMode": false,
+    "enabled": true,
+    "safetyFlags": {
+      "maxRetries": 3,
+      "allowRealCalls": true,
+      "writebackEnabled": false,
+      "validateBeforeWrite": true,
+      "sandboxAllowlistOnly": true,
+      "secretsResolvedServerSide": true
+    },
+    "timeoutMs": 10000,
+    "createdAt": "2026-04-29T14:18:52.676Z",
+    "updatedAt": "2026-04-30T07:05:59.869Z"
+  }
+}
