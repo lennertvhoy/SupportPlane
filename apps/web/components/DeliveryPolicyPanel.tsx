@@ -97,6 +97,9 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
           mode: 'mock',
           readyForMockDelivery: false,
           readyForRealWriteback: false,
+          sandboxWritebackReady: false,
+          productionWritebackReady: false,
+          publicReplyEnabled: false,
           realNetwork: false,
           writebackEnabled: false,
           externalWriteAttempted: false,
@@ -109,6 +112,7 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
           policyVersion: current.policyVersion,
           lastValidationResult: null,
           safetyFlags: current.safetyFlags,
+          registryPattern: false,
         });
       } catch {
         // ignore
@@ -317,14 +321,21 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
                       Connector Readiness
                     </div>
                     <div className="grid grid-cols-2 gap-1 text-cockpit-300">
+                      <div>Mode: {readiness.mode}</div>
                       <div>Mock ready: {readiness.readyForMockDelivery ? 'Yes' : 'No'}</div>
-                      <div>Real ready: {readiness.readyForRealWriteback ? 'Yes' : 'No'}</div>
+                      <div>Sandbox writeback: {readiness.sandboxWritebackReady ? 'Yes' : 'No'}</div>
+                      <div>Production writeback: {readiness.productionWritebackReady ? 'Yes' : 'No'}</div>
+                      <div>Public reply: {readiness.publicReplyEnabled ? 'Yes' : 'No'}</div>
                       <div>Active: {readiness.connectorActive ? 'Yes' : 'No'}</div>
                       <div>Supports type: {readiness.connectorSupportsActionType ? 'Yes' : 'No'}</div>
+                      {readiness.registryPattern && <div>Registry pattern: true</div>}
+                      {readiness.adapterFactoryId && <div>Factory: {readiness.adapterFactoryId}</div>}
                     </div>
                     <div className="text-amber-300">
                       <Lock size={10} className="inline mr-1" />
-                      Production writeback is not implemented; local sandbox internal-note writeback is policy-gated.
+                      {readiness.sandboxWritebackReady
+                        ? 'Sandbox internal-note writeback enabled; no public reply; no production writeback.'
+                        : 'Sandbox writeback not ready; production writeback blocked.'}
                     </div>
                     <div className="text-cockpit-500">Policy: {readiness.policyDecision}</div>
                   </div>

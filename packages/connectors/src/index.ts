@@ -93,3 +93,23 @@ export {
   createZammadAdapterFactory,
   createMockZammadAdapterFactory,
 } from './zammad-adapter-factory.js';
+export {
+  OsTicketAdapterFactory,
+  MockOsTicketAdapterFactory,
+  createOsTicketAdapterFactory,
+  createMockOsTicketAdapterFactory,
+} from './osticket-adapter-factory.js';
+
+/**
+ * Canonical adapter ID resolver.
+ * Temporary mapping until ConnectorInstallation stores a proper adapterId reference.
+ * Migration gap: add adapterId field to ConnectorInstallation linking to TicketingAdapter.
+ */
+export function resolveCanonicalAdapterId(adapterType: string): string {
+  const map: Record<string, string> = {
+    zammad: 'zammad-adapter-001',
+    osticket: 'osticket-adapter-001',
+    mock: 'mock-adapter-001',
+  };
+  return map[adapterType] ?? `${adapterType}-adapter-001`;
+}

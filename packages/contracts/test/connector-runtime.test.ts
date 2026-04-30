@@ -93,6 +93,9 @@ describe('connector runtime contracts', () => {
     const result = ConnectorRuntimeReadinessResult.parse({
       mockReady: true,
       realReady: false,
+      sandboxWritebackReady: false,
+      productionWritebackReady: false,
+      publicReplyEnabled: false,
       realNetwork: false,
       writebackEnabled: false,
       externalWriteAttempted: false,
@@ -103,15 +106,20 @@ describe('connector runtime contracts', () => {
     });
     assert.strictEqual(result.mockReady, true);
     assert.strictEqual(result.realReady, false);
+    assert.strictEqual(result.sandboxWritebackReady, false);
+    assert.strictEqual(result.productionWritebackReady, false);
     assert.strictEqual(result.credentialReferencesLinked, true);
   });
 
-  it('accepts readiness result with realReady true in sandbox mode', () => {
+  it('accepts readiness result with sandbox writeback ready', () => {
     const parsed = ConnectorRuntimeReadinessResult.safeParse({
       mockReady: false,
       realReady: true,
+      sandboxWritebackReady: true,
+      productionWritebackReady: false,
+      publicReplyEnabled: false,
       realNetwork: true,
-      writebackEnabled: false,
+      writebackEnabled: true,
       externalWriteAttempted: false,
       warnings: ['Sandbox real mode'],
       credentialReferencesLinked: false,
@@ -121,8 +129,11 @@ describe('connector runtime contracts', () => {
     assert.strictEqual(parsed.success, true);
     if (parsed.success) {
       assert.strictEqual(parsed.data.realReady, true);
+      assert.strictEqual(parsed.data.sandboxWritebackReady, true);
+      assert.strictEqual(parsed.data.productionWritebackReady, false);
+      assert.strictEqual(parsed.data.publicReplyEnabled, false);
       assert.strictEqual(parsed.data.realNetwork, true);
-      assert.strictEqual(parsed.data.writebackEnabled, false);
+      assert.strictEqual(parsed.data.writebackEnabled, true);
     }
   });
 
@@ -172,10 +183,16 @@ describe('connector runtime contracts', () => {
       mode: 'mock',
       realNetwork: false,
       writebackEnabled: false,
+      sandboxWritebackReady: false,
+      productionWritebackReady: false,
+      publicReplyEnabled: false,
       externalWriteAttempted: false,
       readiness: {
         mockReady: true,
         realReady: false,
+        sandboxWritebackReady: false,
+        productionWritebackReady: false,
+        publicReplyEnabled: false,
         realNetwork: false,
         writebackEnabled: false,
         externalWriteAttempted: false,
@@ -189,7 +206,7 @@ describe('connector runtime contracts', () => {
     assert.strictEqual(result.credentialReferences.length, 1);
   });
 
-  it('accepts runtime resolver result with mode zammad for sandbox read', () => {
+  it('accepts runtime resolver result with mode sandbox for sandbox writeback', () => {
     const parsed = ConnectorRuntimeResolverResult.safeParse({
       tenantId: 'tenant-a',
       connectorType: 'zammad',
@@ -197,15 +214,21 @@ describe('connector runtime contracts', () => {
       installationDisplayName: 'Zammad Sandbox',
       capabilities: [],
       credentialReferences: [],
-      mode: 'zammad',
+      mode: 'sandbox',
       realNetwork: true,
-      writebackEnabled: false,
+      writebackEnabled: true,
+      sandboxWritebackReady: true,
+      productionWritebackReady: false,
+      publicReplyEnabled: false,
       externalWriteAttempted: false,
       readiness: {
         mockReady: false,
         realReady: true,
+        sandboxWritebackReady: true,
+        productionWritebackReady: false,
+        publicReplyEnabled: false,
         realNetwork: true,
-        writebackEnabled: false,
+        writebackEnabled: true,
         externalWriteAttempted: false,
         warnings: [],
         credentialReferencesLinked: false,
@@ -215,9 +238,11 @@ describe('connector runtime contracts', () => {
     });
     assert.strictEqual(parsed.success, true);
     if (parsed.success) {
-      assert.strictEqual(parsed.data.mode, 'zammad');
+      assert.strictEqual(parsed.data.mode, 'sandbox');
       assert.strictEqual(parsed.data.realNetwork, true);
-      assert.strictEqual(parsed.data.writebackEnabled, false);
+      assert.strictEqual(parsed.data.writebackEnabled, true);
+      assert.strictEqual(parsed.data.sandboxWritebackReady, true);
+      assert.strictEqual(parsed.data.productionWritebackReady, false);
     }
   });
 
@@ -277,10 +302,16 @@ describe('connector runtime contracts', () => {
       mode: 'mock',
       realNetwork: false,
       writebackEnabled: false,
+      sandboxWritebackReady: false,
+      productionWritebackReady: false,
+      publicReplyEnabled: false,
       externalWriteAttempted: false,
       readiness: {
         mockReady: true,
         realReady: false,
+        sandboxWritebackReady: false,
+        productionWritebackReady: false,
+        publicReplyEnabled: false,
         realNetwork: false,
         writebackEnabled: false,
         externalWriteAttempted: false,

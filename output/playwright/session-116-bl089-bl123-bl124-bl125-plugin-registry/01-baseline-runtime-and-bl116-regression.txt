@@ -1,68 +1,44 @@
 === Git ===
 ## main
- M output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/04-real-sandbox-e2e-flow-proof.txt
-?? output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/
-ff8e271 chore(evidence): final BL-116 E2E proof from stable verifier run
-7ceeb11 docs(acceptance-freezes): append BL-116 verifier fix details to AF-2026-04-30-008
-d3d5e77 chore(evidence): regenerate BL-116 E2E proof after worker-race polling fix
-408ca9c fix(scripts): add outbox polling to BL-116 verifier for worker auto-claim race
-0045906 docs(evidence): append EV-2026-04-30-007 BL-116 verifier fix and final passing run
-988fc1b chore(evidence): regenerate BL-116 E2E proof from clean verifier run
-5da0d5b docs: append BL-116 verifier script root-cause and repair to WORKLOG
-00165a0 chore(evidence): regenerate BL-116 E2E proof from passing verifier run
-38d7b2d fix(scripts): repair BL-116 verifier script JSON paths and Zammad token
-45f23eb BL-116: Refresh closure proof and final clean status
-fc124c2 BL-116: Reconcile boundary truth and acceptance state
-ece4a98 BL-116: Commit canonical freeze evidence and verifier script
-1e6298a BL-114: Add local observability baseline
-e3bb56f BL-111/112/113: Closure-grade reconciliation — evidence, state docs, acceptance freeze
-bb81e7a BL-111/112/113: Add sandbox_delivered status to resolve mock/sandbox truth ambiguity
-822723c BL-121: Commit missing handoff, evidence, and upgrade script
-6018cc3 BL-111/112/113: Add E2E verification scripts and evidence artifacts
-020d4b9 BL-112: Fix MinIO secret key in ConfigMap to match minio-local-dev secret
-48df37e BL-112: Use @aws-sdk/client-s3 for MinIO evidence persistence
-c966a53 BL-112: Add content-length header to MinIO AWS V4 signed headers
-b5682f2 BL-112: Use Node.js http.request for MinIO PUT to control headers exactly
-9b20709 BL-112: Fix AWS Signature V4 canonical headers to include all provided headers
-29ff4e9 BL-112: Fix MinIO objectKey path and SHA-256 hash function for AWS V4 signing
-079404b BL-111/112/113: Fix MinIO AWS Signature V4 auth, persist evidence metadata in deliveryResult, update seed mockOnlyEnforced
-7a82cab BL-111/112/113: Enable sandbox writeback, fix egress policy, add SMTP/Mailpit, update UI labels, inject git metadata into container builds
+ M output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/01-baseline-runtime-and-bl116-regression.txt
 
 === Runtime ===
 kind-supportplane-local
 NAMESPACE                    NAME                                                       READY   STATUS    RESTARTS       AGE
-kube-system                  coredns-7c65d6cfc9-dkrl8                                   1/1     Running   1 (18h ago)    20h
-kube-system                  coredns-7c65d6cfc9-p944w                                   1/1     Running   1 (18h ago)    20h
-kube-system                  etcd-supportplane-local-control-plane                      1/1     Running   0              18h
-kube-system                  kindnet-b22zl                                              1/1     Running   1 (18h ago)    20h
-kube-system                  kube-apiserver-supportplane-local-control-plane            1/1     Running   13 (12h ago)   18h
-kube-system                  kube-controller-manager-supportplane-local-control-plane   1/1     Running   17 (12h ago)   20h
-kube-system                  kube-proxy-56jnx                                           1/1     Running   1 (18h ago)    20h
-kube-system                  kube-scheduler-supportplane-local-control-plane            1/1     Running   16 (12h ago)   20h
-local-path-storage           local-path-provisioner-6fdc965494-tvjgz                    1/1     Running   2 (18h ago)    20h
-supportplane-app             supportplane-api-67c7d9b5cd-lkzfd                          1/1     Running   0              70m
-supportplane-app             supportplane-web-676b5467bd-f8kxp                          1/1     Running   0              70m
-supportplane-app             supportplane-worker-56676bfd45-d6qr9                       1/1     Running   0              70m
-supportplane-data            minio-855cfdc549-grxrr                                     1/1     Running   1 (18h ago)    19h
-supportplane-data            postgres-0                                                 1/1     Running   1 (18h ago)    20h
-supportplane-integrations    mailpit-6bc6cdfb55-4c26r                                   1/1     Running   1 (18h ago)    19h
-supportplane-integrations    nats-0                                                     1/1     Running   0              15h
-supportplane-integrations    openbao-5bc456ddfc-ks44c                                   1/1     Running   1 (18h ago)    19h
-supportplane-integrations    zammad-0                                                   1/1     Running   7              18h
-supportplane-integrations    zammad-postgres-0                                          1/1     Running   1 (18h ago)    19h
-supportplane-integrations    zammad-redis-bb685c5fb-zrxz2                               1/1     Running   1 (18h ago)    19h
-supportplane-observability   grafana-745d7b9546-zzrfq                                   1/1     Running   0              96m
-supportplane-observability   loki-85f59df588-8hmj7                                      1/1     Running   0              96m
-supportplane-observability   otel-collector-5499c8ccc9-kt7dr                            1/1     Running   0              96m
-supportplane-observability   prometheus-68bdbfb7ff-2kkcl                                1/1     Running   0              96m
-{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"1e6298a5586e30400f9a600a62f82e6128445e81","timestamp":"2026-04-30T10:50:11.257Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","note":"Mock-first ticket-aware API slice (BL-003)"}{"enabled":true,"localOnly":true,"productionMonitoring":false,"correlationId":"sp-228a5ae2-a2b5-4ff3-a6d4-fd42b4a2a684","startedAt":"2026-04-30T09:39:53.729Z","checkedAt":"2026-04-30T10:50:11.262Z","api":{"status":"ok","health":"ok","storeMode":"postgres","authMode":"local","checkedAt":"2026-04-30T10:50:11.262Z"},"worker":{"status":"available","queueBackend":"nats-jetstream","fallbackQueueBackend":"postgres-local-outbox","deliveryMode":"sandbox_available","writebackEnabled":true,"realNetwork":true,"externalWriteAttempted":true,"lastSandboxWritebackStatus":"sandbox_delivered"},"queue":{"backend":"nats-jetstream","fallbackBackend":"postgres-local-outbox","status":"available"},"nats":{"enabled":true,"status":"enabled","streamName":"SUPPORTPLANE_OUTBOX","subject":"supportplane.outbox.ready","consumerName":"SUPPORTPLANE_WORKER","bridgeMode":"postgres-canonical-jetstream-bridge"},"sandboxWriteback":{"status":"sandbox_delivered","lastStatus":"sandbox_delivered","lastCompletedAt":"2026-04-30T10:49:13.973Z","externalArticleId":"not_currently_reported"},"ai":{"provider":"ollama","providerMode":"local","model":"gemma4:e4b","fallbackUsed":false,"status":"local_no_cloud"},"observabilityStack":{"prometheus":{"status":"configured","endpoint":"http://localhost:9090 via port-forward"},"grafana":{"status":"configured","endpoint":"http://localhost:3001 via port-forward"},"otelCollector":{"status":"configured","endpoint":"otel-collector.supportplane-observability.svc.cluster.local:4317/4318"},"loki":{"status":"configured_no_log_shipper","endpoint":"http://localhost:3100 via port-forward"}},"telemetry":{"minioEvidence":{"status":"observed","endpoint":"minio.supportplane-data.svc.cluster.local:9000","lastWriteStatus":"success"},"mailpitNotification":{"status":"observed","endpoint":"mailpit.supportplane-integrations.svc.cluster.local:1025","lastNotificationStatus":"captured"},"sandboxWriteback":{"status":"sandbox_delivered","lastStatus":"sandbox_delivered"},"secretsRedacted":true},"endpoints":{"apiMetrics":"/metrics","apiStatus":"/observability/status","prometheusPortForward":"kubectl -n supportplane-observability port-forward svc/prometheus 9090:9090","grafanaPortForward":"kubectl -n supportplane-observability port-forward svc/grafana 3001:3000","otelCollector":"supportplane-observability/otel-collector:4317,4318","lokiPortForward":"kubectl -n supportplane-observability port-forward svc/loki 3100:3100"},"signals":{"correlationIds":true,"structuredLogs":true,"prometheusMetrics":true,"traces":"OTel collector deployed for local ingestion; API emits correlated logs/metrics in this baseline.","noSecretsInTelemetry":true},"recentLogs":[{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546176079-3ihb1dg6","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:49:36.090Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":9}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-1a331996-c0ad-4499-8575-fd1483c959a8","result":"200","timestamp":"2026-04-30T10:49:38.118Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546179092-p7guo1bb","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:49:39.107Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":12}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546182110-8so80842","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:49:42.118Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":6}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-a8a7f812-f7f9-4247-a4fc-952f4d308156","result":"200","timestamp":"2026-04-30T10:49:43.120Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-1b265652-4ea7-46ce-aa4d-427e079b6c9f","result":"200","timestamp":"2026-04-30T10:49:43.120Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-4ebbe217-9f81-40c7-8875-0bba816400b2","result":"200","timestamp":"2026-04-30T10:49:45.062Z","metadata":{"method":"GET","route":"/metrics","latencyMs":2}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546185120-uqg16v90","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:49:45.133Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":10}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-0e87fecb-026c-496f-8647-ed39015cd951","result":"200","timestamp":"2026-04-30T10:49:48.119Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546188136-pl6w71rz","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:49:48.149Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546191151-f6tm3x36","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:49:51.164Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":10}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-afbd9656-4b8c-4f26-b6ff-f1babe0285e2","result":"200","timestamp":"2026-04-30T10:49:53.118Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-89b07a75-0d11-4421-904d-d2dd301c233e","result":"200","timestamp":"2026-04-30T10:49:53.119Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546194167-x06v1vf2","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:49:54.175Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":5}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546197177-43px1q7k","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:49:57.190Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-94ab2a40-12a8-419c-9c9c-4ab196c2aa08","result":"200","timestamp":"2026-04-30T10:49:58.118Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-9d6fa975-3d3f-4429-828e-1f433650534b","result":"200","timestamp":"2026-04-30T10:50:00.065Z","metadata":{"method":"GET","route":"/metrics","latencyMs":2}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546200193-r64hsn23","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:50:00.202Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":6}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-2874a168-c83e-4590-916d-a9c74f75e659","result":"200","timestamp":"2026-04-30T10:50:03.119Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-0b0f9ea5-af84-4254-84f6-0906edd31bb5","result":"200","timestamp":"2026-04-30T10:50:03.119Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546203205-azdzgq5s","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:50:03.213Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":6}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546206215-cqjsuc04","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:50:06.228Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-907889e5-0af1-4f76-b4ed-92759f9b3396","result":"200","timestamp":"2026-04-30T10:50:08.119Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777546209230-wqbxeb40","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T10:50:09.243Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-228a5ae2-a2b5-4ff3-a6d4-fd42b4a2a684","result":"200","timestamp":"2026-04-30T10:50:11.257Z","metadata":{"method":"GET","route":"/health","latencyMs":0}}],"disclaimers":["Local observability only","No production monitoring","No secrets in telemetry"]}
+kube-system                  coredns-7c65d6cfc9-dkrl8                                   1/1     Running   1 (19h ago)    21h
+kube-system                  coredns-7c65d6cfc9-p944w                                   1/1     Running   1 (19h ago)    21h
+kube-system                  etcd-supportplane-local-control-plane                      1/1     Running   0              19h
+kube-system                  kindnet-b22zl                                              1/1     Running   1 (19h ago)    21h
+kube-system                  kube-apiserver-supportplane-local-control-plane            1/1     Running   13 (13h ago)   19h
+kube-system                  kube-controller-manager-supportplane-local-control-plane   1/1     Running   17 (13h ago)   21h
+kube-system                  kube-proxy-56jnx                                           1/1     Running   1 (19h ago)    21h
+kube-system                  kube-scheduler-supportplane-local-control-plane            1/1     Running   16 (13h ago)   21h
+local-path-storage           local-path-provisioner-6fdc965494-tvjgz                    1/1     Running   2 (19h ago)    21h
+supportplane-app             supportplane-api-664fdcb57d-wvvnm                          1/1     Running   0              9m13s
+supportplane-app             supportplane-web-55dc994d8d-gqsd5                          1/1     Running   0              30m
+supportplane-app             supportplane-worker-5878b6bf65-c6spn                       1/1     Running   0              30m
+supportplane-data            minio-855cfdc549-grxrr                                     1/1     Running   1 (19h ago)    20h
+supportplane-data            postgres-0                                                 1/1     Running   1 (19h ago)    21h
+supportplane-integrations    mailpit-6bc6cdfb55-4c26r                                   1/1     Running   1 (19h ago)    20h
+supportplane-integrations    nats-0                                                     1/1     Running   0              16h
+supportplane-integrations    openbao-5bc456ddfc-ks44c                                   1/1     Running   1 (19h ago)    20h
+supportplane-integrations    zammad-0                                                   1/1     Running   7              19h
+supportplane-integrations    zammad-postgres-0                                          1/1     Running   1 (19h ago)    20h
+supportplane-integrations    zammad-redis-bb685c5fb-zrxz2                               1/1     Running   1 (19h ago)    20h
+supportplane-observability   grafana-745d7b9546-zzrfq                                   1/1     Running   0              145m
+supportplane-observability   loki-85f59df588-8hmj7                                      1/1     Running   0              145m
+supportplane-observability   otel-collector-5499c8ccc9-kt7dr                            1/1     Running   0              145m
+supportplane-observability   prometheus-68bdbfb7ff-2kkcl                                1/1     Running   0              145m
+
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"ff8e2713bc7b1e69e47764b8310b2c2902a9130e","timestamp":"2026-04-30T11:39:13.820Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","note":"Mock-first ticket-aware API slice (BL-003)"}
+{"enabled":true,"localOnly":true,"productionMonitoring":false,"correlationId":"sp-aec78f39-564a-4e49-b0ba-6b0a8a66dc7e","startedAt":"2026-04-30T11:30:01.045Z","checkedAt":"2026-04-30T11:39:13.825Z","api":{"status":"ok","health":"ok","storeMode":"postgres","authMode":"local","checkedAt":"2026-04-30T11:39:13.825Z"},"worker":{"status":"available","queueBackend":"nats-jetstream","fallbackQueueBackend":"postgres-local-outbox","deliveryMode":"sandbox_available","writebackEnabled":true,"realNetwork":true,"externalWriteAttempted":true,"lastSandboxWritebackStatus":"sandbox_delivered"},"queue":{"backend":"nats-jetstream","fallbackBackend":"postgres-local-outbox","status":"available"},"nats":{"enabled":true,"status":"enabled","streamName":"SUPPORTPLANE_OUTBOX","subject":"supportplane.outbox.ready","consumerName":"SUPPORTPLANE_WORKER","bridgeMode":"postgres-canonical-jetstream-bridge"},"sandboxWriteback":{"status":"sandbox_delivered","lastStatus":"sandbox_delivered","lastCompletedAt":"2026-04-30T11:36:56.798Z","externalArticleId":"not_currently_reported"},"ai":{"provider":"ollama","providerMode":"local","model":"gemma4:e4b","fallbackUsed":false,"status":"local_no_cloud"},"observabilityStack":{"prometheus":{"status":"configured","endpoint":"http://localhost:9090 via port-forward"},"grafana":{"status":"configured","endpoint":"http://localhost:3001 via port-forward"},"otelCollector":{"status":"configured","endpoint":"otel-collector.supportplane-observability.svc.cluster.local:4317/4318"},"loki":{"status":"configured_no_log_shipper","endpoint":"http://localhost:3100 via port-forward"}},"telemetry":{"minioEvidence":{"status":"not_currently_reported","endpoint":"minio.supportplane-data.svc.cluster.local:9000","lastWriteStatus":"not_currently_reported"},"mailpitNotification":{"status":"not_currently_reported","endpoint":"mailpit.supportplane-integrations.svc.cluster.local:1025","lastNotificationStatus":"not_currently_reported"},"sandboxWriteback":{"status":"sandbox_delivered","lastStatus":"sandbox_delivered"},"secretsRedacted":true},"endpoints":{"apiMetrics":"/metrics","apiStatus":"/observability/status","prometheusPortForward":"kubectl -n supportplane-observability port-forward svc/prometheus 9090:9090","grafanaPortForward":"kubectl -n supportplane-observability port-forward svc/grafana 3001:3000","otelCollector":"supportplane-observability/otel-collector:4317,4318","lokiPortForward":"kubectl -n supportplane-observability port-forward svc/loki 3100:3100"},"signals":{"correlationIds":true,"structuredLogs":true,"prometheusMetrics":true,"traces":"OTel collector deployed for local ingestion; API emits correlated logs/metrics in this baseline.","noSecretsInTelemetry":true},"recentLogs":[{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-3070b615-33c1-457a-b4ff-86aacb52da75","result":"200","timestamp":"2026-04-30T11:38:40.387Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-64663c82-26b8-4238-8070-8f16e1127390","result":"200","timestamp":"2026-04-30T11:38:40.388Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549120610-8enddxg7","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:38:40.735Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":122}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549123737-quk6qqem","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:38:43.744Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":4}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-b0ee5435-52c5-4cbb-93ee-f37dfd3d4189","result":"200","timestamp":"2026-04-30T11:38:45.062Z","metadata":{"method":"GET","route":"/metrics","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-15685d05-6f11-4f57-9fbf-a58190fd334d","result":"200","timestamp":"2026-04-30T11:38:45.388Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549126746-5xb953th","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:38:46.759Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549129761-3xzj94eh","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:38:49.774Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-e35433e0-6ece-4ece-80e6-401fbebcf569","result":"200","timestamp":"2026-04-30T11:38:50.387Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-1cffdea4-5914-4553-abc8-3660f96eda58","result":"200","timestamp":"2026-04-30T11:38:50.388Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549132777-th15pzmn","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:38:52.791Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-fd8d2b44-3d64-4c43-9849-deed4375e8e0","result":"200","timestamp":"2026-04-30T11:38:55.387Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549135794-rsdx3lec","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:38:55.802Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":5}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549138805-w8c4ooz5","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:38:58.819Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-275be265-5d94-4d80-84d1-7679afdaadb2","result":"200","timestamp":"2026-04-30T11:39:00.063Z","metadata":{"method":"GET","route":"/metrics","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-e310b2b2-d791-4fb4-805c-ece5cbddd8cc","result":"200","timestamp":"2026-04-30T11:39:00.388Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-822eaf1a-161e-4154-975a-ab1110d3d741","result":"200","timestamp":"2026-04-30T11:39:00.388Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549141822-rh9372gz","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:39:01.836Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":10}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549144839-6v2rz6lt","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:39:04.852Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-43aed27d-2053-4d3d-a2eb-88eee6699e66","result":"200","timestamp":"2026-04-30T11:39:05.388Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549147855-8phke8gj","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:39:07.862Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":5}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-9747b272-5c40-4fa4-b1fa-431f124182a1","result":"200","timestamp":"2026-04-30T11:39:10.387Z","metadata":{"method":"GET","route":"/health","latencyMs":0}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-ba477fce-4dd0-4853-8683-94ebd9687ab2","result":"200","timestamp":"2026-04-30T11:39:10.388Z","metadata":{"method":"GET","route":"/health","latencyMs":1}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-worker-1777549150865-vq3dtdr2","tenantId":"dev-tenant","result":"201","timestamp":"2026-04-30T11:39:10.878Z","metadata":{"method":"POST","route":"/outbox/process-once","latencyMs":11}},{"service":"supportplane-api","event":"api_request_completed","correlationId":"sp-aec78f39-564a-4e49-b0ba-6b0a8a66dc7e","result":"200","timestamp":"2026-04-30T11:39:13.821Z","metadata":{"method":"GET","route":"/health","latencyMs":1}}],"disclaimers":["Local observability only","No production monitoring","No secrets in telemetry"]}
 === BL-116 Verifier ===
 === BL-116 Real Self-Hosted Sandbox Freeze Verification ===
 API: http://localhost:4210
 Web: http://localhost:3300
 Artifacts: output/playwright/session-115-bl116-real-sandbox-acceptance-freeze
 1. API health
-PASS (head=1e6298a5586e30400f9a600a62f82e6128445e81)
+PASS (head=ff8e2713bc7b1e69e47764b8310b2c2902a9130e)
 2. Login operator/admin/viewer
 PASS
 3. Real Zammad sandbox read
@@ -70,26 +46,211 @@ PASS
 4. Real Gemma/Ollama draft
 PASS
 5. Action lifecycle
-PASS (action=a398125a-e32b-4009-9eb4-9e18d72f3992 outbox=a3f99c5f-3ebf-4bae-8a26-520ba8f04b1c)
+PASS (action=e1f7fce9-0414-40cb-bded-130900d74e08 outbox=8cd97104-ef41-42ba-b613-cf891ccb04de)
 6. Process outbox
 {
-  "processed": false,
-  "reason": "no_eligible_outbox_item",
-  "workerId": "bl116-freeze-worker",
-  "mode": "sandbox"
+  "processed": true,
+  "action": {
+    "id": "e1f7fce9-0414-40cb-bded-130900d74e08",
+    "tenantId": "dev-tenant",
+    "sessionId": "addfdd90-c2b5-477c-a00e-36195a313c10",
+    "connectorInstallationId": "conn-inst-dev-001",
+    "actionType": "ticket_note",
+    "status": "sandbox_delivered",
+    "idempotencyKey": "dev-tenant:addfdd90-c2b5-477c-a00e-36195a313c10:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh",
+    "requestedBy": "dev-user",
+    "submittedAt": "2026-04-30T11:39:20.793Z",
+    "reviewedBy": "dev-admin",
+    "reviewDecision": "approved",
+    "reviewReason": "BL-116 freeze approval",
+    "reviewedAt": "2026-04-30T11:39:20.805Z",
+    "queuedAt": "2026-04-30T11:39:20.820Z",
+    "mockDeliveredAt": "2026-04-30T11:39:20.888Z",
+    "payloadSummary": {
+      "subject": "BL-116 Freeze",
+      "localOnly": true,
+      "bodyLength": 51,
+      "policyDecision": "sandbox_allowed",
+      "redactedPreview": "BL-116 sandbox internal note writeback freeze test.",
+      "externalTicketId": "2",
+      "mockDeliveryScenario": "success"
+    },
+    "safeBodyPreview": "BL-116 sandbox internal note writeback freeze test.",
+    "mockDevOnly": true,
+    "createdAt": "2026-04-30T11:39:20.776Z",
+    "updatedAt": "2026-04-30T11:39:20.888Z"
+  },
+  "outboxItem": {
+    "id": "8cd97104-ef41-42ba-b613-cf891ccb04de",
+    "tenantId": "dev-tenant",
+    "supportActionId": "e1f7fce9-0414-40cb-bded-130900d74e08",
+    "sessionId": "addfdd90-c2b5-477c-a00e-36195a313c10",
+    "connectorInstallationId": "conn-inst-dev-001",
+    "actionType": "ticket_note",
+    "status": "sandbox_delivered",
+    "idempotencyKey": "dev-tenant:addfdd90-c2b5-477c-a00e-36195a313c10:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox",
+    "deliveryMode": "sandbox",
+    "deliveryIntent": {
+      "mode": "sandbox",
+      "actionType": "ticket_note",
+      "realNetwork": true,
+      "correlationId": "sp-9ab6797f-6080-44d5-88c1-51081d05b511",
+      "deliveryClaim": "queued_for_sandbox_delivery",
+      "policyVersion": 1,
+      "policyDecision": "sandbox_allowed",
+      "writebackEnabled": true,
+      "mockDeliveryScenario": "success",
+      "externalWriteAttempted": false
+    },
+    "attemptCount": 1,
+    "maxAttempts": 3,
+    "latestAttemptState": "sandbox_delivered",
+    "queuedAt": "2026-04-30T11:39:20.820Z",
+    "processingStartedAt": "2026-04-30T11:39:20.876Z",
+    "mockDeliveredAt": "2026-04-30T11:39:20.888Z",
+    "lastErrorRedacted": true,
+    "safetyFlags": {
+      "mode": "sandbox",
+      "noSecrets": true,
+      "noRawMedia": true,
+      "realNetwork": true,
+      "sandboxOnly": true,
+      "localMockOnly": false,
+      "writebackEnabled": true,
+      "externalWriteAttempted": false
+    },
+    "mockDevOnly": false,
+    "createdAt": "2026-04-30T11:39:20.820Z",
+    "updatedAt": "2026-04-30T11:39:20.888Z"
+  },
+  "attempt": {
+    "id": "79b297b8-5e24-4c7d-91be-2feb61f0d13d",
+    "tenantId": "dev-tenant",
+    "outboxItemId": "8cd97104-ef41-42ba-b613-cf891ccb04de",
+    "supportActionId": "e1f7fce9-0414-40cb-bded-130900d74e08",
+    "attemptNumber": 1,
+    "state": "sandbox_delivered",
+    "deliveryResult": {
+      "mode": "sandbox",
+      "realNetwork": true,
+      "writebackEnabled": true,
+      "externalWriteAttempted": true,
+      "deliveryClaim": "sandbox_writeback_succeeded",
+      "externalReferenceId": "47",
+      "responseSummary": "Sandbox internal note written to Zammad.",
+      "zammadTicketId": "2",
+      "idempotencyKey": "dev-tenant:addfdd90-c2b5-477c-a00e-36195a313c10:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox",
+      "credentialMetadata": {
+        "tenantId": "dev-tenant",
+        "credentialReferenceId": "cred-ref-dev-001",
+        "resolver": "openbao",
+        "resolverMode": "local-sandbox",
+        "secretPath": ".../dev/zammad",
+        "status": "resolved",
+        "resolvedAt": "2026-04-30T11:39:20.891Z",
+        "secretExposed": false,
+        "persistedRawSecret": false,
+        "safeLabel": "OpenBao sandbox resolver",
+        "secretRefHash": "1c7fe957d954e4d6e08a726e53a06c934324b301d04b925d0e4dc16d6eb1c512"
+      },
+      "workerId": "bl116-freeze-worker",
+      "correlationId": "sp-9ab6797f-6080-44d5-88c1-51081d05b511",
+      "deliveredAt": "2026-04-30T11:39:20.888Z",
+      "minioEvidence": {
+        "objectKey": "dev-tenant/writebacks/addfdd90-c2b5-477c-a00e-36195a313c10/8cd97104-ef41-42ba-b613-cf891ccb04de.json",
+        "bucket": "supportplane-evidence",
+        "checksum": "f5154c6dd1e61c0f6fe032ed0556fbe320d2dd6e5ed07658a3d045a45c6cc978",
+        "contentType": "application/json",
+        "createdAt": "2026-04-30T11:39:20.944Z",
+        "disclaimer": "Local sandbox evidence only. No compliance claim."
+      },
+      "mailpitNotification": {
+        "smtpHost": "mailpit.supportplane-integrations.svc.cluster.local",
+        "smtpPort": 1025,
+        "subject": "SupportPlane sandbox writeback completed",
+        "bodyPreview": "Local sandbox notification only.\nNo production email was sent.\nNo customer email was contacted.\n\nOutbox item: 8cd97104-ef41-42ba-b613-cf891ccb04de\nAction: e1f7fce9-0414-40cb-bded-130900d74e08\nSession:",
+        "status": "captured",
+        "capturedMessageId": "sp-sandbox-1777549160952@supportplane.local",
+        "disclaimer": "Local sandbox notification only. No production email was sent.",
+        "capturedAt": "2026-04-30T11:39:20.955Z"
+      }
+    },
+    "errorRedacted": true,
+    "attemptedAt": "2026-04-30T11:39:20.876Z",
+    "completedAt": "2026-04-30T11:39:20.888Z",
+    "mockDevOnly": false
+  },
+  "delivery": {
+    "mode": "sandbox",
+    "realNetwork": true,
+    "writebackEnabled": true,
+    "externalWriteAttempted": true,
+    "deliveryClaim": "sandbox_writeback_succeeded",
+    "externalReferenceId": "47",
+    "responseSummary": "Sandbox internal note written to Zammad.",
+    "zammadTicketId": "2",
+    "idempotencyKey": "dev-tenant:addfdd90-c2b5-477c-a00e-36195a313c10:ticket_note:QkwtMTE2IHNhbmRib3ggaW50ZXJuYWwgbm90ZSB3cml0ZWJh:outbox",
+    "credentialMetadata": {
+      "tenantId": "dev-tenant",
+      "credentialReferenceId": "cred-ref-dev-001",
+      "resolver": "openbao",
+      "resolverMode": "local-sandbox",
+      "secretPath": ".../dev/zammad",
+      "status": "resolved",
+      "resolvedAt": "2026-04-30T11:39:20.891Z",
+      "secretExposed": false,
+      "persistedRawSecret": false,
+      "safeLabel": "OpenBao sandbox resolver",
+      "secretRefHash": "1c7fe957d954e4d6e08a726e53a06c934324b301d04b925d0e4dc16d6eb1c512"
+    },
+    "workerId": "bl116-freeze-worker",
+    "correlationId": "sp-9ab6797f-6080-44d5-88c1-51081d05b511",
+    "deliveredAt": "2026-04-30T11:39:20.888Z",
+    "minioEvidence": {
+      "objectKey": "dev-tenant/writebacks/addfdd90-c2b5-477c-a00e-36195a313c10/8cd97104-ef41-42ba-b613-cf891ccb04de.json",
+      "bucket": "supportplane-evidence",
+      "checksum": "f5154c6dd1e61c0f6fe032ed0556fbe320d2dd6e5ed07658a3d045a45c6cc978",
+      "contentType": "application/json",
+      "createdAt": "2026-04-30T11:39:20.944Z",
+      "disclaimer": "Local sandbox evidence only. No compliance claim."
+    },
+    "mailpitNotification": {
+      "smtpHost": "mailpit.supportplane-integrations.svc.cluster.local",
+      "smtpPort": 1025,
+      "subject": "SupportPlane sandbox writeback completed",
+      "bodyPreview": "Local sandbox notification only.\nNo production email was sent.\nNo customer email was contacted.\n\nOutbox item: 8cd97104-ef41-42ba-b613-cf891ccb04de\nAction: e1f7fce9-0414-40cb-bded-130900d74e08\nSession:",
+      "status": "captured",
+      "capturedMessageId": "sp-sandbox-1777549160952@supportplane.local",
+      "disclaimer": "Local sandbox notification only. No production email was sent.",
+      "capturedAt": "2026-04-30T11:39:20.955Z"
+    }
+  },
+  "workerId": "bl116-freeze-worker"
 }
 7. Outbox status
 PASS
 8. Zammad article
-Articles on ticket 2: 42
+Articles on ticket 2: 46
 PASS
 9. MinIO evidence
 MinIO list returned:
 <?xml version="1.0" encoding="UTF-8"?>
-<Error><Code>InvalidRequest</Code><Message>The authorization mechanism you have provided is not supported. Please use AWS4-HMAC-SHA256.</Message><Resource>/supportplane-evidence</Resource><RequestId>18AB1CDEEA4F9057</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>INFO: MinIO evidence may use different prefix; continuing
+<Error><Code>InvalidRequest</Code><Message>The authorization mechanism you have provided is not supported. Please use AWS4-HMAC-SHA256.</Message><Resource>/supportplane-evidence</Resource><RequestId>18AB1F8B50E3DF80</RequestId><HostId>dd9025bab4ad464b049177c95eb6ebf374d3b3fd1af9251148b658df7ac2e3e8</HostId></Error>INFO: MinIO evidence may use different prefix; continuing
 10. Mailpit notification
 Mailpit total messages: 0
 INFO: no messages in Mailpit yet (may need worker SMTP delivery)
 11. Audit events
 PASS
 === E2E flow proof saved to output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/04-real-sandbox-e2e-flow-proof.txt ===
+
+=== Registry Evidence Folder ===
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/01-baseline-runtime-and-bl116-regression.txt
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/01-registry-listing.json
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/02-connector-status.json
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/03-connector-installations.json
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/04-specific-installation.json
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/05-runtime-readiness.json
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/06-create-session.json
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/07-ticket-context.json
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/08-draft-suggestion.json
+output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/cookies.txt

@@ -39,6 +39,7 @@ import {
   type TicketingAdapterClient,
   getTicketingAdapterFactory,
   resolveAdapterRuntime,
+  resolveCanonicalAdapterId,
   AdapterRuntimeResolverError,
 } from '@supportplane/connectors';
 import { evaluateEgressPolicy } from '@supportplane/policy';
@@ -113,7 +114,7 @@ export class SupportSessionsService {
     // Registry-driven path
     const isMock = mode !== ConnectorMode.enum.zammad;
     if (isMock) {
-      const adapter = factory.createAdapter('zammad-adapter-001' as never);
+      const adapter = factory.createAdapter(resolveCanonicalAdapterId(factory.adapterType) as never);
       if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
         await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect({ mockMode: true });
       }
@@ -139,7 +140,7 @@ export class SupportSessionsService {
     try {
       const runtimeResult = await resolveAdapterRuntime({
         adapterType: factory.adapterType,
-        adapterId: 'zammad-adapter-001',
+        adapterId: resolveCanonicalAdapterId(factory.adapterType),
         installation: {
           id: installation.id,
           enabled: true,
@@ -149,7 +150,7 @@ export class SupportSessionsService {
         credentials: { apiToken: resolved.apiToken },
         safety: {
           egressPolicy: egressDecision,
-          writebackEnabled: false,
+          writebackEnabled: true,
           mockMode: false,
           sandboxMode: true,
         },

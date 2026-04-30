@@ -110,6 +110,9 @@ export const ConnectorReadinessResult = z.object({
   mode: z.enum(['mock', 'real', 'sandbox']).default('mock'),
   readyForMockDelivery: z.boolean(),
   readyForRealWriteback: z.boolean().default(false),
+  sandboxWritebackReady: z.boolean().default(false),
+  productionWritebackReady: z.boolean().default(false),
+  publicReplyEnabled: z.boolean().default(false),
   realNetwork: z.boolean().default(false),
   writebackEnabled: z.boolean().default(false),
   externalWriteAttempted: z.boolean().default(false),
@@ -122,6 +125,9 @@ export const ConnectorReadinessResult = z.object({
   policyVersion: z.number().int(),
   lastValidationResult: z.string().nullable().default(null),
   safetyFlags: DeliveryPolicySafetyFlags,
+  registryPattern: z.boolean().default(false),
+  adapterFactoryId: z.string().optional(),
+  adapterRuntimeId: z.string().optional(),
 });
 
 export type ConnectorReadinessResult = z.infer<typeof ConnectorReadinessResult>;

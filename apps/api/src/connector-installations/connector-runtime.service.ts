@@ -250,6 +250,10 @@ export class ConnectorRuntimeService {
 
     // Registry-driven capability check
     const factory = getTicketingAdapterFactory(installation.adapterType);
+    const hasWriteNotes = factory?.capabilities.includes('write_notes') ?? false;
+    const sandboxEnabled = process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true';
+    const openbaoEnabled = process.env['OPENBAO_RESOLVER_ENABLED'] === 'true';
+    const sandboxWritebackReady = !isMock && installation.enabled === true && hasWriteNotes && linkedCount > 0 && openbaoEnabled && sandboxEnabled;
 
     const warnings: string[] = isMock
       ? [
@@ -259,8 +263,10 @@ export class ConnectorRuntimeService {
         ]
       : [
           'Real network mode is configured.',
-          'Real writeback is not implemented (read-only for BL-107).',
-          'Secret resolution is not implemented — env vars will be used.',
+          sandboxWritebackReady
+            ? 'Sandbox internal-note writeback is enabled; no public reply; no production writeback.'
+            : 'Sandbox writeback is not ready (missing credentials, disabled, or missing write_notes capability).',
+          openbaoEnabled ? 'OpenBao sandbox resolver is active.' : 'Secret resolution is not implemented — env vars will be used.',
         ];
 
     if (linkedCount === 0) {
@@ -280,8 +286,11 @@ export class ConnectorRuntimeService {
     const result: ConnectorRuntimeReadinessResult = {
       mockReady: isMock && installation.enabled === true,
       realReady: !isMock && installation.enabled === true,
+      sandboxWritebackReady,
+      productionWritebackReady: false,
+      publicReplyEnabled: false,
       realNetwork: !isMock,
-      writebackEnabled: false,
+      writebackEnabled: sandboxWritebackReady,
       externalWriteAttempted: false,
       warnings,
       credentialReferencesLinked: linkedCount > 0,
@@ -319,12 +328,20 @@ export class ConnectorRuntimeService {
 
     // Registry-driven runtime resolution
     const factory = getTicketingAdapterFactory(connectorType);
+    const hasWriteNotes = factory?.capabilities.includes('write_notes') ?? false;
+    const sandboxEnabled = process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true';
+    const openbaoEnabled = process.env['OPENBAO_RESOLVER_ENABLED'] === 'true';
+    const sandboxWritebackReady = !isMock && installation.enabled === true && hasWriteNotes && credentialRefs.length > 0 && openbaoEnabled && sandboxEnabled;
+    const mode = isMock ? 'mock' : (sandboxWritebackReady ? 'sandbox' : 'zammad');
 
     const readiness: ConnectorRuntimeReadinessResult = {
       mockReady: isMock && installation.enabled === true,
       realReady: !isMock && installation.enabled === true,
+      sandboxWritebackReady,
+      productionWritebackReady: false,
+      publicReplyEnabled: false,
       realNetwork: !isMock,
-      writebackEnabled: false,
+      writebackEnabled: sandboxWritebackReady,
       externalWriteAttempted: false,
       warnings: isMock
         ? [
@@ -335,8 +352,10 @@ export class ConnectorRuntimeService {
         : [
             'Runtime resolver operates in real Zammad mode.',
             'Actual network calls will be made for read operations.',
-            'Writeback is not implemented (BL-107 read-only).',
-            'Secret resolution is not implemented — env vars will be used.',
+            sandboxWritebackReady
+              ? 'Sandbox internal-note writeback is enabled; no public reply; no production writeback.'
+              : 'Writeback is not ready (missing credentials, capability, or sandbox gates).',
+            openbaoEnabled ? 'OpenBao sandbox resolver is active.' : 'Secret resolution is not implemented — env vars will be used.',
           ],
       credentialReferencesLinked: credentialRefs.length > 0,
       linkedCredentialReferenceCount: credentialRefs.length,
@@ -350,9 +369,12 @@ export class ConnectorRuntimeService {
       installationDisplayName: installation.displayName ?? installation.name,
       capabilities: installation.capabilities,
       credentialReferences: credentialRefs,
-      mode: isMock ? 'mock' : 'zammad',
+      mode,
       realNetwork: !isMock,
-      writebackEnabled: false,
+      writebackEnabled: sandboxWritebackReady,
+      sandboxWritebackReady,
+      productionWritebackReady: false,
+      publicReplyEnabled: false,
       externalWriteAttempted: false,
       readiness,
     };

@@ -155,13 +155,18 @@ export class DeliveryPolicyService {
       : false;
 
     const readyForMockDelivery = decision.allowed && installation.status === 'active' && connectorSupportsActionType;
+    const isSandbox = decision.decision === 'sandbox_allowed';
+    const sandboxWritebackReady = isSandbox && connectorSupportsActionType && installation.status === 'active';
 
     return {
-      mode: 'mock',
+      mode: isSandbox ? 'sandbox' : 'mock',
       readyForMockDelivery,
       readyForRealWriteback: false,
-      realNetwork: false,
-      writebackEnabled: false,
+      sandboxWritebackReady,
+      productionWritebackReady: false,
+      publicReplyEnabled: false,
+      realNetwork: isSandbox,
+      writebackEnabled: sandboxWritebackReady,
       externalWriteAttempted: false,
       policyDecision: decision.decision,
       connectorInstalled: true,
@@ -172,6 +177,9 @@ export class DeliveryPolicyService {
       policyVersion: decision.policyVersion,
       lastValidationResult: null,
       safetyFlags: decision.safetyFlags,
+      registryPattern: true,
+      adapterFactoryId: installation.adapterType,
+      adapterRuntimeId: installation.id,
     };
   }
 

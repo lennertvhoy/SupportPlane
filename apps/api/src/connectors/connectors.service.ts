@@ -14,6 +14,9 @@ import {
   listTicketingAdapters,
   createZammadAdapterFactory,
   createMockZammadAdapterFactory,
+  createOsTicketAdapterFactory,
+  createMockOsTicketAdapterFactory,
+  resolveCanonicalAdapterId,
   type TicketingAdapterClient,
 } from '@supportplane/connectors';
 import { evaluateEgressPolicy } from '@supportplane/policy';
@@ -29,6 +32,9 @@ function ensureRegistry() {
   const modeRaw = env('ZAMMAD_CONNECTOR_MODE') ?? 'mock';
   const isReal = modeRaw === 'zammad';
   registerTicketingAdapter(isReal ? createZammadAdapterFactory() : createMockZammadAdapterFactory());
+  // Register osTicket adapter (read-only, no writeback in this slice)
+  registerTicketingAdapter(createOsTicketAdapterFactory());
+  registerTicketingAdapter(createMockOsTicketAdapterFactory());
   registryInitialized = true;
 }
 
@@ -151,7 +157,7 @@ export class ConnectorsService {
   getZammadAdapter(): TicketingAdapterClient | undefined {
     const factory = getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
     if (!factory) return undefined;
-    return factory.createAdapter('zammad-adapter-001' as TicketingAdapterId);
+    return factory.createAdapter(resolveCanonicalAdapterId('zammad') as TicketingAdapterId);
   }
 
   async createResolvedZammadAdapter(config: { baseUrl: string; apiToken: string; timeoutMs?: number }): Promise<TicketingAdapterClient> {
@@ -159,7 +165,7 @@ export class ConnectorsService {
     if (!factory) {
       throw new Error('Zammad adapter factory not registered');
     }
-    const adapter = factory.createAdapter('zammad-adapter-001' as TicketingAdapterId);
+    const adapter = factory.createAdapter(resolveCanonicalAdapterId('zammad') as TicketingAdapterId);
     if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
       await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect(config);
     }

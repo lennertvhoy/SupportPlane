@@ -438,9 +438,12 @@ export interface DeliveryPolicyDecision {
 }
 
 export interface ConnectorReadinessResult {
-  mode: 'mock' | 'real';
+  mode: 'mock' | 'real' | 'sandbox';
   readyForMockDelivery: boolean;
   readyForRealWriteback: boolean;
+  sandboxWritebackReady: boolean;
+  productionWritebackReady: boolean;
+  publicReplyEnabled: boolean;
   realNetwork: boolean;
   writebackEnabled: boolean;
   externalWriteAttempted: boolean;
@@ -453,6 +456,9 @@ export interface ConnectorReadinessResult {
   policyVersion: number;
   lastValidationResult: string | null;
   safetyFlags: DeliveryPolicy['safetyFlags'];
+  registryPattern?: boolean;
+  adapterFactoryId?: string;
+  adapterRuntimeId?: string;
 }
 
 export interface WorkerStatus {
