@@ -11,6 +11,7 @@ import { ConnectorInstallationsModule } from './connector-installations/connecto
 import { TicketsModule } from './tickets/tickets.module.js';
 import { ActionsModule } from './actions/actions.module.js';
 import { DeliveryPolicyModule } from './delivery-policy/delivery-policy.module.js';
+import { AdminPolicyModule } from './admin-policies/admin-policy.module.js';
 import { CredentialReferencesModule } from './credential-references/credential-references.module.js';
 import { CurrentIdentityMiddleware } from './auth/current-identity.middleware.js';
 import { CorrelationMiddleware } from './telemetry/correlation.middleware.js';
@@ -18,12 +19,12 @@ import { TelemetryModule } from './telemetry/telemetry.module.js';
 import { AuditModule } from './audit/audit.module.js';
 
 @Module({
-  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule],
+  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule, AdminPolicyModule],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(CorrelationMiddleware).forRoutes('*');
-    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'auth/service-accounts', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies');
+    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'auth/service-accounts', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies', 'admin/policies');
   }
 }

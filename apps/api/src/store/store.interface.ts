@@ -14,6 +14,9 @@ import type {
   ActionOutboxItem as ActionOutboxItemShape,
   ActionOutboxAttempt as ActionOutboxAttemptShape,
   DeliveryPolicy as DeliveryPolicyShape,
+  ConnectorPolicy as ConnectorPolicyShape,
+  AiPolicy as AiPolicyShape,
+  RetentionPolicy as RetentionPolicyShape,
 } from '@supportplane/contracts';
 
 export interface SharingStateShape {
@@ -105,4 +108,9 @@ export interface Store {
   getDeliveryPolicy(tenantId: string, id: string): Promise<DeliveryPolicyShape | undefined> | DeliveryPolicyShape | undefined;
   getDeliveryPolicyByConnector(tenantId: string, connectorInstallationId: string | null): Promise<DeliveryPolicyShape | undefined> | DeliveryPolicyShape | undefined;
   listDeliveryPolicies(tenantId: string): Promise<DeliveryPolicyShape[]> | DeliveryPolicyShape[];
+
+  // TenantPolicy (Connector, AI, Retention)
+  saveTenantPolicy(policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape, policyType: string, scopeId?: string | null): Promise<void> | void;
+  getTenantPolicy(tenantId: string, policyType: string, scopeId?: string | null): Promise<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined> | ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined;
+  listTenantPolicies(tenantId: string): Promise<Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>> | Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>;
 }

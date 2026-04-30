@@ -22,6 +22,9 @@ import type {
   ActionOutboxItem as ActionOutboxItemShape,
   ActionOutboxAttempt as ActionOutboxAttemptShape,
   DeliveryPolicy as DeliveryPolicyShape,
+  ConnectorPolicy as ConnectorPolicyShape,
+  AiPolicy as AiPolicyShape,
+  RetentionPolicy as RetentionPolicyShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from './store.interface.js';
 
@@ -1523,5 +1526,60 @@ export class PrismaStore implements Store {
       safetyFlags: row.safetyFlags as DeliveryPolicyShape['safetyFlags'],
       createdAt: toISO(row.createdAt)!,
     };
+  }
+
+  // TenantPolicy (Connector, AI, Retention)
+  async saveTenantPolicy(
+    policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape,
+    policyType: string,
+    scopeId?: string | null
+  ): Promise<void> {
+    const effectiveScopeId = scopeId ?? null;
+    const existing = await this.prisma.tenantPolicy.findFirst({
+      where: { tenantId: policy.tenantId, policyType, scopeId: effectiveScopeId },
+    });
+    if (existing) {
+      await this.prisma.tenantPolicy.update({
+        where: { id: existing.id },
+        data: {
+          name: policy.name,
+          config: json(policy),
+          version: { increment: 1 },
+          updatedBy: policy.updatedBy,
+        },
+      });
+    } else {
+      await this.prisma.tenantPolicy.create({
+        data: {
+          tenantId: policy.tenantId,
+          policyType,
+          scopeId: effectiveScopeId,
+          name: policy.name,
+          config: json(policy),
+          version: 1,
+          updatedBy: policy.updatedBy,
+        },
+      });
+    }
+  }
+
+  async getTenantPolicy(
+    tenantId: string,
+    policyType: string,
+    scopeId?: string | null
+  ): Promise<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined> {
+    const effectiveScopeId = scopeId ?? null;
+    const row = await this.prisma.tenantPolicy.findFirst({
+      where: { tenantId, policyType, scopeId: effectiveScopeId },
+    });
+    if (!row) return undefined;
+    return row.config as ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape;
+  }
+
+  async listTenantPolicies(
+    tenantId: string
+  ): Promise<Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>> {
+    const rows = await this.prisma.tenantPolicy.findMany({ where: { tenantId } });
+    return rows.map((r) => r.config as ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape);
   }
 }

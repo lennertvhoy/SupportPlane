@@ -461,6 +461,110 @@ export interface ConnectorReadinessResult {
   adapterRuntimeId?: string;
 }
 
+export interface ConnectorPolicy {
+  id: string;
+  tenantId: string;
+  policyType: 'connector';
+  connectorInstallationId: string;
+  name: string;
+  enabled: boolean;
+  killSwitch: boolean;
+  allowedActionTypes: string[];
+  approvalRequired: boolean;
+  minimumApproverRole: 'admin' | 'owner' | 'operator';
+  requireEvidenceBundleBeforeDelivery: boolean;
+  requireConnectorValidationBeforeDelivery: boolean;
+  maxRetries: number;
+  backoffSeconds: number;
+  safetyFlags: {
+    realNetworkAllowed: boolean;
+    writebackEnabled: boolean;
+    externalWriteAllowed: boolean;
+    mockOnly: boolean;
+    sandboxOnly: boolean;
+  };
+  updatedBy: string | null;
+  updatedAt: string;
+  version: number;
+  createdAt: string;
+}
+
+export interface AiPolicy {
+  id: string;
+  tenantId: string;
+  policyType: 'ai';
+  name: string;
+  enabled: boolean;
+  killSwitch: boolean;
+  allowedProviders: ('mock' | 'ollama' | 'lmstudio' | 'openai' | 'anthropic')[];
+  allowedModels: string[];
+  maxTokensPerRequest: number;
+  maxCostPerDayUsd: number;
+  requireHumanReview: boolean;
+  allowAutonomousSend: boolean;
+  allowDraftGeneration: boolean;
+  allowGreetingSuggestions: boolean;
+  allowScreenContext: boolean;
+  redactionRequired: boolean;
+  safetyFlags: {
+    cloudCallsAllowed: boolean;
+    localProvidersOnly: boolean;
+    mockOnly: boolean;
+    reviewRequired: boolean;
+  };
+  updatedBy: string | null;
+  updatedAt: string;
+  version: number;
+  createdAt: string;
+}
+
+export interface RetentionPolicy {
+  id: string;
+  tenantId: string;
+  policyType: 'retention';
+  name: string;
+  enabled: boolean;
+  sessionRetentionDays: number;
+  auditLogRetentionDays: number;
+  callRecordingRetentionDays: number;
+  screenObservationRetentionDays: number;
+  evidenceBundleRetentionDays: number;
+  actionOutboxRetentionDays: number;
+  autoPurgeEnabled: boolean;
+  purgeRequiresApproval: boolean;
+  minimumPurgeApproverRole: 'admin' | 'owner' | 'operator';
+  updatedBy: string | null;
+  updatedAt: string;
+  version: number;
+  createdAt: string;
+}
+
+export interface PolicySummary {
+  policyType: 'delivery' | 'connector' | 'ai' | 'retention';
+  id: string;
+  name: string;
+  enabled: boolean;
+  killSwitch?: boolean;
+  version: number;
+  updatedAt: string;
+  updatedBy: string | null;
+  scopeCount?: number;
+}
+
+export interface PolicyAuditPreview {
+  tenantId: string;
+  generatedAt: string;
+  policies: Array<{
+    policyType: string;
+    policyId: string;
+    policyName: string;
+    version: number;
+    enabled: boolean;
+    safetyFlags: Record<string, boolean>;
+  }>;
+  disclaimers: string[];
+}
+
 export interface WorkerStatus {
   mode: string;
   status: string;
@@ -1620,6 +1724,34 @@ export const api = {
 
   validateDeliveryPolicy: (id: string, identity?: DevIdentity) =>
     apiFetch<{ policy: DeliveryPolicy; decision: DeliveryPolicyDecision }>(`/delivery-policies/${id}/validate`, { method: 'POST' }, identity),
+
+  // Admin Policies (BL-076)
+  listAdminPolicies: (identity?: DevIdentity) =>
+    apiFetch<{ policies: PolicySummary[] }>('/admin/policies', { method: 'GET' }, identity),
+
+  getAdminPolicyAuditPreview: (identity?: DevIdentity) =>
+    apiFetch<PolicyAuditPreview>('/admin/policies/audit-preview', { method: 'GET' }, identity),
+
+  updateAdminDeliveryPolicy: (id: string, body: Partial<DeliveryPolicyUpdate>, identity?: DevIdentity) =>
+    apiFetch<{ policy: DeliveryPolicy }>(`/admin/policies/delivery/${id}`, { method: 'PUT', body: JSON.stringify(body) }, identity),
+
+  getAdminConnectorPolicy: (installationId: string, identity?: DevIdentity) =>
+    apiFetch<{ policy: ConnectorPolicy }>(`/admin/policies/connectors/${installationId}`, { method: 'GET' }, identity),
+
+  updateAdminConnectorPolicy: (installationId: string, body: Partial<ConnectorPolicy>, identity?: DevIdentity) =>
+    apiFetch<{ policy: ConnectorPolicy }>(`/admin/policies/connectors/${installationId}`, { method: 'PUT', body: JSON.stringify(body) }, identity),
+
+  getAdminAiPolicy: (identity?: DevIdentity) =>
+    apiFetch<{ policy: AiPolicy }>('/admin/policies/ai', { method: 'GET' }, identity),
+
+  updateAdminAiPolicy: (body: Partial<AiPolicy>, identity?: DevIdentity) =>
+    apiFetch<{ policy: AiPolicy }>('/admin/policies/ai', { method: 'PUT', body: JSON.stringify(body) }, identity),
+
+  getAdminRetentionPolicy: (identity?: DevIdentity) =>
+    apiFetch<{ policy: RetentionPolicy }>('/admin/policies/retention', { method: 'GET' }, identity),
+
+  updateAdminRetentionPolicy: (body: Partial<RetentionPolicy>, identity?: DevIdentity) =>
+    apiFetch<{ policy: RetentionPolicy }>('/admin/policies/retention', { method: 'PUT', body: JSON.stringify(body) }, identity),
 
   checkConnectorReadiness: (installationId: string, identity?: DevIdentity) =>
     apiFetch<ConnectorReadinessResult>(`/connector-installations/${installationId}/readiness`, { method: 'POST' }, identity),

@@ -14,6 +14,9 @@ import type {
   ActionOutboxItem as ActionOutboxItemShape,
   ActionOutboxAttempt as ActionOutboxAttemptShape,
   DeliveryPolicy as DeliveryPolicyShape,
+  ConnectorPolicy as ConnectorPolicyShape,
+  AiPolicy as AiPolicyShape,
+  RetentionPolicy as RetentionPolicyShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from '../store/store.interface.js';
 
@@ -34,6 +37,7 @@ export class InMemoryStore implements Store {
   private actionOutboxItems = new Map<string, ActionOutboxItemShape>();
   private actionOutboxAttempts = new Map<string, ActionOutboxAttemptShape>();
   private deliveryPolicies = new Map<string, DeliveryPolicyShape>();
+  private tenantPolicies = new Map<string, ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -313,5 +317,18 @@ export class InMemoryStore implements Store {
 
   listDeliveryPolicies(tenantId: string): DeliveryPolicyShape[] {
     return Array.from(this.deliveryPolicies.values()).filter((p) => p.tenantId === tenantId);
+  }
+
+  saveTenantPolicy(policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape, policyType: string, scopeId?: string | null): void {
+    const key = `${policy.tenantId}:${policyType}:${scopeId ?? 'null'}`;
+    this.tenantPolicies.set(key, policy);
+  }
+
+  getTenantPolicy(tenantId: string, policyType: string, scopeId?: string | null): ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined {
+    return this.tenantPolicies.get(`${tenantId}:${policyType}:${scopeId ?? 'null'}`);
+  }
+
+  listTenantPolicies(tenantId: string): Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape> {
+    return Array.from(this.tenantPolicies.values()).filter((p) => p.tenantId === tenantId);
   }
 }

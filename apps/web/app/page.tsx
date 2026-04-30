@@ -18,6 +18,7 @@ import { SupportNoteDraftPanel } from '@/components/SupportNoteDraftPanel';
 import { ActionOutboxPanel } from '@/components/ActionOutboxPanel';
 import { OutboxMonitorPanel } from '@/components/OutboxMonitorPanel';
 import { DeliveryPolicyPanel } from '@/components/DeliveryPolicyPanel';
+import { AdminPolicyPanel } from '@/components/AdminPolicyPanel';
 import { ObservabilityPanel } from '@/components/ObservabilityPanel';
 import { SecurityReadinessPanel } from '@/components/SecurityReadinessPanel';
 import { AuthGate, IdentityPill } from '@/components/AuthGate';
@@ -477,6 +478,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             <ObservabilityPanel identity={identity} />
             <SecurityReadinessPanel identity={identity} />
             <DeliveryPolicyPanel identity={identity} />
+            <AdminPolicyPanel identity={identity} />
             <AuditTrailPanel
               session={selectedSession}
               events={auditEvents}
