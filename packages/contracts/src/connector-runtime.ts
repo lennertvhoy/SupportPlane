@@ -36,6 +36,9 @@ export type ConnectorRuntimeConfigValidationResult = z.infer<typeof ConnectorRun
 export const ConnectorRuntimeReadinessResult = z.object({
   mockReady: z.boolean(),
   realReady: z.boolean(),
+  sandboxWritebackReady: z.boolean(),
+  productionWritebackReady: z.boolean(),
+  publicReplyEnabled: z.boolean(),
   realNetwork: z.boolean(),
   writebackEnabled: z.boolean(),
   externalWriteAttempted: z.boolean(),
@@ -67,9 +70,12 @@ export const ConnectorRuntimeResolverResult = z.object({
   installationDisplayName: z.string(),
   capabilities: z.array(z.string()).default([]),
   credentialReferences: z.array(ConnectorRuntimeCredentialReferenceMetadata).default([]),
-  mode: z.enum(['mock', 'zammad']),
+  mode: z.enum(['mock', 'zammad', 'sandbox']),
   realNetwork: z.boolean(),
   writebackEnabled: z.boolean(),
+  sandboxWritebackReady: z.boolean(),
+  productionWritebackReady: z.boolean(),
+  publicReplyEnabled: z.boolean(),
   externalWriteAttempted: z.boolean(),
   readiness: ConnectorRuntimeReadinessResult,
 });
