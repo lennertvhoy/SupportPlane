@@ -7,14 +7,12 @@
 
 ## Snapshot
 
-- **BL-076 accepted.** Policy editor foundation with delivery, connector, AI, and retention policies. Admin CRUD API endpoints with RBAC enforcement, safety validation (rejects real network/cloud AI/autonomous send), audit events with redacted before/after diffs, compact tabbed UI panel. Runtime verified in Kind cluster.
-- **BL-083 accepted.** OIDC browser login flow with Keycloak realm role mapping, service account token store with SHA-256 hashing and expiry, MFA hook available but not enforced, local auth fallback preserved. Evidence in `output/playwright/session-119-bl083-oidc-login-completion/`.
-- **BL-104 through BL-117, BL-121, and BL-122 are accepted.** BL-116 freezes the complete real self-hosted sandbox milestone. BL-117 adds local Asterisk AMI bridge.
-- **BL-086/087/090 accepted.** API gateway hardening (rate limits, body limits, validation, security headers, audit events), backup/restore runbooks, and release packaging with demo reset.
+- **BL-076 accepted.** Policy editor foundation with delivery, connector, AI, and retention policies. Admin CRUD API with RBAC, safety validation, audit events with redacted diffs, compact tabbed UI. Runtime verified in Kind cluster.
+- **BL-083 accepted.** OIDC browser login with Keycloak realm role mapping, service account token store with SHA-256 hashing and expiry, MFA hook available but not enforced, local auth fallback preserved. Evidence in `output/playwright/session-119-bl083-oidc-login-completion/`.
+- **BL-086/087/090 and BL-104 through BL-117, BL-121 accepted.** API gateway hardening, backup/restore runbooks, release packaging, real self-hosted sandbox freeze (BL-116), and Asterisk AMI bridge (BL-117).
 - **BL-128 blocked.** osTicket integration blocked by no official container image, no PostgreSQL support, and no read API in v1.x.
-- **Cluster foundation:** Kind/Podman control-plane Ready; CoreDNS, kube-proxy, local-path-provisioner running; API/web/worker pods running local images.
-- **Self-hosted topology:** Zammad seeded and reachable; OpenBao initialized/unsealed; NATS JetStream file-backed; Mailpit capturing SMTP; MinIO healthy; Ollama host-controlled with AMD GPU; Keycloak sandbox Running/Ready after local resource/probe repair; observability baseline active.
-- **What is real now:** Policy editor foundation (delivery, connector, AI, retention policies with safety locks and audit), OIDC browser login flow, Keycloak realm role mapping, service account token store with SHA-256 hashing and expiry, MFA hook interfaces, in-memory rate limiting, body limits, request validation, security headers, security audit service, backup/restore scripts, release/demo runbooks, Security Readiness UI panel.
+- **Cluster foundation:** Kind/Podman control-plane Ready; API/web/worker pods running local images built from current HEAD.
+- **Self-hosted topology:** Zammad, OpenBao, NATS JetStream, Mailpit, MinIO, Ollama (host-controlled), Keycloak, and observability baseline all healthy.
 - **What remains partial/mock/deferred:** MFA enforcement, distributed rate limiting, production secrets, production monitoring, osTicket real integration.
 
 ## Active Blockers

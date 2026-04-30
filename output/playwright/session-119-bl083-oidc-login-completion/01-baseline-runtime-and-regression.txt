@@ -10,9 +10,9 @@ kube-system                  kube-controller-manager-supportplane-local-control-
 kube-system                  kube-proxy-56jnx                                           1/1     Running   2 (4h44m ago)    31h
 kube-system                  kube-scheduler-supportplane-local-control-plane            1/1     Running   17 (4h44m ago)   31h
 local-path-storage           local-path-provisioner-6fdc965494-tvjgz                    1/1     Running   3 (4h44m ago)    31h
-supportplane-app             supportplane-api-66c8c48f6f-mxlw6                          1/1     Running   0                20m
-supportplane-app             supportplane-web-7c4cd8b466-5wh8v                          1/1     Running   0                11m
-supportplane-app             supportplane-worker-7d54d696cf-vrpth                       1/1     Running   0                50m
+supportplane-app             supportplane-api-68cf497769-w8bkw                          1/1     Running   0                2m
+supportplane-app             supportplane-web-9b4ff67b6-crks7                         1/1     Running   0                2m
+supportplane-app             supportplane-worker-7b55945467-wdcrc                     1/1     Running   0                2m
 supportplane-data            minio-855cfdc549-grxrr                                     1/1     Running   2 (4h44m ago)    30h
 supportplane-data            postgres-0                                                 1/1     Running   2 (4h44m ago)    31h
 supportplane-integrations    asterisk-68c84fb9f5-rw2j9                                  1/1     Running   1 (4h44m ago)    7h34m
@@ -30,7 +30,7 @@ supportplane-observability   otel-collector-549c8ccc9-kt7dr                     
 supportplane-observability   prometheus-68bdbfb7ff-2kkcl                                1/1     Running   1 (4h44m ago)    12h
 
 === API Health ===
-{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"925f84793f4189ef8d11414bb95954ea15bd537d","timestamp":"2026-04-30T21:44:39.711Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","oidcReady":true,"mfaHookAvailable":true}
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"b4f60c53fffa886db82ae1fa86f4622395963f45","timestamp":"2026-04-30T21:59:19.711Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","oidcReady":true,"mfaHookAvailable":true}
 
 === BL-116 Verifier ===
 Exit code: 0 (all 11 steps passed or INFO with deliveryResult proof)

@@ -1,4 +1,4 @@
-import { describe, it, before } from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
 import { NestFactory } from '@nestjs/core';
 import supertest from 'supertest';
@@ -15,6 +15,12 @@ describe('SupportPlane API', () => {
     app = await NestFactory.create(AppModule);
     await app.init();
     server = app.getHttpServer();
+  });
+
+  after(async () => {
+    if (app) {
+      await app.close();
+    }
   });
 
   it('GET /health returns ok with runtime info', async () => {

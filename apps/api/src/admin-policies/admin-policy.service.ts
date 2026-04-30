@@ -1,14 +1,12 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
   ConnectorPolicyUpdateRequest,
   AiPolicyUpdateRequest,
   RetentionPolicyUpdateRequest,
-  DeliveryPolicyUpdateRequest,
   type ConnectorPolicy as ConnectorPolicyShape,
   type AiPolicy as AiPolicyShape,
   type RetentionPolicy as RetentionPolicyShape,
-  type DeliveryPolicy as DeliveryPolicyShape,
   type PolicySummary,
   type PolicyAuditPreview,
   type AuditEvent,
