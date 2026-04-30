@@ -102,7 +102,7 @@ echo "$QUEUE" | jq -e '.outboxItem.deliveryIntent.policyDecision == "sandbox_all
 OUTBOX_ID=$(echo "$QUEUE" | jq -r '.outboxItem.id')
 echo "PASS (action=$ACTION_ID outbox=$OUTBOX_ID)"
 
-# 6. Process outbox
+# 6. Process outbox (or wait for worker auto-claim)
 echo "6. Process outbox"
 SERVICE_TOKEN=$(kubectl get secret app-secret-local -n supportplane-app -o jsonpath='{.data.SUPPORTPLANE_INTERNAL_SERVICE_TOKEN}' | base64 -d)
 PROCESS=$(curl -fsS -X POST "$API_URL/outbox/process-once" \
@@ -110,11 +110,17 @@ PROCESS=$(curl -fsS -X POST "$API_URL/outbox/process-once" \
   -H "x-supportplane-service-token: $SERVICE_TOKEN" \
   -d '{"workerId":"bl116-freeze-worker"}')
 echo "$PROCESS" | jq .
-echo "PASS"
 
-# 7. Verify outbox status = sandbox_delivered
+# 7. Poll outbox status until sandbox_delivered (handles worker auto-claim race)
 echo "7. Outbox status"
-OUTBOX_STATUS=$(curl -fsS -b "$COOKIE_ADMIN" "$API_URL/outbox/$OUTBOX_ID")
+for i in {1..15}; do
+  OUTBOX_STATUS=$(curl -fsS -b "$COOKIE_ADMIN" "$API_URL/outbox/$OUTBOX_ID")
+  STATUS=$(echo "$OUTBOX_STATUS" | jq -r '.outboxItem.status')
+  if [ "$STATUS" = "sandbox_delivered" ]; then
+    break
+  fi
+  sleep 1
+done
 echo "$OUTBOX_STATUS" | jq -e '.outboxItem.status == "sandbox_delivered"' >/dev/null
 echo "$OUTBOX_STATUS" | jq -e '.outboxItem.deliveryMode == "sandbox"' >/dev/null
 echo "PASS"
