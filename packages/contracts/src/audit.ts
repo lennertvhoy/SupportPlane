@@ -95,6 +95,7 @@ export const AuditEventType = z.enum([
   'action_rejected',
   'action_queued',
   'action_mock_delivered',
+  'action_sandbox_delivered',
   'action_failed',
   'action_cancelled',
   'action_retry_requested',

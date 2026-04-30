@@ -87,7 +87,7 @@ export class ActionsService {
     // Only return outbox items for actions that have reached queue or beyond.
     // Draft and review_required actions must not display outbox/attempt state.
     const hasQueuedOrDelivered = actions.some(
-      (a) => a.status === 'queued' || a.status === 'mock_delivered' || a.status === 'failed'
+      (a) => a.status === 'queued' || a.status === 'mock_delivered' || a.status === 'sandbox_delivered' || a.status === 'failed'
     );
     const outboxItems = hasQueuedOrDelivered
       ? await this.store.listActionOutboxItems(identity.tenantId, { sessionId })
@@ -281,7 +281,7 @@ export class ActionsService {
   async cancel(identity: CurrentIdentity, id: string, body: { reason?: string }) {
     await this.assertPermission(identity, 'action:cancel');
     const action = await this.requireAction(identity, id);
-    if (['mock_delivered', 'rejected', 'cancelled'].includes(action.status)) {
+    if (['mock_delivered', 'sandbox_delivered', 'rejected', 'cancelled'].includes(action.status)) {
       throw new BadRequestException(`Cannot cancel action from ${action.status}`);
     }
     const updated = { ...action, status: 'cancelled' as const, failureReason: body.reason, updatedAt: nowIso() };
@@ -835,7 +835,7 @@ export class ActionsService {
         outboxItemId: item.id,
         supportActionId: action.id,
         attemptNumber: item.attemptCount + 1,
-        state: 'mock_delivered',
+        state: 'sandbox_delivered',
         deliveryResult: deliveryResult as ActionOutboxAttempt['deliveryResult'],
         errorRedacted: true,
         attemptedAt: item.processingStartedAt ?? at,
@@ -844,22 +844,22 @@ export class ActionsService {
       };
       const updatedItem = {
         ...item,
-        status: 'mock_delivered' as const,
+        status: 'sandbox_delivered' as const,
         attemptCount: item.attemptCount + 1,
-        latestAttemptState: 'mock_delivered' as const,
+        latestAttemptState: 'sandbox_delivered' as const,
         mockDeliveredAt: at,
         workerLockId: undefined,
         workerLockedAt: undefined,
         workerLockExpiresAt: undefined,
         updatedAt: at,
       };
-      const updatedAction = { ...action, status: 'mock_delivered' as const, mockDeliveredAt: at, updatedAt: at };
+      const updatedAction = { ...action, status: 'sandbox_delivered' as const, mockDeliveredAt: at, updatedAt: at };
       await this.store.saveActionOutboxAttempt(attempt);
       await this.store.saveActionOutboxItem(updatedItem);
       await this.store.saveSupportAction(updatedAction);
       await this.audit(identity, 'outbox_item_attempted', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
       await this.audit(identity, 'outbox_processing_succeeded', item.sessionId, 'action_outbox_item', item.id, deliveryResult);
-      await this.audit(identity, 'outbox_sandbox_writeback_succeeded', item.sessionId, 'support_action', action.id, deliveryResult);
+      await this.audit(identity, 'action_sandbox_delivered', item.sessionId, 'support_action', action.id, deliveryResult);
 
       return { processed: true, action: updatedAction, outboxItem: updatedItem, attempt, delivery: deliveryResult, workerId };
     } catch (err) {
@@ -1242,6 +1242,7 @@ export class ActionsService {
         queued: 0,
         processing: 0,
         mock_delivered: 0,
+        sandbox_delivered: 0,
         failed: 0,
         retry_scheduled: 0,
         dead_lettered: 0,

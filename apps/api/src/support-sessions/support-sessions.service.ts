@@ -711,6 +711,7 @@ export class SupportSessionsService {
         [AuditEventType.enum.action_rejected]: 'Action rejected',
         [AuditEventType.enum.action_queued]: 'Action queued',
         [AuditEventType.enum.action_mock_delivered]: 'Action mock delivered',
+        [AuditEventType.enum.action_sandbox_delivered]: 'Action sandbox delivered',
         [AuditEventType.enum.action_failed]: 'Action failed',
         [AuditEventType.enum.action_cancelled]: 'Action cancelled',
         [AuditEventType.enum.action_retry_requested]: 'Action retry requested',

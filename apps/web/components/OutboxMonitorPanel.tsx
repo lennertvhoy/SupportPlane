@@ -109,7 +109,7 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
         )}
 
         <div className="grid grid-cols-4 gap-2 text-[11px]">
-          {['queued', 'processing', 'retry_scheduled', 'dead_lettered', 'failed', 'mock_delivered', 'cancelled', 'total'].map((key) => (
+          {['queued', 'processing', 'retry_scheduled', 'dead_lettered', 'failed', 'mock_delivered', 'sandbox_delivered', 'cancelled', 'total'].map((key) => (
             <div key={key} className="rounded border border-cockpit-700 px-2 py-1">
               <div className="text-cockpit-500">{key}</div>
               <div className="text-cockpit-100">{summary[key] ?? 0}</div>
@@ -133,7 +133,7 @@ export function OutboxMonitorPanel({ identity, onChanged }: { identity: AuthIden
               }}
               className="grid w-full grid-cols-5 gap-2 rounded border border-cockpit-700 px-2 py-1 text-left text-[11px] text-cockpit-300 hover:border-cockpit-500"
             >
-              <Badge variant={item.status === 'mock_delivered' ? 'success' : item.status === 'dead_lettered' ? 'danger' : item.status === 'retry_scheduled' ? 'warning' : 'muted'}>{item.status}</Badge>
+              <Badge variant={item.status === 'mock_delivered' || item.status === 'sandbox_delivered' ? 'success' : item.status === 'dead_lettered' ? 'danger' : item.status === 'retry_scheduled' ? 'warning' : 'muted'}>{item.status}</Badge>
               <span>item {short(item.id)}</span>
               <span>session {short(item.sessionId)}</span>
               <span>attempts {item.attemptCount}/{item.maxAttempts}</span>

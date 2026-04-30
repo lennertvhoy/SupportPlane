@@ -17,6 +17,7 @@ describe('action outbox contracts', () => {
       'queued',
       'processing',
       'mock_delivered',
+      'sandbox_delivered',
       'failed',
       'retry_scheduled',
       'dead_lettered',

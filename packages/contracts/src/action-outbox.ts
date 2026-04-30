@@ -8,6 +8,7 @@ export const SupportActionStatus = z.enum([
   'queued',
   'processing',
   'mock_delivered',
+  'sandbox_delivered',
   'failed',
   'retry_scheduled',
   'dead_lettered',
@@ -23,6 +24,7 @@ export const ActionOutboxStatus = z.enum([
   'queued',
   'processing',
   'mock_delivered',
+  'sandbox_delivered',
   'failed',
   'retry_scheduled',
   'dead_lettered',
@@ -33,6 +35,7 @@ export type ActionOutboxStatus = z.infer<typeof ActionOutboxStatus>;
 export const ActionOutboxAttemptState = z.enum([
   'processing',
   'mock_delivered',
+  'sandbox_delivered',
   'failed',
   'retry_scheduled',
   'retry_requested',
