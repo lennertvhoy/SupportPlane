@@ -152,11 +152,29 @@ export class OidcService {
     const sub = claims.sub ?? '';
 
     // Map Keycloak realm roles to SupportPlane roles
+    // realm_access is often in the access token, not the ID token; try both
     const realmRoles: string[] = [];
-    const realmAccess = claims.realm_access as Record<string, unknown> | undefined;
-    if (realmAccess && Array.isArray(realmAccess.roles)) {
-      for (const role of realmAccess.roles) {
-        if (typeof role === 'string') realmRoles.push(role);
+    const extractRealmRoles = (source: Record<string, unknown> | undefined) => {
+      const ra = source?.realm_access as Record<string, unknown> | undefined;
+      if (ra && Array.isArray(ra.roles)) {
+        for (const role of ra.roles) {
+          if (typeof role === 'string') realmRoles.push(role);
+        }
+      }
+    };
+    extractRealmRoles(claims as unknown as Record<string, unknown>);
+
+    // Fallback: decode access token JWT payload for realm roles
+    // Keycloak puts realm_access in the access token by default, not the ID token
+    if (realmRoles.length === 0 && tokens.access_token) {
+      try {
+        const parts = tokens.access_token.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
+          extractRealmRoles(payload as Record<string, unknown>);
+        }
+      } catch {
+        this.logger.warn('OIDC callback: failed to decode access token for realm roles');
       }
     }
 

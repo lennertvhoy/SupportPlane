@@ -1,0 +1,56 @@
+=== Runtime ===
+kind-supportplane-local
+NAMESPACE                    NAME                                                       READY   STATUS    RESTARTS       AGE
+kube-system                  coredns-7c65d6cfc9-dkrl8                                   1/1     Running   1 (23h ago)    26h
+kube-system                  coredns-7c65d6cfc9-p944w                                   1/1     Running   1 (23h ago)    26h
+kube-system                  etcd-supportplane-local-control-plane                      1/1     Running   0              23h
+kube-system                  kindnet-b22zl                                              1/1     Running   1 (23h ago)    26h
+kube-system                  kube-apiserver-supportplane-local-control-plane            1/1     Running   13 (17h ago)   23h
+kube-system                  kube-controller-manager-supportplane-local-control-plane   1/1     Running   17 (17h ago)   26h
+kube-system                  kube-proxy-56jnx                                           1/1     Running   1 (23h ago)    26h
+kube-system                  kube-scheduler-supportplane-local-control-plane            1/1     Running   16 (17h ago)   26h
+local-path-storage           local-path-provisioner-6fdc965494-tvjgz                    1/1     Running   2 (23h ago)    26h
+supportplane-app             supportplane-api-78ff75d7f9-9x2vb                          1/1     Running   0              4m53s
+supportplane-app             supportplane-web-6fdc67bbd9-r2nmn                          1/1     Running   0              4m53s
+supportplane-app             supportplane-worker-d6784f764-7v7gb                        1/1     Running   0              4m53s
+supportplane-data            minio-855cfdc549-grxrr                                     1/1     Running   1 (23h ago)    25h
+supportplane-data            postgres-0                                                 1/1     Running   1 (23h ago)    25h
+supportplane-integrations    asterisk-68c84fb9f5-rw2j9                                  1/1     Running   0              124m
+supportplane-integrations    keycloak-6655c6dc85-lbr5t                                  1/1     Running   0              15m
+supportplane-integrations    keycloak-postgres-7db8f997f5-kzf2h                         1/1     Running   0              45m
+supportplane-integrations    mailpit-6bc6cdfb55-4c26r                                   1/1     Running   1 (23h ago)    25h
+supportplane-integrations    nats-0                                                     1/1     Running   0              21h
+supportplane-integrations    openbao-5bc456ddfc-ks44c                                   1/1     Running   1 (23h ago)    25h
+supportplane-integrations    zammad-0                                                   1/1     Running   7              24h
+supportplane-integrations    zammad-postgres-0                                          1/1     Running   1 (23h ago)    25h
+supportplane-integrations    zammad-redis-bb685c5fb-zrxz2                               1/1     Running   1 (23h ago)    25h
+supportplane-observability   grafana-745d7b9546-zzrfq                                   1/1     Running   0              7h1m
+supportplane-observability   loki-85f59df588-8hmj7                                      1/1     Running   0              7h1m
+supportplane-observability   otel-collector-5499c8ccc9-kt7dr                            1/1     Running   0              7h1m
+supportplane-observability   prometheus-68bdbfb7ff-2kkcl                                1/1     Running   0              7h1m
+
+=== API Health ===
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"60e221f950591d68c4aa339ac54f5f008dbe931b","timestamp":"2026-04-30T16:15:13.160Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","oidcReady":false,"mfaHookAvailable":true,"note":"Mock-first ticket-aware API slice (BL-003)"}
+=== OIDC Config ===
+{"oidcEnabled":false,"note":"OIDC not configured. Set OIDC_ISSUER_URL, OIDC_CLIENT_ID, and OIDC_REDIRECT_URI environment variables."}
+=== Keycloak ===
+pod/keycloak-6655c6dc85-lbr5t            1/1     Running   0             15m
+pod/keycloak-postgres-7db8f997f5-kzf2h   1/1     Running   0             45m
+service/keycloak            ClusterIP   10.96.217.180   <none>        8080/TCP            45m
+service/keycloak-postgres   ClusterIP   10.96.26.101    <none>        5432/TCP            45m
+
+=== BL-116 Verifier ===
+=== BL-116 Real Self-Hosted Sandbox Freeze Verification ===
+API: http://localhost:4210
+Web: http://localhost:3300
+Artifacts: output/playwright/session-115-bl116-real-sandbox-acceptance-freeze
+1. API health
+PASS (head=60e221f950591d68c4aa339ac54f5f008dbe931b)
+2. Login operator/admin/viewer
+PASS
+3. Real Zammad sandbox read
+PASS
+4. Real Gemma/Ollama draft
+
+=== BL-117 Telephony ===
+{"adapters":[{"adapterType":"mock-telephony","capabilities":["inboundCalls","answer","hold","resume","end"]},{"adapterType":"asterisk-ami","capabilities":["inboundCalls","answer","hold","resume","end"]}]}

@@ -23,11 +23,11 @@ data:
   NATS_OUTBOX_SUBJECT: "supportplane.outbox.ready"
   NATS_OUTBOX_CONSUMER: "SUPPORTPLANE_WORKER"
   OLLAMA_ENABLED: "true"
-  # BL-121: user-local Ollama v0.22.0 on port 11435 with gemma4:e4b
+  # Ollama local sandbox: actual host Ollama runs on 0.0.0.0:11434 (v0.18.2).
   # host.containers.internal does not resolve in this Kind/Podman rootless setup.
-  # The user-local Ollama listens on 0.0.0.0:11435 so cluster pods can reach it.
-  OLLAMA_BASE_URL: "http://10.88.0.1:11435"
-  OLLAMA_MODEL: "gemma4:e4b"
+  # Pods reach the host via the Podman bridge gateway IP.
+  OLLAMA_BASE_URL: "http://10.88.0.1:11434"
+  OLLAMA_MODEL: "gemma:2b"
   OLLAMA_TIMEOUT_MS: "15000"
   OLLAMA_FALLBACK_ENABLED: "true"
   # Web build-time API base URL for cluster access

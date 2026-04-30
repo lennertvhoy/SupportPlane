@@ -1,0 +1,35 @@
+=== Git ===
+## main
+?? output/playwright/session-119-bl083-oidc-login-completion/
+
+=== Git Log ===
+60e221f BL-118: Reconcile hardening closure and OIDC readiness
+953f97d BL-083/086/087/090: Final git status evidence
+121121d BL-083/086/087/090: Reconcile evidence and state docs
+b1a7656 BL-083/086: Add OIDC-ready auth and API hardening
+a58225e BL-117: Final WORKLOG commit list
+b6fc56b BL-117: Update ACCEPTANCE_FREEZES with final commit hashes
+e09f8c1 BL-117: List both commits in WORKLOG
+a57376d BL-117: Update WORKLOG with final commit hash
+c3189f8 BL-117: Local Asterisk AMI call-event bridge
+3928d4b BL-131: Add local Asterisk sandbox topology with AMI config
+fd5d16f BL-117: fix registry truth gaps and telephony bridge baseline
+1a5d418 docs: BL-089/123-127 evidence, state docs, acceptance freeze, worklog
+5e5fc22 BL-089/123/124/125/126/127: registry closure, sandbox truth fields, osTicket adapter, canonical IDs, contract tests fix
+c4d0fa6 BL-123/124/125: Expand connector runtime contracts for sandbox truth
+567479b feat(connectors,ai,security): BL-089/123/124/125/126 registry + resolver + threat model
+ff8e271 chore(evidence): final BL-116 E2E proof from stable verifier run
+7ceeb11 docs(acceptance-freezes): append BL-116 verifier fix details to AF-2026-04-30-008
+d3d5e77 chore(evidence): regenerate BL-116 E2E proof after worker-race polling fix
+408ca9c fix(scripts): add outbox polling to BL-116 verifier for worker auto-claim race
+0045906 docs(evidence): append EV-2026-04-30-007 BL-116 verifier fix and final passing run
+988fc1b chore(evidence): regenerate BL-116 E2E proof from clean verifier run
+5da0d5b docs: append BL-116 verifier script root-cause and repair to WORKLOG
+00165a0 chore(evidence): regenerate BL-116 E2E proof from passing verifier run
+38d7b2d fix(scripts): repair BL-116 verifier script JSON paths and Zammad token
+45f23eb BL-116: Refresh closure proof and final clean status
+fc124c2 BL-116: Reconcile boundary truth and acceptance state
+ece4a98 BL-116: Commit canonical freeze evidence and verifier script
+1e6298a BL-114: Add local observability baseline
+e3bb56f BL-111/112/113: Closure-grade reconciliation — evidence, state docs, acceptance freeze
+bb81e7a BL-111/112/113: Add sandbox_delivered status to resolve mock/sandbox truth ambiguity

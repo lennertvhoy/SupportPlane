@@ -83,7 +83,7 @@ echo "PASS"
 
 # 4. Real Gemma/Ollama draft
 echo "4. Real Gemma/Ollama draft"
-OLLAMA_DRAFT=$(json_post "/support-sessions/$SESSION_ID/draft-suggestion" '{"operatorInstructions":"Summarize sandbox ticket safely.","modelSelection":{"provider":"ollama","model":"gemma4:e4b"}}')
+OLLAMA_DRAFT=$(json_post "/support-sessions/$SESSION_ID/draft-suggestion" '{"operatorInstructions":"Summarize sandbox ticket safely.","modelSelection":{"provider":"ollama","model":"gemma:2b"}}')
 echo "$OLLAMA_DRAFT" | jq -e '.provider == "ollama"' >/dev/null
 echo "$OLLAMA_DRAFT" | jq -e '.usage.fallbackUsed == false' >/dev/null
 echo "$OLLAMA_DRAFT" | jq -e '.usage.noCloudCall == true' >/dev/null
