@@ -1892,7 +1892,7 @@ and must be protected from quiet regression.
 - Scope: Asterisk 22.8.2 sandbox deployed in `supportplane-integrations` namespace. AMI event ingestion endpoint at `POST /telephony/ami-events` accepts canonical call events with service-token auth. Telephony registry lists `mock-telephony` and `asterisk-ami` adapters. Call Console UI shows Asterisk-sourced calls with honest sandbox labels ("No PSTN", "No recording", "No transcription"). Caller matching by normalized phone number works (Acme BVBA fixture). Support sessions auto-created from matched call events. FreePBX GUI deferred. No PSTN, no SIP trunk, no RTP, no recording, no transcription.
 - repo_path: /home/ff/Documents/Projects/SupportPlane
 - branch: main
-- head: TBD after final commit
+- head: c3189f846e2ccf754ad9f4c7ba4250855314ede7 (main BL-117 commit), e09f8c124067d65ad412ad4405cb41d058f00aa9 (WORKLOG hash fix)
 - process_or_container:
   - Kind/Podman cluster `supportplane-local` with port-forwards
   - SupportPlane API, Web, Worker in `supportplane-app`
