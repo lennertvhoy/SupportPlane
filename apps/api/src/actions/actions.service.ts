@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { createHash, createHmac, randomUUID } from 'crypto';
 import { createConnection } from 'net';
+import { request as httpRequest } from 'http';
 import { AckPolicy, connect, StorageType, StringCodec } from 'nats';
 import {
   ActionOutboxAttempt,
@@ -1041,18 +1042,39 @@ export class ActionsService {
 
     // For local sandbox, use HTTP PUT with AWS Signature V4 auth
     try {
-      const putUrl = `${minioUrl}/${bucket}/${objectKey}`;
+      const putUrl = new URL(`${minioUrl}/${bucket}/${objectKey}`);
       const payloadHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(payload)).then((buf) =>
         Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
       );
-      const signedHeaders = signAwsV4('PUT', putUrl, { 'Content-Type': 'application/json' }, payloadHash, minioAccessKey, minioSecretKey);
-      const response = await fetch(putUrl, {
-        method: 'PUT',
-        headers: signedHeaders,
-        body: payload,
+      const signedHeaders = signAwsV4('PUT', putUrl.href, { 'content-type': 'application/json' }, payloadHash, minioAccessKey, minioSecretKey);
+
+      const ok = await new Promise<boolean>((resolve, reject) => {
+        const req = httpRequest(
+          {
+            hostname: putUrl.hostname,
+            port: putUrl.port || (putUrl.protocol === 'https:' ? 443 : 80),
+            path: putUrl.pathname + putUrl.search,
+            method: 'PUT',
+            headers: signedHeaders,
+          },
+          (res) => {
+            let body = '';
+            res.on('data', (chunk) => { body += chunk; });
+            res.on('end', () => {
+              if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+                resolve(true);
+              } else {
+                reject(new Error(`MinIO PUT failed: ${res.statusCode} ${body}`));
+              }
+            });
+          }
+        );
+        req.on('error', (err) => reject(err));
+        req.write(payload);
+        req.end();
       });
-      if (!response.ok) {
-        throw new Error(`MinIO PUT failed: ${response.status} ${await response.text()}`);
+      if (!ok) {
+        throw new Error('MinIO PUT returned non-success');
       }
       // Update deliveryResult with MinIO metadata
       (deliveryResult as Record<string, unknown>)['minioEvidence'] = {
