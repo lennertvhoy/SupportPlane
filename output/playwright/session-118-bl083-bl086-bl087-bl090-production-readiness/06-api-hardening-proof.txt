@@ -1,0 +1,68 @@
+BL-086 — API Gateway Hardening Proof
+====================================
+
+Date: 2026-04-30
+Files Created/Modified:
+- apps/api/src/common/body-limit.config.ts
+- apps/api/src/common/body-limit.middleware.ts
+- apps/api/src/common/rate-limit.guard.ts
+- apps/api/src/common/validation.guard.ts
+- apps/api/src/common/unsafe-field.guard.ts
+- apps/api/src/common/security-headers.middleware.ts
+- apps/api/src/audit/security-audit.service.ts
+- apps/api/src/audit/audit.module.ts
+- apps/api/test/security-hardening.test.ts
+- apps/api/src/app.module.ts (AuditModule import)
+- apps/api/src/main.ts (middleware integration)
+
+Security Headers
+----------------
+- X-Content-Type-Options: nosniff
+- X-Frame-Options: DENY
+- Referrer-Policy: strict-origin-when-cross-origin
+- Permissions-Policy: camera=(), microphone=(), geolocation=()
+- X-SupportPlane-Auth-Mode: dev|local|oidc|service
+- Strict-Transport-Security intentionally OMITTED (local sandbox uses HTTP)
+
+Body Limits
+-----------
+- Global: 1mb
+- Actions: 512kb
+- Writeback: 256kb
+- Telephony: 256kb
+- Connector runtime: 512kb
+- Excess returns 413 { error: "body_limit_exceeded", limit, path }
+
+Rate Limits (in-memory)
+-----------------------
+- Global: 100 req/60s per IP
+- Auth/login: 5 req/60s per IP
+- Writeback: 10 req/60s per IP
+- Connector runtime: 20 req/60s per IP
+- Telephony: 30 req/60s per IP
+- Excess returns 429 { error: "rate_limit_exceeded", retryAfter }
+
+Request Validation
+------------------
+- URL validation: rejects non-http/https, private IPs when disallowed
+- Adapter type validation: against registered adapter types
+- Tenant context validation: requires tenant ID
+- Telephony event validation: requires callerNumber, calleeNumber, eventType
+- Unsafe field rejection: __proto__, constructor, prototype blocked
+- Connector config rejection: eval, exec, Function strings blocked
+
+Audit Events
+------------
+- rate_limit_denied
+- body_limit_denied
+- invalid_service_token
+- invalid_connector_config
+- blocked_egress
+- blocked_writeback
+- blocked_telephony_control
+- validation_failed
+
+Tests
+-----
+- 166/166 API tests pass (including 19 security-hardening tests)
+- No existing functionality broken

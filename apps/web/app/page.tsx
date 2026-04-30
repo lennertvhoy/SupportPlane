@@ -19,6 +19,7 @@ import { ActionOutboxPanel } from '@/components/ActionOutboxPanel';
 import { OutboxMonitorPanel } from '@/components/OutboxMonitorPanel';
 import { DeliveryPolicyPanel } from '@/components/DeliveryPolicyPanel';
 import { ObservabilityPanel } from '@/components/ObservabilityPanel';
+import { SecurityReadinessPanel } from '@/components/SecurityReadinessPanel';
 import { AuthGate, IdentityPill } from '@/components/AuthGate';
 import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, type GreetingSuggestionResponse, type AuthIdentity, ApiClientError } from '@/lib/api';
 
@@ -339,7 +340,11 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             API: localhost:4110
           </span>
           {healthInfo && (
-            <span className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-400">
+            <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
+              healthInfo.authMode === 'oidc'
+                ? 'border-accent/40 bg-accent/10 text-accent-light'
+                : 'border-cockpit-600 bg-cockpit-900 text-cockpit-400'
+            }`}>
               Auth: {healthInfo.authMode} · Store: {healthInfo.storeMode}
             </span>
           )}
@@ -470,6 +475,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               onChanged={selectedSession ? () => fetchSessionDetails(selectedSession) : undefined}
             />
             <ObservabilityPanel identity={identity} />
+            <SecurityReadinessPanel identity={identity} />
             <DeliveryPolicyPanel identity={identity} />
             <AuditTrailPanel
               session={selectedSession}

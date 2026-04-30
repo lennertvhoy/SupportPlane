@@ -1,0 +1,29 @@
+03 Keycloak OIDC Topology Proof (BL-083)
+
+Files created under infra/kubernetes/local-podman/integrations/keycloak/:
+  keycloak-configmap.yaml
+  keycloak-secret.yaml
+  keycloak-deployment.yaml
+  keycloak-service.yaml
+  keycloak-postgres-deployment.yaml
+  keycloak-postgres-service.yaml
+  keycloak-postgres-pvc.yaml
+
+Topology:
+- Namespace: supportplane-integrations
+- Keycloak Deployment (quay.io/keycloak/keycloak:25.0) exposes port 8080
+  - Reads config from ConfigMap (DB, hostname, proxy settings)
+  - Reads admin credentials and DB password from Secret
+  - Liveness/readiness probes on /health (KC_HEALTH_ENABLED)
+  - start-dev mode (local sandbox, not production hardened)
+- Keycloak Service: ClusterIP on 8080
+- Postgres Deployment (postgres:16-alpine) for Keycloak DB
+  - PVC: keycloak-postgres-data (256Mi)
+  - Service: keycloak-postgres on 5432
+  - Password from same Secret
+
+Honest status:
+- Manifests are real and follow the existing local-podman integration style.
+- No Keycloak realm bootstrap Job is included.
+- Not production hardened: no TLS, no replica count >1, no network policies.
+- The running topology has not been deployed or verified in this slice.

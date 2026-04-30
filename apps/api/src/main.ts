@@ -2,9 +2,17 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
+import { securityHeadersMiddleware } from './common/security-headers.middleware.js';
+import { bodyLimitMiddleware } from './common/body-limit.middleware.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Security headers for all responses (local sandbox only; HSTS omitted).
+  app.use(securityHeadersMiddleware);
+
+  // Body size limits with path-specific stricter limits for sensitive endpoints.
+  app.use(bodyLimitMiddleware());
 
   // Dev-only CORS: allow the SupportPlane web cockpit on common local ports.
   // This must be replaced by a strict origin allowlist before any production use.

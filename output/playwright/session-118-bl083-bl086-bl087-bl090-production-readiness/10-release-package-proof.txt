@@ -1,0 +1,54 @@
+BL-090 — Release Package Proof
+===============================
+
+Date: 2026-04-30
+
+Files Created:
+- scripts/package_local_release.sh (executable)
+- docs/RELEASE_RUNBOOK.md
+- docs/DEMO_RUNBOOK.md
+
+Package Script Dry-Run
+----------------------
+$ bash scripts/package_local_release.sh --dry-run
+Result: PASS
+- Git commit: a58225e165ce03df83b4e7095359e354f989cd86
+- Git branch: main
+- API image: localhost/supportplane-api:local-k8s
+- Web image: localhost/supportplane-web:local-k8s
+- Worker image: localhost/supportplane-worker:local-k8s
+- Would create release directory with:
+  - commit.txt
+  - images.txt
+  - manifests.tar.gz (from infra/kubernetes/local-podman/)
+  - VERIFICATION.md
+  - WARNING.txt (non-production warning)
+  - README.md, RELEASE_RUNBOOK.md, DEMO_RUNBOOK.md, RUNBOOK_BACKUP_RESTORE.md
+
+Release Runbook
+---------------
+- Pre-release checklist
+- Image build/load instructions
+- Kubernetes apply instructions
+- Port-forward instructions
+- Health checks per service
+- Default local accounts
+- Non-production warning
+- Known ports/services table
+- Rollback steps
+- Post-deploy verifier checklist
+
+Demo Runbook
+------------
+- Demo prerequisites
+- Step-by-step demo flow
+- Expected outcomes
+- Known limitations
+- Troubleshooting
+
+Honest Limitations
+------------------
+- Release package is local-sandbox-only
+- No signed artifacts
+- No container registry push
+- No Helm chart or operator bundle

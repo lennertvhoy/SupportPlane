@@ -1,0 +1,47 @@
+BL-086 — Security Audit Proof
+=============================
+
+Date: 2026-04-30
+
+SecurityAuditService
+--------------------
+File: apps/api/src/audit/security-audit.service.ts
+
+Methods implemented:
+- logRateLimitDenied(req, key, limit)
+- logBodyLimitDenied(req, limit)
+- logInvalidServiceToken(req, reason)
+- logInvalidConnectorConfig(req, reason)
+- logBlockedEgress(req, url, decision)
+- logBlockedWriteback(req, reason)
+- logBlockedTelephonyControl(req, callId, reason)
+- logValidationFailed(req, field, reason)
+
+Safety:
+- All logs use SHA-256 hashed IPs (16-char prefix)
+- No raw tokens in audit metadata
+- No raw request bodies in audit metadata
+- safeLabel() sanitizes values to 96 chars, alphanumeric only
+- Correlation ID propagated from telemetry middleware
+- Tenant ID scoped where available
+
+Telemetry Output Format
+-----------------------
+{
+  event: 'rate_limit_denied',
+  correlationId: 'sp-...',
+  tenantId: 'dev-tenant',
+  result: 'denied',
+  metadata: {
+    path: 'safe_label',
+    method: 'POST',
+    ipHash: 'a1b2c3d4...',
+    keyHash: 'e5f6g7h8...',
+    limit: 100
+  }
+}
+
+Tests
+-----
+- Security audit events are emitted during guard denials: PASS
+- No secret leakage in audit metadata: PASS

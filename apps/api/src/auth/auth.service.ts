@@ -7,7 +7,7 @@ import { computeIntegrityHash } from '@supportplane/audit';
 import { AuditActorType, AuditEventType } from '@supportplane/contracts';
 import { permissionsForRoles } from './rbac.js';
 import { verifyLocalPassword } from './password.js';
-import type { CurrentIdentity } from './auth.types.js';
+import type { CurrentIdentity, OidcConfig, MfaHookStatus } from './auth.types.js';
 
 const SESSION_COOKIE = 'supportplane_session';
 const SESSION_TTL_MS = 1000 * 60 * 60 * 8;
@@ -181,6 +181,58 @@ export class AuthService {
       roles,
       permissions,
       authMode: 'local',
+    };
+  }
+
+  getOidcConfig(): OidcConfig | null {
+    const issuerUrl = process.env['OIDC_ISSUER_URL'];
+    const clientId = process.env['OIDC_CLIENT_ID'];
+    const clientSecret = process.env['OIDC_CLIENT_SECRET'];
+    const redirectUri = process.env['OIDC_REDIRECT_URI'];
+    const scopesEnv = process.env['OIDC_SCOPES'];
+    if (!issuerUrl || !clientId || !redirectUri) {
+      return null;
+    }
+    return {
+      issuerUrl,
+      clientId,
+      clientSecret: clientSecret ?? '',
+      redirectUri,
+      scopes: scopesEnv ? scopesEnv.split(',').map((s) => s.trim()) : ['openid', 'profile', 'email'],
+    };
+  }
+
+  validateOidcConfig(): { valid: boolean; reason?: string } {
+    const config = this.getOidcConfig();
+    if (!config) {
+      return { valid: false, reason: 'OIDC environment variables not configured' };
+    }
+    try {
+      const url = new URL(config.issuerUrl);
+      if (url.protocol !== 'https:' && url.protocol !== 'http:') {
+        return { valid: false, reason: 'Issuer URL must use http or https' };
+      }
+    } catch {
+      return { valid: false, reason: 'Issuer URL is not a valid URL' };
+    }
+    if (config.clientId.length < 3) {
+      return { valid: false, reason: 'Client ID is too short' };
+    }
+    return { valid: true };
+  }
+
+  getServiceAccountHooks(): { note: string; available: boolean } {
+    return {
+      note: 'Service account hooks are conceptual only. No persistent storage or token management is implemented.',
+      available: false,
+    };
+  }
+
+  getMfaHookStatus(): MfaHookStatus {
+    return {
+      mfaHookAvailable: true,
+      mfaEnforced: false,
+      mfaRequired: false,
     };
   }
 

@@ -1,0 +1,64 @@
+BL-118 — Cluster Redeploy Proof
+================================
+
+Date: 2026-04-30
+
+Image Build
+-----------
+- localhost/supportplane-api:local-k8s → 9943df6de893
+- localhost/supportplane-web:local-k8s → e38d2a9acf0d
+- localhost/supportplane-worker:local-k8s → d040dc5360ad
+- All loaded into kind-supportplane-local cluster
+
+Kubernetes Apply
+----------------
+$ kubectl apply -k infra/kubernetes/local-podman
+- Keycloak deployment created (supportplane-integrations)
+- Keycloak postgres deployment created
+- Keycloak PVC created
+- All existing resources unchanged
+
+Rollout Status
+--------------
+$ kubectl rollout status deployment/supportplane-api -n supportplane-app
+  deployment successfully rolled out
+$ kubectl rollout status deployment/supportplane-web -n supportplane-app
+  deployment successfully rolled out
+$ kubectl rollout status deployment/supportplane-worker -n supportplane-app
+  deployment successfully rolled out
+
+Pod Status
+----------
+supportplane-app:
+  supportplane-api-58776646c-dkgc5     1/1 Running
+  supportplane-web-7c6bc55469-v7fv8    1/1 Running
+  supportplane-worker-7c9fd87fd4-28s5j 1/1 Running
+
+supportplane-integrations:
+  keycloak-5fb7d97ccc-ssjmt            0/1 Running (initializing)
+  keycloak-postgres-7db8f997f5-kzf2h   1/1 Running
+  asterisk-68c84fb9f5-rw2j9            1/1 Running
+  mailpit-6bc6cdfb55-4c26r             1/1 Running
+  nats-0                               1/1 Running
+  openbao-5bc456ddfc-ks44c             1/1 Running
+  zammad-0                             1/1 Running
+  zammad-postgres-0                    1/1 Running
+  zammad-redis-bb685c5fb-zrxz2         1/1 Running
+
+API Health
+----------
+$ curl http://localhost:4210/health
+{
+  "service": "supportplane-api",
+  "status": "ok",
+  "storeMode": "postgres",
+  "authMode": "local",
+  "oidcReady": false,
+  "mfaHookAvailable": true
+}
+
+Honest Status
+-------------
+- Keycloak is deployed but still initializing (expected: ~2-3 min for first start)
+- OIDC config returns false because env vars not yet set in app ConfigMap
+- Full OIDC login flow not implemented

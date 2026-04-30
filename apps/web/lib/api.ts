@@ -19,7 +19,7 @@ export interface AuthIdentity {
   userRole?: string;
   roles: string[];
   permissions: string[];
-  authMode: 'dev' | 'local';
+  authMode: 'dev' | 'local' | 'oidc';
 }
 
 const DEFAULT_IDENTITY: DevIdentity = {
@@ -558,6 +558,8 @@ export interface ApiHealthStatus {
   status?: string;
   storeMode?: string;
   authMode?: string;
+  oidcReady?: boolean;
+  mfaHookAvailable?: boolean;
   checkedAt?: string;
 }
 
@@ -1037,7 +1039,7 @@ export const api = {
     apiFetch<{ loggedOut: boolean }>('/auth/logout', { method: 'POST' }),
 
   me: () =>
-    apiFetch<{ identity: AuthIdentity; authMode: 'dev' | 'local' }>('/auth/me', { method: 'GET' }),
+    apiFetch<{ identity: AuthIdentity; authMode: 'dev' | 'local' | 'oidc' }>('/auth/me', { method: 'GET' }),
 
   getHealth: (identity?: DevIdentity) =>
     apiFetch<ApiHealthStatus>('/health', { method: 'GET' }, identity),

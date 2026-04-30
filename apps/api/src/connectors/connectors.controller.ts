@@ -1,10 +1,12 @@
-import { Controller, Get, Inject, Post, Req } from '@nestjs/common';
+import { Controller, Get, Inject, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { ConnectorsService } from './connectors.service.js';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { requirePermission } from '../auth/rbac.js';
+import { ValidateAdapterTypeGuard } from '../common/validation.guard.js';
 
 @Controller('connectors')
+@UseGuards(ValidateAdapterTypeGuard)
 export class ConnectorsController {
   constructor(@Inject(ConnectorsService) private readonly service: ConnectorsService) {}
 

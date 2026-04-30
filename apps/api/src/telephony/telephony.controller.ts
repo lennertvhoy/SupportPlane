@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Headers, HttpCode, Inject, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Headers, HttpCode, Inject, Param, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { requirePermission } from '../auth/rbac.js';
 import { TelephonyService, type FakeProviderWebhookBody } from './telephony.service.js';
 import { listTelephonyAdapters } from '@supportplane/connectors';
+import { ValidateTelephonyEventGuard } from '../common/validation.guard.js';
 
 @Controller('telephony')
 export class TelephonyController {
@@ -43,6 +44,7 @@ export class TelephonyController {
 
   @Post('asterisk/events')
   @HttpCode(200)
+  @UseGuards(ValidateTelephonyEventGuard)
   receiveAsteriskAmiEvent(
     @Req() req: Request,
     @Body() body: {

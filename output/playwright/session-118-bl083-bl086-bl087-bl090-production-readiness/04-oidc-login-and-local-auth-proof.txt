@@ -1,0 +1,37 @@
+BL-083 — OIDC Login and Local Auth Proof
+=========================================
+
+Date: 2026-04-30
+Runtime: Cluster API localhost:4210, Cluster Web localhost:3300
+
+Local Auth
+----------
+- GET /health returns authMode: "local"
+- Local login with admin@supportplane.local / supportplane-demo works
+- Local auth controller POST /auth/local/login returns identity + cookie
+- Local auth is NOT removed; remains dev fallback
+
+OIDC Readiness
+--------------
+- GET /auth/oidc/config returns:
+  {
+    "oidcEnabled": false,
+    "note": "OIDC not configured. Set OIDC_ISSUER_URL, OIDC_CLIENT_ID, and OIDC_REDIRECT_URI environment variables."
+  }
+- This is HONEST: no OIDC env vars are configured in the running cluster
+- Keycloak sandbox is DEPLOYED in cluster (supportplane-integrations namespace)
+- Keycloak pod is starting (0/1 Running, initializing)
+
+Service Account Guard
+---------------------
+- ServiceAccountGuard checks X-Service-Token header
+- Invalid/missing token returns 401 { error: "invalid_service_token" }
+- Valid token sets authMode: "service" with read permissions
+
+Honest Status
+-------------
+- Local auth: REAL and working
+- OIDC config endpoint: REAL and honest about disabled state
+- Keycloak deployment: REAL but still initializing
+- Full browser OIDC login flow: NOT implemented (no Passport OIDC strategy)
+- BL-083 status: PARTIAL — hooks and config ready, no full login flow

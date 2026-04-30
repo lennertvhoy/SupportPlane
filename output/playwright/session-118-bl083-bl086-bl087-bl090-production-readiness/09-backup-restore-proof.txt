@@ -1,0 +1,44 @@
+BL-087 — Backup/Restore Proof
+==============================
+
+Date: 2026-04-30
+
+Files Created:
+- scripts/backup_local_sandbox.sh (executable)
+- scripts/restore_local_sandbox.sh (executable)
+- docs/RUNBOOK_BACKUP_RESTORE.md
+
+Backup Script Dry-Run
+---------------------
+$ bash scripts/backup_local_sandbox.sh --dry-run
+Result: PASS
+- Creates backups/supportplane-sandbox-<timestamp>/ directory structure
+- Records git HEAD and branch
+- Collects image tags from kubectl
+- Attempts pg_dump (warns if not installed)
+- Attempts MinIO manifest (warns if mc/aws not installed)
+- Redacts Kubernetes Secret values to [REDACTED]
+- Lists acceptance freeze references
+
+Restore Script Dry-Run
+----------------------
+$ bash scripts/restore_local_sandbox.sh --dry-run
+Result: PASS (fails early due to missing SUPPORTPLANE_ALLOW_RESTORE_LOCAL=1)
+- Verifies kubectl context is kind-supportplane-local
+- Refuses if DATABASE_URL not local
+- Requires SUPPORTPLANE_ALLOW_RESTORE_LOCAL=1
+- Dry-run by default
+
+Safeguards
+----------
+- Refuse non-local kubectl context
+- Refuse production-looking DB URLs
+- Require explicit env flag for destructive restore
+- Never print raw secrets
+- Redact DATABASE_URL in logs
+
+Honest Limitations
+------------------
+- pg_dump not installed on host (warns and skips)
+- mc/aws CLI not installed (warns and skips)
+- Scripts are local-sandbox-only, not production-grade

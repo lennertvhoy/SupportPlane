@@ -15,9 +15,10 @@ import { CredentialReferencesModule } from './credential-references/credential-r
 import { CurrentIdentityMiddleware } from './auth/current-identity.middleware.js';
 import { CorrelationMiddleware } from './telemetry/correlation.middleware.js';
 import { TelemetryModule } from './telemetry/telemetry.module.js';
+import { AuditModule } from './audit/audit.module.js';
 
 @Module({
-  imports: [StoreModule, AuthModule, TelemetryModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule],
+  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {

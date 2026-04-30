@@ -46,6 +46,14 @@ resources:
   - integrations/asterisk/asterisk-secret.yaml
   - integrations/asterisk/asterisk-deployment.yaml
   - integrations/asterisk/asterisk-service.yaml
+  # Keycloak sandbox (local OIDC readiness only; not production hardened)
+  - integrations/keycloak/keycloak-configmap.yaml
+  - integrations/keycloak/keycloak-secret.yaml
+  - integrations/keycloak/keycloak-postgres-pvc.yaml
+  - integrations/keycloak/keycloak-postgres-deployment.yaml
+  - integrations/keycloak/keycloak-postgres-service.yaml
+  - integrations/keycloak/keycloak-deployment.yaml
+  - integrations/keycloak/keycloak-service.yaml
   # Observability services
   - observability/otel-collector-configmap.yaml
   - observability/otel-collector-deployment.yaml

@@ -46,3 +46,8 @@ venv/
 
 /generated/prisma
 *.tsbuildinfo
+
+# Local sandbox artifacts
+backups/
+release/
+

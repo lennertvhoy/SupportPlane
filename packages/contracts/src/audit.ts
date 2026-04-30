@@ -125,6 +125,15 @@ export const AuditEventType = z.enum([
   // BL-098 Connector Runtime Configuration + Credential Reference Readiness Foundation
   'connector_runtime_resolved',
   'connector_readiness_checked',
+  // BL-086 API Security Hardening
+  'rate_limit_denied',
+  'body_limit_denied',
+  'invalid_service_token',
+  'invalid_connector_config',
+  'blocked_egress',
+  'blocked_writeback',
+  'blocked_telephony_control',
+  'validation_failed',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

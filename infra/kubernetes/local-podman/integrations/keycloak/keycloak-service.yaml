@@ -1,0 +1,18 @@
+# Local sandbox only. Not production hardened.
+apiVersion: v1
+kind: Service
+metadata:
+  name: keycloak
+  namespace: supportplane-integrations
+  labels:
+    app.kubernetes.io/name: keycloak
+    app.kubernetes.io/part-of: supportplane
+spec:
+  selector:
+    app.kubernetes.io/name: keycloak
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  type: ClusterIP

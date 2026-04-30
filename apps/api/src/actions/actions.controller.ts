@@ -1,7 +1,10 @@
-import { Body, Controller, Get, Inject, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { ActionsService } from './actions.service.js';
+import { BodyLimitGuard } from '../common/body-limit.guard.js';
+import { UnsafeFieldGuard } from '../common/unsafe-field.guard.js';
+import { ValidateTenantContextGuard } from '../common/validation.guard.js';
 
 @Controller()
 export class ActionsController {
@@ -13,6 +16,7 @@ export class ActionsController {
   }
 
   @Post('support-sessions/:id/actions')
+  @UseGuards(BodyLimitGuard, UnsafeFieldGuard, ValidateTenantContextGuard)
   createAction(@Req() req: Request, @Param('id') sessionId: string, @Body() body: unknown) {
     return this.service.createAction(getCurrentIdentity(req), sessionId, body);
   }

@@ -24,6 +24,7 @@ function readBearer(req: Request): string | undefined {
   return authorization.slice('Bearer '.length);
 }
 
+// WARNING: Never log the full service token. Treat it as a secret.
 function readServiceToken(req: Request): string | undefined {
   const header = req.headers['x-supportplane-service-token'];
   return typeof header === 'string' ? header : undefined;

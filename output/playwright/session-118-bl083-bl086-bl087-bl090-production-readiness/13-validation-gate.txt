@@ -1,0 +1,50 @@
+BL-118 — Validation Gate
+========================
+
+Date: 2026-04-30
+
+1. npm run lint
+   Result: PASS
+
+2. npm run typecheck --workspaces --if-present
+   Result: PASS (all workspaces)
+
+3. npm test --workspaces --if-present
+   Result: PASS
+   - API tests: 166/166 pass (147 existing + 19 security-hardening)
+   - Contract tests: 47/47 pass
+   - Policy tests: 7/7 pass
+   - Connector tests: 7/7 pass
+
+4. python3 scripts/check_state_docs.py
+   Result: PASS
+
+5. bash scripts/verify_observability_baseline.sh
+   Result: PASS
+
+6. bash scripts/verify_bl116_real_sandbox_freeze.sh
+   Result: PASS (all 11 steps, exit code 0)
+
+7. bash scripts/backup_local_sandbox.sh --dry-run
+   Result: PASS
+
+8. bash scripts/restore_local_sandbox.sh --dry-run
+   Result: PASS (safeguard triggered, no destructive action)
+
+9. bash scripts/package_local_release.sh --dry-run
+   Result: PASS
+
+10. bash scripts/reset_demo_data.sh --dry-run
+    Result: PASS
+
+11. Cluster build and load images
+    Result: PASS (localhost/supportplane-api:local-k8s, web, worker)
+
+12. kubectl apply -k infra/kubernetes/local-podman
+    Result: PASS (Keycloak resources created)
+
+13. kubectl rollout restart deployments
+    Result: PASS (API, Web, Worker all rolled out)
+
+BL-116 Regression: PRESERVED
+BL-117 Regression: PRESERVED (Asterisk pod Running)

@@ -1,0 +1,40 @@
+BL-086 — Rate Limit, Body Limit, Validation Proof
+=================================================
+
+Date: 2026-04-30
+
+Rate Limit Tests
+----------------
+$ npm test --workspace=@supportplane/api
+- rate limit exceeded returns 429 with retryAfter: PASS
+- auth/login stricter limit (5/60s): PASS
+- IP hashing uses SHA-256 (no raw IP in keys): PASS
+
+Body Limit Tests
+----------------
+- oversized body returns 413: PASS
+- path-specific limits enforced: PASS
+- Content-Length header checked before parsing: PASS
+
+Validation Tests
+----------------
+- invalid URL rejected: PASS
+- invalid adapter type rejected: PASS
+- missing tenant context rejected: PASS
+- invalid telephony event rejected: PASS
+- __proto__ in body rejected via guard: PASS
+- eval in connector config rejected: PASS
+
+Integration
+-----------
+- RateLimitGuard applied to POST /auth/local/login
+- BodyLimitMiddleware applied globally in main.ts
+- SecurityHeadersMiddleware applied globally in main.ts
+- ValidateAdapterTypeGuard applied to connector routes
+- ValidateTelephonyEventGuard applied to /telephony/ami-events
+
+Honest Status
+-------------
+- In-memory rate limiting is acceptable for local sandbox
+- No distributed rate limiting (Redis/memcached) — production gap
+- Body limit checks Content-Length only, not stream size — acceptable for JSON APIs

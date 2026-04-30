@@ -59,6 +59,8 @@ export class HealthController {
       runtime: 'NestJS',
       storeMode: process.env['SUPPORTPLANE_STORE'] || 'memory',
       authMode: process.env['SUPPORTPLANE_AUTH_MODE'] || 'dev',
+      oidcReady: !!(process.env['OIDC_ISSUER_URL'] && process.env['OIDC_CLIENT_ID']),
+      mfaHookAvailable: true,
       note: 'Mock-first ticket-aware API slice (BL-003)',
     };
   }
