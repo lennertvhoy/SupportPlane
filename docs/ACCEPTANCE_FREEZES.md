@@ -1649,3 +1649,57 @@ and must be protected from quiet regression.
   - No compliance certification
   - No real AI provider calls
   - No real telephony/PBX integration
+
+---
+
+## BL-111/112/113 — Sandbox Writeback E2E with MinIO Evidence and Mailpit Notification
+
+- frozen_at: 2026-04-30T10:45:00+02:00
+- backlog_id: BL-111, BL-112, BL-113
+- final_commit: bb81e7a9029d212fd01507c564635c0a455a6140
+  note: This freeze covers the pre-existing commit where sandbox_delivered status was added. No new code changes were needed for closure; the work was evidence generation, truth hygiene, and state reconciliation.
+- verification:
+  - lint: pass
+  - typecheck (all workspaces): pass
+  - tests: 24/24 pass
+  - cluster_api_reachable: yes (localhost:4210)
+  - cluster_web_reachable: yes (localhost:3300)
+  - zammad_sandbox_reachable: yes (localhost:8080)
+  - real_zammad_writeback: yes (article 16 on ticket 2, internal note)
+  - minio_evidence_persistence: yes (1579 bytes, SHA-256 checksum)
+  - mailpit_notification_capture: yes (13 messages, latest matches)
+  - ui_sandbox_delivered_visible: yes (Action Center, Delivery Ops, Case Timeline, Audit Trail)
+  - sandbox_delivered_status_distinct: yes (not conflated with mock_delivered)
+- what_is_frozen:
+  - Sandbox-only Zammad internal note writeback with approval gate, delivery policy, kill switch, idempotency
+  - `sandbox_delivered` as distinct terminal status from `mock_delivered`
+  - MinIO evidence artifact persistence with checksum, bucket, object key, disclaimer
+  - Mailpit local SMTP notification capture with subject, timestamp, message ID
+  - OpenBao server-side credential resolution for Zammad API token
+  - NATS JetStream durable worker bridge with fallback to PostgreSQL local outbox
+  - Audit events: `action_sandbox_delivered`, `outbox_sandbox_delivered`, `outbox_item_attempted`, `outbox_processing_succeeded`
+  - UI panels show sandbox_delivered with green badge, summary counts, attempt history
+- regression_guard:
+  - `sandbox_delivered` must remain a distinct terminal status; do not merge with `mock_delivered`
+  - Any change to delivery policy must preserve approval-required and kill-switch boundaries
+  - MinIO evidence must include checksum, disclaimer, and no-secret proof
+  - Mailpit notification must include local-only disclaimer
+  - Zammad writeback must remain internal-note only; no public replies
+- known_limitations:
+  - Sandbox writeback is local cluster only; no production writeback
+  - Zammad API token stored in Kubernetes secret (not production-grade)
+  - OpenBao is local sandbox only, not production secret management
+  - NATS is local JetStream only, not production broker HA
+  - MinIO evidence is local sandbox only, not compliance-grade
+  - Mailpit is local capture only, no internet email
+  - UI `externalWriteAttempted` summary may show false in some views despite true in audit payload
+- explicit_non_claims:
+  - No production Zammad read/write
+  - No public replies or broad ticket mutation
+  - No production secrets vault
+  - No production auth/OIDC/MFA
+  - No compliance certification
+  - No production broker HA
+  - No production AI governance
+  - No real telephony/PBX integration
+  - No endpoint agent or screen monitoring

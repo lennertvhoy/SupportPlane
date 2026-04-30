@@ -1,25 +1,24 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-29 21:55 CEST
+**Updated At:** 2026-04-30 10:45 CEST
 **Execution Mode:** operating
-**Project State:** bl_121_accepted_bl_111_active
+**Project State:** bl_111_112_113_accepted_bl_116_active
 **Public URL:** not configured
 
 ## Snapshot
 
-- **BL-104 through BL-110, BL-115, BL-121 are accepted. BL-121 proves real host-controlled Ollama model call from the cluster API with gemma4:e4b, fallbackUsed=false.** SupportPlane API, Web, and Worker run in the local Kind/Podman cluster with PostgreSQL PVC. Self-hosted topology is deployed.
+- **BL-104 through BL-110, BL-115, BL-121, BL-111, BL-112, BL-113 are accepted.** BL-111/112/113 prove real sandbox writeback E2E: Zammad internal note (article 16 on ticket 2), MinIO evidence artifact, Mailpit notification capture, all via NATS JetStream worker with OpenBao credential resolution.
 - **Cluster foundation:** Kind/Podman control-plane Ready; CoreDNS, kube-proxy, local-path-provisioner running; four namespaces active.
 - **Self-hosted topology:** Zammad seeded and reachable; OpenBao initialized/unsealed; NATS JetStream file-backed; Mailpit capturing SMTP; MinIO healthy; Ollama host-controlled with AMD GPU, reachable from cluster pods via podman0 bridge (10.88.0.1:11435) with user-local Ollama v0.22.0 and gemma4:e4b.
-- **Runnable paths:** Local/mock MVP on localhost:4110/3200; cluster sandbox on localhost:4210/3300 with real Zammad read, OpenBao sandbox resolver, NATS JetStream bridge, and real Ollama local AI call.
-- **What is real now:** API reads real Zammad sandbox ticket/customer; server-side OpenBao resolves the sandbox credential; egress policy allows only local sandbox read and blocks writeback; NATS JetStream product stream/consumer bridges approved outbox items; Ollama provider performs real host-controlled model calls with gemma4:e4b on user-local Ollama v0.22.0, fallbackUsed=false, no cloud calls, no autonomous send, redaction before call.
-- **What is still not real:** Zammad internal-note writeback (BL-111), MinIO evidence persistence, Mailpit notification capture, production auth/secrets, production broker HA, production AI governance, telephony, endpoint agent, Tauri companion, screen monitoring/OCR, compliance.
+- **Runnable paths:** Local/mock MVP on localhost:4110/3200; cluster sandbox on localhost:4210/3300 with real Zammad read/writeback, OpenBao sandbox resolver, NATS JetStream bridge, real Ollama local AI call, MinIO evidence, Mailpit notification.
+- **What is real now:** API reads real Zammad sandbox ticket/customer; server-side OpenBao resolves the sandbox credential; egress policy allows local sandbox read and sandbox writeback; NATS JetStream product stream/consumer bridges approved outbox items; worker processes sandbox writeback to Zammad, persists evidence to MinIO, sends Mailpit notification; Ollama provider performs real host-controlled model calls with gemma4:e4b; UI displays sandbox_delivered status in Action Center, Delivery Operations, Case Timeline, and Audit Trail.
+- **What is still not real:** Production auth/secrets, production broker HA, production AI governance, telephony, endpoint agent, Tauri companion, screen monitoring/OCR, compliance, observability (BL-114).
 
 ## Active Blockers
 
-- Real writeback remains intentionally disabled until BL-111.
+- Observability remains planned (BL-114).
 - OpenBao is local sandbox credential resolution only, not production secret management.
 - NATS is local sandbox JetStream only, not production broker HA.
-- BL-121 completed: user-local Ollama upgraded to v0.22.0, gemma4:e4b selected and verified. qwen3.6:27b also available but larger/slower.
 - No production-grade secrets, auth, observability, or compliance boundary exists.
 
 ## Notes

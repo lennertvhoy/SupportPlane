@@ -1,16 +1,16 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-29 23:05 CEST
+**Updated At:** 2026-04-30 10:45 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-111] Sandbox-only Zammad internal note writeback
+### P1 [BL-116] Real self-hosted sandbox acceptance freeze
 
 - Owner: next coding-agent session.
-- Next action: implement one approval-gated internal note writeback to the local Zammad sandbox only.
-- Exit criteria: allowed sandbox writeback, blocked/kill-switch path, idempotency, no-secret proof, browser evidence, and explicit no-production/non-public-reply boundary.
+- Next action: freeze the complete real sandbox E2E milestone after verifying all gates pass.
+- Exit criteria: cluster health, Zammad read/write, Ollama, OpenBao, NATS, MinIO, Mailpit, RBAC, kill switch, evidence, no-secret gates all pass with max-20 canonical proof set.
 
 ## Queue Rules
 

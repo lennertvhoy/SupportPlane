@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-29T15:53:00+02:00
+  updated_at: 2026-04-30T10:45:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -68,9 +68,9 @@ current_state:
       current: local username/password demo auth
       not_implemented: [OIDC, OAuth, SAML, MFA, password_reset, production_auth_hardening]
     connectors:
-      current: real sandbox read + mock writeback
-      zammad: real HTTP read from sandbox Zammad via FetchZammadHttpClient; writeback still mock-only
-      writeback: mock-only; real network locked off
+      current: real sandbox read + real sandbox writeback (BL-111 accepted)
+      zammad: real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient
+      writeback: sandbox-only; real network allowed for local Zammad sandbox only
     ai:
       current: deterministic mock/local only
       cloud_ai_calls: false
@@ -86,17 +86,17 @@ current_state:
       real_pbx: false
     evidence:
       current: local/mock JSON and Markdown bundle
-      object_storage_artifact_persistence: false
+      object_storage_artifact_persistence: true (MinIO local sandbox)
       compliance_grade: false
     credentials:
-      current: metadata/placeholder credential references only
-      real_secret_resolution: false
+      current: OpenBao local sandbox resolver for Zammad API token
+      real_secret_resolution: true (local sandbox only)
       production_secret_storage: false
     explicit_non_claims:
       - no production software claim
-      - no real Zammad writeback
+      - no production Zammad writeback (sandbox writeback is real but local-only)
       - no real AI provider
-      - no internet email sending
+      - no internet email sending (Mailpit local capture only)
       - no real telephony or PBX
       - no endpoint agent
       - no Tauri operator companion
@@ -140,8 +140,8 @@ current_state:
       - Ollama provider integration
       - OpenBao credential resolver
       - NATS JetStream worker bridge
-      - MinIO evidence artifact persistence
-      - Mailpit notification capture
+      - MinIO evidence artifact persistence (sandbox-only, local cluster)
+      - Mailpit notification capture (sandbox-only, local cluster)
       - observability stack
     evidence_folder: output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/
     screenshot_count: 17
@@ -204,7 +204,7 @@ current_state:
       internal_dns: Kubernetes service DNS
       cluster_api_port_forward: 4210:4110
       cluster_web_port_forward: 3300:3200
-      real_writeback_egress: disabled_until_sandbox_gates_pass
+      real_writeback_egress: sandbox_allowed_for_local_zammad_only
     storage:
       postgres: PVC_bound_1Gi_standard_in_supportplane_data
       zammad: PVCs required, exact mode TBD
@@ -218,8 +218,8 @@ current_state:
       future_resolver: OpenBao
       kubernetes_secret_is_production_grade: false
     safety_strategy:
-      real_writeback_default: disabled
-      kill_switch_default_for_real_writeback: blocking_until_explicit_phase
+      real_writeback_default: sandbox_for_local_zammad_only
+      kill_switch_default_for_real_writeback: policy_gated_with_approval_required
       uncontrolled_egress_allowed: false
       tenant_boundary_required: true
       rbac_required: true
@@ -280,15 +280,15 @@ current_state:
       backlog_ids: [BL-110]
     - id: Phase 7
       title: Sandbox-Only Zammad Internal Note Writeback
-      status: safety_gates_accepted_bl_115_writeback_planned_bl_111
+      status: accepted_bl_111
       backlog_ids: [BL-111, BL-115]
     - id: Phase 8
       title: MinIO Evidence Artifact Persistence
-      status: planned
+      status: accepted_bl_112
       backlog_ids: [BL-112]
     - id: Phase 9
       title: Mailpit Local Notification Capture
-      status: planned
+      status: accepted_bl_113
       backlog_ids: [BL-113]
     - id: Phase 10
       title: Observability
@@ -306,7 +306,7 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-120
-    accepted_current_slice: BL-108_BL-109_BL_110_BL_115
+    accepted_current_slice: BL-108_BL-109_BL_110_BL_115_BL_111_BL_112_BL_113
     planned_real_e2e_items:
       - BL-111
       - BL-112

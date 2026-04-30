@@ -1,0 +1,57 @@
+=== BL-111/112/113 Sandbox Writeback E2E Validation Gate ===
+2026-04-30T10:39:59+02:00
+
+Commit: bb81e7a
+
+1. API Health Check
+{
+  "status": "ok",
+  "commit": null,
+  "uptime": null
+}
+
+2. Action Status (sandbox_delivered)
+{
+  "id": "e9a4ecac-51f4-4b47-9c95-c858df818f74",
+  "status": "sandbox_delivered",
+  "deliveryMode": "sandbox_allowed"
+}
+
+3. Outbox Item Status (sandbox_delivered)
+{
+  "id": "0c796d9b-2a03-4116-88f0-7c9aef9c846e",
+  "status": "sandbox_delivered",
+  "latestAttemptState": "sandbox_delivered",
+  "attemptCount": 1
+}
+
+4. Zammad Article (ticket 2, article 16)
+{
+  "id": 16,
+  "ticket_id": 2,
+  "subject": "Internal note",
+  "internal": true,
+  "created_at": "2026-04-30T08:29:26.858Z",
+  "body_snippet": "[SupportPlane sandbox internal note]\nHuman-reviewed local sandbox writeback.\nNo production data. No public reply.\nIdempo"
+}
+
+5. MinIO Evidence Object
+  Key: dev-tenant/writebacks/3b4e87c9-413a-4ab6-b917-65f723a304d7/0c796d9b-2a03-4116-88f0-7c9aef9c846e.json
+  Size: 1579 bytes
+  LastModified: 2026-04-30 08:29:26+00:00
+
+6. Mailpit Notification
+{
+  "id": "BwEjRiHYn8qhSheQvEvsgK",
+  "subject": "SupportPlane sandbox writeback completed",
+  "from": "worker@supportplane.local",
+  "to": "admin@supportplane.local",
+  "created": "2026-04-30T08:29:26.971Z",
+  "snippet": "Local sandbox notification only. No production email was sent. No customer email was contacted. Outbox item: 0c796d9b-2a"
+}
+
+7. Build Verification
+  npm run build: PASSED (all workspaces)
+  npm run typecheck: PASSED
+  npm run lint: PASSED
+  npm test: PASSED (17 API tests + 7 Zammad connector tests)

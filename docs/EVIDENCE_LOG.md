@@ -2147,3 +2147,63 @@
     - curl -b cookies -X POST http://localhost:4210/support-sessions/{id}/zammad/ticket-context -d '{"externalTicketId":"2"}'
     - node scripts/bl107_screenshots_final.js
   as_of: 2026-04-29T19:55:00+02:00
+
+- id: EV-2026-04-30-001
+  backlog_id: BL-111
+  title: Sandbox-Only Zammad Internal Note Writeback
+  evidence_type: runtime_verification
+  status: accepted
+  artifact_folder: output/playwright/session-111-112-113-sandbox-writeback-closure-canonical/
+  artifact_count: 22
+  screenshots:
+    - 01-dashboard-delivery-ops-sandbox-delivered.png — Dashboard logged-in baseline
+    - 07-outbox-list-sandbox-delivered.png — Delivery Ops panel showing sandbox_delivered item at top of list
+    - 11-action-center-outbox-status.png — Action Center showing "Latest action: sandbox_delivered" with ticket_note type
+    - 12-delivery-ops-summary-and-item-detail.png — Outbox item detail: attempts 1, latest sandbox_delivered, mode sandbox
+    - 13-delivery-ops-summary-grid.png — Summary grid: sandbox_delivered=1, mock_delivered=22, total=23
+    - 19-audit-trail-sandbox-delivered-terminal.png — action_sandbox_delivered audit event at 10:29:26 AM
+    - 20-audit-trail-outbox-sandbox-delivered.png — outbox_sandbox_delivered audit event with full delivery metadata
+  cli_artifacts:
+    - validation-gate.txt — API health, action status, outbox status, Zammad article, MinIO object, Mailpit messages, build verification
+    - git-status-final.txt — clean worktree at bb81e7a
+    - proof-state-mapping.md — maps all 18 screenshots to proof states
+    - screenshot-md5s.txt — MD5 hashes, 0 duplicates after cleanup
+  test_results:
+    - npm run build: passed
+    - npm run typecheck: passed
+    - npm run lint: passed
+    - npm test: passed (24 tests)
+  verification_commands:
+    - curl http://localhost:4210/health
+    - curl -b cookies http://localhost:4210/actions/e9a4ecac-51f4-4b47-9c95-c858df818f74
+    - curl -b cookies http://localhost:4210/outbox/0c796d9b-2a03-4116-88f0-7c9aef9c846e
+    - curl -H "Authorization: Token token=$ZAMMAD_API_TOKEN" http://localhost:8080/api/v1/ticket_articles/16
+    - python3 boto3 head_object for MinIO evidence
+    - curl http://localhost:8025/api/v1/messages
+  as_of: 2026-04-30T10:45:00+02:00
+
+- id: EV-2026-04-30-002
+  backlog_id: BL-112
+  title: MinIO Evidence Artifact Persistence
+  evidence_type: runtime_verification
+  status: accepted
+  artifact_folder: output/playwright/session-111-112-113-sandbox-writeback-closure-canonical/
+  artifact_count: 22
+  cli_artifacts:
+    - validation-gate.txt §5 — MinIO evidence object details: 1579 bytes, SHA-256 checksum, createdAt 2026-04-30T08:29:26.901Z
+  verification_commands:
+    - python3 boto3 head_object(Bucket='supportplane-evidence', Key='dev-tenant/writebacks/3b4e87c9-413a-4ab6-b917-65f723a304d7/0c796d9b-2a03-4116-88f0-7c9aef9c846e.json')
+  as_of: 2026-04-30T10:45:00+02:00
+
+- id: EV-2026-04-30-003
+  backlog_id: BL-113
+  title: Mailpit Local Notification Capture
+  evidence_type: runtime_verification
+  status: accepted
+  artifact_folder: output/playwright/session-111-112-113-sandbox-writeback-closure-canonical/
+  artifact_count: 22
+  cli_artifacts:
+    - validation-gate.txt §6 — Mailpit message: subject "SupportPlane sandbox writeback completed", capturedAt 2026-04-30T08:29:26.971Z
+  verification_commands:
+    - curl http://localhost:8025/api/v1/messages
+  as_of: 2026-04-30T10:45:00+02:00

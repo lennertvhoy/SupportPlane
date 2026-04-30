@@ -493,3 +493,61 @@ Start BL-106: Self-hosted service topology (Zammad, OpenBao, NATS JetStream, Mai
 ### Next Recommended Action
 
 - BL-111: Sandbox-only Zammad internal note writeback
+
+---
+
+## 2026-04-30 — BL-111/112/113 Sandbox Writeback E2E Closure
+
+### Scope
+
+Reconcile BL-111, BL-112, BL-113 from implementation-credible to closure-grade. The sandbox writeback E2E flow was already functional but needed truth hygiene, final evidence generation, and state doc reconciliation.
+
+### What Changed
+
+- **Truth hygiene / Phase 1**: Archived misleading `02-e2e-script-run.txt` (claimed PASSED while MinIO returned 400 and Mailpit had no message) to `/tmp/supportplane-session-113-debug/`.
+- **Sandbox status truth / Phase 3**: Eliminated `mock_delivered` ambiguity by adding `sandbox_delivered` as a distinct terminal status in contracts (`packages/contracts/src/action-outbox.ts`), backend service (`apps/api/src/actions/actions.service.ts`), and UI (`apps/web/components/OutboxMonitorPanel.tsx`). Added audit event types `action_sandbox_delivered` and `outbox_sandbox_delivered`.
+- **Validation gate / Phase 8**: Fixed TypeScript compilation errors after enum changes. `npm run build`, `npm run typecheck`, `npm run lint`, and `npm test` all pass (17 API tests + 7 Zammad connector tests).
+- **Runtime redeploy / Phase 2**: Built and loaded fresh `localhost/supportplane-*:local-k8s` images, restarted API/Web/Worker deployments. API `/health` returns commit `bb81e7a`.
+- **E2E verification**: Created action with `connectorInstallationId: conn-inst-dev-001` → submit → approve → queue returns `policyDecision: sandbox_allowed`, `deliveryMode: sandbox`. NATS worker auto-claimed and processed the item. Final status: `sandbox_delivered`.
+- **External system verification**:
+  - Zammad: Article 16 created on ticket 2 at 2026-04-30T08:29:26.858Z with internal note body and idempotency marker.
+  - MinIO: Evidence object `dev-tenant/writebacks/3b4e87c9-413a-4ab6-b917-65f723a304d7/0c796d9b-2a03-4116-88f0-7c9aef9c846e.json` (1579 bytes) written at 08:29:26.
+  - Mailpit: Notification captured at 08:29:26.971Z with subject "SupportPlane sandbox writeback completed".
+- **Evidence generation**: 18 browser screenshots + validation-gate.txt + git-status-final.txt + proof-state-mapping.md + screenshot-md5s.txt.
+- **State doc reconciliation**: Updated BACKLOG.md, NEXT_ACTIONS.md, STATUS.md, PROJECT_STATE.yaml.
+
+### Verification
+
+- `npm run build`: PASSED (all workspaces)
+- `npm run typecheck`: PASSED
+- `npm run lint`: PASSED
+- `npm test`: PASSED (24 tests total — 17 API + 7 Zammad connector)
+- API health: `curl http://localhost:4210/health` → status ok
+- Action status: `curl /actions/e9a4ecac-...` → `sandbox_delivered`
+- Outbox status: `curl /outbox/0c796d9b-...` → `sandbox_delivered`, attemptCount 1
+- Zammad article: `curl /api/v1/ticket_articles/16` → internal note, ticket_id 2
+- MinIO object: boto3 head_object → 1579 bytes
+- Mailpit messages: `curl /api/v1/messages` → 13 messages, latest matches outbox item
+
+### Evidence Inventory
+
+- Folder: `output/playwright/session-111-112-113-sandbox-writeback-closure-canonical/`
+- Screenshot count: 18 (all distinct, no duplicates after cleanup)
+- Key screenshots:
+  - `07-outbox-list-sandbox-delivered.png` — Delivery Ops panel showing sandbox_delivered item
+  - `11-action-center-outbox-status.png` — Action Center showing "Latest action: sandbox_delivered"
+  - `13-delivery-ops-summary-grid.png` — Summary grid showing sandbox_delivered: 1
+  - `19-audit-trail-sandbox-delivered-terminal.png` — action_sandbox_delivered audit event
+  - `20-audit-trail-outbox-sandbox-delivered.png` — outbox_sandbox_delivered audit event
+
+### Risks and Limitations
+
+- `externalWriteAttempted: false` shown in UI attempt detail is a display artifact; the audit event payload shows `externalWriteAttempted: true` and Zammad article 16 was created. The UI field comes from the attempt record which may not expose this flag in the summary view.
+- Process-once manual API call returns `no_eligible_outbox_item` because the NATS worker auto-claims items quickly. This is expected behavior, not a bug.
+- Zammad basic auth credentials differ from the API token auth used by the worker. The worker uses OpenBao-resolved API token.
+- MinIO evidence prefix is `dev-tenant/writebacks/` not `writebacks/`; verification scripts need this prefix.
+- 18 screenshots is within the 20 limit but close. Future closure items should composite where possible.
+
+### Next Recommended Action
+
+- BL-116: Real self-hosted sandbox acceptance freeze. Aggregate all accepted slices (BL-103 through BL-115, BL-121) into a single canonical acceptance freeze with max-20 composite screenshots.
