@@ -1,19 +1,20 @@
 === BL-116 Final Git Status ===
 Generated: 2026-04-30T12:08+02:00
+Reconciled: 2026-04-30T12:08+02:00
 
 $ git status --short --branch
 ## main
 
 $ git log --oneline -5
+fc124c2 BL-116: Reconcile boundary truth and acceptance state
+ece4a98 BL-116: Commit canonical freeze evidence and verifier script
 1e6298a BL-114: Add local observability baseline
 e3bb56f BL-111/112/113: Closure-grade reconciliation — evidence, state docs, acceptance freeze
 bb81e7a BL-111/112/113: Add sandbox_delivered status to resolve mock/sandbox truth ambiguity
-822723c BL-121: Commit missing handoff, evidence, and upgrade script
-6018cc3 BL-111/112/113: Add E2E verification scripts and evidence artifacts
 
 $ git rev-parse HEAD
-1e6298a5586e30400f9a600a62f82e6128445e81
+fc124c27a60a7735c1052c06cb68b8c9c0c74239
 
 === Worktree Assessment ===
-Clean worktree. All evidence artifacts and verifier script are committed.
+Clean worktree. All evidence artifacts, verifier script, boundary docs, and state files are committed.
 No uncommitted code changes. No schema drift.
