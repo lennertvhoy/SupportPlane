@@ -1930,3 +1930,88 @@ and must be protected from quiet regression.
   - No call recording or transcription.
   - osTicket remains fixture-only.
 - as_of: 2026-04-30T16:35:00+02:00
+
+
+## AF-010: BL-086 API Gateway Hardening
+
+- backlog_id: BL-086
+- status: accepted
+- scope: Rate limits, request validation, body limits, security headers, and audit coverage for API gateway paths
+- verification:
+  - `npm test --workspace=@supportplane/api`: 166/166 pass (including 19 security-hardening tests)
+  - `npm run lint`: pass
+  - `npm run typecheck --workspaces --if-present`: pass
+  - `bash scripts/verify_bl116_real_sandbox_freeze.sh`: pass (regression preserved)
+- commits:
+  - b1a7656 BL-083/086: Add OIDC-ready auth and API hardening
+- evidence_folder: output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/
+- key_artifacts:
+  - 06-api-hardening-proof.txt
+  - 07-rate-body-validation-proof.txt
+  - 08-security-audit-proof.txt
+- as_of: 2026-04-30T17:45:00+02:00
+
+## AF-011: BL-087 Backup/Restore Runbook
+
+- backlog_id: BL-087
+- status: accepted
+- scope: Backup and restore runbook for PostgreSQL, object storage, and configuration
+- verification:
+  - `bash scripts/backup_local_sandbox.sh --dry-run`: pass
+  - `bash scripts/restore_local_sandbox.sh --dry-run`: pass (safeguard triggered)
+  - `python3 scripts/check_state_docs.py`: pass
+- commits:
+  - b1a7656 BL-083/086: Add OIDC-ready auth and API hardening
+- evidence_folder: output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/
+- key_artifacts:
+  - 09-backup-restore-proof.txt
+- as_of: 2026-04-30T17:45:00+02:00
+
+## AF-012: BL-090 Release Packaging and Demo Reset
+
+- backlog_id: BL-090
+- status: accepted
+- scope: Release packaging, demo dataset reset, and operator deployment documentation
+- verification:
+  - `bash scripts/package_local_release.sh --dry-run`: pass
+  - `bash scripts/reset_demo_data.sh --dry-run`: pass
+  - `python3 scripts/check_state_docs.py`: pass
+- commits:
+  - b1a7656 BL-083/086: Add OIDC-ready auth and API hardening
+- evidence_folder: output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/
+- key_artifacts:
+  - 10-release-package-proof.txt
+  - 11-demo-reset-proof.txt
+- as_of: 2026-04-30T17:45:00+02:00
+
+## AF-013: BL-083 OIDC-Ready Auth (Partial)
+
+- backlog_id: BL-083
+- status: partial/local-mock
+- scope: OIDC-ready auth, MFA hooks, service accounts, and short-lived connector tokens
+- verification:
+  - GET /auth/oidc/config returns honest disabled state
+  - GET /auth/mfa/status returns hook available, not enforced
+  - ServiceAccountGuard rejects invalid X-Service-Token with 401
+  - Keycloak sandbox manifests deployed in cluster
+  - `npm test --workspace=@supportplane/api`: 166/166 pass
+- what_is_real:
+  - Keycloak local sandbox deployment
+  - OIDC config endpoint with honest status
+  - MFA hook interface
+  - Service account guard (format validation only)
+  - Short-lived token interface
+- what_is_not_real:
+  - No full browser OIDC login flow (no Passport OIDC strategy)
+  - No persistent service token storage
+  - No MFA enforcement (TOTP/WebAuthn logic not implemented)
+  - Keycloak realm/client/users not yet bootstrapped
+- commits:
+  - b1a7656 BL-083/086: Add OIDC-ready auth and API hardening
+- evidence_folder: output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/
+- key_artifacts:
+  - 02-auth-architecture-proof.md
+  - 03-keycloak-oidc-topology-proof.txt
+  - 04-oidc-login-and-local-auth-proof.txt
+  - 05-service-account-token-proof.txt
+- as_of: 2026-04-30T17:45:00+02:00

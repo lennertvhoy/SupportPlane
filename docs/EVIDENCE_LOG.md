@@ -2396,3 +2396,59 @@
   - Worktree clean at final commit.
 - Type: integration-and-browser-runtime-verification
 - as_of: 2026-04-30T16:35:00+02:00
+
+
+## EV-2026-04-30-001 through EV-2026-04-30-020: BL-083/086/087/090 Production Readiness Hardening Wave
+
+- Files: `output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/01-baseline-runtime-and-regression.txt` through `20-git-status-final.txt`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus terminal CLI artifacts
+- Store/Auth mode for runtime screenshots: cluster `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Cluster proof:
+  - API Deployment `supportplane-api` in `supportplane-app` rebuilt, reloaded, and rolled out from local images with BL-083/086 code.
+  - Web Deployment `supportplane-web` in `supportplane-app` rebuilt with BL-083 SecurityReadinessPanel.
+  - Worker Deployment `supportplane-worker` in `supportplane-app` rebuilt and rolled out.
+  - Keycloak Deployment `keycloak` in `supportplane-integrations` created and initializing.
+  - All other sandbox services (Zammad, OpenBao, NATS, Mailpit, MinIO, Asterisk) remain healthy.
+- Shows:
+  - Security & Release Readiness panel with local auth, OIDC ready, MFA hook, service-auth, rate limits, body limits, validation, runbooks.
+  - API health JSON with oidcReady=false, mfaHookAvailable=true (honest disabled state).
+  - Cockpit header with DEV/MOCK DATA, local auth, postgres store badges.
+  - Keycloak manifest listing and topology description.
+  - Auth architecture documentation with honest partial status.
+  - Service account token guard validation.
+  - API hardening overview with rate limits, body limits, security headers, validation guards.
+  - Security audit service proof with safe metadata.
+  - Backup/restore dry-run proof with secret redaction.
+  - Release package dry-run proof with non-production warning.
+  - Demo reset dry-run proof with service verification.
+  - osTicket triage proof with blockers documented.
+  - Validation gate with lint, typecheck, tests, verifiers all passing.
+  - Cluster redeploy proof with pod statuses.
+- CLI artifacts:
+  - `01-baseline-runtime-and-regression.txt`
+  - `02-auth-architecture-proof.md`
+  - `03-keycloak-oidc-topology-proof.txt`
+  - `04-oidc-login-and-local-auth-proof.txt`
+  - `05-service-account-token-proof.txt`
+  - `06-api-hardening-proof.txt`
+  - `07-rate-body-validation-proof.txt`
+  - `08-security-audit-proof.txt`
+  - `09-backup-restore-proof.txt`
+  - `10-release-package-proof.txt`
+  - `11-demo-reset-proof.txt`
+  - `12-osticket-triage-proof.txt`
+  - `13-validation-gate.txt`
+  - `14-cluster-redeploy-proof.txt`
+  - `18-proof-state-mapping.md`
+  - `19-screenshot-md5s.txt`
+  - `20-git-status-final.txt`
+- Proves:
+  - BL-086 accepted: rate limits, body limits, validation guards, security headers, and audit events all implemented and tested.
+  - BL-087 accepted: backup/restore scripts and runbook created with dry-run defaults and safeguards.
+  - BL-090 accepted: release packaging, demo runbook, and demo reset script created.
+  - BL-083 partial: OIDC config hooks, Keycloak deployment, service account guard, and MFA hook interfaces implemented. No full browser OIDC login flow.
+  - BL-128 blocked: osTicket integration blocked by upstream limitations (no official image, no PostgreSQL, no read API).
+  - 3 unique screenshots, 0 duplicates, max-20 cap respected.
+  - Worktree clean at final commit `b1a7656`.
+- Type: implementation-and-browser-runtime-verification
+- as_of: 2026-04-30T17:45:00+02:00

@@ -1,16 +1,16 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-30 16:35 CEST
+**Updated At:** 2026-04-30 17:45 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-128] osTicket real integration test — Future
+### P1 [BL-076] Policy editor for tools, risk levels, approvals, model policies, and retention settings — Planned
 
-- Owner: next coding-agent session when osTicket instance is available
-- Next action: deploy small osTicket fixture or test instance; verify read path against real HTTP API
-- Exit criteria: osTicket adapter connects to real instance, reads ticket/customer data, no writeback claimed
+- Owner: next coding-agent session
+- Next action: design policy editor UI and backend APIs for tool risk levels, approval workflows, model policies, and retention settings
+- Exit criteria: admin-facing policy editor with CRUD for policies, RBAC enforcement, and audit events
 
 ## Queue Rules
 

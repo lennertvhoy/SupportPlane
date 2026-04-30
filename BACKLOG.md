@@ -132,14 +132,14 @@ Status markers:
 
 ## Production Hardening
 
-- [BL-083] `[planned]` Add OIDC-ready auth, MFA hooks, service accounts, and short-lived connector tokens.
+- [BL-083] `[partial/local-mock]` Add OIDC-ready auth, MFA hooks, service accounts, and short-lived connector tokens. Keycloak local sandbox manifests deployed. OIDC config endpoint wired and returns honest disabled state. Service account guard validates X-Service-Token format. MFA hook interface returns available but not enforced. No full browser OIDC login flow implemented. No persistent token storage.
 - [BL-084] `[superseded by BL-109]` Add secrets encryption, secret references, and server-side credential broker boundaries. BL-109 now narrows the next step to local OpenBao sandbox credential resolution, not production secrets.
 - [BL-085] `[superseded by BL-114]` Add OpenTelemetry traces, structured logs, metrics, and correlation IDs.
-- [BL-086] `[planned]` Add rate limits, request validation, body limits, and audit coverage for API gateway paths.
-- [BL-087] `[planned]` Add backup/restore runbook for PostgreSQL, object storage, and configuration.
+- [BL-086] `[accepted]` Add rate limits, request validation, body limits, and audit coverage for API gateway paths. In-memory rate limiting, path-specific body limits, security headers, request validation guards, and security audit service with safe metadata all implemented. 166/166 API tests pass. Evidence in `output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/`.
+- [BL-087] `[accepted]` Add backup/restore runbook for PostgreSQL, object storage, and configuration. `scripts/backup_local_sandbox.sh`, `scripts/restore_local_sandbox.sh`, and `docs/RUNBOOK_BACKUP_RESTORE.md` created with dry-run defaults, secret redaction, and local-only safeguards. Evidence in `output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/`.
 - [BL-088] `[superseded by BL-103/BL-104]` Add Kubernetes manifests after Docker Compose topology is stable.
 - [BL-089] `[accepted]` Add threat-model review checkpoints and security regression tests. Security regression matrix with 15 checks, threat model with 6 threat categories and mitigations. Evidence: `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/09-threat-model-proof.txt`, `11-security-regression-matrix.txt`.
-- [BL-090] `[planned]` Add release packaging, demo dataset reset, and operator deployment documentation.
+- [BL-090] `[accepted]` Add release packaging, demo dataset reset, and operator deployment documentation. `scripts/package_local_release.sh`, `docs/RELEASE_RUNBOOK.md`, `docs/DEMO_RUNBOOK.md`, and updated `scripts/reset_demo_data.sh` with service verification. Evidence in `output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/`.
 
 ## Cross-cutting Workflow Integration
 

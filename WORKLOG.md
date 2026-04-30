@@ -924,3 +924,89 @@ Screenshots: 2 (no duplicates)
 
 - BL-128: osTicket real integration test when instance is available.
 - Future: Full AMI persistent connection with event streaming (not stub).
+
+
+## 2026-04-30 — BL-083/086/087/090 Production Readiness Hardening Wave
+
+**Type:** implementation / closure
+**Status:** BL-086/087/090 ACCEPTED; BL-083 PARTIAL; BL-128 BLOCKED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** b1a7656
+**Worktree:** clean
+
+### What changed
+
+- **BL-083 Auth/OIDC:**
+  - Added Keycloak local sandbox Kubernetes manifests (deployment, postgres, configmap, secret, service, PVC)
+  - Extended AuthMode to include 'oidc'
+  - Added OidcConfig, ServiceAccount, MfaHookStatus, ShortLivedToken interfaces
+  - Added GET /auth/oidc/config endpoint (returns honest disabled state when env vars not set)
+  - Added GET /auth/mfa/status endpoint
+  - Added GET /auth/service-accounts endpoint (service-auth protected)
+  - Added ServiceAccountGuard with X-Service-Token validation
+  - Updated health controller to include oidcReady and mfaHookAvailable
+  - Created docs/OIDC_READINESS.md
+
+- **BL-086 API Hardening:**
+  - Created BodyLimitMiddleware with path-specific limits (global 1mb, writeback 256kb, etc.)
+  - Created RateLimitGuard with in-memory per-IP limits (global 100/60s, auth 5/60s, etc.)
+  - Created SecurityHeadersMiddleware (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy)
+  - Created validation guards (URL, adapter type, tenant context, telephony event)
+  - Created unsafe-field guard (__proto__, constructor, eval rejection)
+  - Created SecurityAuditService with 8 denial event types
+  - Integrated guards into auth, actions, telephony, connectors controllers
+  - Created 19 security-hardening tests (all pass)
+
+- **BL-087 Backup/Restore:**
+  - Created scripts/backup_local_sandbox.sh with dry-run default, secret redaction, git/image metadata
+  - Created scripts/restore_local_sandbox.sh with context safeguard, DB URL safeguard, env flag requirement
+  - Created docs/RUNBOOK_BACKUP_RESTORE.md
+
+- **BL-090 Release/Demo:**
+  - Created scripts/package_local_release.sh with dry-run default, manifest tarball, non-production warning
+  - Created docs/RELEASE_RUNBOOK.md and docs/DEMO_RUNBOOK.md
+  - Updated scripts/reset_demo_data.sh with service verification (OpenBao, MinIO, Mailpit, Asterisk, Ollama)
+
+- **BL-128 osTicket Triage:**
+  - Researched osTicket deployability and API capabilities
+  - Blocked by: no official Docker image, no PostgreSQL support, no read API in v1.x
+  - Created docs/OSTICKET_TRIAGE.md
+
+- **UI:**
+  - Created SecurityReadinessPanel component showing auth, hardening, and ops status
+  - Added to main cockpit page
+
+### Verification
+
+- `npm run lint`: PASS
+- `npm run typecheck --workspaces --if-present`: PASS (all workspaces)
+- `npm test --workspaces --if-present`: PASS (166 API tests, 47 contracts, 7 policy, 7 connectors)
+- `python3 scripts/check_state_docs.py`: PASS
+- `bash scripts/verify_observability_baseline.sh`: PASS
+- `bash scripts/verify_bl116_real_sandbox_freeze.sh`: PASS (all 11 steps)
+- Cluster images built and loaded: localhost/supportplane-{api,web,worker}:local-k8s
+- kubectl apply -k infra/kubernetes/local-podman: PASS (Keycloak created)
+- Rollout restart and status: PASS
+- API health: ok, authMode=local, oidcReady=false, mfaHookAvailable=true
+- BL-116 regression: PRESERVED
+- BL-117 regression: PRESERVED
+
+### Evidence Inventory
+
+- Folder: `output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/`
+- Total files: 20
+- Screenshots: 3 unique, 0 duplicates
+- CLI artifacts: 17
+
+### Risks and Limitations
+
+- BL-083 is partial: no full browser OIDC login flow, no persistent token storage, no MFA enforcement
+- Keycloak is still initializing in cluster (expected for first startup)
+- In-memory rate limiting is not distributed
+- Backup/restore scripts warn about missing pg_dump/mc/aws CLI on host
+- osTicket remains fixture-only with no real instance path
+
+### Next Recommended Action
+
+- P1 [BL-076] Policy editor for tools, risk levels, approvals, model policies, and retention settings
