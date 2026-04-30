@@ -1,19 +1,20 @@
 # SupportPlane Status
 
-**Updated At:** 2026-04-30 22:40 CEST
+**Updated At:** 2026-04-30 23:36 CEST
 **Execution Mode:** operating
-**Project State:** bl_083_accepted_bl_076_active
+**Project State:** bl_076_accepted
 **Public URL:** not configured
 
 ## Snapshot
 
+- **BL-076 accepted.** Policy editor foundation with delivery, connector, AI, and retention policies. Admin CRUD API endpoints with RBAC enforcement, safety validation (rejects real network/cloud AI/autonomous send), audit events with redacted before/after diffs, compact tabbed UI panel. Runtime verified in Kind cluster.
 - **BL-083 accepted.** OIDC browser login flow with Keycloak realm role mapping, service account token store with SHA-256 hashing and expiry, MFA hook available but not enforced, local auth fallback preserved. Evidence in `output/playwright/session-119-bl083-oidc-login-completion/`.
 - **BL-104 through BL-117, BL-121, and BL-122 are accepted.** BL-116 freezes the complete real self-hosted sandbox milestone. BL-117 adds local Asterisk AMI bridge.
 - **BL-086/087/090 accepted.** API gateway hardening (rate limits, body limits, validation, security headers, audit events), backup/restore runbooks, and release packaging with demo reset.
 - **BL-128 blocked.** osTicket integration blocked by no official container image, no PostgreSQL support, and no read API in v1.x.
 - **Cluster foundation:** Kind/Podman control-plane Ready; CoreDNS, kube-proxy, local-path-provisioner running; API/web/worker pods running local images.
 - **Self-hosted topology:** Zammad seeded and reachable; OpenBao initialized/unsealed; NATS JetStream file-backed; Mailpit capturing SMTP; MinIO healthy; Ollama host-controlled with AMD GPU; Keycloak sandbox Running/Ready after local resource/probe repair; observability baseline active.
-- **What is real now:** OIDC browser login flow, Keycloak realm role mapping, service account token store with SHA-256 hashing and expiry, MFA hook interfaces, in-memory rate limiting, body limits, request validation, security headers, security audit service, backup/restore scripts, release/demo runbooks, Security Readiness UI panel.
+- **What is real now:** Policy editor foundation (delivery, connector, AI, retention policies with safety locks and audit), OIDC browser login flow, Keycloak realm role mapping, service account token store with SHA-256 hashing and expiry, MFA hook interfaces, in-memory rate limiting, body limits, request validation, security headers, security audit service, backup/restore scripts, release/demo runbooks, Security Readiness UI panel.
 - **What remains partial/mock/deferred:** MFA enforcement, distributed rate limiting, production secrets, production monitoring, osTicket real integration.
 
 ## Active Blockers

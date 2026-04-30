@@ -1,16 +1,12 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-30 18:05 CEST
+**Updated At:** 2026-04-30 23:36 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-### P1 [BL-076] Policy editor for tools, risk levels, approvals, model policies, and retention settings
-
-- Owner: next coding-agent session
-- Next action: implement tenant policy editor foundation with delivery, connector, AI/model, and retention policies.
-- Exit criteria: policy CRUD API endpoints, RBAC enforcement, safety validation, audit events, compact UI panel, tests, and evidence.
+*No active work. BL-076 completed. Awaiting next scope.*
 
 ## Queue Rules
 

@@ -4,6 +4,56 @@
 
 Use this file for dated session notes, verification summaries, and references to evidence artifacts.
 
+## 2026-04-30 - BL-076: Policy Editor Foundation
+
+**Type:** implementation / closure
+**Status:** ACCEPTED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** 5b830da
+**Worktree:** clean
+
+### What changed
+
+- **Prisma schema:** Added `TenantPolicy` model with `policyType`, `scopeId`, `config` (Json), `version`, `updatedBy` fields. Supports connector (per-installation), AI, and retention policies.
+- **Contracts:** Added `tenant-policy.ts` with Zod schemas for `ConnectorPolicy`, `AiPolicy`, `RetentionPolicy`, `PolicySummary`, `PolicyAuditPreview`, and update request types.
+- **Store layer:** Extended `Store` interface and `PrismaStore`/`InMemoryStore` with `saveTenantPolicy`, `getTenantPolicy`, `listTenantPolicy` methods.
+- **Admin Policy Service:** Created `AdminPolicyService` with:
+  - Default policy creation on first access
+  - Safety validation: rejects real network enablement, cloud AI providers, autonomous send, auto-purge without approval
+  - Audit event generation with redacted before/after diffs on every policy change
+  - Version incrementing on every update
+- **Admin Policy Controller:** Created `AdminPolicyController` with endpoints:
+  - `GET /admin/policies` — list all policy summaries
+  - `GET /admin/policies/audit-preview` — snapshot of all policies with safety flags
+  - `PUT /admin/policies/delivery/:id` — update delivery policy (delegated)
+  - `GET/PUT /admin/policies/connectors/:installationId` — connector policy
+  - `GET/PUT /admin/policies/ai` — AI policy
+  - `GET/PUT /admin/policies/retention` — retention policy
+- **Frontend:** Created `AdminPolicyPanel` component with:
+  - Tabbed UI: Delivery, Connector, AI, Retention
+  - Summary badges showing policy types and versions
+  - Toggle controls for safe options, locked indicators for unsafe options
+  - Number inputs for retention days, tokens, cost limits
+  - Audit Preview button with policy snapshot display
+- **Integration:** Registered `AdminPolicyModule` in `AppModule`, added middleware route, updated web API client, integrated panel into cockpit page.
+
+### Runtime Verification
+
+- API endpoints tested with authenticated local auth session (admin)
+- `GET /admin/policies` returns delivery v1, ai v2, retention v2, connector v1
+- `GET /admin/policies/ai` returns default AI policy with mock-only, local providers only
+- `PUT /admin/policies/ai` with `{"allowAutonomousSend":true}` returns 400 "Autonomous send not permitted"
+- `PUT /admin/policies/ai` with valid updates increments version and creates audit event with redacted diff
+- Audit events verified: `ai_policy_updated`, `retention_policy_updated` with `metadata.diff` showing changed fields
+- UI screenshots captured showing all four tabs rendering correctly with proper controls and locks
+
+### Known Limitations
+
+- Connector policy tab shows only the first connector installation (needs multi-installation selector for full coverage)
+- Policy changes are not yet propagated to real-time policy evaluation in delivery path (existing `DeliveryPolicyService` path unchanged)
+- Retention days are stored but auto-purge job is not implemented
+
 ## 2026-04-29 - BL-108 Repair: Ollama Real Host Call + Model Selection Benchmark
 
 **Type:** implementation / closure_repair
