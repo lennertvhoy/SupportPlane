@@ -1,7 +1,7 @@
 # Cluster Redeploy Proof
 
 ## Git HEAD
-fc4665308e6c5ddca4bd218416845a7d37cb6f79
+6c08e9b4a57421d534738dec69998b4fae39ce6a
 
 ## Cluster Context
 kind-supportplane-local

@@ -1,12 +1,12 @@
 === BL-116 Fresh Real Sandbox E2E Flow Proof ===
 Generated: 2026-05-01T00:44:44+02:00
-Git HEAD: fc4665308e6c5ddca4bd218416845a7d37cb6f79
+Git HEAD: 6c08e9b4a57421d534738dec69998b4fae39ce6a
 Session ID: 67ba8170-9f16-4178-8258-28899de31ba5
 Action ID: b2dda073-b196-4f59-b2c2-0a42c02d0e95
 Outbox ID: 1ce311af-0237-40b4-aed6-60a47680ba8b
 
 === Step 1: API Health ===
-{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"fc4665308e6c5ddca4bd218416845a7d37cb6f79","timestamp":"2026-04-30T22:44:40.731Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","oidcReady":true,"mfaHookAvailable":true,"note":"Mock-first ticket-aware API slice (BL-003)"}
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"6c08e9b4a57421d534738dec69998b4fae39ce6a","timestamp":"2026-04-30T22:44:40.731Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","oidcReady":true,"mfaHookAvailable":true,"note":"Mock-first ticket-aware API slice (BL-003)"}
 
 === Step 2: Session Created ===
 {"id":"67ba8170-9f16-4178-8258-28899de31ba5","tenantId":"dev-tenant","status":"open","priority":"high","title":"BL-116 freeze E2E","assignedUserId":"dev-user","linkedTicketIds":[],"aiContextPacketIds":[],"screenObservationIds":[],"callEventIds":[],"auditEventIds":[],"startedAt":"2026-04-30T22:44:40.939Z","createdAt":"2026-04-30T22:44:40.939Z","updatedAt":"2026-04-30T22:44:40.939Z"}

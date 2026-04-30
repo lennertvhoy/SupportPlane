@@ -30,7 +30,7 @@ supportplane-observability   otel-collector-549c8ccc9-kt7dr                     
 supportplane-observability   prometheus-68bdbfb7ff-2kkcl                                1/1     Running   1 (4h44m ago)    12h
 
 === API Health ===
-{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"fc4665308e6c5ddca4bd218416845a7d37cb6f79","timestamp":"2026-04-30T21:59:19.711Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","oidcReady":true,"mfaHookAvailable":true}
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"6c08e9b4a57421d534738dec69998b4fae39ce6a","timestamp":"2026-04-30T21:59:19.711Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","oidcReady":true,"mfaHookAvailable":true}
 
 === BL-116 Verifier ===
 Exit code: 0 (all 11 steps passed or INFO with deliveryResult proof)
