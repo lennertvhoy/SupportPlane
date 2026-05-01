@@ -13,7 +13,7 @@ const FONTS = {
 // pdfmake is CommonJS without types; load lazily to avoid startup failures
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function loadPrinter(): Promise<any> {
-  // @ts-ignore — pdfmake has no TypeScript declarations
+  // @ts-expect-error — pdfmake has no TypeScript declarations
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mod: any = await import('pdfmake/src/printer.js');
   return mod.default ?? mod;

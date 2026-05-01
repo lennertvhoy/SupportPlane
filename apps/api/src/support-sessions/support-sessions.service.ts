@@ -459,6 +459,72 @@ export class SupportSessionsService {
     return { ticketReference: ticket, contextPacket: packet, session: updatedSession };
   }
 
+  private safeParseModelSelection(dtoModelSelection: unknown): import('@supportplane/ai').ModelSelection | undefined {
+    if (!dtoModelSelection) return undefined;
+    try {
+      return ModelSelection.parse(dtoModelSelection);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Invalid model selection';
+      throw new BadRequestException(`Invalid model selection: ${message}`);
+    }
+  }
+
+  private async checkAiPolicy(
+    identity: DevIdentity,
+    sessionId: string,
+    feature: 'draft' | 'summary' | 'chat',
+    modelSelection?: import('@supportplane/ai').ModelSelection
+  ): Promise<{ allowed: true } | { allowed: false; reason: string; response: GenerateDraftResponseShape }> {
+    const aiPolicy = await this.store.getTenantPolicy(identity.tenantId, 'ai');
+    if (!aiPolicy || aiPolicy.policyType !== 'ai') return { allowed: true };
+    const policy = aiPolicy as import('@supportplane/contracts').AiPolicy;
+
+    const featureAllowed =
+      feature === 'draft' ? policy.allowDraftGeneration :
+      feature === 'summary' ? (policy as Record<string, unknown>).allowSummaryGeneration !== false :
+      (policy as Record<string, unknown>).allowChat !== false;
+
+    if (!featureAllowed) {
+      const errorCode = `${feature}_generation_disabled_by_policy`;
+      await this.logBlockedUsage(identity, sessionId, feature, modelSelection?.provider ?? 'mock', modelSelection?.model ?? 'mock-support-note-v1', errorCode);
+      return {
+        allowed: false,
+        reason: errorCode,
+        response: GenerateDraftResponse.parse({
+          draft: `[${feature.toUpperCase()} GENERATION BLOCKED BY POLICY]\n\nYour tenant AI policy does not allow ${feature} generation. Contact your administrator.`,
+          provider: modelSelection?.provider ?? 'mock',
+          model: modelSelection?.model ?? 'mock-support-note-v1',
+          prompt: { id: 'blocked', version: 'blocked', purpose: `Blocked by tenant AI policy` },
+          contextHash: 'blocked_by_policy',
+          usage: { latencyMs: 0, placeholder: true, providerMode: 'mock', runtime: 'mock', fallbackUsed: false, noCloudCall: true },
+          safety: { mockOnly: true, externalCallMade: false, cloudCallMade: false, localProviderCallMade: false, fallbackUsed: false, policyChecks: ['blocked_by_policy'], reviewRequired: true, writebackAllowed: false, autonomousSend: false, redactionApplied: true, runtime: 'mock' },
+          generatedAt: new Date().toISOString(),
+        }),
+      };
+    }
+
+    if (modelSelection?.provider && !policy.allowedProviders.includes(modelSelection.provider as never)) {
+      const errorCode = 'provider_not_allowed_by_policy';
+      await this.logBlockedUsage(identity, sessionId, feature, modelSelection.provider, modelSelection.model ?? 'unknown', errorCode);
+      return {
+        allowed: false,
+        reason: errorCode,
+        response: GenerateDraftResponse.parse({
+          draft: `[${feature.toUpperCase()} GENERATION BLOCKED BY POLICY]\n\nProvider "${modelSelection.provider}" is not in the allowed providers list for your tenant.`,
+          provider: modelSelection.provider,
+          model: modelSelection.model ?? 'unknown',
+          prompt: { id: 'blocked', version: 'blocked', purpose: 'Blocked by tenant AI policy' },
+          contextHash: 'blocked_by_policy',
+          usage: { latencyMs: 0, placeholder: true, providerMode: 'mock', runtime: 'mock', fallbackUsed: false, noCloudCall: true },
+          safety: { mockOnly: true, externalCallMade: false, cloudCallMade: false, localProviderCallMade: false, fallbackUsed: false, policyChecks: ['blocked_by_policy'], reviewRequired: true, writebackAllowed: false, autonomousSend: false, redactionApplied: true, runtime: 'mock' },
+          generatedAt: new Date().toISOString(),
+        }),
+      };
+    }
+
+    return { allowed: true };
+  }
+
   async generateDraftSuggestion(
     identity: DevIdentity,
     sessionId: string,
@@ -477,67 +543,34 @@ export class SupportSessionsService {
       identity.tenantId,
       sessionId
     );
-    const modelSelection = dto.modelSelection
-      ? ModelSelection.parse(dto.modelSelection)
-      : undefined;
+    const modelSelection = this.safeParseModelSelection(dto.modelSelection);
 
     // BL-029: Check tenant AI policy before calling model gateway
-    const aiPolicy = await this.store.getTenantPolicy(identity.tenantId, 'ai');
-    if (aiPolicy && aiPolicy.policyType === 'ai') {
-      const policy = aiPolicy as import('@supportplane/contracts').AiPolicy;
-      if (!policy.allowDraftGeneration) {
-        await this.logBlockedUsage(
-          identity,
-          session.id,
-          'draft',
-          modelSelection?.provider ?? 'mock',
-          modelSelection?.model ?? 'mock-support-note-v1',
-          'draft_generation_disabled_by_policy'
-        );
-        return GenerateDraftResponse.parse({
-          draft: '[DRAFT GENERATION BLOCKED BY POLICY]\n\nYour tenant AI policy does not allow draft generation. Contact your administrator.',
-          provider: modelSelection?.provider ?? 'mock',
-          model: modelSelection?.model ?? 'mock-support-note-v1',
-          prompt: { id: 'blocked', version: 'blocked', purpose: 'Blocked by tenant AI policy' },
-          contextHash: 'blocked_by_policy',
-          usage: { latencyMs: 0, placeholder: true, providerMode: 'mock', runtime: 'mock', fallbackUsed: false, noCloudCall: true },
-          safety: { mockOnly: true, externalCallMade: false, cloudCallMade: false, localProviderCallMade: false, fallbackUsed: false, policyChecks: ['blocked_by_policy'], reviewRequired: true, writebackAllowed: false, autonomousSend: false, redactionApplied: true, runtime: 'mock' },
-          generatedAt: new Date().toISOString(),
-        });
-      }
-      if (modelSelection?.provider && !policy.allowedProviders.includes(modelSelection.provider as never)) {
-        await this.logBlockedUsage(
-          identity,
-          session.id,
-          'draft',
-          modelSelection.provider,
-          modelSelection.model ?? 'unknown',
-          'provider_not_allowed_by_policy'
-        );
-        return GenerateDraftResponse.parse({
-          draft: `[DRAFT GENERATION BLOCKED BY POLICY]\n\nProvider "${modelSelection.provider}" is not in the allowed providers list for your tenant.`,
-          provider: modelSelection.provider,
-          model: modelSelection.model ?? 'unknown',
-          prompt: { id: 'blocked', version: 'blocked', purpose: 'Blocked by tenant AI policy' },
-          contextHash: 'blocked_by_policy',
-          usage: { latencyMs: 0, placeholder: true, providerMode: 'mock', runtime: 'mock', fallbackUsed: false, noCloudCall: true },
-          safety: { mockOnly: true, externalCallMade: false, cloudCallMade: false, localProviderCallMade: false, fallbackUsed: false, policyChecks: ['blocked_by_policy'], reviewRequired: true, writebackAllowed: false, autonomousSend: false, redactionApplied: true, runtime: 'mock' },
-          generatedAt: new Date().toISOString(),
-        });
-      }
+    const policyCheck = await this.checkAiPolicy(identity, session.id, 'draft', modelSelection);
+    if (!policyCheck.allowed) {
+      return policyCheck.response;
     }
 
-    const response = GenerateDraftResponse.parse(
-      await this.modelGateway.generateDraft({
-        tenantId: identity.tenantId,
-        actorId: identity.userId,
-        session,
-        ticketReferences,
-        contextPackets,
-        operatorInstructions: dto.operatorInstructions,
-        modelSelection,
-      })
-    );
+    let response: GenerateDraftResponseShape;
+    try {
+      response = GenerateDraftResponse.parse(
+        await this.modelGateway.generateDraft({
+          tenantId: identity.tenantId,
+          actorId: identity.userId,
+          session,
+          ticketReferences,
+          contextPackets,
+          operatorInstructions: dto.operatorInstructions,
+          modelSelection,
+        })
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Draft generation failed';
+      if (message.includes('is not configured')) {
+        throw new BadRequestException(`AI provider unavailable: ${message}`);
+      }
+      throw new BadRequestException(`Draft generation failed: ${message}`);
+    }
 
     await this.logModelUsage(identity, session.id, 'draft', response);
 
@@ -693,51 +726,82 @@ export class SupportSessionsService {
       sessionId
     );
 
-    const modelSelection = dto.modelSelection
-      ? ModelSelection.parse(dto.modelSelection)
-      : undefined;
+    const modelSelection = this.safeParseModelSelection(dto.modelSelection);
 
-    const response = GenerateSummaryResponse.parse(
-      await this.modelGateway.generateSummary({
-        tenantId: identity.tenantId,
-        actorId: identity.userId,
-        session,
-        ticketReferences,
-        contextPackets,
-        modelSelection,
-      })
-    );
+    // BL-028: Check tenant AI policy before calling model gateway
+    const policyCheck = await this.checkAiPolicy(identity, session.id, 'summary', modelSelection);
+    if (!policyCheck.allowed) {
+      // Return a summary-shaped blocked response
+      return {
+        summary: policyCheck.response.draft,
+        keyPoints: ['Blocked by tenant AI policy'],
+        sentiment: 'neutral',
+        provider: policyCheck.response.provider,
+        model: policyCheck.response.model,
+        prompt: policyCheck.response.prompt,
+        contextHash: policyCheck.response.contextHash,
+        usage: policyCheck.response.usage as GenerateSummaryResponseShape['usage'],
+        safety: policyCheck.response.safety as GenerateSummaryResponseShape['safety'],
+        generatedAt: policyCheck.response.generatedAt,
+      };
+    }
 
-    // Store summary in TicketSummary via Prisma
-    const prisma = createPrismaClient();
+    let response: GenerateSummaryResponseShape;
     try {
-      const ticketRef = dto.ticketReferenceId
-        ? ticketReferences.find((t) => t.id === dto.ticketReferenceId)
-        : ticketReferences[0];
-
-      if (ticketRef) {
-        await prisma.ticketSummary.create({
-          data: {
-            id: randomUUID(),
-            tenantId: identity.tenantId,
-            ticketReferenceId: ticketRef.id,
-            sessionId,
-            generatedBy: identity.userId,
-            summaryText: response.summary,
-            keyPoints: response.keyPoints,
-            sentiment: response.sentiment ?? null,
-            source: response.provider,
-            redactionLog: [],
-            mockDevOnly: true,
-            createdAt: new Date(response.generatedAt),
-            updatedAt: new Date(response.generatedAt),
-          },
-        });
+      response = GenerateSummaryResponse.parse(
+        await this.modelGateway.generateSummary({
+          tenantId: identity.tenantId,
+          actorId: identity.userId,
+          session,
+          ticketReferences,
+          contextPackets,
+          modelSelection,
+        })
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Summary generation failed';
+      if (message.includes('is not configured')) {
+        throw new BadRequestException(`AI provider unavailable: ${message}`);
       }
-    } catch {
-      // Best-effort persistence; do not fail the request if storage fails
-    } finally {
-      await prisma.$disconnect().catch(() => {});
+      throw new BadRequestException(`Summary generation failed: ${message}`);
+    }
+
+    // Store summary in TicketSummary via Prisma (best-effort; skip if DB unavailable)
+    if (process.env['DATABASE_URL']) {
+      try {
+        const prisma = createPrismaClient();
+        try {
+          const ticketRef = dto.ticketReferenceId
+            ? ticketReferences.find((t) => t.id === dto.ticketReferenceId)
+            : ticketReferences[0];
+
+          if (ticketRef) {
+            await prisma.ticketSummary.create({
+              data: {
+                id: randomUUID(),
+                tenantId: identity.tenantId,
+                ticketReferenceId: ticketRef.id,
+                sessionId,
+                generatedBy: identity.userId,
+                summaryText: response.summary,
+                keyPoints: response.keyPoints,
+                sentiment: response.sentiment ?? null,
+                source: response.provider,
+                redactionLog: [],
+                mockDevOnly: true,
+                createdAt: new Date(response.generatedAt),
+                updatedAt: new Date(response.generatedAt),
+              },
+            });
+          }
+        } catch {
+          // Best-effort persistence; do not fail the request if storage fails
+        } finally {
+          await prisma.$disconnect().catch(() => {});
+        }
+      } catch {
+        // DB not available; skip persistence
+      }
     }
 
     await this.logModelUsage(identity, session.id, 'summary', response as unknown as GenerateDraftResponseShape);

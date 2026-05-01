@@ -8,7 +8,8 @@ export function getProviderReadiness(): AiProviderReadiness[] {
   const allProviderIds = ['mock', 'ollama', 'lmstudio', 'openai', 'azure', 'anthropic'] as const;
 
   return allProviderIds.map((id): AiProviderReadiness => {
-    const reg = registered.find((r) => r.id === id);
+    const _reg = registered.find((r) => r.id === id);
+    void _reg; // referenced for future expansion
 
     if (id === 'openai' || id === 'azure' || id === 'anthropic') {
       return {

@@ -22,6 +22,8 @@ export const AuditEventType = z.enum([
   'ai_context_loaded',
   'ai_context_redacted',
   'ai_draft_generated',
+  'ai_summary_generated',
+  'ai_chat_message_generated',
   'policy_decision',
   'screen_observed',
   'note_drafted',

@@ -21,7 +21,11 @@ function nowIso(): string {
 
 @Injectable()
 export class GdprService {
-  private readonly prisma = createPrismaClient();
+  private prismaClient?: PrismaClient;
+  private get prisma(): PrismaClient {
+    this.prismaClient ??= createPrismaClient();
+    return this.prismaClient;
+  }
 
   // ─── Export preview ───────────────────────────────────────────────────────
   async exportPreview(identity: CurrentIdentity, subjectType: string, subjectId: string) {

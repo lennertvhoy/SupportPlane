@@ -26,13 +26,16 @@ function json<T extends Record<string, unknown>>(value: T): Prisma.InputJsonValu
 export class ModelUsageService {
   private prismaClient?: PrismaClient;
 
-  private get prisma(): PrismaClient {
+  private get prisma(): PrismaClient | undefined {
+    if (!process.env['DATABASE_URL']) return undefined;
     this.prismaClient ??= createPrismaClient();
     return this.prismaClient;
   }
 
   async logUsage(entry: ModelUsageLogEntry): Promise<void> {
-    await this.prisma.modelUsageLog.create({
+    const p = this.prisma;
+    if (!p) return; // Gracefully skip when DATABASE_URL is unavailable (e.g., in-memory test mode)
+    await p.modelUsageLog.create({
       data: {
         id: entry.id,
         tenantId: entry.tenantId,
@@ -57,6 +60,8 @@ export class ModelUsageService {
   }
 
   async list(query: ModelUsageQuery): Promise<{ logs: ModelUsageLogEntry[]; total: number }> {
+    const p = this.prisma;
+    if (!p) return { logs: [], total: 0 };
     const where: Prisma.ModelUsageLogWhereInput = {};
     if (query.tenantId) where.tenantId = query.tenantId;
     if (query.feature) where.feature = query.feature;
@@ -69,13 +74,13 @@ export class ModelUsageService {
     }
 
     const [rows, total] = await Promise.all([
-      this.prisma.modelUsageLog.findMany({
+      p.modelUsageLog.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         take: query.limit,
         skip: query.offset,
       }),
-      this.prisma.modelUsageLog.count({ where }),
+      p.modelUsageLog.count({ where }),
     ]);
 
     const logs: ModelUsageLogEntry[] = rows.map((row) => ({
@@ -103,6 +108,8 @@ export class ModelUsageService {
   }
 
   async summary(query: Omit<ModelUsageQuery, 'limit' | 'offset'>): Promise<ModelUsageSummary> {
+    const p = this.prisma;
+    if (!p) return { totalCalls: 0, byFeature: {}, byProvider: {}, byStatus: {} };
     const where: Prisma.ModelUsageLogWhereInput = {};
     if (query.tenantId) where.tenantId = query.tenantId;
     if (query.feature) where.feature = query.feature;
@@ -114,7 +121,7 @@ export class ModelUsageService {
       if (query.dateTo) where.createdAt.lte = new Date(query.dateTo);
     }
 
-    const rows = await this.prisma.modelUsageLog.findMany({ where });
+    const rows = await p.modelUsageLog.findMany({ where });
 
     const totalCalls = rows.length;
     let totalTokens = 0;
