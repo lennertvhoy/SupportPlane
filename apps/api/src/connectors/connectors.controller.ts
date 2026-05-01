@@ -41,4 +41,14 @@ export class ConnectorsController {
       _tenantId: identity.tenantId,
     };
   }
+
+  @Get('status')
+  async allConnectorStatus(@Req() req: Request) {
+    const identity = getCurrentIdentity(req);
+    requirePermission(identity, 'connector:read');
+    return {
+      connectors: this.service.getAllConnectorStatus(identity.tenantId),
+      _tenantId: identity.tenantId,
+    };
+  }
 }

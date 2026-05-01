@@ -35,6 +35,8 @@ import type {
   ToolInvocation as ToolInvocationShape,
   ToolApproval as ToolApprovalShape,
   ToolResultNoteDraft as ToolResultNoteDraftShape,
+  KnowledgeSource as KnowledgeSourceShape,
+  KnowledgeArticle as KnowledgeArticleShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from './store.interface.js';
 
@@ -2202,6 +2204,140 @@ export class PrismaStore implements Store {
       body: r.body,
       status: r.status as ToolResultNoteDraftShape['status'],
       createdByUserId: r.createdByUserId,
+      createdAt: toISO(r.createdAt)!,
+      updatedAt: toISO(r.updatedAt)!,
+    };
+  }
+
+  async saveKnowledgeSource(source: KnowledgeSourceShape): Promise<void> {
+    await this.prisma.knowledgeSource.upsert({
+      where: { id: source.id },
+      create: {
+        id: source.id,
+        tenantId: source.tenantId,
+        name: source.name,
+        description: source.description ?? null,
+        adapterType: source.adapterType,
+        status: source.status,
+        config: json(source.config),
+        lastSyncAt: source.lastSyncAt ? dateOrNow(source.lastSyncAt) : null,
+        createdAt: dateOrNow(source.createdAt),
+        updatedAt: dateOrNow(source.updatedAt),
+      },
+      update: {
+        name: source.name,
+        description: source.description ?? null,
+        adapterType: source.adapterType,
+        status: source.status,
+        config: json(source.config),
+        lastSyncAt: source.lastSyncAt ? dateOrNow(source.lastSyncAt) : null,
+        updatedAt: dateOrNow(source.updatedAt),
+      },
+    });
+  }
+
+  async getKnowledgeSource(tenantId: string, id: string): Promise<KnowledgeSourceShape | undefined> {
+    const r = await this.prisma.knowledgeSource.findFirst({ where: { tenantId, id } });
+    return r ? this.mapKnowledgeSource(r) : undefined;
+  }
+
+  async listKnowledgeSources(tenantId: string): Promise<KnowledgeSourceShape[]> {
+    const rows = await this.prisma.knowledgeSource.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.mapKnowledgeSource(r));
+  }
+
+  async saveKnowledgeArticle(article: KnowledgeArticleShape): Promise<void> {
+    await this.prisma.knowledgeArticle.upsert({
+      where: { id: article.id },
+      create: {
+        id: article.id,
+        tenantId: article.tenantId,
+        sourceId: article.sourceId,
+        title: article.title,
+        content: article.content,
+        tags: article.tags,
+        metadata: json(article.metadata),
+        status: article.status,
+        createdAt: dateOrNow(article.createdAt),
+        updatedAt: dateOrNow(article.updatedAt),
+      },
+      update: {
+        sourceId: article.sourceId,
+        title: article.title,
+        content: article.content,
+        tags: article.tags,
+        metadata: json(article.metadata),
+        status: article.status,
+        updatedAt: dateOrNow(article.updatedAt),
+      },
+    });
+  }
+
+  async getKnowledgeArticle(tenantId: string, id: string): Promise<KnowledgeArticleShape | undefined> {
+    const r = await this.prisma.knowledgeArticle.findFirst({ where: { tenantId, id } });
+    return r ? this.mapKnowledgeArticle(r) : undefined;
+  }
+
+  async listKnowledgeArticles(tenantId: string, options?: { sourceId?: string; status?: string }): Promise<KnowledgeArticleShape[]> {
+    const rows = await this.prisma.knowledgeArticle.findMany({
+      where: {
+        tenantId,
+        ...(options?.sourceId ? { sourceId: options.sourceId } : {}),
+        ...(options?.status ? { status: options.status } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.mapKnowledgeArticle(r));
+  }
+
+  async searchKnowledgeArticles(tenantId: string, query: string, options?: { sourceIds?: string[]; limit?: number }): Promise<KnowledgeArticleShape[]> {
+    const rows = await this.prisma.knowledgeArticle.findMany({
+      where: {
+        tenantId,
+        ...(options?.sourceIds && options.sourceIds.length > 0 ? { sourceId: { in: options.sourceIds } } : {}),
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { content: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      take: options?.limit ?? 10,
+    });
+    return rows.map((r) => this.mapKnowledgeArticle(r));
+  }
+
+  private mapKnowledgeSource(r: {
+    id: string; tenantId: string; name: string; description: string | null; adapterType: string; status: string; config: unknown; lastSyncAt: Date | null; createdAt: Date; updatedAt: Date;
+  }): KnowledgeSourceShape {
+    return {
+      id: r.id as KnowledgeSourceShape['id'],
+      tenantId: r.tenantId as KnowledgeSourceShape['tenantId'],
+      name: r.name,
+      description: r.description ?? undefined,
+      adapterType: r.adapterType,
+      status: r.status as KnowledgeSourceShape['status'],
+      config: r.config as Record<string, unknown>,
+      lastSyncAt: toISO(r.lastSyncAt) ?? undefined,
+      createdAt: toISO(r.createdAt)!,
+      updatedAt: toISO(r.updatedAt)!,
+    };
+  }
+
+  private mapKnowledgeArticle(r: {
+    id: string; tenantId: string; sourceId: string; title: string; content: string; tags: string[]; metadata: unknown; status: string; createdAt: Date; updatedAt: Date;
+  }): KnowledgeArticleShape {
+    return {
+      id: r.id as KnowledgeArticleShape['id'],
+      tenantId: r.tenantId as KnowledgeArticleShape['tenantId'],
+      sourceId: r.sourceId as KnowledgeArticleShape['sourceId'],
+      title: r.title,
+      content: r.content,
+      tags: r.tags,
+      metadata: r.metadata as Record<string, unknown>,
+      status: r.status as KnowledgeArticleShape['status'],
       createdAt: toISO(r.createdAt)!,
       updatedAt: toISO(r.updatedAt)!,
     };

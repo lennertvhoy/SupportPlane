@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-01T08:55:00+02:00
+  updated_at: 2026-05-01T13:37:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -47,9 +47,11 @@ current_state:
     final_head_after_bl_108_repair: 4b771068ad666191e99f688065c457d098e26b7f
     head_before_bl_089_123_124_125_126_127: c4d0fa6e4c87663d5974ed3b26
     final_head_after_bl_089_123_124_125_126_127: 5e5fc226b93d0dff0457494c87663d5974ed3b26
+    head_before_session_123b_repair: ba97d90ed0723cb25b304cd29f26e676f984efb2
+    final_head_after_session_123b_repair: pending_commit
     head_before_bl_055_060_118: ee11447f8928d778178f0144b1a0a0c623468c95
     final_head_after_bl_055_060_118: recorded_in_final_handoff
-    worktree_status_at_state_update: clean
+    worktree_status_at_state_update: dirty_session_123_changes_plus_migration_fix_pending_commit
 
   current_product_truth:
     lifecycle_stage: real_self_hosted_sandbox_acceptance_frozen
@@ -76,16 +78,20 @@ current_state:
       short_lived_tokens: DB table with hashing and expiry enforcement
       not_implemented: [OAuth, SAML, MFA_enforcement, password_reset, production_auth_hardening]
     connectors:
-      current: real sandbox read + real sandbox writeback (BL-111 accepted)
+      current: real sandbox read + real sandbox writeback + expanded mock scaffolding (BL-111 accepted, BL-069/072 partial)
       zammad: real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient
       writeback: sandbox-only internal notes; real network allowed for local Zammad sandbox only
-      registry: zammad, osticket, mock factories registered via AdapterRuntimeResolver
+      registry: zammad, osticket, glpi, meshcentral, fortinet, mock factories registered via AdapterRuntimeResolver
       canonical_ids: resolveCanonicalAdapterId() eliminates hardcoded IDs
       runtime_mode: sandbox (not mock) when sandbox writeback enabled
       sandbox_writeback_ready: true (env var driven)
       production_writeback_ready: false (hardcoded)
       public_reply_enabled: false (hardcoded)
       osticket: partial/local-fixture (read-only adapter, no real instance)
+      glpi: partial/local-mock (adapter factory + HTTP client, mock returns fixtures, real throws CONFIG_MISSING)
+      meshcentral: partial/local-mock (registered with read_devices capability, unconfigured status, honest 'Not connected' label)
+      fortinet: partial/local-mock (registered with read_firewall_context capability, unconfigured status, honest 'Not connected' label)
+      unified_status_endpoint: GET /connectors/status returns all connectors with honest transport labels
     ai:
       current: deterministic mock/local only
       cloud_ai_calls: false
@@ -135,11 +141,11 @@ current_state:
       arbitrary_shell_blocked: true
       fixed_implementation_only: true
       endpoint_command_kind_allowlist: [collect_inventory, collect_disk, collect_network, collect_services, ping_self, flush_dns_cache, clear_temp_preview]
-      audit_events: [tool_invocation_requested, tool_dispatch_created, tool_approval_requested, tool_approval_decided, tool_result_received, arbitrary_execution_rejected]
-      accepted_items: [BL-061, BL-062, BL-063, BL-064, BL-066, BL-068]
-      partial_items: [BL-065, BL-067]
-      evidence_folder: output/playwright/session-121-bl061-068-tool-execution-safety-foundation/
-      known_gaps: [web_ui_tool_registry_page, web_ui_approval_queue, web_ui_device_console_tool_integration, tool_manifest_digital_signing, production_enrollment_hardening, remediation_end_to_end_result, note_draft_browser_proof]
+      audit_events: [tool_invocation_requested, tool_dispatch_created, tool_approval_requested, tool_approval_decided, tool_result_received, arbitrary_execution_rejected, tool_note_draft_created]
+      accepted_items: [BL-061, BL-062, BL-063, BL-064, BL-066, BL-067, BL-068]
+      partial_items: [BL-065]
+      evidence_folder: output/playwright/session-123-real-connectors-golden-workflow/
+      known_gaps: [web_ui_tool_registry_page, web_ui_approval_queue, web_ui_device_console_tool_integration, tool_manifest_digital_signing, production_enrollment_hardening, remediation_end_to_end_result]
     windows_endpoint:
       current: architecture_grade_contracts_policy_agent_ui_docs
       platform_enum: [linux, win32, darwin, unknown]
@@ -384,7 +390,7 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-128
-    accepted_current_slice: BL-086_BL-087_BL-090
+    accepted_current_slice: BL-123_session_real_connectors_golden_workflow
     planned_real_e2e_items:
       - BL-111
       - BL-112
@@ -395,7 +401,7 @@ current_state:
       - BL-120
       - BL-121
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-083]
+    active_queue_items: [BL-130, BL-131, BL-132, BL-133]
 
   documentation:
     primary_user_guide: README.md
@@ -543,11 +549,11 @@ current_state:
   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-118-bl083-bl086-bl087-bl090-production-readiness/
-    latest_screenshot_count: 3
+    latest_folder: output/playwright/session-123b-real-connectors-golden-workflow-closure/
+    latest_screenshot_count: 8
     latest_duplicate_count: 0
-    latest_cli_artifacts: 17
-    total_files_in_latest_folder: 20
+    latest_cli_artifacts: 1
+    total_files_in_latest_folder: 8
     cli_artifacts:
       - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md
       - output/playwright/session-107-bl106-evidence-reconciliation/screenshot-md5s.txt

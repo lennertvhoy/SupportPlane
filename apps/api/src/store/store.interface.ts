@@ -27,6 +27,8 @@ import type {
   ToolInvocation as ToolInvocationShape,
   ToolApproval as ToolApprovalShape,
   ToolResultNoteDraft as ToolResultNoteDraftShape,
+  KnowledgeSource as KnowledgeSourceShape,
+  KnowledgeArticle as KnowledgeArticleShape,
 } from '@supportplane/contracts';
 
 export interface SharingStateShape {
@@ -165,4 +167,14 @@ export interface Store {
   getToolResultNoteDraft(tenantId: string, id: string): Promise<ToolResultNoteDraftShape | undefined> | ToolResultNoteDraftShape | undefined;
   getToolResultNoteDraftByInvocationId(invocationId: string): Promise<ToolResultNoteDraftShape | undefined> | ToolResultNoteDraftShape | undefined;
   listToolResultNoteDrafts(tenantId: string): Promise<ToolResultNoteDraftShape[]> | ToolResultNoteDraftShape[];
+
+  // Knowledge (BL-073/074)
+  saveKnowledgeSource(source: KnowledgeSourceShape): Promise<void> | void;
+  getKnowledgeSource(tenantId: string, id: string): Promise<KnowledgeSourceShape | undefined> | KnowledgeSourceShape | undefined;
+  listKnowledgeSources(tenantId: string): Promise<KnowledgeSourceShape[]> | KnowledgeSourceShape[];
+
+  saveKnowledgeArticle(article: KnowledgeArticleShape): Promise<void> | void;
+  getKnowledgeArticle(tenantId: string, id: string): Promise<KnowledgeArticleShape | undefined> | KnowledgeArticleShape | undefined;
+  listKnowledgeArticles(tenantId: string, options?: { sourceId?: string; status?: string }): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
+  searchKnowledgeArticles(tenantId: string, query: string, options?: { sourceIds?: string[]; limit?: number }): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
 }

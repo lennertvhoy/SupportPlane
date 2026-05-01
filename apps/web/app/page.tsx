@@ -8,6 +8,7 @@ import { AiContextPanel } from '@/components/AiContextPanel';
 import { DraftNotePanel } from '@/components/DraftNotePanel';
 import { AuditTrailPanel } from '@/components/AuditTrailPanel';
 import { ConnectorPanel } from '@/components/ConnectorPanel';
+import { ConnectorStatusPanel } from '@/components/ConnectorStatusPanel';
 import { EvidenceBundlePanel } from '@/components/EvidenceBundlePanel';
 import { CallSimulatorPanel } from '@/components/CallSimulatorPanel';
 import { GreetingSuggestionPanel } from '@/components/GreetingSuggestionPanel';
@@ -350,13 +351,19 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             </span>
           )}
           {connectorStatus && (
-            <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
-              connectorStatus.mode === 'mock'
-                ? 'border-amber-700/40 bg-amber-900/30 text-amber-300'
-                : 'border-emerald-700/40 bg-emerald-900/30 text-emerald-300'
-            }`}>
-              {connectorStatus.mode === 'mock' ? 'Mock' : 'Zammad'} mode
-            </span>
+            <>
+              <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
+                connectorStatus.mode === 'mock'
+                  ? 'border-amber-700/40 bg-amber-900/30 text-amber-300'
+                  : 'border-emerald-700/40 bg-emerald-900/30 text-emerald-300'
+              }`}>
+                {connectorStatus.mode === 'mock' ? 'Mock' : 'Zammad'} mode
+              </span>
+              <span className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-400">
+                <ShieldAlert size={10} />
+                All writeback blocked
+              </span>
+            </>
           )}
           <IdentityPill identity={identity} logout={logout} />
           <button
@@ -435,6 +442,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               onSelectSession={handleSelectSession}
               auditEvents={auditEvents}
             />
+            <ConnectorStatusPanel />
             <ConnectorPanel identity={identity} />
             <CustomerReferencePanel />
             <EvidenceBundlePanel

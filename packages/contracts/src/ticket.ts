@@ -4,6 +4,7 @@ import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
 export const TicketingAdapterType = z.enum([
   'zammad',
   'glpi',
+  'osticket',
   'custom',
 ]);
 

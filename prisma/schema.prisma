@@ -53,6 +53,8 @@ model Tenant {
   toolInvocations     ToolInvocation[]
   toolApprovals       ToolApproval[]
   toolResultNoteDrafts ToolResultNoteDraft[]
+  knowledgeSources     KnowledgeSource[]
+  knowledgeArticles    KnowledgeArticle[]
 
   @@index([slug])
   @@index([status])
@@ -1013,4 +1015,47 @@ model ToolResultNoteDraft {
   @@index([tenantId])
   @@index([tenantId, status])
   @@map("tool_result_note_drafts")
+}
+
+// BL-073 Knowledge Source Ingestion
+model KnowledgeSource {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  description String?
+  adapterType String   @default("manual")
+  status      String   @default("active")
+  config      Json     @default("{}")
+  lastSyncAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  articles  KnowledgeArticle[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("knowledge_sources")
+}
+
+// BL-073 Knowledge Article
+model KnowledgeArticle {
+  id          String   @id @default(cuid())
+  tenantId    String
+  sourceId    String
+  title       String
+  content     String
+  tags        String[] @default([])
+  metadata    Json     @default("{}")
+  status      String   @default("published")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  source KnowledgeSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, sourceId])
+  @@index([tenantId, status])
+  @@map("knowledge_articles")
 }

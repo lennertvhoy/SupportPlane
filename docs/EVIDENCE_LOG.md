@@ -2531,3 +2531,64 @@
   - Evidence cap respected: 12 files.
 - Type: implementation-and-browser-runtime-verification
 - as_of: 2026-05-01T09:20:00+02:00
+
+
+## EV-2026-05-01-133 through EV-2026-05-01-138: Session 123 — Real Connector Expansion + Golden Workflow Backbone
+
+- Files: `output/playwright/session-123-real-connectors-golden-workflow/01-cockpit-dashboard.png` through `06-cockpit-audit-trail.png`
+- Source/System: Chromium via Playwright against local Web (`localhost:3200`) and local API (`localhost:4100`), plus terminal-rendered JSON/text proof pages.
+- Store/Auth mode for runtime verification: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Local API proof:
+  - `GET /connectors/status` returns 5 connectors with honest transport labels: zammad (mock), osticket (fixture), glpi (mock), meshcentral (unconfigured), fortinet (unconfigured).
+  - `POST /knowledge/sources` creates knowledge source with audit event `knowledge_source_created`.
+  - `POST /knowledge/articles` creates knowledge article with audit event `knowledge_article_created`.
+  - `POST /knowledge/retrieve` returns lexical search results with `fallback: 'lexical'`, `pgvectorEnabled: false`.
+  - `POST /admin/tool-invocations/:id/note-draft` creates draft from succeeded invocation; returns formatted markdown body.
+- Shows:
+  - `01-cockpit-dashboard.png` — logged-in operator view with session list, call simulator, connector status header, "All writeback blocked" badge, API: localhost:4100.
+  - `02-connector-status-panel.png` — full Connector Status panel with Zammad (Mock/Fixture), GLPI (Mock/Fixture), osTicket (Mock/Fixture), MeshCentral (Unconfigured/Not connected), Fortinet (Unconfigured/Not connected), capability chips, and tenant-scoped footer.
+  - `03-cockpit-session-selected.png` — selected support session "Session 123 - Golden Workflow Test" with session banner, case timeline, and active panels.
+  - `04-device-console-succeeded-with-draft-button.png` — Device Console invocation history showing `diagnostic.disk` with `succeeded` status, result JSON (`diskFree`, `diskTotal`, `diskUsagePercent`), and visible "Create note draft" button.
+  - `05-device-console-draft-created.png` — same invocation after clicking "Create note draft"; confirmation message "Draft created: Result: c9f0ba56" displayed.
+  - `06-cockpit-audit-trail.png` — Audit Trail panel for selected session showing `session_created` event with actor `dev-user` and integrity hash.
+- Proves:
+  - BL-067: Tool result note draft creation works end-to-end in the browser — succeeded invocation → "Create note draft" button → draft created with audit event.
+  - BL-069: GLPI connector scaffolding exists in registry with mock adapter and honest "mock" transport label.
+  - BL-072: Fortinet connector scaffolding exists in registry with honest "unconfigured" status.
+  - BL-073: Knowledge source and article CRUD API is functional with Prisma persistence, tenant scoping, and RBAC.
+  - BL-074: Knowledge retrieval endpoint returns results with honest lexical fallback label (no pgvector).
+  - Connector status unification: single endpoint returns all connector states with truthful transport/mode/health/capabilities.
+  - UI truth banners: "All writeback blocked" badge visible in header; connector panel shows "Tenant-scoped" and "External writeback requires explicit policy approval".
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-05-01T13:00:00+02:00
+
+
+## EV-2026-05-01-139 through EV-2026-05-01-146: Session 123b — Real Connectors Golden Workflow Closure Repair
+
+- Files: `output/playwright/session-123b-real-connectors-golden-workflow-closure/01-cockpit-dashboard-truth-banner.png` through `08-evidence-index.md`
+- Source/System: Chromium via Playwright against local Web (`localhost:3200`) and local API (`localhost:4110`), plus terminal-captured JSON health response.
+- Store/Auth mode for runtime verification: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Local API proof:
+  - `GET /health` returns `{"service":"supportplane-api","status":"ok","head":"ba97d90...","storeMode":"postgres","authMode":"local"}`.
+  - `GET /admin/policies` returns 200 with delivery policy summary (was 500 before migration fix).
+  - `GET /admin/policies/ai` returns default AI policy with `cloudAiAllowed: false`.
+  - `GET /admin/policies/retention` returns default retention policy.
+  - `GET /connectors/status` returns 5 connectors with honest transport labels.
+  - `POST /admin/tool-invocations/:id/note-draft` creates draft from succeeded invocation.
+- Shows:
+  - `01-cockpit-dashboard-truth-banner.png` — logged-in operator view with truth banner: DEV/MOCK DATA, API: localhost:4110, Auth local/Store postgres, Mock mode, All writeback blocked. Connector Status panel visible with all 5 connectors.
+  - `02-connector-status-panel.png` — close-up of Connector Status panel: Zammad (Mock/Fixture, Mock transport), GLPI (Mock/Fixture, Fixture data), osTicket (Mock/Fixture, Fixture data), MeshCentral (Unconfigured, Not connected), Fortinet (Unconfigured, Not connected).
+  - `03-session-123-selected.png` — selected Session 123 with populated Case Timeline, Draft Note, Policy Editor (BL-076), Audit Trail, and Delivery Operations.
+  - `04-device-console-diagnostic-with-create-note-draft.png` — Device Console showing Windows Endpoint (Mock) with completed `diagnostic.disk` result (`diskFree: 350GB`, `diskTotal: 500GB`, `diskUsagePercent: 30`). "Create note draft" button visible — BL-067 feature.
+  - `05-draft-created-from-diagnostic.png` — same view after clicking "Create note draft"; invocation history shows "Draft created: Result: c9f0ba56".
+  - `06-cockpit-policy-editor-audit-trail.png` — Policy Editor (BL-076) with **Connector tab active** showing Connector Policy, Enabled, Kill switch, Approval required, Real network: Locked OFF, Writeback: Locked OFF. **No Internal Server Error.** Audit Trail shows `session_created` event below.
+  - `07-runtime-identity-health.json` — API `/health` JSON confirming runtime identity.
+  - `08-evidence-index.md` — comprehensive evidence index with claims, verification, and honest partial status.
+- Proves:
+  - **BL-076 500 error fix**: Previously `GET /admin/policies` returned 500 due to missing `tenant_policies` table. Migration `20260501112426_add_tenant_policy_table` created and applied. Now returns 200. Policy Editor renders all 4 tabs without errors.
+  - **BL-067**: Note draft from diagnostic tool result works end-to-end — "Create note draft" button → draft created with formatted markdown body and audit event.
+  - **BL-069/071/072**: GLPI, MeshCentral, and Fortinet connectors registered with honest status labels (mock/fixture/unconfigured).
+  - **API port alignment**: UI correctly displays `API: localhost:4110` matching `.env` `API_PORT=4110`.
+  - **Validation gate**: All typecheck, lint, test, build, state docs, BL-116 verifier, and observability baseline checks pass.
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-05-01T13:37:00+02:00

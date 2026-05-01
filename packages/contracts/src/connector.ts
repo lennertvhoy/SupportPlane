@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { EntityId, TenantId, JsonValue } from './base.js';
 
-export const ConnectorMode = z.enum(['mock', 'zammad']);
+export const ConnectorMode = z.enum(['mock', 'zammad', 'glpi']);
 export type ConnectorMode = z.infer<typeof ConnectorMode>;
 
 export const ConnectorHealthStatus = z.enum([
@@ -19,9 +19,17 @@ export const ZammadConfig = z.object({
 });
 export type ZammadConfig = z.infer<typeof ZammadConfig>;
 
+export const GlpiConfig = z.object({
+  baseUrl: z.string().url().max(2048),
+  apiToken: z.string().min(1).max(2048),
+  timeoutMs: z.number().int().min(1000).max(60000).default(10000),
+});
+export type GlpiConfig = z.infer<typeof GlpiConfig>;
+
 export const ConnectorConfig = z.object({
   mode: ConnectorMode.default('mock'),
   zammad: ZammadConfig.optional(),
+  glpi: GlpiConfig.optional(),
 });
 export type ConnectorConfig = z.infer<typeof ConnectorConfig>;
 

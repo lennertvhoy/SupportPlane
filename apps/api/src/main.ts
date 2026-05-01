@@ -39,7 +39,7 @@ async function bootstrap() {
 
   const port = process.env.API_PORT
     ? parseInt(process.env.API_PORT, 10)
-    : 4100;
+    : 4110;
   await app.listen(port);
   console.log(`SupportPlane API listening on http://localhost:${port}`);
 }

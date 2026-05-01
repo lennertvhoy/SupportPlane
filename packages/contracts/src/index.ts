@@ -26,3 +26,4 @@ export * from './tenant-policy.js';
 export * from './endpoint-agent.js';
 export * from './tool-manifest.js';
 export * from './tool-execution.js';
+export * from './knowledge.js';

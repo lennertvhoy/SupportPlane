@@ -47,6 +47,8 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'outbox:process_once',
     'worker:read',
     'telephony:webhook',
+    'knowledge:read',
+    'knowledge:write',
   ],
   viewer: [
     'support_session:read',
@@ -65,6 +67,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'delivery_policy:read',
     'endpoint_device:read',
     'endpoint_command:read',
+    'knowledge:read',
   ],
   support_agent: [
     'support_session:read',
@@ -108,6 +111,8 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'outbox:process_once',
     'worker:read',
     'telephony:webhook',
+    'knowledge:read',
+    'knowledge:write',
   ],
 };
 

@@ -27,6 +27,8 @@ import type {
   ToolInvocation as ToolInvocationShape,
   ToolApproval as ToolApprovalShape,
   ToolResultNoteDraft as ToolResultNoteDraftShape,
+  KnowledgeSource as KnowledgeSourceShape,
+  KnowledgeArticle as KnowledgeArticleShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from '../store/store.interface.js';
 
@@ -58,6 +60,8 @@ export class InMemoryStore implements Store {
   private toolInvocations = new Map<string, ToolInvocationShape>();
   private toolApprovals = new Map<string, ToolApprovalShape>();
   private toolResultNoteDrafts = new Map<string, ToolResultNoteDraftShape>();
+  private knowledgeSources = new Map<string, KnowledgeSourceShape>();
+  private knowledgeArticles = new Map<string, KnowledgeArticleShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -555,5 +559,50 @@ export class InMemoryStore implements Store {
     return Array.from(this.toolResultNoteDrafts.values())
       .filter((d) => d.tenantId === tenantId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  saveKnowledgeSource(source: KnowledgeSourceShape): void {
+    this.knowledgeSources.set(`${source.tenantId}:${source.id}`, source);
+  }
+
+  getKnowledgeSource(tenantId: string, id: string): KnowledgeSourceShape | undefined {
+    return this.knowledgeSources.get(`${tenantId}:${id}`);
+  }
+
+  listKnowledgeSources(tenantId: string): KnowledgeSourceShape[] {
+    return Array.from(this.knowledgeSources.values())
+      .filter((s) => s.tenantId === tenantId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  saveKnowledgeArticle(article: KnowledgeArticleShape): void {
+    this.knowledgeArticles.set(`${article.tenantId}:${article.id}`, article);
+  }
+
+  getKnowledgeArticle(tenantId: string, id: string): KnowledgeArticleShape | undefined {
+    return this.knowledgeArticles.get(`${tenantId}:${id}`);
+  }
+
+  listKnowledgeArticles(tenantId: string, options?: { sourceId?: string; status?: string }): KnowledgeArticleShape[] {
+    return Array.from(this.knowledgeArticles.values())
+      .filter((a) => {
+        if (a.tenantId !== tenantId) return false;
+        if (options?.sourceId && a.sourceId !== options.sourceId) return false;
+        if (options?.status && a.status !== options.status) return false;
+        return true;
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  searchKnowledgeArticles(tenantId: string, query: string, options?: { sourceIds?: string[]; limit?: number }): KnowledgeArticleShape[] {
+    const q = query.toLowerCase();
+    return Array.from(this.knowledgeArticles.values())
+      .filter((a) => {
+        if (a.tenantId !== tenantId) return false;
+        if (options?.sourceIds && !options.sourceIds.includes(a.sourceId)) return false;
+        return a.title.toLowerCase().includes(q) || a.content.toLowerCase().includes(q);
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .slice(0, options?.limit ?? 10);
   }
 }

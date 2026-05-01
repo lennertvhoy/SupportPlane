@@ -211,6 +211,55 @@ export interface ToolResultNoteDraft {
   updatedAt: string;
 }
 
+export interface KnowledgeSource {
+  id: string;
+  tenantId: string;
+  name: string;
+  description?: string;
+  adapterType: string;
+  status: string;
+  config: Record<string, unknown>;
+  lastSyncAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KnowledgeArticle {
+  id: string;
+  tenantId: string;
+  sourceId: string;
+  title: string;
+  content: string;
+  tags: string[];
+  metadata: Record<string, unknown>;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface KnowledgeRetrievalResult {
+  articleId: string;
+  sourceId: string;
+  title: string;
+  snippet: string;
+  score: number;
+  provenance: {
+    sourceName: string;
+    articleStatus: string;
+    retrievedAt: string;
+    retrievalMethod: string;
+  };
+}
+
+export interface KnowledgeRetrievalResponse {
+  query: string;
+  results: KnowledgeRetrievalResult[];
+  totalAvailable: number;
+  retrievalMethod: string;
+  pgvectorEnabled: boolean;
+  mockDevOnly: boolean;
+}
+
 export interface TicketReference {
   id: string;
   tenantId: string;
@@ -1979,6 +2028,20 @@ export const api = {
 
   denyTool: (id: string, body: { reason?: string }, identity?: DevIdentity) =>
     apiFetch<{ approval: ToolApproval }>(`/admin/tool-approvals/${id}/deny`, { method: 'POST', body: JSON.stringify(body) }, identity),
+
+  // All connector statuses
+  getAllConnectorStatus: (identity?: DevIdentity) =>
+    apiFetch<{ connectors: Array<{ key: string; name: string; adapterType: string; status: string; transport: string; capabilities: string[]; health: string; lastChecked: string; lastError?: string; tenantScoped: boolean }> }>('/connectors/status', { method: 'GET' }, identity).then(r => r.connectors),
+
+  // Knowledge (BL-073/074)
+  listKnowledgeSources: (identity?: DevIdentity) =>
+    apiFetch<{ sources: KnowledgeSource[] }>('/knowledge/sources', { method: 'GET' }, identity).then(r => r.sources),
+
+  listKnowledgeArticles: (params?: { sourceId?: string; status?: string }, identity?: DevIdentity) =>
+    apiFetch<{ articles: KnowledgeArticle[] }>(`/knowledge/articles?${new URLSearchParams(params ?? {}).toString()}`, { method: 'GET' }, identity).then(r => r.articles),
+
+  retrieveKnowledge: (body: { query: string; sourceIds?: string[]; limit?: number }, identity?: DevIdentity) =>
+    apiFetch<KnowledgeRetrievalResponse>('/knowledge/retrieve', { method: 'POST', body: JSON.stringify(body) }, identity),
 };
 
 export { ApiClientError };

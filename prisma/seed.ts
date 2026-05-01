@@ -528,7 +528,89 @@ async function main() {
     });
   }
 
-  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, credential references, delivery policies, and endpoint devices');
+  // Seed knowledge sources
+  const knowledgeSources = [
+    {
+      id: 'kb-source-dev-001',
+      tenantId: 'dev-tenant',
+      name: 'Acme Internal KB',
+      description: 'Local demo knowledge base for Acme support team.',
+      adapterType: 'manual',
+      status: 'active',
+      config: {},
+    },
+    {
+      id: 'kb-source-dev-002',
+      tenantId: 'dev-tenant',
+      name: 'Known Issues',
+      description: 'Common IT support issues and resolutions.',
+      adapterType: 'manual',
+      status: 'active',
+      config: {},
+    },
+  ];
+
+  for (const source of knowledgeSources) {
+    await prisma.knowledgeSource.upsert({
+      where: { id: source.id },
+      create: source,
+      update: source,
+    });
+  }
+
+  // Seed demo knowledge articles
+  const knowledgeArticles = [
+    {
+      id: 'kb-article-001',
+      tenantId: 'dev-tenant',
+      sourceId: 'kb-source-dev-001',
+      title: 'VPN Connection Troubleshooting',
+      content: 'If users cannot connect to the corporate VPN, first verify that the VPN client is up to date. Check network adapter settings and ensure split tunneling is enabled. For Windows endpoints, run the diagnostic.network tool to verify adapter state. For Linux endpoints, check `ip route` output. If DNS resolution fails after connection, the flush_dns_cache remediation may help once approved.',
+      tags: ['vpn', 'network', 'connectivity'],
+      metadata: { category: 'networking', priority: 'high' },
+      status: 'published',
+    },
+    {
+      id: 'kb-article-002',
+      tenantId: 'dev-tenant',
+      sourceId: 'kb-source-dev-001',
+      title: 'Printer Offline on Windows',
+      content: 'When a printer shows offline on a Windows endpoint, verify the print spooler service is running. Use the device console to check the endpoint status. If the spooler is stopped, a service restart may be required (requires approval). Ensure the printer is reachable on the network using ping from the endpoint.',
+      tags: ['printer', 'windows', 'services'],
+      metadata: { category: 'hardware', priority: 'normal' },
+      status: 'published',
+    },
+    {
+      id: 'kb-article-003',
+      tenantId: 'dev-tenant',
+      sourceId: 'kb-source-dev-002',
+      title: 'Disk Space Warning on Linux Workstations',
+      content: 'Linux workstations may report disk space warnings due to accumulated logs in /var/log. Use the diagnostic.disk tool to verify available space. If /tmp or /var/log are above 90% usage, clear temporary files with approval. Monitor using the endpoint agent inventory snapshot.',
+      tags: ['disk', 'linux', 'monitoring'],
+      metadata: { category: 'storage', priority: 'high' },
+      status: 'published',
+    },
+    {
+      id: 'kb-article-004',
+      tenantId: 'dev-tenant',
+      sourceId: 'kb-source-dev-002',
+      title: 'Endpoint Agent Registration Failure',
+      content: 'If an endpoint agent fails to register, verify the enrollment token is correct and not expired. Check that the device can reach the API at the configured SUPPORTPLANE_API_URL. Ensure the tenant ID matches the device tenant. Review audit events for registration attempts.',
+      tags: ['endpoint', 'agent', 'registration'],
+      metadata: { category: 'agent', priority: 'critical' },
+      status: 'published',
+    },
+  ];
+
+  for (const article of knowledgeArticles) {
+    await prisma.knowledgeArticle.upsert({
+      where: { id: article.id },
+      create: article,
+      update: article,
+    });
+  }
+
+  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, credential references, delivery policies, endpoint devices, knowledge sources, and articles');
 }
 
 main()

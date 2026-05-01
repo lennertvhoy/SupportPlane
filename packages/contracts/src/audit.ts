@@ -158,6 +158,16 @@ export const AuditEventType = z.enum([
   'tool_result_received',
   'tool_note_draft_created',
   'arbitrary_execution_rejected',
+  // Connector scaffolding audit events
+  'connector_health_check',
+  'connector_read_attempt',
+  'connector_read_success',
+  'connector_read_failure',
+  'connector_disabled_access',
+  // BL-073 Knowledge Source Ingestion
+  'knowledge_source_created',
+  'knowledge_article_created',
+  'knowledge_retrieval_query',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

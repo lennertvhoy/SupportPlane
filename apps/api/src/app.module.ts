@@ -19,9 +19,10 @@ import { TelemetryModule } from './telemetry/telemetry.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { EndpointDevicesModule } from './endpoint-devices/endpoint-devices.module.js';
 import { ToolExecutionModule } from './tool-execution/tool-execution.module.js';
+import { KnowledgeModule } from './knowledge/knowledge.module.js';
 
 @Module({
-  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule, AdminPolicyModule, EndpointDevicesModule, ToolExecutionModule],
+  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule, AdminPolicyModule, EndpointDevicesModule, ToolExecutionModule, KnowledgeModule],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {

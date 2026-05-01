@@ -54,6 +54,35 @@ export {
   type ZammadHttpClient,
 } from './zammad-http-client.js';
 export {
+  MockGlpiHttpClient,
+  type GlpiHttpClient,
+} from './glpi-http-client.js';
+export {
+  GlpiConnectorAdapter,
+  MockGlpiConnectorAdapter,
+} from './glpi-adapter.js';
+export {
+  MeshCentralConnectorService,
+  createMeshCentralService,
+  type MeshCentralService,
+} from './meshcentral-service.js';
+export {
+  MockMeshCentralClient,
+  type MeshCentralClient,
+  type MeshDevice,
+} from './meshcentral-client.js';
+export {
+  FortinetConnectorService,
+  createFortinetService,
+  type FortinetService,
+} from './fortinet-service.js';
+export {
+  MockFortinetClient,
+  type FortinetClient,
+  type FortinetFirewallStatus,
+  type FortinetInterface,
+} from './fortinet-client.js';
+export {
   MOCK_TELEPHONY_CAPABILITIES,
   MockTelephonyAdapter,
   createMockTelephonyConfig,
@@ -117,6 +146,19 @@ export {
   createOsTicketAdapterFactory,
   createMockOsTicketAdapterFactory,
 } from './osticket-adapter-factory.js';
+export {
+  GlpiAdapterFactory,
+  MockGlpiAdapterFactory,
+  createGlpiAdapterFactory,
+  createMockGlpiAdapterFactory,
+  registerGlpiAdapter,
+} from './glpi-adapter-factory.js';
+export {
+  registerConnector,
+  getConnector,
+  listConnectorTypes,
+  clearConnectorRegistry,
+} from './connector-registry.js';
 
 /**
  * Canonical adapter ID resolver.
@@ -127,6 +169,7 @@ export function resolveCanonicalAdapterId(adapterType: string): string {
   const map: Record<string, string> = {
     zammad: 'zammad-adapter-001',
     osticket: 'osticket-adapter-001',
+    glpi: 'glpi-adapter-001',
     mock: 'mock-adapter-001',
   };
   return map[adapterType] ?? `${adapterType}-adapter-001`;

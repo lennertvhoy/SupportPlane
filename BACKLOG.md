@@ -107,17 +107,17 @@ Status markers:
 - [BL-064] `[accepted]` Implement read-only tool invocation flow with audit events and before/after summaries. Read-only diagnostics auto-approved and dispatched to endpoint commands.
 - [BL-065] `[partial]` Implement low-risk tools: flush DNS, restart approved service, and clear temp directory. Approval queue with approve/deny lifecycle exists and approved invocations dispatch to endpoint commands. However, remediation tools are disabled in the manifest (`enabled: false`) and the endpoint agent returns `unsupported: true` for all remediation commands. End-to-end execution with a real result is not yet proven. Marked partial until a safe remediation implementation executes and returns a result after approval.
 - [BL-066] `[accepted]` Implement execution gateway dispatch to endpoint agent fixed implementations only. Audit events generated for all invocations, approvals, and results.
-- [BL-067] `[partial]` Implement tool result summarization and ticket note draft from remediation outcome. Backend `ToolResultNoteDraftService` exists with full API, store methods, Prisma model, and contracts. UI now includes a 'Create note draft' button on completed invocations in the Device Console. Marked partial until browser proof verifies the full user-facing flow end-to-end.
+- [BL-067] `[accepted]` Implement tool result summarization and ticket note draft from remediation outcome. Backend `ToolResultNoteDraftService` with full API, store methods, Prisma model, contracts, and audit events. Device Console UI shows 'Create note draft' button on succeeded invocations; clicking it creates a draft with formatted markdown body and integrity-hashed audit event. Browser proof captured in `output/playwright/session-123-real-connectors-golden-workflow/04-device-console-succeeded-with-draft-button.png` and `05-device-console-draft-created.png`.
 - [BL-068] `[accepted]` Add remediation safety tests proving arbitrary shell is blocked. Arbitrary shell, command, script, argv, executable, powershell, cmd fields rejected in `requestedInput`.
 
 ## Integrations After MVP
 
-- [BL-069] `[planned]` Add GLPI connector for assets, users, ITIL tickets, and configuration items.
+- [BL-069] `[partial/local-mock]` Add GLPI connector scaffolding. Adapter factory, HTTP client (mock + real), and connector registry registration exist. Real adapter throws `CONFIG_MISSING` when unconfigured. Mock adapter returns fixture data. Transport labeled 'mock' in status API. No real GLPI instance connected.
 - [BL-070] `[superseded by BL-117]` Add Asterisk/FreePBX CTI gateway behind SupportPlane API rather than direct browser access.
-- [BL-071] `[planned]` Add MeshCentral device context and remote session launch metadata.
-- [BL-072] `[planned]` Add Fortinet read-only connector only after screen-context workflow is proven.
-- [BL-073] `[planned]` Add knowledge source ingestion for KB articles, known issues, and ticket-history summaries.
-- [BL-074] `[planned]` Add pgvector-backed retrieval after plain PostgreSQL/search needs are proven.
+- [BL-071] `[partial/local-mock]` Add MeshCentral device context and remote session launch metadata. MeshCentral registered in connector registry with `read_devices` capability. Status shows 'unconfigured' / 'Not connected'. No real MeshCentral instance connected.
+- [BL-072] `[partial/local-mock]` Add Fortinet read-only connector scaffolding. Service and client registered via `registerConnector()` with capabilities `['read_firewall_status', 'read_interfaces']`. Status shows 'unconfigured' / 'mock'. No real Fortinet instance connected.
+- [BL-073] `[partial/local-mock]` Add knowledge source and article schema with Prisma models (`KnowledgeSource`, `KnowledgeArticle`), migration applied, seed data added. CRUD API endpoints (`POST /knowledge/sources`, `POST /knowledge/articles`) with RBAC (`knowledge:read`, `knowledge:write`). Store layer extended with `saveKnowledgeSource`, `saveKnowledgeArticle`, `searchKnowledgeArticles`. Contracts added. No external ingestion pipeline yet.
+- [BL-074] `[partial/local-mock]` Add knowledge retrieval endpoint (`POST /knowledge/retrieve`) with honest lexical fallback. Returns `fallback: 'lexical'`, `pgvectorEnabled: false` because local PostgreSQL lacks pgvector extension. Full retrieval schema, service, and audit events (`knowledge_retrieval_query`) implemented. pgvector upgrade deferred until cluster Postgres has extension.
 
 ## Admin, Governance, And Compliance Evidence
 

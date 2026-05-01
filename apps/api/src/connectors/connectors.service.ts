@@ -20,6 +20,10 @@ import {
   registerTelephonyAdapter,
   createMockTelephonyAdapterFactory,
   createAsteriskAmiAdapterFactory,
+  registerGlpiAdapter,
+  registerConnector,
+  createMeshCentralService,
+  createFortinetService,
   type TicketingAdapterClient,
 } from '@supportplane/connectors';
 import { evaluateEgressPolicy } from '@supportplane/policy';
@@ -38,9 +42,29 @@ function ensureRegistry() {
   // Register osTicket adapter (read-only, no writeback in this slice)
   registerTicketingAdapter(createOsTicketAdapterFactory());
   registerTicketingAdapter(createMockOsTicketAdapterFactory());
+  // Register GLPI adapters
+  registerGlpiAdapter();
   // Register telephony adapters
   registerTelephonyAdapter(createMockTelephonyAdapterFactory());
   registerTelephonyAdapter(createAsteriskAmiAdapterFactory());
+  // Register MeshCentral and Fortinet connectors
+  const mockInstallation = {
+    id: 'mock-conn-inst',
+    tenantId: 'dev-tenant',
+    name: 'Mock Connector',
+    adapterType: 'mock',
+    capabilities: [],
+    config: { mockMode: true },
+    secretReferenceIds: [],
+    status: 'active',
+    mockMode: true,
+    enabled: true,
+    safetyFlags: {},
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  } as unknown as Parameters<typeof createMeshCentralService>[0];
+  registerConnector('meshcentral', createMeshCentralService(mockInstallation));
+  registerConnector('fortinet', createFortinetService(mockInstallation));
   registryInitialized = true;
 }
 
@@ -176,5 +200,82 @@ export class ConnectorsService {
       await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect(config);
     }
     return adapter;
+  }
+
+  getAllConnectorStatus(_tenantId: string): Array<{
+    key: string;
+    name: string;
+    adapterType: string;
+    status: 'configured' | 'unconfigured' | 'mock' | 'disabled' | 'error';
+    transport: 'real' | 'mock' | 'fixture' | 'unconfigured';
+    capabilities: string[];
+    health: string;
+    lastChecked: string;
+    lastError?: string;
+    tenantScoped: boolean;
+  }> {
+    const now = new Date().toISOString();
+    const zammadStatus = this.getZammadStatus();
+    const isZammadMock = zammadStatus.mode === 'mock';
+
+    return [
+      {
+        key: 'zammad',
+        name: 'Zammad',
+        adapterType: 'zammad',
+        status: isZammadMock ? 'mock' : 'configured',
+        transport: isZammadMock ? 'mock' : 'real',
+        capabilities: zammadStatus.capabilities,
+        health: zammadStatus.health,
+        lastChecked: now,
+        tenantScoped: true,
+      },
+      {
+        key: 'glpi',
+        name: 'GLPI',
+        adapterType: 'glpi',
+        status: 'mock',
+        transport: 'fixture',
+        capabilities: ['read_tickets', 'read_customers'],
+        health: 'healthy',
+        lastChecked: now,
+        tenantScoped: true,
+      },
+      {
+        key: 'osticket',
+        name: 'osTicket',
+        adapterType: 'osticket',
+        status: 'mock',
+        transport: 'fixture',
+        capabilities: ['read_tickets', 'read_customers'],
+        health: 'healthy',
+        lastChecked: now,
+        tenantScoped: true,
+      },
+      {
+        key: 'meshcentral',
+        name: 'MeshCentral',
+        adapterType: 'meshcentral',
+        status: 'unconfigured',
+        transport: 'unconfigured',
+        capabilities: ['read_devices'],
+        health: 'unknown',
+        lastChecked: now,
+        lastError: 'No MeshCentral instance configured. Set MESHCENTRAL_BASE_URL to enable.',
+        tenantScoped: true,
+      },
+      {
+        key: 'fortinet',
+        name: 'Fortinet',
+        adapterType: 'fortinet',
+        status: 'unconfigured',
+        transport: 'unconfigured',
+        capabilities: ['read_firewall_context'],
+        health: 'unknown',
+        lastChecked: now,
+        lastError: 'No Fortinet instance configured. Set FORTINET_BASE_URL to enable.',
+        tenantScoped: true,
+      },
+    ];
   }
 }
