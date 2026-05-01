@@ -30,6 +30,15 @@ export async function collectServices() {
   };
 }
 
+export async function collectSoftware() {
+  return {
+    software: [],
+    note: 'macOS installed software inventory is not implemented in this slice. No package-manager shell commands are used.',
+    unsupported: true,
+    readOnly: true,
+  };
+}
+
 export async function flushDnsCache() {
   return {
     ok: false,

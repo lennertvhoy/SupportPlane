@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, Req, Inject } from '@nestjs/common';
 import type { Request } from 'express';
 import { KnowledgeService } from './knowledge.service.js';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
@@ -11,7 +11,7 @@ import {
 
 @Controller('knowledge')
 export class KnowledgeController {
-  constructor(private readonly knowledgeService: KnowledgeService) {}
+  constructor(@Inject(KnowledgeService) private readonly knowledgeService: KnowledgeService) {}
 
   @Post('sources')
   async createSource(@Body() body: CreateKnowledgeSourceRequest, @Req() req: Request) {

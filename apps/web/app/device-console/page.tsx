@@ -96,7 +96,7 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
           </button>
           <div>
             <h1 className="text-lg font-semibold">Device Console</h1>
-            <p className="text-xs text-cockpit-500">Read-only diagnostics. No remediation executed.</p>
+            <p className="text-xs text-cockpit-500">Read-only diagnostics and approval-gated low-risk remediation.</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -157,7 +157,7 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
                 </div>
               </Panel>
               <Panel title="Tool Invocation">
-                <div className="mb-3 rounded border border-amber-700/60 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">Fixed implementation only. Arbitrary shell and remediation actions are blocked by the API and are not present in the agent.</div>
+                <div className="mb-3 rounded border border-amber-700/60 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">Fixed implementation only. Arbitrary shell is blocked. Remediation tools require policy allowance, platform support, and approval before dispatch.</div>
                 <div className="flex flex-wrap gap-2">
                   {tools.map((tool) => {
                     const supported = tool.supportedPlatforms.length === 0 || tool.supportedPlatforms.includes(selectedDevice.platform as 'linux' | 'win32' | 'darwin' | 'unknown');

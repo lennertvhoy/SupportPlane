@@ -209,12 +209,18 @@ export class EndpointDevicesService {
     await this.audit(device.tenantId, device.id, AuditActorType.enum.system, AuditEventType.enum.endpoint_command_result_received, 'endpoint_command', command.id, {
       commandKind: command.commandKind,
       status,
-      readOnly: true,
+      readOnly: command.commandKind.startsWith('collect_') || command.commandKind === 'ping_self' || command.commandKind === 'clear_temp_preview',
     });
 
     // Notify tool execution gateway if this command was dispatched from a tool invocation
     try {
-      await this.toolGateway.onCommandResult(device.tenantId, command.id, result.payload);
+      await this.toolGateway.onCommandResult(device.tenantId, command.id, {
+        commandStatus: result.status,
+        status: result.status,
+        payload: result.payload,
+        errorCode: result.errorCode,
+        errorMessage: result.errorMessage,
+      });
     } catch {
       // Non-fatal: tool gateway integration is best-effort for endpoint command results
     }

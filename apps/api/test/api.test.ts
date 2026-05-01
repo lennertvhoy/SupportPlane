@@ -558,6 +558,110 @@ describe('Zammad connector endpoints', () => {
     assert.ok(res.body.capabilities.includes('read_tickets'));
   });
 
+  it('GET /connectors/status returns browser-facing truthful readiness fields', async () => {
+    const envKeys = [
+      'GLPI_BASE_URL',
+      'GLPI_API_TOKEN',
+      'OSTICKET_BASE_URL',
+      'OSTICKET_API_TOKEN',
+      'MESHCENTRAL_BASE_URL',
+      'MESHCENTRAL_API_TOKEN',
+      'FORTINET_BASE_URL',
+      'FORTINET_API_TOKEN',
+    ];
+    const previous = new Map(envKeys.map((key) => [key, process.env[key]]));
+    for (const key of envKeys) {
+      delete process.env[key];
+    }
+
+    try {
+      const res = await supertest(server)
+        .get('/connectors/status')
+        .set('x-tenant-id', 'tenant-a')
+        .set('x-user-id', 'user-1')
+        .expect(200);
+
+      assert.strictEqual(res.body._tenantId, 'tenant-a');
+      assert.strictEqual(res.body.connectors.length, 5);
+
+      const byId = new Map<string, Record<string, unknown>>(
+        res.body.connectors.map((connector: Record<string, unknown>) => [connector.id as string, connector])
+      );
+      const glpi = byId.get('glpi');
+      const meshcentral = byId.get('meshcentral');
+      const fortinet = byId.get('fortinet');
+      assert.ok(glpi);
+      assert.ok(meshcentral);
+      assert.ok(fortinet);
+
+      assert.strictEqual(glpi.displayName, 'GLPI');
+      assert.strictEqual(glpi.mode, 'fixture');
+      assert.strictEqual(glpi.credentialSource, 'none');
+      assert.strictEqual(glpi.errorCode, 'OK');
+      assert.match(String(glpi.fixtureWarning), /fixture-backed/);
+
+      assert.strictEqual(meshcentral.mode, 'unconfigured');
+      assert.strictEqual(meshcentral.credentialSource, 'none');
+      assert.strictEqual(meshcentral.errorCode, 'CONFIG_MISSING');
+      assert.deepStrictEqual(meshcentral.capabilities, ['read_devices']);
+
+      assert.strictEqual(fortinet.mode, 'unconfigured');
+      assert.strictEqual(fortinet.errorCode, 'CONFIG_MISSING');
+      assert.deepStrictEqual(fortinet.capabilities, ['read_firewall_context']);
+
+      for (const connector of res.body.connectors as Array<Record<string, unknown>>) {
+        assert.ok(connector.id);
+        assert.ok(connector.displayName);
+        assert.ok(Array.isArray(connector.capabilities));
+        assert.ok((connector.lastCheck as Record<string, unknown>).timestamp);
+        assert.ok((connector.lastCheck as Record<string, unknown>).status);
+      }
+    } finally {
+      for (const [key, value] of previous) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+
+  it('GET /connectors/status marks configured unsupported connectors as errors instead of fixtures', async () => {
+    const previousBase = process.env.FORTINET_BASE_URL;
+    const previousToken = process.env.FORTINET_API_TOKEN;
+    process.env.FORTINET_BASE_URL = 'https://fortinet.example.test';
+    process.env.FORTINET_API_TOKEN = 'redacted-test-token';
+
+    try {
+      const res = await supertest(server)
+        .get('/connectors/status')
+        .set('x-tenant-id', 'tenant-a')
+        .set('x-user-id', 'user-1')
+        .expect(200);
+
+      const fortinet = (res.body.connectors as Array<Record<string, unknown>>).find((connector) => connector.id === 'fortinet');
+      assert.ok(fortinet);
+      assert.strictEqual(fortinet.mode, 'error');
+      assert.strictEqual(fortinet.credentialSource, 'env');
+      assert.strictEqual(fortinet.errorCode, 'UNSUPPORTED');
+      assert.deepStrictEqual(fortinet.capabilities, ['read_firewall_context']);
+      assert.strictEqual(fortinet.fixtureWarning, undefined);
+      assert.match(String(fortinet.lastError), /Fixture fallback is disabled/);
+    } finally {
+      if (previousBase === undefined) {
+        delete process.env.FORTINET_BASE_URL;
+      } else {
+        process.env.FORTINET_BASE_URL = previousBase;
+      }
+      if (previousToken === undefined) {
+        delete process.env.FORTINET_API_TOKEN;
+      } else {
+        process.env.FORTINET_API_TOKEN = previousToken;
+      }
+    }
+  });
+
   it('POST /connectors/zammad/test returns success in mock mode', async () => {
     const res = await supertest(server)
       .post('/connectors/zammad/test')
@@ -3722,7 +3826,10 @@ describe('Tool execution and platform policy API', () => {
     const servicesTool = res.body.tools.find((t: { toolKey: string }) => t.toolKey === 'diagnostic.services');
     assert.ok(servicesTool);
     assert.ok(servicesTool.supportedPlatforms.includes('linux'));
-    assert.ok(!servicesTool.supportedPlatforms.includes('win32'));
+    assert.ok(servicesTool.supportedPlatforms.includes('win32'));
+    const softwareTool = res.body.tools.find((t: { toolKey: string }) => t.toolKey === 'diagnostic.software');
+    assert.ok(softwareTool);
+    assert.deepStrictEqual(softwareTool.supportedPlatforms, ['win32']);
   });
 
   it('allows Windows-supported read-only tool on Windows device', async () => {
@@ -3742,11 +3849,11 @@ describe('Tool execution and platform policy API', () => {
     assert.strictEqual(res.body.invocation.status, 'queued');
   });
 
-  it('denies Linux-only tool on Windows device with platform reason', async () => {
-    const device = await registerDevice('tenant-tool-c', 'win-device-2', 'win32');
+  it('denies Windows-only tool on Linux device with platform reason', async () => {
+    const device = await registerDevice('tenant-tool-c', 'linux-device-software', 'linux');
 
     const res = await supertest(server)
-      .post(`/admin/devices/${device.device.id}/tools/diagnostic.services/invoke`)
+      .post(`/admin/devices/${device.device.id}/tools/diagnostic.software/invoke`)
       .set('x-tenant-id', 'tenant-tool-c')
       .set('x-user-id', 'operator-1')
       .set('x-user-role', 'operator')
@@ -3755,7 +3862,7 @@ describe('Tool execution and platform policy API', () => {
 
     assert.strictEqual(res.body.policyDecision.allowed, false);
     assert.strictEqual(res.body.policyDecision.decision, 'unsupported_platform');
-    assert.ok(res.body.policyDecision.reason.includes('win32'));
+    assert.ok(res.body.policyDecision.reason.includes('linux'));
     assert.strictEqual(res.body.invocation.status, 'policy_denied');
   });
 
@@ -3774,6 +3881,143 @@ describe('Tool execution and platform policy API', () => {
     assert.strictEqual(res.body.policyDecision.decision, 'unsupported_platform');
     assert.ok(res.body.policyDecision.reason.includes('Unknown'));
     assert.strictEqual(res.body.invocation.status, 'policy_denied');
+  });
+
+  it('does not dispatch flush DNS remediation before approval', async () => {
+    const device = await registerDevice('tenant-tool-remediation-a', 'linux-device-remediation-a', 'linux');
+
+    const res = await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/remediation.flush_dns_cache/invoke`)
+      .set('x-tenant-id', 'tenant-tool-remediation-a')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+
+    assert.strictEqual(res.body.policyDecision.allowed, false);
+    assert.strictEqual(res.body.policyDecision.decision, 'approval_required');
+    assert.strictEqual(res.body.invocation.status, 'approval_required');
+    assert.ok(res.body.invocation.approvalId);
+    assert.strictEqual(res.body.invocation.endpointCommandId, undefined);
+
+    const claimed = await supertest(server)
+      .post('/endpoint-agent/commands/claim')
+      .set('x-endpoint-tenant-id', 'tenant-tool-remediation-a')
+      .set('x-endpoint-device-key', device.device.deviceKey)
+      .set('x-endpoint-device-token', device.deviceToken)
+      .send({})
+      .expect(201);
+    assert.strictEqual(claimed.body.command, null);
+  });
+
+  it('blocks flush DNS remediation when remediation policy is disabled', async () => {
+    const previous = process.env['SUPPORTPLANE_REMEDIATION_ENABLED'];
+    process.env['SUPPORTPLANE_REMEDIATION_ENABLED'] = 'false';
+    try {
+      const device = await registerDevice('tenant-tool-remediation-b', 'linux-device-remediation-b', 'linux');
+
+      const res = await supertest(server)
+        .post(`/admin/devices/${device.device.id}/tools/remediation.flush_dns_cache/invoke`)
+        .set('x-tenant-id', 'tenant-tool-remediation-b')
+        .set('x-user-id', 'operator-1')
+        .set('x-user-role', 'operator')
+        .send({})
+        .expect(201);
+
+      assert.strictEqual(res.body.policyDecision.allowed, false);
+      assert.strictEqual(res.body.policyDecision.decision, 'remediation_policy_disabled');
+      assert.strictEqual(res.body.invocation.status, 'policy_denied');
+    } finally {
+      if (previous === undefined) {
+        delete process.env['SUPPORTPLANE_REMEDIATION_ENABLED'];
+      } else {
+        process.env['SUPPORTPLANE_REMEDIATION_ENABLED'] = previous;
+      }
+    }
+  });
+
+  it('denies flush DNS remediation on unknown platform device', async () => {
+    const device = await registerDevice('tenant-tool-remediation-c', 'unknown-remediation-device', 'freebsd');
+
+    const res = await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/remediation.flush_dns_cache/invoke`)
+      .set('x-tenant-id', 'tenant-tool-remediation-c')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+
+    assert.strictEqual(res.body.policyDecision.allowed, false);
+    assert.strictEqual(res.body.policyDecision.decision, 'unsupported_platform');
+    assert.strictEqual(res.body.invocation.status, 'policy_denied');
+  });
+
+  it('records flush DNS remediation stdout stderr and exit code after approval', async () => {
+    const device = await registerDevice('tenant-tool-remediation-d', 'win-device-remediation-d', 'win32');
+
+    const invoked = await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/remediation.flush_dns_cache/invoke`)
+      .set('x-tenant-id', 'tenant-tool-remediation-d')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+
+    await supertest(server)
+      .post(`/admin/tool-approvals/${invoked.body.invocation.approvalId}/approve`)
+      .set('x-tenant-id', 'tenant-tool-remediation-d')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .send({ reason: 'Approve fixed flush DNS remediation' })
+      .expect(201);
+
+    const claimed = await supertest(server)
+      .post('/endpoint-agent/commands/claim')
+      .set('x-endpoint-tenant-id', 'tenant-tool-remediation-d')
+      .set('x-endpoint-device-key', device.device.deviceKey)
+      .set('x-endpoint-device-token', device.deviceToken)
+      .send({})
+      .expect(201);
+
+    assert.strictEqual(claimed.body.command.commandKind, 'flush_dns_cache');
+    assert.strictEqual(claimed.body.command.policyDecision.remediationAllowed, true);
+    assert.strictEqual(claimed.body.command.policyDecision.approved, true);
+
+    await supertest(server)
+      .post(`/endpoint-agent/commands/${claimed.body.command.id}/result`)
+      .set('x-endpoint-tenant-id', 'tenant-tool-remediation-d')
+      .set('x-endpoint-device-key', device.device.deviceKey)
+      .set('x-endpoint-device-token', device.deviceToken)
+      .send({
+        nonce: claimed.body.command.nonce,
+        status: 'succeeded',
+        payload: {
+          kind: 'remediation',
+          payload: {
+            ok: true,
+            resultStatus: 'succeeded',
+            commandTemplateId: 'windows.ipconfig.flushdns.v1',
+            exitCode: 0,
+            stdoutSummary: 'Successfully flushed the DNS Resolver Cache.',
+            stderrSummary: '',
+            readOnly: false,
+          },
+        },
+      })
+      .expect(201);
+
+    const completed = await supertest(server)
+      .get(`/admin/tool-invocations/${invoked.body.invocation.id}`)
+      .set('x-tenant-id', 'tenant-tool-remediation-d')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .expect(200);
+
+    assert.strictEqual(completed.body.invocation.status, 'succeeded');
+    assert.strictEqual(completed.body.invocation.normalizedResult.status, 'succeeded');
+    assert.strictEqual(completed.body.invocation.normalizedResult.payload.payload.exitCode, 0);
+    assert.ok(completed.body.invocation.normalizedResult.payload.payload.stdoutSummary.includes('Successfully flushed'));
+    assert.strictEqual(completed.body.invocation.normalizedResult.payload.payload.stderrSummary, '');
   });
 
   it('rejects arbitrary shell, command, script, argv, executable, powershell, cmd in tool invocation', async () => {

@@ -23,6 +23,9 @@ later heartbeat, snapshot, command claim, and result submission requests.
 - No arbitrary shell, command string, eval, or dynamic script body exists.
 - Command dispatch is a closed TypeScript switch over fixed command kinds:
   `collect_inventory`, `collect_disk`, `collect_network`, `collect_services`,
-  and `ping_self`.
+  `collect_software`, and `ping_self`.
 - Collectors use Node `os`/`fs` APIs and read-only `/proc` or system metadata
   where available.
+- Windows service and installed-software collectors use fixed `execFile`
+  templates for `sc.exe` and `reg.exe`; they do not accept shell strings,
+  PowerShell, `cmd.exe`, or user-supplied arguments.

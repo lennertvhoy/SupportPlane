@@ -157,6 +157,9 @@ export interface ToolDefinition {
   remediation: boolean;
   approvalRequired: boolean;
   requiredPermission: string;
+  requiredPrivilege: 'user' | 'local_admin' | 'system';
+  dryRunCapable: boolean;
+  commandTemplateId?: string;
   supportedPlatforms: string[];
   inputSchema: Record<string, unknown>;
   outputSchema: Record<string, unknown>;
@@ -232,6 +235,11 @@ export interface KnowledgeArticle {
   content: string;
   tags: string[];
   metadata: Record<string, unknown>;
+  embeddingProvider?: string;
+  embeddingModel?: string;
+  embeddingDimensions?: number;
+  embeddingContentHash?: string;
+  embeddedAt?: string;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -248,6 +256,12 @@ export interface KnowledgeRetrievalResult {
     articleStatus: string;
     retrievedAt: string;
     retrievalMethod: string;
+    scoreKind: string;
+    confidence: null;
+    embeddingProvider?: string;
+    embeddingModel?: string;
+    pgvectorEnabled: boolean;
+    fallbackReason?: string;
   };
 }
 
@@ -257,6 +271,12 @@ export interface KnowledgeRetrievalResponse {
   totalAvailable: number;
   retrievalMethod: string;
   pgvectorEnabled: boolean;
+  pgvectorReason: string;
+  embeddingProvider?: string;
+  embeddingProviderAvailable: boolean;
+  embeddingProviderReason: string;
+  semanticEligible: boolean;
+  fallbackReason?: string;
   mockDevOnly: boolean;
 }
 
@@ -437,6 +457,33 @@ export interface ConnectorTestResult {
   latencyMs?: number;
   error?: string;
   metadata: Record<string, unknown>;
+}
+
+export type ConnectorReadinessMode = 'fixture' | 'mock' | 'configured' | 'live' | 'error' | 'unconfigured';
+export type ConnectorCredentialSource = 'none' | 'env' | 'vault' | 'local_dev_secret' | 'redacted';
+export type ConnectorStatusErrorCode = 'CONFIG_MISSING' | 'AUTH_FAILED' | 'NETWORK_FAILED' | 'UNSUPPORTED' | 'OK';
+
+export interface BrowserConnectorStatus {
+  id: string;
+  key: string;
+  displayName: string;
+  name: string;
+  adapterType: string;
+  mode: ConnectorReadinessMode;
+  status: ConnectorReadinessMode;
+  transport: 'real' | 'mock' | 'fixture' | 'unconfigured';
+  capabilities: string[];
+  credentialSource: ConnectorCredentialSource;
+  health: string;
+  lastCheck: {
+    status: 'ok' | 'warning' | 'error' | 'not_run';
+    timestamp: string;
+  };
+  lastChecked: string;
+  errorCode: ConnectorStatusErrorCode;
+  fixtureWarning?: string;
+  lastError?: string;
+  tenantScoped: boolean;
 }
 
 export interface TelephonyAdapterCapabilities {
@@ -2031,7 +2078,7 @@ export const api = {
 
   // All connector statuses
   getAllConnectorStatus: (identity?: DevIdentity) =>
-    apiFetch<{ connectors: Array<{ key: string; name: string; adapterType: string; status: string; transport: string; capabilities: string[]; health: string; lastChecked: string; lastError?: string; tenantScoped: boolean }> }>('/connectors/status', { method: 'GET' }, identity).then(r => r.connectors),
+    apiFetch<{ connectors: BrowserConnectorStatus[] }>('/connectors/status', { method: 'GET' }, identity).then(r => r.connectors),
 
   // Knowledge (BL-073/074)
   listKnowledgeSources: (identity?: DevIdentity) =>
@@ -2040,7 +2087,7 @@ export const api = {
   listKnowledgeArticles: (params?: { sourceId?: string; status?: string }, identity?: DevIdentity) =>
     apiFetch<{ articles: KnowledgeArticle[] }>(`/knowledge/articles?${new URLSearchParams(params ?? {}).toString()}`, { method: 'GET' }, identity).then(r => r.articles),
 
-  retrieveKnowledge: (body: { query: string; sourceIds?: string[]; limit?: number }, identity?: DevIdentity) =>
+  retrieveKnowledge: (body: { query: string; sourceIds?: string[]; limit?: number; mode?: 'auto' | 'lexical' | 'semantic' | 'hybrid' }, identity?: DevIdentity) =>
     apiFetch<KnowledgeRetrievalResponse>('/knowledge/retrieve', { method: 'POST', body: JSON.stringify(body) }, identity),
 };
 

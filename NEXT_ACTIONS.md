@@ -1,25 +1,30 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-01 13:00 CEST
+**Updated At:** 2026-05-01 14:35 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-- [BL-130/BL-131/BL-132/BL-133] **Knowledge retrieval hardening and connector real-instance enablement**
+- [BL-073/BL-074] **Knowledge retrieval hardening**
   - Owner: future slice
-  - Next action: pgvector extension in PostgreSQL for semantic search; real GLPI/MeshCentral/Fortinet instance connections with credential references.
-  - Exit criteria: `POST /knowledge/retrieve` returns semantic results with `pgvectorEnabled: true`; at least one real connector (GLPI or MeshCentral) reads live data.
+  - Next action: add a reproducible pgvector-enabled PostgreSQL path with vector column/search, or extend ingestion while preserving the current explicit lexical fallback reason.
+  - Exit criteria: `POST /knowledge/retrieve` returns semantic/hybrid results with `pgvectorEnabled: true` from a proven pgvector database, or remains explicitly lexical with a current unavailable reason.
 
-- [BL-065] **Low-risk remediation end-to-end result**
+- [BL-069/BL-071/BL-072/BL-127] **Connector real-instance enablement**
+  - Owner: future connector slice
+  - Next action: connect at least one real GLPI, MeshCentral, Fortinet, or osTicket instance through credential references and fail-closed configuration.
+  - Exit criteria: at least one connector reads live data from a real instance with no secrets exposed and with honest transport/status labels.
+
+- [BL-065] **Broader low-risk remediation coverage**
   - Owner: future remediation hardening slice
-  - Next action: safely implement at least one low-risk remediation (e.g., flush DNS) so it executes end-to-end after approval and returns a real result.
-  - Exit criteria: Approved remediation completes with result proof in API/browser evidence.
+  - Next action: add a second safe low-risk remediation or real Windows flush-DNS proof while keeping fixed templates, policy gating, approval gating, and captured results.
+  - Exit criteria: More than one low-risk remediation path is proven end-to-end, or Windows flush DNS is proven on a real Windows runner with browser/API evidence.
 
-- [BL-133] **Windows real-runner verification and packaging**
+- [BL-130/BL-131/BL-132/BL-133] **Windows first-class endpoint completion**
   - Owner: future Windows hardening slice
-  - Next action: real Windows runner CI harness or manual verification on Windows host.
-  - Exit criteria: Agent runs on Windows, registers, heartbeat, diagnostics proven on real Windows runtime.
+  - Next action: run the fixed service/software collectors and packaging scaffold on a real Windows host or Windows CI runner; capture registration, heartbeat, diagnostic, and policy-denial proof.
+  - Exit criteria: agent runs on actual Windows, registers, heartbeats, diagnostics and policy enforcement are proven, and unsupported remediation remains honestly labeled unless safely implemented.
 
 ## Queue Rules
 

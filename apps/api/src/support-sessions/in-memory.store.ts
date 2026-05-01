@@ -605,4 +605,13 @@ export class InMemoryStore implements Store {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .slice(0, options?.limit ?? 10);
   }
+
+  getKnowledgeRetrievalReadiness() {
+    return {
+      pgvectorEnabled: false,
+      pgvectorReason: 'pgvector readiness is not available for the in-memory store',
+      vectorColumnAvailable: false,
+      vectorColumnReason: 'knowledge article vector column is not available for the in-memory store',
+    };
+  }
 }

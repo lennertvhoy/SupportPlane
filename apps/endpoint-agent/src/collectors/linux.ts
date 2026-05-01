@@ -1,4 +1,5 @@
 import fs from 'fs/promises';
+import { executeLinuxSystemdResolvedFlushDns, type CommandRunner } from './remediation.js';
 
 export async function collectDisk() {
   const roots = ['/', '/tmp'];
@@ -34,13 +35,17 @@ export async function collectServices() {
   return { processes, readOnly: true };
 }
 
-export async function flushDnsCache() {
+export async function collectSoftware() {
   return {
-    ok: false,
-    note: 'Remediation is not implemented in this local foundation slice. Approval queue exists but execution is disabled.',
+    software: [],
+    note: 'Linux installed software inventory is not implemented in this slice. No package-manager shell commands are used.',
     unsupported: true,
-    readOnly: false,
+    readOnly: true,
   };
+}
+
+export async function flushDnsCache(runner?: CommandRunner) {
+  return executeLinuxSystemdResolvedFlushDns(runner);
 }
 
 export async function clearTempPreview() {

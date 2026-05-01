@@ -57,6 +57,9 @@ export const ToolDefinition = z.object({
   remediation: z.boolean().default(false),
   approvalRequired: z.boolean().default(false),
   requiredPermission: z.string().min(1).max(128).default('endpoint_command:create'),
+  requiredPrivilege: z.enum(['user', 'local_admin', 'system']).default('user'),
+  dryRunCapable: z.boolean().default(false),
+  commandTemplateId: z.string().min(1).max(128).optional(),
   supportedPlatforms: z.array(EndpointPlatform).default([]),
   inputSchema: z.record(JsonValue).default({}),
   outputSchema: z.record(JsonValue).default({}),
@@ -83,6 +86,9 @@ export const LocalToolManifest = z.object({
     remediation: z.boolean(),
     approvalRequired: z.boolean(),
     requiredPermission: z.string(),
+    requiredPrivilege: z.enum(['user', 'local_admin', 'system']).default('user'),
+    dryRunCapable: z.boolean().default(false),
+    commandTemplateId: z.string().optional(),
     supportedPlatforms: z.array(EndpointPlatform),
     inputSchema: z.record(JsonValue).optional(),
     outputSchema: z.record(JsonValue).optional(),
@@ -93,6 +99,14 @@ export type LocalToolManifest = z.infer<typeof LocalToolManifest>;
 
 // Validation rules
 export const FORBIDDEN_MANIFEST_FIELDS = ['command', 'shell', 'script', 'argv', 'executable', 'program', 'body', 'exec'];
+
+export function filterToolsByPlatform<T extends { supportedPlatforms: EndpointPlatform[] }>(
+  tools: readonly T[],
+  platform: EndpointPlatform,
+): T[] {
+  if (platform === 'unknown') return [];
+  return tools.filter((tool) => tool.supportedPlatforms.length === 0 || tool.supportedPlatforms.includes(platform));
+}
 
 export function computeManifestIntegrityHash(manifest: Omit<LocalToolManifest, 'integrityHash'>): string {
   const copy = { ...manifest };

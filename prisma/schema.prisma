@@ -920,6 +920,9 @@ model ToolDefinition {
   remediation         Boolean  @default(false)
   approvalRequired    Boolean  @default(false)
   requiredPermission  String   @default("endpoint_command:create")
+  requiredPrivilege   String   @default("user")
+  dryRunCapable       Boolean  @default(false)
+  commandTemplateId   String?
   supportedPlatforms  Json     @default("[]")
   inputSchema         Json     @default("{}")
   outputSchema        Json     @default("{}")
@@ -1047,6 +1050,11 @@ model KnowledgeArticle {
   content     String
   tags        String[] @default([])
   metadata    Json     @default("{}")
+  embeddingProvider String?
+  embeddingModel String?
+  embeddingDimensions Int?
+  embeddingContentHash String?
+  embeddedAt DateTime?
   status      String   @default("published")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -1057,5 +1065,6 @@ model KnowledgeArticle {
   @@index([tenantId])
   @@index([tenantId, sourceId])
   @@index([tenantId, status])
+  @@index([tenantId, embeddingProvider])
   @@map("knowledge_articles")
 }

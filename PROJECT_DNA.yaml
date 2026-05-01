@@ -87,7 +87,11 @@ architecture:
       role: support-worker active-window screen context
     endpoint_agent:
       path: apps/endpoint-agent
-      role: customer/device-side heartbeat, diagnostics, approved tools
+      role: customer/device-side heartbeat, diagnostics, approved fixed tools
+      platform_contract:
+        first_class_platforms: [linux, win32, darwin]
+        windows_status: first_class_contracts_policy_agent_ui_docs_only_until_real_runner_proof
+        unsupported_behavior: return_honest_unsupported_results_not_fake_success
   shared_packages:
     contracts: packages/contracts
     policy: packages/policy
@@ -148,6 +152,18 @@ safety:
       - arbitrary_shell
       - critical_actions
       - unrestricted_remote_execution
+  remediation_execution_boundary:
+    required_controls:
+      - fixed_tool_manifest_entry
+      - policy_decision
+      - approval_for_remediation
+      - endpoint_command_kind_allowlist
+      - endpoint_agent_fixed_implementation
+      - audit_event_for_request_decision_dispatch_and_result
+    current_truth: >
+      Approval and dispatch are implemented, but low-risk remediation remains
+      partial until at least one fixed remediation returns a real endpoint
+      result after approval.
 
 security_invariants:
   - "Every tenant-scoped object includes tenant_id."

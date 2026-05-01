@@ -80,11 +80,16 @@ async function claimAndRun(config: AgentConfig) {
   if (!command?.id || !command.commandKind || !command.nonce) return false;
   try {
     const diagnostic = await runFixedDiagnostic(command.commandKind);
-    await postJson(config, `/endpoint-agent/snapshots`, diagnostic);
+    const payload = diagnostic.payload as Record<string, unknown>;
+    if (diagnostic.kind !== 'remediation') {
+      await postJson(config, `/endpoint-agent/snapshots`, diagnostic);
+    }
     await postJson(config, `/endpoint-agent/commands/${command.id}/result`, {
       nonce: command.nonce,
-      status: 'succeeded',
+      status: payload['ok'] === false ? 'failed' : 'succeeded',
       payload: diagnostic,
+      errorCode: payload['ok'] === false ? String(payload['resultStatus'] ?? 'command_failed') : undefined,
+      errorMessage: payload['ok'] === false ? String(payload['stderrSummary'] ?? payload['note'] ?? 'Command failed') : undefined,
     });
   } catch (err) {
     await postJson(config, `/endpoint-agent/commands/${command.id}/result`, {

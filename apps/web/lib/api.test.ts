@@ -840,6 +840,57 @@ describe('web API client', () => {
     }
   });
 
+  it('handles browser-facing all connector status response shape', async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input, init) => {
+      assert.equal(input, 'http://localhost:4110/connectors/status');
+      assert.equal(init?.method, 'GET');
+      return new Response(
+        JSON.stringify({
+          connectors: [
+            {
+              id: 'fortinet',
+              key: 'fortinet',
+              displayName: 'Fortinet',
+              name: 'Fortinet',
+              adapterType: 'fortinet',
+              mode: 'unconfigured',
+              status: 'unconfigured',
+              transport: 'unconfigured',
+              capabilities: ['read_firewall_context'],
+              credentialSource: 'none',
+              health: 'unknown',
+              lastCheck: {
+                status: 'error',
+                timestamp: '2026-05-01T12:00:00.000Z',
+              },
+              lastChecked: '2026-05-01T12:00:00.000Z',
+              errorCode: 'CONFIG_MISSING',
+              lastError: 'No Fortinet instance configured.',
+              tenantScoped: true,
+            },
+          ],
+          _tenantId: 'dev-tenant',
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      );
+    };
+
+    try {
+      const response = await api.getAllConnectorStatus();
+      assert.strictEqual(response.length, 1);
+      assert.strictEqual(response[0].id, 'fortinet');
+      assert.strictEqual(response[0].displayName, 'Fortinet');
+      assert.strictEqual(response[0].mode, 'unconfigured');
+      assert.strictEqual(response[0].credentialSource, 'none');
+      assert.strictEqual(response[0].errorCode, 'CONFIG_MISSING');
+      assert.deepStrictEqual(response[0].capabilities, ['read_firewall_context']);
+      assert.strictEqual(response[0].lastCheck.status, 'error');
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it('handles mock recording attach/list/review/playback responses', async () => {
     const originalFetch = globalThis.fetch;
     const calls: string[] = [];

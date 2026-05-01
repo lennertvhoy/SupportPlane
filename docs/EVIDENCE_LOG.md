@@ -2,6 +2,39 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-01-133 through EV-2026-05-01-145: Session 124 Large Backlog Slice — Windows readiness, remediation, retrieval, connector truth
+
+- Files: `output/playwright/session-124-large-backlog-slice/01-runtime-identity-health.json` through `13-console-network-summary.txt`
+- Source/System: Chromium via Playwright against local Web (`localhost:3200`) and local API (`localhost:4110`), plus API JSON artifacts.
+- Store/Auth mode for runtime verification: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Local proof:
+  - `remediation.flush_dns_cache` is fixed-template, policy-gated, approval-gated, and executed through a local endpoint-agent run on Linux when `resolvectl` is available.
+  - Connector status panel exposes fixture/unconfigured/error truth with credential source, last check, and error code.
+  - Knowledge retrieval response exposes lexical/hybrid readiness truth and pgvector fallback reason.
+  - Windows readiness remains Linux-tested only; no real Windows runner was used.
+- Shows:
+  - `01-runtime-identity-health.json` — API runtime identity and git head.
+  - `02-git-status-before-final.txt` — git status at evidence capture.
+  - `03-git-log-before-final.txt` — recent commit history.
+  - `04-validation-summary.txt` — validation/runtime summary.
+  - `05-backlog-status-check.md` — affected backlog status truth.
+  - `06-windows-endpoint-readiness.png` — Tool Registry / Windows compatibility proof.
+  - `07-remediation-approval-queued.png` — approval queue with flush DNS approval request.
+  - `08-remediation-result.json` — endpoint-agent flush DNS execution result with command template/result fields.
+  - `09-remediation-approved-result.png` — Device Console result proof after execution.
+  - `10-knowledge-retrieval-status.json` — retrieval mode, pgvector status, and fallback reason.
+  - `11-connector-status-truth.png` — connector status panel with fixture/unconfigured/error truth labels.
+  - `12-final-evidence-index.md` — evidence inventory and truth notes.
+  - `13-console-network-summary.txt` — browser console/network error summary.
+- Proves:
+  - BL-065 moved to `partial/linux-tested`: one low-risk flush-DNS path executes after approval with real local command result when local resolver tooling is available.
+  - BL-074 moved to `partial/hybrid-ready`: pgvector/provider/embedding prerequisites are explicit and semantic/hybrid selection is gated.
+  - BL-069/071/072/127 status truth is clearer: fixture vs unconfigured vs configured-but-unsupported is visible; no real instance is claimed.
+  - BL-130/131/132 moved forward with fixed Windows service/software templates, fixture parser tests, manifest compatibility metadata, and packaging scaffold.
+  - BL-133 remains blocked/no-windows-host.
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-05-01T14:35:00+02:00
+
 ## EV-2026-05-01-121 through EV-2026-05-01-132: BL-061 through BL-068 — Remote Tool Execution Safety Foundation (ACCEPTED)
 
 - Files: `output/playwright/session-121-bl061-068-tool-execution-safety-foundation/01-tool-registry.png` through `07-e2e-invocation-completed.png`

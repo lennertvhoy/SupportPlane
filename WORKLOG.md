@@ -1388,8 +1388,8 @@ Screenshots: 2 (no duplicates)
 
 ### Next Recommended Action
 
-- P1 [BL-130/BL-131] pgvector extension + semantic knowledge retrieval
-- P2 [BL-132] Real GLPI or MeshCentral instance connection with credential references
+- P1 [BL-073/BL-074] pgvector extension + semantic knowledge retrieval, or explicit lexical fallback hardening if pgvector remains unavailable
+- P2 [BL-069/BL-071/BL-072/BL-127] Real GLPI, MeshCentral, Fortinet, or osTicket instance connection with credential references
 
 
 ---
@@ -1486,8 +1486,88 @@ Repaired Session 123 to closure-grade status by fixing the critical Internal Ser
 
 ### Next Recommended Action
 
-- P1 [BL-130/BL-131] Windows diagnostics collectors completion
-- P2 [BL-132] Real GLPI or MeshCentral instance connection with credential references
+- P1 [BL-130/BL-131] Windows diagnostics collectors and tool-manifest compatibility completion
+- P2 [BL-069/BL-071/BL-072/BL-127] Real GLPI, MeshCentral, Fortinet, or osTicket instance connection with credential references
+
+
+---
+
+## Session 124 — Large Backlog Hardening Slice
+
+**Date:** 2026-05-01  
+**Type:** implementation / coordinated backlog slice  
+**Scope:** BL-065, BL-073/074, BL-069/071/072/127, BL-130/131/132, BL-133 truth  
+
+### Summary
+
+Moved several high-value partial areas forward without claiming external proof that does not exist:
+
+- BL-065: `remediation.flush_dns_cache` now uses fixed command templates, policy gating, approval gating, post-approval policy re-check, endpoint command allowlist, and stdout/stderr/exit-code result capture. Linux uses `resolvectl flush-caches` when available. Windows has fixed `ipconfig /flushdns` template but no real Windows proof.
+- BL-130/131/132: Windows service and installed software collectors now have fixed `sc.exe`/`reg.exe` command templates, parser fixtures, manifest compatibility metadata, `collect_software`, and packaging scaffold script/docs.
+- BL-073/074: Knowledge retrieval now exposes pgvector readiness, embedding provider readiness, semantic eligibility, source provenance, and `confidence: null`. Semantic/hybrid retrieval remains gated until pgvector/vector column/provider/article embeddings are proven.
+- BL-069/071/072/127: Connector status now distinguishes fixture/mock/configured/live/error/unconfigured, credential source, last check, error code, and fixture warnings. Real config does not silently fall back to fixture.
+
+### Verification
+
+- `set -a; source .env; set +a; npx prisma migrate deploy`: PASS, applied `20260501143000_knowledge_embedding_readiness` and `20260501143000_tool_definition_compatibility_metadata`.
+- `set -a; source .env; set +a; npx prisma generate`: PASS.
+- `npm run typecheck --workspaces --if-present`: PASS across API, endpoint-agent, web, worker, ai, audit, connectors, contracts, policy, ui.
+- `npm run lint`: PASS.
+- `npm test --workspaces --if-present`: PASS across tested workspaces; API 188/188, endpoint-agent 19/19, web 20/20, connectors 50/50, contracts 49/49, policy 7/7, ui no tests yet.
+- `python3 scripts/check_state_docs.py`: PASS.
+- `npm run validate`: PASS contract validations and Prisma schema validation.
+- `npm run build --workspaces --if-present`: PASS.
+
+### Evidence
+
+- Folder: `output/playwright/session-124-large-backlog-slice/`
+- Reproducible script: `scripts/session124_large_backlog_slice_evidence.js`
+- Expected files: 13 artifacts, under the 20-file cap.
+
+### Known Limitations
+
+- BL-133 remains blocked/no-windows-host; no real Windows runner was available.
+- BL-074 remains partial/hybrid-ready; pgvector semantic retrieval is not accepted without a real pgvector extension/vector column/provider path.
+- GLPI, MeshCentral, Fortinet, and osTicket are not live-connected.
+- AI remains deterministic mock/local only unless separately configured and verified.
+
+### Next Recommended Action
+
+- P1 [BL-133] Run the endpoint agent and packaging scaffold on a real Windows host or Windows CI runner and capture registration, heartbeat, service/software diagnostics, policy denial, and remediation truth proof.
+
+
+---
+
+## Session 124B — Windows Endpoint Diagnostics Contracts And Packaging Scaffold
+
+**Date:** 2026-05-01  
+**Type:** implementation slice, Linux-tested only  
+**Scope:** BL-130/BL-131/BL-132 partial; BL-133 readiness only  
+
+### Changes
+
+- Added fixed Windows read-only command templates for `sc.exe` service enumeration and `reg.exe` uninstall-key software inventory. No shell strings, PowerShell, `cmd.exe`, or user-supplied arguments are accepted.
+- Added Windows service and installed-software parser contracts with Linux fixture tests.
+- Added `collect_software` endpoint command kind and endpoint-agent dispatch.
+- Updated local tool manifest to include `diagnostic.software` and Windows support for `diagnostic.services`; registry now has 8 local tools.
+- Added manifest compatibility filtering helper and tests for platform filtering and forbidden executable fields.
+- Added Windows packaging readiness script `scripts/package_windows_endpoint_agent.ps1` and updated Windows endpoint documentation.
+
+### Verification
+
+- `npm test --workspace @supportplane/endpoint-agent`: PASS, 19/19 tests.
+- `npm test --workspace @supportplane/contracts`: PASS, 49/49 tests.
+- `npm test --workspace @supportplane/api`: PASS, 188/188 tests.
+
+### Limitations
+
+- No real Windows host or Windows CI runner was available in this slice.
+- BL-130/BL-131/BL-132 remain partial until real Windows runtime and packaging proof exists.
+- BL-133 remains open; only readiness/checklist scaffolding was added.
+
+### Next Recommended Action
+
+- P1 [BL-133] Run the endpoint agent and packaging scaffold on a real Windows host or Windows CI runner and capture registration, heartbeat, service/software diagnostics, policy denial, and remediation truth proof.
 
 
 ---
@@ -1562,5 +1642,5 @@ Session 123b implementation was correct, but the final handoff contained contrad
 
 ### Next Recommended Action
 
-- P1 [BL-130/BL-131] Windows diagnostics collectors completion
-- P2 [BL-132] Real GLPI or MeshCentral instance connection with credential references
+- P1 [BL-130/BL-131] Windows diagnostics collectors and tool-manifest compatibility completion
+- P2 [BL-069/BL-071/BL-072/BL-127] Real GLPI, MeshCentral, Fortinet, or osTicket instance connection with credential references

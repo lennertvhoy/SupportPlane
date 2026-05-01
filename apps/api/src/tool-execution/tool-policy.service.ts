@@ -27,6 +27,8 @@ export class ToolPolicyService {
       fixedImplementationOnly: true,
     };
 
+    const remediationEnabled = process.env['SUPPORTPLANE_REMEDIATION_ENABLED'] !== '0' && process.env['SUPPORTPLANE_REMEDIATION_ENABLED'] !== 'false';
+
     // 1. Role permission check
     const hasPermission = identity.permissions.includes('*') || identity.permissions.includes(tool.requiredPermission);
     if (!hasPermission) {
@@ -87,6 +89,16 @@ export class ToolPolicyService {
     }
 
     if (tool.riskLevel === 'low_risk_remediation') {
+      if (!remediationEnabled) {
+        return {
+          allowed: false,
+          decision: 'remediation_policy_disabled',
+          reason: 'Remediation execution is disabled by tenant/runtime policy.',
+          ...base,
+          remediationAllowed: false,
+          approvalRequired: false,
+        };
+      }
       if (tool.approvalRequired) {
         return {
           allowed: false,

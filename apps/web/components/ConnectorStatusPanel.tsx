@@ -1,25 +1,14 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import type { BrowserConnectorStatus } from '@/lib/api';
 import { AlertTriangle, CheckCircle, XCircle, HelpCircle, Shield } from 'lucide-react';
 
-interface ConnectorStatusItem {
-  key: string;
-  name: string;
-  adapterType: string;
-  status: string;
-  transport: string;
-  capabilities: string[];
-  health: string;
-  lastChecked: string;
-  lastError?: string;
-  tenantScoped: boolean;
-}
-
 const statusConfig: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
+  live: { icon: <CheckCircle className="w-4 h-4" />, color: 'text-emerald-400 bg-emerald-900/30 border-emerald-700', label: 'Live' },
   configured: { icon: <CheckCircle className="w-4 h-4" />, color: 'text-emerald-400 bg-emerald-900/30 border-emerald-700', label: 'Configured' },
-  mock: { icon: <AlertTriangle className="w-4 h-4" />, color: 'text-amber-400 bg-amber-900/30 border-amber-700', label: 'Mock / Fixture' },
+  mock: { icon: <AlertTriangle className="w-4 h-4" />, color: 'text-amber-400 bg-amber-900/30 border-amber-700', label: 'Mock' },
+  fixture: { icon: <AlertTriangle className="w-4 h-4" />, color: 'text-amber-400 bg-amber-900/30 border-amber-700', label: 'Fixture' },
   unconfigured: { icon: <HelpCircle className="w-4 h-4" />, color: 'text-slate-400 bg-slate-800/50 border-slate-600', label: 'Unconfigured' },
-  disabled: { icon: <XCircle className="w-4 h-4" />, color: 'text-red-400 bg-red-900/30 border-red-700', label: 'Disabled' },
   error: { icon: <XCircle className="w-4 h-4" />, color: 'text-red-400 bg-red-900/30 border-red-700', label: 'Error' },
 };
 
@@ -34,7 +23,7 @@ const transportLabel = (t: string) => {
 };
 
 export function ConnectorStatusPanel() {
-  const [connectors, setConnectors] = useState<ConnectorStatusItem[]>([]);
+  const [connectors, setConnectors] = useState<BrowserConnectorStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -64,11 +53,11 @@ export function ConnectorStatusPanel() {
         {connectors.map((conn) => {
           const cfg = statusConfig[conn.status] ?? statusConfig.unconfigured;
           return (
-            <div key={conn.key} className={`rounded border px-3 py-2 ${cfg.color}`}>
+            <div key={conn.id} className={`rounded border px-3 py-2 ${cfg.color}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   {cfg.icon}
-                  <span className="text-sm font-medium">{conn.name}</span>
+                  <span className="text-sm font-medium">{conn.displayName}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs px-2 py-0.5 rounded-full bg-cockpit-900/60 border border-current opacity-80">
@@ -84,9 +73,13 @@ export function ConnectorStatusPanel() {
                   </span>
                 ))}
               </div>
-              {conn.lastError && (
-                <div className="mt-1 text-xs opacity-80 italic">{conn.lastError}</div>
-              )}
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs opacity-80">
+                <span>Credential: {conn.credentialSource}</span>
+                <span>Last check: {conn.lastCheck.status}</span>
+                <span>Error code: {conn.errorCode}</span>
+              </div>
+              {conn.fixtureWarning && <div className="mt-1 text-xs opacity-80 italic">{conn.fixtureWarning}</div>}
+              {conn.lastError && <div className="mt-1 text-xs opacity-80 italic">{conn.lastError}</div>}
             </div>
           );
         })}

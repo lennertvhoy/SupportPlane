@@ -11,6 +11,7 @@ const platformCollectors: Record<
   {
     collectDisk: () => Promise<Record<string, unknown>>;
     collectServices: () => Promise<Record<string, unknown>>;
+    collectSoftware: () => Promise<Record<string, unknown>>;
     flushDnsCache: () => Promise<Record<string, unknown>>;
     clearTempPreview: () => Promise<Record<string, unknown>>;
   }
@@ -21,6 +22,7 @@ const platformCollectors: Record<
   unknown: {
     collectDisk: async () => ({ volumes: [], error: 'Unknown platform', readOnly: true }),
     collectServices: async () => ({ processes: [], error: 'Unknown platform', readOnly: true }),
+    collectSoftware: async () => ({ software: [], error: 'Unknown platform', unsupported: true, readOnly: true }),
     flushDnsCache: async () => ({ ok: false, error: 'Unknown platform', unsupported: true, readOnly: false }),
     clearTempPreview: async () => ({ ok: false, error: 'Unknown platform', unsupported: true, readOnly: true }),
   },
@@ -39,6 +41,8 @@ export async function runFixedDiagnostic(commandKind: string) {
       return { kind: 'network', payload: await shared.collectNetwork() };
     case 'collect_services':
       return { kind: 'services', payload: await collectors.collectServices() };
+    case 'collect_software':
+      return { kind: 'software', payload: await collectors.collectSoftware() };
     case 'ping_self':
       return { kind: 'status', payload: await shared.pingSelf() };
     case 'flush_dns_cache':

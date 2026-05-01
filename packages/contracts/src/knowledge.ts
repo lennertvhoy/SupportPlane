@@ -35,6 +35,11 @@ export const KnowledgeArticle = z.object({
   content: z.string().min(1).max(50000),
   tags: z.array(z.string()).default([]),
   metadata: z.record(z.unknown()).default({}),
+  embeddingProvider: z.string().min(1).max(128).optional(),
+  embeddingModel: z.string().min(1).max(128).optional(),
+  embeddingDimensions: z.number().int().positive().optional(),
+  embeddingContentHash: z.string().min(1).max(128).optional(),
+  embeddedAt: Timestamp.optional(),
   status: KnowledgeArticleStatus.default('published'),
   createdAt: Timestamp,
   updatedAt: Timestamp,
@@ -63,6 +68,7 @@ export const KnowledgeRetrievalRequest = z.object({
   query: z.string().min(1).max(2048),
   sourceIds: z.array(z.string()).optional(),
   limit: z.number().int().min(1).max(50).default(10),
+  mode: z.enum(['auto', 'lexical', 'semantic', 'hybrid']).default('auto'),
 });
 export type KnowledgeRetrievalRequest = z.infer<typeof KnowledgeRetrievalRequest>;
 
@@ -77,6 +83,12 @@ export const KnowledgeRetrievalResult = z.object({
     articleStatus: KnowledgeArticleStatus,
     retrievedAt: z.string().datetime({ offset: true }),
     retrievalMethod: z.enum(['lexical', 'semantic', 'hybrid']),
+    scoreKind: z.enum(['lexical_rank', 'vector_distance', 'hybrid_rank']),
+    confidence: z.null(),
+    embeddingProvider: z.string().optional(),
+    embeddingModel: z.string().optional(),
+    pgvectorEnabled: z.boolean(),
+    fallbackReason: z.string().optional(),
   }),
 });
 export type KnowledgeRetrievalResult = z.infer<typeof KnowledgeRetrievalResult>;
@@ -87,6 +99,12 @@ export const KnowledgeRetrievalResponse = z.object({
   totalAvailable: z.number().int().min(0),
   retrievalMethod: z.enum(['lexical', 'semantic', 'hybrid']),
   pgvectorEnabled: z.boolean().default(false),
+  pgvectorReason: z.string(),
+  embeddingProvider: z.string().optional(),
+  embeddingProviderAvailable: z.boolean(),
+  embeddingProviderReason: z.string(),
+  semanticEligible: z.boolean(),
+  fallbackReason: z.string().optional(),
   mockDevOnly: z.boolean().default(true),
 });
 export type KnowledgeRetrievalResponse = z.infer<typeof KnowledgeRetrievalResponse>;

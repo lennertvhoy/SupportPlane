@@ -40,6 +40,13 @@ export interface SharingStateShape {
   updatedAt: string;
 }
 
+export interface KnowledgeRetrievalReadiness {
+  pgvectorEnabled: boolean;
+  pgvectorReason: string;
+  vectorColumnAvailable: boolean;
+  vectorColumnReason: string;
+}
+
 export interface Store {
   // SupportSession
   saveSession(session: SupportSessionShape): Promise<void> | void;
@@ -177,4 +184,6 @@ export interface Store {
   getKnowledgeArticle(tenantId: string, id: string): Promise<KnowledgeArticleShape | undefined> | KnowledgeArticleShape | undefined;
   listKnowledgeArticles(tenantId: string, options?: { sourceId?: string; status?: string }): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
   searchKnowledgeArticles(tenantId: string, query: string, options?: { sourceIds?: string[]; limit?: number }): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
+  getKnowledgeRetrievalReadiness?(): Promise<KnowledgeRetrievalReadiness> | KnowledgeRetrievalReadiness;
+  searchSemanticKnowledgeArticles?(tenantId: string, queryEmbedding: number[], options?: { sourceIds?: string[]; limit?: number }): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
 }

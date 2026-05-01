@@ -44,16 +44,13 @@ export class ToolRegistryService implements OnModuleInit {
     }
     const data = validation.data;
 
-    // Idempotent load: if a manifest with this integrity hash already exists, skip seeding
+    // Idempotent load: if a manifest with this integrity hash already exists, reuse it,
+    // but still upsert definitions so a partial prior load can self-heal.
     const existingManifests = await this.store.listToolManifestRecords();
     const existing = existingManifests.find(m => m.integrityHash === data.integrityHash);
-    if (existing) {
-      const existingTools = await this.store.listToolDefinitions({ manifestId: existing.id });
-      return { record: existing, tools: existingTools };
-    }
 
     const now = new Date().toISOString();
-    const record: ToolManifestRecordShape = {
+    const record: ToolManifestRecordShape = existing ?? {
       id: randomUUID() as ToolManifestRecordShape['id'],
       manifestVersion: data.manifestVersion,
       registryVersion: data.registryVersion,
@@ -66,7 +63,9 @@ export class ToolRegistryService implements OnModuleInit {
       updatedAt: now,
     };
 
-    await this.store.saveToolManifestRecord(record);
+    if (!existing) {
+      await this.store.saveToolManifestRecord(record);
+    }
 
     const tools: ToolDefinitionShape[] = [];
     for (const tool of data.tools) {
@@ -83,6 +82,9 @@ export class ToolRegistryService implements OnModuleInit {
         remediation: tool.remediation,
         approvalRequired: tool.approvalRequired,
         requiredPermission: tool.requiredPermission,
+        requiredPrivilege: tool.requiredPrivilege,
+        dryRunCapable: tool.dryRunCapable,
+        commandTemplateId: tool.commandTemplateId,
         supportedPlatforms: tool.supportedPlatforms,
         inputSchema: tool.inputSchema ?? {},
         outputSchema: tool.outputSchema ?? {},

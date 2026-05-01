@@ -11,6 +11,7 @@ SupportPlane now treats Windows as a first-class endpoint platform alongside Lin
 - Canonical `EndpointPlatform` enum: `linux`, `win32`, `darwin`, `unknown`
 - Platform normalization for device registration and policy evaluation
 - Platform-aware collector modules in the endpoint agent
+- Fixed Windows read-only command templates for service and installed software collection
 - UI platform badges and unsupported tool states
 - Mocked Windows endpoint in local development seed data
 
@@ -24,21 +25,26 @@ SupportPlane now treats Windows as a first-class endpoint platform alongside Lin
 | `inventory` | ✅ | ✅ | ✅ | Hostname, platform, arch, CPU, memory |
 | `disk` | ✅ | ✅ | ✅ | Uses `fs.statfs`; Windows tries `C:\` |
 | `network` | ✅ | ✅ | ✅ | Uses `os.networkInterfaces()` |
-| `services` | ✅ | ❌ | ❌ | Linux `/proc` only; Windows returns `unsupported` |
+| `services` | ✅ | fixture-tested | ❌ | Windows uses fixed `sc.exe` args on real Windows; parser tested on Linux fixtures |
+| `software` | ❌ | fixture-tested | ❌ | Windows uses fixed `reg.exe` uninstall-key queries; parser tested on Linux fixtures |
 
 ### Remediation
 
 | Tool | Linux | Windows | macOS | Notes |
 |------|-------|---------|-------|-------|
-| `flush_dns_cache` | ❌ | ❌ | ❌ | Returns `unsupported: true` with honest note |
+| `flush_dns_cache` | supported when `resolvectl` exists | fixed-template, unproven on real Windows | ❌ | Approval-gated remediation using `resolvectl flush-caches` on Linux and `ipconfig /flushdns` on Windows; real Windows proof still pending |
 | `clear_temp_preview` | ❌ | ❌ | ❌ | Returns `unsupported: true` with honest note |
 
-All remediation commands are `enabled: false` in the local tool manifest.
+`flush_dns_cache` is enabled in the local tool manifest and still requires
+policy allowance plus approval. Other remediation commands remain disabled or
+preview-only. Windows remediation remains partial until a real Windows host
+returns an approved endpoint result with browser/API evidence.
 
 ## Security Model
 
-- **No arbitrary shell:** Windows support does not use PowerShell, `cmd.exe`, or any dynamic command execution.
-- **No arbitrary WMI:** Windows collectors use Node.js built-in APIs only (`os`, `fs`).
+- **No arbitrary shell:** Windows support does not use PowerShell, `cmd.exe`, shell strings, or dynamic command execution.
+- **Fixed Windows commands only:** Windows service/software collectors use `execFile` with static `sc.exe`/`reg.exe` argument arrays and no user input.
+- **No arbitrary WMI:** Windows collectors do not accept WMI query strings or user-supplied command fragments.
 - **Fixed implementation IDs only:** The agent dispatch table maps `commandKind` to platform-specific collector functions.
 - **Platform gate:** Policy engine rejects tools not supported by the endpoint platform before dispatch.
 - **Unknown platform fails closed:** Devices reporting unrecognized platforms are denied all platform-gated tools.
@@ -48,10 +54,12 @@ All remediation commands are `enabled: false` in the local tool manifest.
 ### Allowed
 - Windows device invoking `diagnostic.status` → `allowed: true`
 - Windows device invoking `diagnostic.inventory` → `allowed: true`
+- Windows device invoking `diagnostic.services` → `allowed: true`
+- Windows device invoking `diagnostic.software` → `allowed: true`
 
 ### Denied
-- Windows device invoking `diagnostic.services` → `decision: unsupported_platform`
-- Windows device invoking `remediation.flush_dns_cache` → `decision: unsupported_platform`
+- Linux device invoking `diagnostic.software` → `decision: unsupported_platform`
+- Windows device invoking `remediation.flush_dns_cache` → `approval_required`, then dispatches fixed `ipconfig /flushdns` only after approval; real Windows execution proof remains pending
 - Unknown platform invoking any platform-gated tool → `decision: unsupported_platform`
 
 ## Agent Architecture
@@ -61,7 +69,8 @@ apps/endpoint-agent/src/
 ├── collectors/
 │   ├── shared.ts      # Cross-platform: inventory, network, ping
 │   ├── linux.ts       # Linux: disk (statfs), services (/proc)
-│   ├── win32.ts       # Windows: disk (statfs C:\), services (unsupported)
+│   ├── win32.ts       # Windows: disk, services parser, installed software parser
+│   ├── windows-command-runner.ts # Fixed sc.exe/reg.exe command templates
 │   ├── darwin.ts      # macOS: disk (statfs), services (unsupported)
 │   └── index.ts       # Platform-aware dispatch table
 ├── platform.ts        # Platform provider + normalization
@@ -87,15 +96,32 @@ npm test
 ## What Requires a Real Windows Runner
 
 1. **Windows `fs.statfs` on `C:\`** — Node.js may behave differently on real Windows vs. Linux mock.
-2. **Windows service enumeration** — A safe non-shell implementation (WMI bindings, native addon, or external helper) needs real Windows verification.
-3. **Windows remediation** — Flush DNS cache without PowerShell requires Windows-specific APIs.
-4. **Installed software inventory** — Reading Windows registry or WMI safely is not yet implemented.
+2. **Windows service enumeration** — Fixed `sc.exe` execution and parser need real Windows verification.
+3. **Windows remediation** — Fixed-template flush DNS execution requires real Windows proof before acceptance.
+4. **Installed software inventory** — Fixed `reg.exe` execution and parser need real Windows verification.
 5. **Service packaging** — MSI/EXE installer, Windows Service wrapper, and auto-start behavior.
+
+## Packaging Scaffold
+
+The committed scaffold is `scripts/package_windows_endpoint_agent.ps1`. It is a
+readiness/package staging script, not a production installer. It checks for a
+Windows host, Node.js 22+, builds the endpoint-agent workspace, stages the built
+agent and package metadata under `dist/windows-endpoint-agent`, and writes a
+Windows Service wrapper README for a future MSI/EXE step.
+
+The intended production path remains:
+
+1. Build signed agent artifacts in CI.
+2. Wrap `node dist/src/index.js` as a Windows Service with a reviewed service
+   wrapper.
+3. Package as MSI/EXE with tenant enrollment configuration supplied by IT.
+4. Prove install, auto-start, registration, heartbeat, command claim, service
+   diagnostic, software diagnostic, and policy denial on a real Windows host.
 
 ## Future Work
 
 See backlog items:
-- **BL-130:** Windows diagnostics collectors completion (services, installed software)
+- **BL-130:** Windows diagnostics collectors completion (services, installed software real-runner proof still required)
 - **BL-131:** Windows tool-manifest compatibility completion
 - **BL-132:** Windows service/install packaging plan
 - **BL-133:** Windows verification strategy (real runner)
@@ -105,4 +131,5 @@ See backlog items:
 - All Windows behavior in this slice is validated via unit tests and mocked device records on a Fedora Linux host.
 - No real Windows endpoint was used for verification.
 - The `diagnostic.disk` collector on Windows uses `fs.statfs('C:\\')`, which may fail on some Windows configurations or Node.js versions.
-- Service enumeration and remediation explicitly return `unsupported` rather than faking success.
+- Service and installed software execution on real Windows is not proven until BL-133 runs on a Windows host.
+- Remediation is not accepted as complete; fixed-template scaffolding does not replace real end-to-end Windows proof.

@@ -1914,7 +1914,7 @@ export class PrismaStore implements Store {
 
   async saveToolDefinition(def: ToolDefinitionShape): Promise<void> {
     await this.prisma.toolDefinition.upsert({
-      where: { id: def.id },
+      where: { toolKey: def.toolKey },
       create: {
         id: def.id,
         manifestId: def.manifestId,
@@ -1928,6 +1928,9 @@ export class PrismaStore implements Store {
         remediation: def.remediation,
         approvalRequired: def.approvalRequired,
         requiredPermission: def.requiredPermission,
+        requiredPrivilege: def.requiredPrivilege,
+        dryRunCapable: def.dryRunCapable,
+        commandTemplateId: def.commandTemplateId,
         supportedPlatforms: def.supportedPlatforms as string[],
         inputSchema: json(def.inputSchema),
         outputSchema: json(def.outputSchema),
@@ -1947,6 +1950,9 @@ export class PrismaStore implements Store {
         remediation: def.remediation,
         approvalRequired: def.approvalRequired,
         requiredPermission: def.requiredPermission,
+        requiredPrivilege: def.requiredPrivilege,
+        dryRunCapable: def.dryRunCapable,
+        commandTemplateId: def.commandTemplateId,
         supportedPlatforms: def.supportedPlatforms as string[],
         inputSchema: json(def.inputSchema),
         outputSchema: json(def.outputSchema),
@@ -1979,7 +1985,7 @@ export class PrismaStore implements Store {
   }
 
   private mapToolDefinition(r: {
-    id: string; manifestId: string; toolKey: string; displayName: string; description: string | null; category: string; riskLevel: string; implementationId: string; readOnly: boolean; remediation: boolean; approvalRequired: boolean; requiredPermission: string; supportedPlatforms: unknown; inputSchema: unknown; outputSchema: unknown; enabled: boolean; createdAt: Date; updatedAt: Date;
+    id: string; manifestId: string; toolKey: string; displayName: string; description: string | null; category: string; riskLevel: string; implementationId: string; readOnly: boolean; remediation: boolean; approvalRequired: boolean; requiredPermission: string; requiredPrivilege: string; dryRunCapable: boolean; commandTemplateId: string | null; supportedPlatforms: unknown; inputSchema: unknown; outputSchema: unknown; enabled: boolean; createdAt: Date; updatedAt: Date;
   }): ToolDefinitionShape {
     return {
       id: r.id as ToolDefinitionShape['id'],
@@ -1994,6 +2000,9 @@ export class PrismaStore implements Store {
       remediation: r.remediation,
       approvalRequired: r.approvalRequired,
       requiredPermission: r.requiredPermission,
+      requiredPrivilege: r.requiredPrivilege as ToolDefinitionShape['requiredPrivilege'],
+      dryRunCapable: r.dryRunCapable,
+      commandTemplateId: r.commandTemplateId ?? undefined,
       supportedPlatforms: r.supportedPlatforms as ToolDefinitionShape['supportedPlatforms'],
       inputSchema: r.inputSchema as Record<string, unknown>,
       outputSchema: r.outputSchema as Record<string, unknown>,
@@ -2260,6 +2269,11 @@ export class PrismaStore implements Store {
         content: article.content,
         tags: article.tags,
         metadata: json(article.metadata),
+        embeddingProvider: article.embeddingProvider ?? null,
+        embeddingModel: article.embeddingModel ?? null,
+        embeddingDimensions: article.embeddingDimensions ?? null,
+        embeddingContentHash: article.embeddingContentHash ?? null,
+        embeddedAt: article.embeddedAt ? dateOrNow(article.embeddedAt) : null,
         status: article.status,
         createdAt: dateOrNow(article.createdAt),
         updatedAt: dateOrNow(article.updatedAt),
@@ -2270,6 +2284,11 @@ export class PrismaStore implements Store {
         content: article.content,
         tags: article.tags,
         metadata: json(article.metadata),
+        embeddingProvider: article.embeddingProvider ?? null,
+        embeddingModel: article.embeddingModel ?? null,
+        embeddingDimensions: article.embeddingDimensions ?? null,
+        embeddingContentHash: article.embeddingContentHash ?? null,
+        embeddedAt: article.embeddedAt ? dateOrNow(article.embeddedAt) : null,
         status: article.status,
         updatedAt: dateOrNow(article.updatedAt),
       },
@@ -2309,6 +2328,43 @@ export class PrismaStore implements Store {
     return rows.map((r) => this.mapKnowledgeArticle(r));
   }
 
+  async getKnowledgeRetrievalReadiness() {
+    try {
+      const pgvectorRows = await this.prisma.$queryRaw<Array<{ installed_version: string | null }>>`
+        SELECT installed_version
+        FROM pg_available_extensions
+        WHERE name = 'vector'
+      `;
+      const installedVersion = pgvectorRows[0]?.installed_version ?? null;
+      const pgvectorEnabled = Boolean(installedVersion);
+      const pgvectorReason = pgvectorEnabled
+        ? `pgvector extension installed (${installedVersion})`
+        : 'pgvector extension is not installed in this PostgreSQL database';
+
+      const vectorColumnRows = await this.prisma.$queryRaw<Array<{ exists: boolean }>>`
+        SELECT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_name = 'knowledge_articles'
+            AND column_name = 'embeddingVector'
+        ) AS "exists"
+      `;
+      const vectorColumnAvailable = Boolean(vectorColumnRows[0]?.exists);
+      const vectorColumnReason = vectorColumnAvailable
+        ? 'knowledge article vector column is available'
+        : 'knowledge article vector column is not configured; semantic search remains disabled';
+
+      return { pgvectorEnabled, pgvectorReason, vectorColumnAvailable, vectorColumnReason };
+    } catch (error) {
+      return {
+        pgvectorEnabled: false,
+        pgvectorReason: `pgvector readiness check failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+        vectorColumnAvailable: false,
+        vectorColumnReason: 'vector column readiness was not proven because the pgvector check failed',
+      };
+    }
+  }
+
   private mapKnowledgeSource(r: {
     id: string; tenantId: string; name: string; description: string | null; adapterType: string; status: string; config: unknown; lastSyncAt: Date | null; createdAt: Date; updatedAt: Date;
   }): KnowledgeSourceShape {
@@ -2327,7 +2383,7 @@ export class PrismaStore implements Store {
   }
 
   private mapKnowledgeArticle(r: {
-    id: string; tenantId: string; sourceId: string; title: string; content: string; tags: string[]; metadata: unknown; status: string; createdAt: Date; updatedAt: Date;
+    id: string; tenantId: string; sourceId: string; title: string; content: string; tags: string[]; metadata: unknown; embeddingProvider: string | null; embeddingModel: string | null; embeddingDimensions: number | null; embeddingContentHash: string | null; embeddedAt: Date | null; status: string; createdAt: Date; updatedAt: Date;
   }): KnowledgeArticleShape {
     return {
       id: r.id as KnowledgeArticleShape['id'],
@@ -2337,6 +2393,11 @@ export class PrismaStore implements Store {
       content: r.content,
       tags: r.tags,
       metadata: r.metadata as Record<string, unknown>,
+      embeddingProvider: r.embeddingProvider ?? undefined,
+      embeddingModel: r.embeddingModel ?? undefined,
+      embeddingDimensions: r.embeddingDimensions ?? undefined,
+      embeddingContentHash: r.embeddingContentHash ?? undefined,
+      embeddedAt: toISO(r.embeddedAt) ?? undefined,
       status: r.status as KnowledgeArticleShape['status'],
       createdAt: toISO(r.createdAt)!,
       updatedAt: toISO(r.updatedAt)!,

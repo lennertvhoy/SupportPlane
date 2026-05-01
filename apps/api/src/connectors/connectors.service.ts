@@ -47,18 +47,19 @@ function ensureRegistry() {
   // Register telephony adapters
   registerTelephonyAdapter(createMockTelephonyAdapterFactory());
   registerTelephonyAdapter(createAsteriskAmiAdapterFactory());
-  // Register MeshCentral and Fortinet connectors
+  // Register MeshCentral and Fortinet as unconfigured by default. Do not use
+  // fixture clients for registry entries that the status API reports as real.
   const mockInstallation = {
     id: 'mock-conn-inst',
     tenantId: 'dev-tenant',
     name: 'Mock Connector',
     adapterType: 'mock',
     capabilities: [],
-    config: { mockMode: true },
+    config: {},
     secretReferenceIds: [],
     status: 'active',
-    mockMode: true,
-    enabled: true,
+    mockMode: false,
+    enabled: false,
     safetyFlags: {},
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -203,79 +204,179 @@ export class ConnectorsService {
   }
 
   getAllConnectorStatus(_tenantId: string): Array<{
+    id: string;
     key: string;
+    displayName: string;
     name: string;
     adapterType: string;
-    status: 'configured' | 'unconfigured' | 'mock' | 'disabled' | 'error';
+    mode: 'fixture' | 'mock' | 'configured' | 'live' | 'error' | 'unconfigured';
+    status: 'fixture' | 'mock' | 'configured' | 'live' | 'error' | 'unconfigured';
     transport: 'real' | 'mock' | 'fixture' | 'unconfigured';
     capabilities: string[];
+    credentialSource: 'none' | 'env' | 'vault' | 'local_dev_secret' | 'redacted';
     health: string;
+    lastCheck: {
+      status: 'ok' | 'warning' | 'error' | 'not_run';
+      timestamp: string;
+    };
     lastChecked: string;
+    errorCode: 'CONFIG_MISSING' | 'AUTH_FAILED' | 'NETWORK_FAILED' | 'UNSUPPORTED' | 'OK';
+    fixtureWarning?: string;
     lastError?: string;
     tenantScoped: boolean;
   }> {
     const now = new Date().toISOString();
     const zammadStatus = this.getZammadStatus();
     const isZammadMock = zammadStatus.mode === 'mock';
+    const zammadBaseUrl = env('ZAMMAD_BASE_URL');
+    const zammadApiToken = env('ZAMMAD_API_TOKEN');
+    const openBaoEnabled = env('OPENBAO_RESOLVER_ENABLED') === 'true';
+    const zammadConfigured = isZammadMock || Boolean(zammadBaseUrl && (zammadApiToken || openBaoEnabled));
+    const zammadMode = isZammadMock ? 'mock' : zammadConfigured ? 'configured' : 'unconfigured';
+    const zammadCredentialSource = isZammadMock
+      ? 'none'
+      : openBaoEnabled
+        ? 'vault'
+        : zammadApiToken
+          ? 'env'
+          : 'none';
+    const zammadConfigError = !isZammadMock && !zammadConfigured;
+
+    const classifyConfigOnlyConnector = (connector: {
+      id: string;
+      displayName: string;
+      adapterType: string;
+      baseUrlEnv: string;
+      tokenEnv: string;
+      capabilities: string[];
+      fixtureByDefault: boolean;
+      fixtureWarning?: string;
+      unsupportedRealClient?: boolean;
+      configHint: string;
+    }) => {
+      const baseUrl = env(connector.baseUrlEnv);
+      const token = env(connector.tokenEnv);
+      const hasAnyConfig = Boolean(baseUrl || token);
+      const hasFullConfig = Boolean(baseUrl && token);
+      const credentialSource = token ? 'env' as const : 'none' as const;
+      const isUnsupported = hasFullConfig && connector.unsupportedRealClient === true;
+      const mode = connector.fixtureByDefault && !hasAnyConfig
+        ? 'fixture' as const
+        : isUnsupported
+          ? 'error' as const
+          : hasFullConfig
+            ? 'configured' as const
+            : hasAnyConfig
+              ? 'error' as const
+              : 'unconfigured' as const;
+      const errorCode = mode === 'fixture' || mode === 'configured'
+        ? 'OK' as const
+        : isUnsupported
+          ? 'UNSUPPORTED' as const
+          : 'CONFIG_MISSING' as const;
+      const lastError = errorCode === 'OK'
+        ? undefined
+        : isUnsupported
+          ? `${connector.displayName} real HTTP client is not implemented in this slice. Fixture fallback is disabled when real config is present.`
+          : connector.configHint;
+      const transport = mode === 'fixture'
+        ? 'fixture' as const
+        : mode === 'configured'
+          ? 'real' as const
+          : 'unconfigured' as const;
+
+      return {
+        id: connector.id,
+        key: connector.id,
+        displayName: connector.displayName,
+        name: connector.displayName,
+        adapterType: connector.adapterType,
+        mode,
+        status: mode,
+        transport,
+        capabilities: connector.capabilities,
+        credentialSource,
+        health: mode === 'fixture' ? 'healthy' : mode === 'configured' ? 'unknown' : 'unknown',
+        lastCheck: {
+          status: errorCode === 'OK' ? 'ok' as const : 'error' as const,
+          timestamp: now,
+        },
+        lastChecked: now,
+        errorCode,
+        fixtureWarning: mode === 'fixture' ? connector.fixtureWarning : undefined,
+        lastError,
+        tenantScoped: true,
+      };
+    };
 
     return [
       {
+        id: 'zammad',
         key: 'zammad',
+        displayName: 'Zammad',
         name: 'Zammad',
         adapterType: 'zammad',
-        status: isZammadMock ? 'mock' : 'configured',
+        mode: zammadMode,
+        status: zammadMode,
         transport: isZammadMock ? 'mock' : 'real',
         capabilities: zammadStatus.capabilities,
-        health: zammadStatus.health,
+        credentialSource: zammadCredentialSource,
+        health: zammadConfigError ? 'unknown' : zammadStatus.health,
+        lastCheck: {
+          status: zammadConfigError ? 'error' : 'ok',
+          timestamp: now,
+        },
         lastChecked: now,
+        errorCode: zammadConfigError ? 'CONFIG_MISSING' : 'OK',
+        fixtureWarning: isZammadMock ? 'Zammad is running in mock mode; no real Zammad network call is made.' : undefined,
+        lastError: zammadConfigError ? 'Zammad is not configured. Set ZAMMAD_BASE_URL and ZAMMAD_API_TOKEN or enable OpenBao resolver.' : undefined,
         tenantScoped: true,
       },
-      {
-        key: 'glpi',
-        name: 'GLPI',
+      classifyConfigOnlyConnector({
+        id: 'glpi',
+        displayName: 'GLPI',
         adapterType: 'glpi',
-        status: 'mock',
-        transport: 'fixture',
         capabilities: ['read_tickets', 'read_customers'],
-        health: 'healthy',
-        lastChecked: now,
-        tenantScoped: true,
-      },
-      {
-        key: 'osticket',
-        name: 'osTicket',
+        baseUrlEnv: 'GLPI_BASE_URL',
+        tokenEnv: 'GLPI_API_TOKEN',
+        fixtureByDefault: true,
+        fixtureWarning: 'GLPI is fixture-backed until GLPI_BASE_URL and GLPI_API_TOKEN are configured; no real GLPI network call is made.',
+        configHint: 'GLPI is not fully configured. Set GLPI_BASE_URL and GLPI_API_TOKEN to enable the real adapter path.',
+      }),
+      classifyConfigOnlyConnector({
+        id: 'osticket',
+        displayName: 'osTicket',
         adapterType: 'osticket',
-        status: 'mock',
-        transport: 'fixture',
         capabilities: ['read_tickets', 'read_customers'],
-        health: 'healthy',
-        lastChecked: now,
-        tenantScoped: true,
-      },
-      {
-        key: 'meshcentral',
-        name: 'MeshCentral',
+        baseUrlEnv: 'OSTICKET_BASE_URL',
+        tokenEnv: 'OSTICKET_API_TOKEN',
+        fixtureByDefault: true,
+        fixtureWarning: 'osTicket is fixture-backed in this slice; no real osTicket network call is made.',
+        unsupportedRealClient: true,
+        configHint: 'osTicket is not fully configured. Real osTicket integration remains out of scope for this slice.',
+      }),
+      classifyConfigOnlyConnector({
+        id: 'meshcentral',
+        displayName: 'MeshCentral',
         adapterType: 'meshcentral',
-        status: 'unconfigured',
-        transport: 'unconfigured',
         capabilities: ['read_devices'],
-        health: 'unknown',
-        lastChecked: now,
-        lastError: 'No MeshCentral instance configured. Set MESHCENTRAL_BASE_URL to enable.',
-        tenantScoped: true,
-      },
-      {
-        key: 'fortinet',
-        name: 'Fortinet',
+        baseUrlEnv: 'MESHCENTRAL_BASE_URL',
+        tokenEnv: 'MESHCENTRAL_API_TOKEN',
+        fixtureByDefault: false,
+        unsupportedRealClient: true,
+        configHint: 'No MeshCentral instance configured. Set MESHCENTRAL_BASE_URL and MESHCENTRAL_API_TOKEN to enable future real readiness work.',
+      }),
+      classifyConfigOnlyConnector({
+        id: 'fortinet',
+        displayName: 'Fortinet',
         adapterType: 'fortinet',
-        status: 'unconfigured',
-        transport: 'unconfigured',
         capabilities: ['read_firewall_context'],
-        health: 'unknown',
-        lastChecked: now,
-        lastError: 'No Fortinet instance configured. Set FORTINET_BASE_URL to enable.',
-        tenantScoped: true,
-      },
+        baseUrlEnv: 'FORTINET_BASE_URL',
+        tokenEnv: 'FORTINET_API_TOKEN',
+        fixtureByDefault: false,
+        unsupportedRealClient: true,
+        configHint: 'No Fortinet instance configured. Set FORTINET_BASE_URL and FORTINET_API_TOKEN to enable future real readiness work.',
+      }),
     ];
   }
 }

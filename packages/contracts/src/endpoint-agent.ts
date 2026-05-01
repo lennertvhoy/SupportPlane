@@ -51,6 +51,7 @@ export const EndpointCommandKind = z.enum([
   'collect_disk',
   'collect_network',
   'collect_services',
+  'collect_software',
   'ping_self',
   'flush_dns_cache',
   'clear_temp_preview',
