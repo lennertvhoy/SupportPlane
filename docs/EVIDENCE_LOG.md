@@ -2688,3 +2688,33 @@
   - `app.module.ts`: `admin/ai-provider-readiness` added to `CurrentIdentityMiddleware` routes.
 - Type: integration-and-browser-runtime-verification
 - as_of: 2026-05-01T15:58:00+02:00
+
+## EV-2026-05-01-146 through EV-2026-05-01-159: Session 126 — Governed AI Vertical Closure, Evidence Closure, and Admin Compliance Hardening
+
+- Files: `output/playwright/session-126-governed-ai-vertical-closure/00-EVIDENCE-INDEX.md` through `14-api-health-head.png`
+- Source/System: Chromium via Playwright MCP against local Web (`localhost:3200`) and local API (`localhost:4110`), plus CLI JSON artifacts.
+- Store/Auth mode for runtime verification: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Local proof:
+  - Draft generation 500 error is REPAIRED: invalid/unconfigured provider now returns graceful error message instead of 500 Internal Server Error.
+  - Greeting suggestion generation works end-to-end with mock provider, logs model usage, and writes audit events.
+  - AI policy tab shows kill switch, human review required, draft generation toggle, autonomous send locked OFF, cloud providers locked OFF, mock-only locked ON.
+  - Retention policy tab shows prompt/output retention modes (None/Metadata_only/Full) and auto-purge locked OFF.
+  - Model usage admin page shows 2 greeting calls with provider/model/status metadata.
+  - Audit explorer shows 126 events including greeting_suggestion_generated with full metadata.
+  - GDPR panel shows dry-run only (Export Preview / Delete Dry-Run / Export); no real deletion.
+  - Evidence bundle timeline is mounted in Case Timeline panel on main cockpit page.
+- Shows:
+  - `01-runtime-identity-health.json` — API runtime identity with HEAD `6d5d287a1c136ace63dda696fa1d4e0866d9e457`.
+  - `02-git-status-final.txt` — clean worktree on main branch.
+  - `03-git-log-final.txt` — Session 126 implementation commit `baeedfb` + state docs commit `6d5d287`.
+  - `04-validation-summary.txt` — 194 pass, 0 fail, 3 skipped; typecheck/lint/build pass.
+  - `05-backlog-status-check.md` — honest status assessment for BL-026 through BL-082.
+  - `06-main-cockpit.png` — main cockpit page.
+  - `07-session-selected-ai-panels.png` — session selected showing AI panels.
+  - `08-draft-graceful-error-and-greeting-success.png` — draft graceful error + greeting success.
+  - `09-ai-policy-tab-and-audit-trail.png` — AI policy controls + audit trail.
+  - `10-admin-model-usage.png` — model usage logs.
+  - `11-admin-audit-explorer.png` — audit explorer with 126 events.
+  - `12-admin-gdpr-dry-run.png` — GDPR dry-run panel.
+  - `13-admin-retention-policy.png` — retention policy settings.
+  - `14-api-health-head.png` — browser screenshot of /health endpoint.

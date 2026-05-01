@@ -1644,3 +1644,58 @@ Session 123b implementation was correct, but the final handoff contained contrad
 
 - P1 [BL-130/BL-131] Windows diagnostics collectors and tool-manifest compatibility completion
 - P2 [BL-069/BL-071/BL-072/BL-127] Real GLPI, MeshCentral, Fortinet, or osTicket instance connection with credential references
+
+---
+
+## Session 126 — Governed AI Vertical Closure, Evidence Closure, and Admin Compliance Hardening
+
+**Date:** 2026-05-01
+**Branch:** main
+**Commits:** `baeedfb` (implementation), `6d5d287` (state docs)
+**Scope:** Repair Session 125 blockers: draft generation 500 error, stale runtime evidence, missing closure files, overclaimed backlog statuses.
+
+### What Changed
+
+1. **Rebuilt and restarted API** with compiled dist from `baeedfb` — the previous runtime was using stale dist that predated the 500 fix.
+2. **Verified draft generation 500 is fixed** at runtime: unconfigured provider now returns graceful error message instead of 500.
+3. **Verified greeting suggestion** works end-to-end with mock provider, logs model usage, and writes audit events.
+4. **Captured fresh browser evidence** in `output/playwright/session-126-governed-ai-vertical-closure/` (14 files).
+5. **Updated state docs** with honest statuses for BL-026/027/028/029/075/077/078/079/080/081/082.
+6. **Updated EVIDENCE_LOG.md** with Session 126 evidence entry.
+
+### Verification
+
+- `npm test --workspace=apps/api`: 194 pass, 0 fail, 3 skipped
+- `npm run typecheck`: pass all workspaces
+- `npm run lint`: pass
+- `npm run build`: pass
+- API health (`curl /health`): HEAD `6d5d287a1c136ace63dda696fa1d4e0866d9e457` matches git HEAD
+- Browser verification:
+  - Draft generation: graceful error (not 500)
+  - Greeting suggestion: success with mock provider
+  - Model usage: 2 greeting calls logged
+  - Audit explorer: 126 events including greeting_suggestion_generated
+  - AI policy: kill switch, human review, mock-only locked ON
+  - Retention policy: prompt/output retention modes visible
+  - GDPR: dry-run only
+
+### Evidence
+
+- Folder: `output/playwright/session-126-governed-ai-vertical-closure/`
+- Files: 14 (under 20-file hard cap)
+- Includes: health JSON, git status, git log, validation summary, backlog status check, 9 screenshots
+
+### Known Limitations (Honest)
+
+- Cloud AI providers remain stubbed (`configured: false`)
+- PDF export: honest 501 fallback when fonts unavailable
+- GDPR delete: dry-run only
+- Retention enforcement: audit metadata redaction only; no purge worker
+- Direct PrismaClient usage in AiChatService, ModelUsageService, GdprService, AuditExplorerService remains (lazy init is tactical fix)
+- EvidenceBundleTimeline IS mounted in EvidenceBundlePanel (corrected from Session 125 overclaim)
+
+### Next Recommended Action
+
+- P1 [BL-130/BL-131] Windows diagnostics collectors and tool-manifest compatibility completion
+- P2 [BL-083] Full Store pattern refactor to eliminate direct PrismaClient usage
+- P3 [BL-084] Cloud AI provider real configuration and connection
