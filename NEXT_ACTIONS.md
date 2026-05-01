@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-01 15:58 CEST
+**Updated At:** 2026-05-01 16:45 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
@@ -25,11 +25,6 @@
   - Owner: future Windows hardening slice
   - Next action: run the fixed service/software collectors and packaging scaffold on a real Windows host or Windows CI runner; capture registration, heartbeat, diagnostic, and policy-denial proof.
   - Exit criteria: agent runs on actual Windows, registers, heartbeats, diagnostics and policy enforcement are proven, and unsupported remediation remains honestly labeled unless safely implemented.
-
-- [BL-026/027/028/029] **AI cockpit hardening**
-  - Owner: future slice
-  - Next action: fix draft generation internal server error; add cloud provider stubs (501) to model gateway; add token usage approximation to draft generation; scope chat/ticket-summary UI as future work.
-  - Exit criteria: BL-029 draft generation error is root-caused and fixed. BL-026 cloud slots return explicit 501 when called. Chat and ticket-summary UI scoped to future sessions.
 
 ## Queue Rules
 

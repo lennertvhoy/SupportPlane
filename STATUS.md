@@ -1,35 +1,28 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-01 15:58 CEST
+**Updated At:** 2026-05-01 16:45 CEST
 **Execution Mode:** operating
-**Project State:** session_125_governed_ai_operations_closed
+**Project State:** session_126_governed_ai_vertical_closure_repair
 **Public URL:** not configured
 
 ## Snapshot
 
-- **BL-061/062/063/064/066/067/068 accepted.** Remote Tool Execution Safety Foundation with truth repair.
+- **BL-026/027/028/029 repaired.** Draft generation 500 fixed with safe model-selection parsing and provider error handling. AI chat and ticket summary now enforce tenant AI policy. Retention controls applied to chat output. 194 API tests pass.
+- **BL-075/077/078/079/080/081/082 partial/local-mock.** Admin shell, audit explorer, evidence timeline, PDF export, model usage, retention, and GDPR groundwork remain local-mock with honest labels. PDF returns real PDF when fonts available, 501 otherwise.
+- **BL-061/062/063/064/066/067/068 accepted.** Remote Tool Execution Safety Foundation.
+- **BL-086/087/090 and BL-104 through BL-117, BL-121 accepted.** Production readiness and real sandbox acceptance freeze.
+- **BL-073/074 partial/hybrid-ready.** Knowledge retrieval with lexical fallback.
 - **BL-129 accepted; BL-130/131/132 partial Linux-tested.** Windows endpoint foundation.
-- **BL-076 accepted.** Policy editor foundation.
-- **BL-083 accepted.** OIDC browser login with Keycloak.
-- **BL-086/087/090 and BL-104 through BL-117, BL-121 accepted.**
-- **BL-073/074 partial/hybrid-ready.** Knowledge retrieval.
-- **BL-026/027/028/029 partial/local-mock.** AI cockpit: model gateway readiness endpoint, chat APIs, ticket summary API, draft generation with policy gating. Draft generation shows intermittent internal server error.
-- **BL-075/077 partial/local-mock.** Admin dashboard shell (`/admin`) with sidebar, Users, Roles, Model Usage, Audit Explorer, GDPR, Connectors pages. Audit Explorer supports global event filtering by type, actor, resource, date.
-- **BL-078/079 partial/local-mock.** Evidence bundle timeline component and PDF export via pdfmake.
-- **BL-080/081/082 partial/local-mock.** Model usage logging with persisted `ModelUsageLog` table, query API, summary API, and admin panel. Retention policy extended with prompt/output fields. GDPR export-preview/delete-preview endpoints with dry-run enforcement and `DataSubjectRequest` tracking.
 - **Connector expansion and cluster topology partial.**
 
 ## Active Blockers
 
-- Draft generation intermittent internal server error (needs root cause repair).
-- OpenBao is local sandbox credential resolution only.
-- NATS is local sandbox JetStream only.
-- Observability is local sandbox only.
-- Keycloak is local sandbox only.
+- No real cloud AI provider configured; all cloud slots return honest `configured: false`.
+- OpenBao, NATS, observability, Keycloak are local sandbox only.
 - osTicket integration blocked by upstream limitations.
 - Windows service/software and remediation require real Windows proof.
 
 ## Notes
 
-- API HEAD: `746c4a3` (includes Session 125 fixes).
-- Evidence: `output/playwright/session-125-governed-ai-evidence-admin/` (13 files).
+- API HEAD: `baeedfb` (Session 126 repair).
+- Evidence: `output/playwright/session-126-governed-ai-vertical-closure/` (in progress).

@@ -125,9 +125,11 @@ current_state:
       chat_api:
         endpoints: [POST /ai-chat/sessions, GET /ai-chat/sessions, GET /ai-chat/sessions/:id, POST /ai-chat/sessions/:id/messages]
         status: runtime_proven_no_ui
+        policy_gating: tenant_ai_policy_checked
+        retention_enforcement: output_redaction_before_storage
       ticket_summary_api: POST /ticket-summary exists and persists TicketSummary
-      draft_generation: runtime_proven_with_intermittent_error
-      policy_gating: allowDraftGeneration and allowedProviders checked before AI calls
+      draft_generation: runtime_proven_500_repaired
+      policy_gating: allowDraftGeneration_and_allowedProviders_checked_before_all_ai_calls
     admin:
       current: admin_dashboard_shell_with_sidebar_and_pages
       route: /admin
@@ -153,7 +155,7 @@ current_state:
       object_storage_artifact_persistence: true (MinIO local sandbox, direct object read/checksum proven)
       compliance_grade: false
       pdf_export: pdfmake_with_system_fonts_fallback_501
-      timeline_component: EvidenceBundleTimeline_exists_not_in_main_cockpit
+      timeline_component: EvidenceBundleTimeline_mounted_in_EvidenceBundlePanel_on_main_cockpit
     telephony:
       current: local_asterisk_ami_bridge_sandbox_only
       real_pbx: false
