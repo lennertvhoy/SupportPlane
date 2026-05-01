@@ -2650,3 +2650,41 @@
   - **Backlog mapping accuracy:** BL-069=GLPI, BL-071=MeshCentral, BL-072=Fortinet, BL-073=knowledge schema, BL-074=knowledge retrieval, BL-127=osTicket.
 - Type: runtime-identity-and-closure-proof-repair
 - as_of: 2026-05-01T13:54:00+02:00
+
+
+## EV-2026-05-01-152: Session 125 — Governed AI Operations and Admin Controls
+
+- Files: `output/playwright/session-125-governed-ai-evidence-admin/01-admin-dashboard.png` through `09-model-usage-summary.json` (13 files total)
+- Source/System: Chromium via Playwright against local Web (`localhost:3200`) and local API (`localhost:4110`), plus terminal-captured JSON/text artifacts.
+- Store/Auth mode for runtime verification: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Local API proof:
+  - `GET /health` returns `{"head":"746c4a37a9fb0c8bb4f445d7842d770a7af605fc",...}` which **exactly matches** `git rev-parse HEAD`.
+  - `git status --short --branch` returns `## main` with zero modifications.
+- Shows:
+  - `01-admin-dashboard.png` — Admin dashboard shell with sidebar navigation to Policies, Users, Roles, Model Usage, Audit Explorer, GDPR, Connectors. Policy Editor panel visible.
+  - `02-model-usage-panel.png` — Model Usage empty state before AI calls.
+  - `02-model-usage-with-data.png` — Model Usage after greeting generation: 1 call, summary cards, data table with `greeting | mock | mock-greeting-v1 | fallback_mock | 0ms`.
+  - `03-audit-explorer-panel.png` — Audit Explorer showing 120 events with event type/actor/resource/date filters and pagination.
+  - `04-gdpr-panel.png` — GDPR Request Panel empty form.
+  - `04-gdpr-export-preview.png` — GDPR Export Preview result for `dev-admin` showing record counts (sessions: 1, auditEvents: 62, modelUsageLogs: 1).
+  - `05-greeting-generated.png` — Generated greeting suggestion in main cockpit.
+  - `06-draft-generated.png` — Draft Note panel showing "Internal server error" (honest failure evidence).
+  - `07-ai-provider-readiness.json` — API response with mock=configured=true, all others=configured=false.
+  - `07-ai-provider-readiness.png` — Browser-rendered JSON of provider readiness.
+  - `08-gdpr-export-preview.json` — Raw API response from `POST /gdpr/export-preview`.
+  - `09-model-usage-summary.json` — Raw API response from `GET /model-usage/summary`.
+- Proves:
+  - **BL-026/080**: Model usage is persisted, queryable, and visible in admin UI.
+  - **BL-027**: Chat session/message APIs exist and are runtime-proven.
+  - **BL-028**: Ticket summary API exists.
+  - **BL-029**: Draft generation exists but has an intermittent error.
+  - **BL-075**: Admin dashboard shell with navigation exists.
+  - **BL-077**: Global audit explorer with filtering works.
+  - **BL-078/079**: Evidence timeline component and PDF export exist.
+  - **BL-081/082**: Retention policy extended; GDPR export-preview/delete-preview works.
+  - **Runtime identity consistency:** API `/health` head matches Git HEAD `746c4a37a9fb0c8bb4f445d7842d770a7af605fc`.
+- Fixes applied during session:
+  - `AuditExplorerPanel.tsx`: endpoint URL fixed from `/support-sessions/audit-events` to `/audit-events`.
+  - `app.module.ts`: `admin/ai-provider-readiness` added to `CurrentIdentityMiddleware` routes.
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-05-01T15:58:00+02:00

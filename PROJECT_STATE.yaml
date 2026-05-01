@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-01T14:35:00+02:00
+  updated_at: 2026-05-01T15:58:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -51,6 +51,8 @@ current_state:
     final_head_after_session_123b_repair: b022c08330fe3f6f9f2d9c41e76b1a6c0e7e5d30
     head_before_session_123c_closure_proof_repair: 0e395791279df7dffabe7b1275139a7efbff65f3
     final_head_after_session_123c_closure_proof_repair: 8803e5278108cf0c4320835bab49ea9cf7597c66
+    head_before_session_125: b08980ab2e15f0f568c6c366c84ec1d5f466797f
+    final_head_after_session_125: 746c4a37a9fb0c8bb4f445d7842d770a7af605fc
     head_before_bl_055_060_118: ee11447f8928d778178f0144b1a0a0c623468c95
     final_head_after_bl_055_060_118: recorded_in_final_handoff
     worktree_status_at_state_update: clean
@@ -105,7 +107,7 @@ current_state:
       fallback_truth: response includes pgvectorReason, embeddingProviderAvailable, semanticEligible, and fallbackReason
       known_gaps: [external_ingestion_pipeline, pgvector_extension_and_vector_column, production_embedding_provider]
     ai:
-      current: deterministic mock/local only
+      current: deterministic mock/local only with governance logging
       cloud_ai_calls: false
       ollama_integrated: true
       model: gemma4:e4b
@@ -114,6 +116,44 @@ current_state:
       host_reachable_from_cluster: true
       cluster_base_url: http://10.88.0.1:11434
       model_upgrade_future: gemma4_and_qwen3.6_require_ollama_upgrade
+      provider_readiness_endpoint: GET /admin/ai-provider-readiness returns honest configured status for 6 providers
+      model_usage_log:
+        persisted_table: ModelUsageLog
+        query_api: GET /model-usage with filtering and pagination
+        summary_api: GET /model-usage/summary
+        admin_ui: ModelUsagePanel with filters and summary cards
+      chat_api:
+        endpoints: [POST /ai-chat/sessions, GET /ai-chat/sessions, GET /ai-chat/sessions/:id, POST /ai-chat/sessions/:id/messages]
+        status: runtime_proven_no_ui
+      ticket_summary_api: POST /ticket-summary exists and persists TicketSummary
+      draft_generation: runtime_proven_with_intermittent_error
+      policy_gating: allowDraftGeneration and allowedProviders checked before AI calls
+    admin:
+      current: admin_dashboard_shell_with_sidebar_and_pages
+      route: /admin
+      pages: [Policies, Users, Roles, Model Usage, Audit Explorer, GDPR, Connectors]
+      auth_required: admin_or_owner_role
+      status: runtime_proven
+    audit:
+      current: global_audit_explorer_with_filtering
+      endpoint: GET /audit-events
+      filters: [eventType, actorType, actorId, resourceType, dateFrom, dateTo]
+      pagination: true
+      ui: AuditExplorerPanel
+      status: runtime_proven
+    gdpr:
+      current: export_preview_and_delete_preview_dry_run_only
+      endpoints: [POST /gdpr/export-preview, POST /gdpr/delete-preview, POST /gdpr/export]
+      tracking_table: DataSubjectRequest
+      ui: GdprRequestPanel
+      status: runtime_proven
+      compliance_claimed: false
+    evidence:
+      current: local sandbox JSON and Markdown bundle persisted to MinIO with direct read/checksum proof
+      object_storage_artifact_persistence: true (MinIO local sandbox, direct object read/checksum proven)
+      compliance_grade: false
+      pdf_export: pdfmake_with_system_fonts_fallback_501
+      timeline_component: EvidenceBundleTimeline_exists_not_in_main_cockpit
     telephony:
       current: local_asterisk_ami_bridge_sandbox_only
       real_pbx: false
