@@ -134,6 +134,17 @@ export const AuditEventType = z.enum([
   'blocked_writeback',
   'blocked_telephony_control',
   'validation_failed',
+  // BL-055 through BL-060 / BL-118 Endpoint diagnostics foundation
+  'endpoint_device_registered',
+  'endpoint_heartbeat_received',
+  'endpoint_inventory_received',
+  'endpoint_diagnostic_snapshot_received',
+  'endpoint_command_requested',
+  'endpoint_command_policy_denied',
+  'endpoint_command_claimed',
+  'endpoint_command_result_received',
+  'endpoint_command_replay_rejected',
+  'endpoint_command_rejected',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

@@ -12,10 +12,10 @@ gateways, and audit logs decide what is allowed.
 
 The current repo is a **local/mock MVP**. It runs a local SupportPlane API, Web
 app, PostgreSQL-backed demo auth/state, deterministic mock connectors, mock AI,
-mock writeback, and local evidence export. It is not production software and has
-no production deployment, production auth, real Zammad writeback, cloud AI,
-real email, real telephony, endpoint agent, screen monitoring, production
-secrets, or compliance claim.
+mock writeback, local endpoint diagnostics foundation, and local evidence export.
+It is not production software and has no production deployment, production auth,
+production Zammad writeback, cloud AI, internet email, production telephony,
+endpoint remediation, screen monitoring, production secrets, or compliance claim.
 
 The next major goal is a **local Kubernetes-on-Podman self-hosted sandbox**. The
 target sandbox services are **Zammad, Ollama, OpenBao, NATS JetStream, Mailpit,
@@ -55,6 +55,7 @@ software. Do not deploy it to production or use it with real customer data.
 - **Connector runtime boundary** — Config validation, runtime readiness, runtime resolver, credential reference metadata (no secret resolution).
 - **Evidence bundles** — JSON and Markdown export with session summary, audit timeline, and honest mock disclaimers.
 - **Call simulator** — Fake incoming call webhook, caller matching, call console lifecycle.
+- **Endpoint diagnostics foundation** — Local outbound-only endpoint agent, heartbeat/inventory, fixed read-only diagnostics, Device Console, and audit trail. No arbitrary shell or remediation.
 
 ### What is intentionally not implemented
 
@@ -62,7 +63,7 @@ software. Do not deploy it to production or use it with real customer data.
 - **No real AI provider** — No OpenAI, Azure, or other model API calls. All AI output is deterministic mock text.
 - **No real telephony / PBX** — Fake webhook simulation only. No voice, TTS, STT, or real phone integration.
 - **No real screen capture** — Web-based mock metadata only. No Tauri app, no raw pixels, no OCR, no desktop monitoring.
-- **No endpoint agent** — No Go agent, no device console, no remote diagnostics.
+- **No endpoint remediation** — Endpoint diagnostics are read-only fixed implementations only. No arbitrary shell, service restart, remote desktop, or mutation.
 - **No production auth** — Local password auth only. No SSO, OAuth, SAML, OIDC, MFA, or password reset.
 - **No production secrets management** — `secretRef` values are opaque placeholders. No Vault, KMS, or encrypted broker.
 - **No compliance certification** — Not SOC 2, ISO 27001, or GDPR compliant.
@@ -116,6 +117,21 @@ Navigate to `http://localhost:3200` and log in with one of the demo accounts:
 | Admin | `admin@supportplane.local` | `supportplane-demo` | `dev-tenant` |
 | Operator | `operator@supportplane.local` | `supportplane-demo` | `dev-tenant` |
 | Viewer | `viewer@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+
+### 6. Start the local endpoint agent
+
+With the API running, start the outbound-only read-only endpoint agent:
+
+```bash
+SUPPORTPLANE_API_URL=http://localhost:4110 \
+SUPPORTPLANE_ENDPOINT_TENANT_ID=dev-tenant \
+SUPPORTPLANE_ENDPOINT_ENROLLMENT_TOKEN=local-endpoint-enrollment-token \
+npm run dev --workspace @supportplane/endpoint-agent
+```
+
+Open `http://localhost:3200/device-console` as an operator or admin to see the
+registered endpoint, heartbeat, inventory, and fixed read-only diagnostic
+commands. Viewer can inspect devices but cannot request diagnostics.
 
 ## How to Run Tests
 

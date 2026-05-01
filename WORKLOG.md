@@ -1166,3 +1166,34 @@ Screenshots: 2 (no duplicates)
 ### Next Recommended Action
 
 - P1 [BL-076] Policy editor foundation.
+## 2026-05-01 — BL-055/056/058/059/060 Endpoint Agent Diagnostics Foundation
+
+**Type:** implementation / endpoint diagnostics foundation
+**Status:** BL-055/056/058/059/060 implemented pending final runtime/browser proof; BL-057 and BL-118 partial
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+
+### What changed
+
+- Added tenant-scoped endpoint device, heartbeat, diagnostic snapshot, command, and command-result Prisma models plus migration.
+- Added endpoint contracts, audit event types, RBAC permissions, API module, operator routes, and agent-facing outbound routes.
+- Added local endpoint agent package at `apps/endpoint-agent` with fixed read-only collectors and no shell/eval/dynamic execution path.
+- Added Device Console route `/device-console` with endpoint list, detail, inventory/snapshots, diagnostic request controls, command history, result viewer, and viewer policy-denied state.
+- Added targeted API and agent tests for registration, heartbeat, inventory, command lifecycle, replay rejection, arbitrary execution rejection, RBAC, tenant boundary, and cross-device rejection.
+
+### Verification so far
+
+- `npm run typecheck --workspace @supportplane/api`: PASS
+- `npm run test --workspace @supportplane/api`: PASS (169/169)
+- `npm run test --workspace @supportplane/endpoint-agent`: PASS (3/3)
+- `npm run typecheck --workspace @supportplane/web`: PASS
+- `npm run lint`: PASS
+- `npm run build --workspaces --if-present`: PASS
+- `npm run validate`: PASS
+- `npm test --workspace @supportplane/web`: PASS (19/19)
+
+### Known gaps
+
+- Installed software/package inventory is not complete; BL-057 remains partial.
+- BL-118 remains partial because production enrollment hardening and deeper consent model are not complete.
+- No remediation, arbitrary shell, remote desktop, OCR, or screen monitoring implemented.

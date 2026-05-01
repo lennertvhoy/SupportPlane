@@ -17,6 +17,11 @@ import type {
   ConnectorPolicy as ConnectorPolicyShape,
   AiPolicy as AiPolicyShape,
   RetentionPolicy as RetentionPolicyShape,
+  EndpointDevice as EndpointDeviceShape,
+  EndpointHeartbeat as EndpointHeartbeatShape,
+  EndpointDiagnosticSnapshot as EndpointDiagnosticSnapshotShape,
+  EndpointCommand as EndpointCommandShape,
+  EndpointCommandResult as EndpointCommandResultShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from '../store/store.interface.js';
 
@@ -38,6 +43,11 @@ export class InMemoryStore implements Store {
   private actionOutboxAttempts = new Map<string, ActionOutboxAttemptShape>();
   private deliveryPolicies = new Map<string, DeliveryPolicyShape>();
   private tenantPolicies = new Map<string, ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>();
+  private endpointDevices = new Map<string, EndpointDeviceShape & { tokenHash?: string }>();
+  private endpointHeartbeats = new Map<string, EndpointHeartbeatShape>();
+  private endpointSnapshots = new Map<string, EndpointDiagnosticSnapshotShape>();
+  private endpointCommands = new Map<string, EndpointCommandShape>();
+  private endpointCommandResults = new Map<string, EndpointCommandResultShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -330,5 +340,112 @@ export class InMemoryStore implements Store {
 
   listTenantPolicies(tenantId: string): Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape> {
     return Array.from(this.tenantPolicies.values()).filter((p) => p.tenantId === tenantId);
+  }
+
+  saveEndpointDevice(device: EndpointDeviceShape, tokenHash?: string): void {
+    const existing = this.endpointDevices.get(`${device.tenantId}:${device.id}`);
+    this.endpointDevices.set(`${device.tenantId}:${device.id}`, { ...device, tokenHash: tokenHash ?? existing?.tokenHash });
+  }
+
+  getEndpointDevice(tenantId: string, id: string): EndpointDeviceShape | undefined {
+    const device = this.endpointDevices.get(`${tenantId}:${id}`);
+    if (!device) return undefined;
+    return {
+      id: device.id,
+      tenantId: device.tenantId,
+      displayName: device.displayName,
+      hostname: device.hostname,
+      deviceKey: device.deviceKey,
+      fingerprint: device.fingerprint,
+      platform: device.platform,
+      agentVersion: device.agentVersion,
+      status: device.status,
+      lastSeenAt: device.lastSeenAt,
+      enrolledAt: device.enrolledAt,
+      createdAt: device.createdAt,
+      updatedAt: device.updatedAt,
+    };
+  }
+
+  getEndpointDeviceByKey(tenantId: string, deviceKey: string): (EndpointDeviceShape & { tokenHash?: string }) | undefined {
+    return Array.from(this.endpointDevices.values()).find((d) => d.tenantId === tenantId && d.deviceKey === deviceKey);
+  }
+
+  listEndpointDevices(tenantId: string): EndpointDeviceShape[] {
+    return Array.from(this.endpointDevices.values())
+      .filter((d) => d.tenantId === tenantId)
+      .map((d) => ({
+        id: d.id,
+        tenantId: d.tenantId,
+        displayName: d.displayName,
+        hostname: d.hostname,
+        deviceKey: d.deviceKey,
+        fingerprint: d.fingerprint,
+        platform: d.platform,
+        agentVersion: d.agentVersion,
+        status: d.status,
+        lastSeenAt: d.lastSeenAt,
+        enrolledAt: d.enrolledAt,
+        createdAt: d.createdAt,
+        updatedAt: d.updatedAt,
+      }))
+      .sort((a, b) => (b.lastSeenAt ?? b.updatedAt).localeCompare(a.lastSeenAt ?? a.updatedAt));
+  }
+
+  saveEndpointHeartbeat(heartbeat: EndpointHeartbeatShape): void {
+    this.endpointHeartbeats.set(`${heartbeat.tenantId}:${heartbeat.id}`, heartbeat);
+  }
+
+  listEndpointHeartbeats(tenantId: string, deviceId: string): EndpointHeartbeatShape[] {
+    return Array.from(this.endpointHeartbeats.values())
+      .filter((h) => h.tenantId === tenantId && h.deviceId === deviceId)
+      .sort((a, b) => b.observedAt.localeCompare(a.observedAt));
+  }
+
+  saveEndpointDiagnosticSnapshot(snapshot: EndpointDiagnosticSnapshotShape): void {
+    this.endpointSnapshots.set(`${snapshot.tenantId}:${snapshot.id}`, snapshot);
+  }
+
+  listEndpointDiagnosticSnapshots(tenantId: string, deviceId: string): EndpointDiagnosticSnapshotShape[] {
+    return Array.from(this.endpointSnapshots.values())
+      .filter((s) => s.tenantId === tenantId && s.deviceId === deviceId)
+      .sort((a, b) => b.collectedAt.localeCompare(a.collectedAt));
+  }
+
+  saveEndpointCommand(command: EndpointCommandShape): void {
+    this.endpointCommands.set(`${command.tenantId}:${command.id}`, command);
+  }
+
+  getEndpointCommand(tenantId: string, id: string): EndpointCommandShape | undefined {
+    return this.endpointCommands.get(`${tenantId}:${id}`);
+  }
+
+  getEndpointCommandByIdempotencyKey(tenantId: string, idempotencyKey: string): EndpointCommandShape | undefined {
+    return Array.from(this.endpointCommands.values()).find((c) => c.tenantId === tenantId && c.idempotencyKey === idempotencyKey);
+  }
+
+  claimNextEndpointCommand(tenantId: string, deviceId: string, options: { now: string }): EndpointCommandShape | undefined {
+    const nowTime = Date.parse(options.now);
+    const candidate = Array.from(this.endpointCommands.values())
+      .filter((c) => c.tenantId === tenantId && c.deviceId === deviceId && c.status === 'queued' && Date.parse(c.expiresAt) > nowTime)
+      .sort((a, b) => a.requestedAt.localeCompare(b.requestedAt))[0];
+    if (!candidate) return undefined;
+    const claimed: EndpointCommandShape = { ...candidate, status: 'claimed', claimedAt: options.now, updatedAt: options.now };
+    this.saveEndpointCommand(claimed);
+    return claimed;
+  }
+
+  listEndpointCommands(tenantId: string, deviceId?: string): EndpointCommandShape[] {
+    return Array.from(this.endpointCommands.values())
+      .filter((c) => c.tenantId === tenantId && (!deviceId || c.deviceId === deviceId))
+      .sort((a, b) => b.requestedAt.localeCompare(a.requestedAt));
+  }
+
+  saveEndpointCommandResult(result: EndpointCommandResultShape): void {
+    this.endpointCommandResults.set(`${result.tenantId}:${result.commandId}`, result);
+  }
+
+  getEndpointCommandResult(tenantId: string, commandId: string): EndpointCommandResultShape | undefined {
+    return this.endpointCommandResults.get(`${tenantId}:${commandId}`);
   }
 }

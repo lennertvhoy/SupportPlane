@@ -17,6 +17,11 @@ import type {
   ConnectorPolicy as ConnectorPolicyShape,
   AiPolicy as AiPolicyShape,
   RetentionPolicy as RetentionPolicyShape,
+  EndpointDevice as EndpointDeviceShape,
+  EndpointHeartbeat as EndpointHeartbeatShape,
+  EndpointDiagnosticSnapshot as EndpointDiagnosticSnapshotShape,
+  EndpointCommand as EndpointCommandShape,
+  EndpointCommandResult as EndpointCommandResultShape,
 } from '@supportplane/contracts';
 
 export interface SharingStateShape {
@@ -113,4 +118,21 @@ export interface Store {
   saveTenantPolicy(policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape, policyType: string, scopeId?: string | null): Promise<void> | void;
   getTenantPolicy(tenantId: string, policyType: string, scopeId?: string | null): Promise<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined> | ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined;
   listTenantPolicies(tenantId: string): Promise<Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>> | Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>;
+
+  // Endpoint agent/device diagnostics
+  saveEndpointDevice(device: EndpointDeviceShape, tokenHash?: string): Promise<void> | void;
+  getEndpointDevice(tenantId: string, id: string): Promise<EndpointDeviceShape | undefined> | EndpointDeviceShape | undefined;
+  getEndpointDeviceByKey(tenantId: string, deviceKey: string): Promise<(EndpointDeviceShape & { tokenHash?: string }) | undefined> | (EndpointDeviceShape & { tokenHash?: string }) | undefined;
+  listEndpointDevices(tenantId: string): Promise<EndpointDeviceShape[]> | EndpointDeviceShape[];
+  saveEndpointHeartbeat(heartbeat: EndpointHeartbeatShape): Promise<void> | void;
+  listEndpointHeartbeats(tenantId: string, deviceId: string): Promise<EndpointHeartbeatShape[]> | EndpointHeartbeatShape[];
+  saveEndpointDiagnosticSnapshot(snapshot: EndpointDiagnosticSnapshotShape): Promise<void> | void;
+  listEndpointDiagnosticSnapshots(tenantId: string, deviceId: string): Promise<EndpointDiagnosticSnapshotShape[]> | EndpointDiagnosticSnapshotShape[];
+  saveEndpointCommand(command: EndpointCommandShape): Promise<void> | void;
+  getEndpointCommand(tenantId: string, id: string): Promise<EndpointCommandShape | undefined> | EndpointCommandShape | undefined;
+  getEndpointCommandByIdempotencyKey(tenantId: string, idempotencyKey: string): Promise<EndpointCommandShape | undefined> | EndpointCommandShape | undefined;
+  claimNextEndpointCommand(tenantId: string, deviceId: string, options: { now: string }): Promise<EndpointCommandShape | undefined> | EndpointCommandShape | undefined;
+  listEndpointCommands(tenantId: string, deviceId?: string): Promise<EndpointCommandShape[]> | EndpointCommandShape[];
+  saveEndpointCommandResult(result: EndpointCommandResultShape): Promise<void> | void;
+  getEndpointCommandResult(tenantId: string, commandId: string): Promise<EndpointCommandResultShape | undefined> | EndpointCommandResultShape | undefined;
 }

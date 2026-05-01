@@ -23,3 +23,4 @@ export * from './delivery-policy.js';
 export * from './connector-credential-reference.js';
 export * from './connector-runtime.js';
 export * from './tenant-policy.js';
+export * from './endpoint-agent.js';

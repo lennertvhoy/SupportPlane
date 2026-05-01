@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Activity, Cpu, AlertTriangle, Phone } from 'lucide-react';
+import { Activity, Cpu, AlertTriangle, Phone, MonitorCog } from 'lucide-react';
 import { SessionListPanel } from '@/components/SessionListPanel';
 import { TicketContextPanel } from '@/components/TicketContextPanel';
 import { AiContextPanel } from '@/components/AiContextPanel';
@@ -365,6 +365,13 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
           >
             <Phone size={10} />
             Call Console
+          </button>
+          <button
+            onClick={() => window.location.href = '/device-console'}
+            className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
+          >
+            <MonitorCog size={10} />
+            Device Console
           </button>
         </div>
       </header>

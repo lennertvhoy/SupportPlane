@@ -2057,3 +2057,24 @@ and must be protected from quiet regression.
   - OIDC uses HTTP for local sandbox.
   - MFA enforcement not implemented.
   - Service account token rotation is manual.
+## AF-2026-05-01-001: Endpoint Agent and Read-Only Diagnostics Foundation (PARTIAL ACCEPTANCE)
+
+- backlog_id: BL-055/BL-056/BL-057/BL-058/BL-059/BL-060/BL-118
+- status: partial_acceptance
+- accepted:
+  - BL-055 agent registration, device identity, outbound-only connection
+  - BL-056 heartbeat, version reporting, inventory basics
+  - BL-058 command/result protocol with nonce/idempotency/replay protection
+  - BL-059 Device Console UI
+  - BL-060 endpoint agent integration tests
+- partial:
+  - BL-057 read-only diagnostics: disk/network/services/status implemented; installed software inventory remains
+  - BL-118 endpoint diagnostics foundation: local safe foundation implemented; production enrollment hardening and deeper consent model remain
+- evidence_folder: output/playwright/session-120-endpoint-agent-diagnostics/
+- screenshot_count: 8
+- evidence_file_count: 11
+- known_limitations:
+  - No remediation, arbitrary shell, remote desktop, OCR, or screen monitoring.
+  - Endpoint enrollment token is local sandbox only.
+  - Installed software/package inventory is not complete.
+  - Runtime identity must match final commit before final handoff.

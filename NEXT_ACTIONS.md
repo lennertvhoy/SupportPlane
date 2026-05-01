@@ -1,12 +1,20 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-04-30 23:36 CEST
+**Updated At:** 2026-05-01 09:20 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
 
-*No active work. BL-083 completed. Awaiting next scope.*
+- [BL-061/BL-062/BL-064/BL-068] **Remote Tool Execution Safety Foundation**
+  - Owner: next implementation slice
+  - Next action: add ToolManifest schema/signing placeholder, explicit tool registry, policy evaluator for role/tenant/device/risk/allowlist, read-only tool invocation audit path, and safety tests proving arbitrary shell remains blocked.
+  - Exit criteria: fixed read-only tools flow through policy and audit without arbitrary execution or remediation.
+
+- [BL-057/BL-118] **Endpoint diagnostics completion gaps**
+  - Owner: next endpoint hardening slice
+  - Next action: add robust installed software/package inventory where portable, consent/enrollment hardening, and broader diagnostics evidence.
+  - Exit criteria: BL-057 and BL-118 can be accepted without diagnostic coverage caveats.
 
 ## Queue Rules
 

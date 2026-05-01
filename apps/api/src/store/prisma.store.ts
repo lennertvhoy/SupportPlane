@@ -25,6 +25,11 @@ import type {
   ConnectorPolicy as ConnectorPolicyShape,
   AiPolicy as AiPolicyShape,
   RetentionPolicy as RetentionPolicyShape,
+  EndpointDevice as EndpointDeviceShape,
+  EndpointHeartbeat as EndpointHeartbeatShape,
+  EndpointDiagnosticSnapshot as EndpointDiagnosticSnapshotShape,
+  EndpointCommand as EndpointCommandShape,
+  EndpointCommandResult as EndpointCommandResultShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from './store.interface.js';
 
@@ -1581,5 +1586,266 @@ export class PrismaStore implements Store {
   ): Promise<Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>> {
     const rows = await this.prisma.tenantPolicy.findMany({ where: { tenantId } });
     return rows.map((r) => r.config as ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape);
+  }
+
+  // Endpoint agent/device diagnostics
+  async saveEndpointDevice(device: EndpointDeviceShape, tokenHash?: string): Promise<void> {
+    const existing = await this.prisma.endpointDevice.findFirst({ where: { tenantId: device.tenantId, id: device.id } });
+    await this.prisma.endpointDevice.upsert({
+      where: { id: device.id },
+      create: {
+        id: device.id,
+        tenantId: device.tenantId,
+        displayName: device.displayName,
+        hostname: device.hostname,
+        deviceKey: device.deviceKey,
+        tokenHash: tokenHash ?? '',
+        fingerprint: device.fingerprint,
+        platform: device.platform,
+        agentVersion: device.agentVersion,
+        status: device.status,
+        lastSeenAt: device.lastSeenAt ? dateOrNow(device.lastSeenAt) : null,
+        enrolledAt: dateOrNow(device.enrolledAt),
+        createdAt: dateOrNow(device.createdAt),
+        updatedAt: dateOrNow(device.updatedAt),
+      },
+      update: {
+        displayName: device.displayName,
+        hostname: device.hostname,
+        tokenHash: tokenHash ?? existing?.tokenHash ?? '',
+        fingerprint: device.fingerprint,
+        platform: device.platform,
+        agentVersion: device.agentVersion,
+        status: device.status,
+        lastSeenAt: device.lastSeenAt ? dateOrNow(device.lastSeenAt) : null,
+        updatedAt: dateOrNow(device.updatedAt),
+      },
+    });
+  }
+
+  async getEndpointDevice(tenantId: string, id: string): Promise<EndpointDeviceShape | undefined> {
+    const row = await this.prisma.endpointDevice.findFirst({ where: { tenantId, id } });
+    return row ? this.mapEndpointDevice(row) : undefined;
+  }
+
+  async getEndpointDeviceByKey(tenantId: string, deviceKey: string): Promise<(EndpointDeviceShape & { tokenHash?: string }) | undefined> {
+    const row = await this.prisma.endpointDevice.findFirst({ where: { tenantId, deviceKey } });
+    return row ? { ...this.mapEndpointDevice(row), tokenHash: row.tokenHash } : undefined;
+  }
+
+  async listEndpointDevices(tenantId: string): Promise<EndpointDeviceShape[]> {
+    const rows = await this.prisma.endpointDevice.findMany({
+      where: { tenantId },
+      orderBy: [{ lastSeenAt: 'desc' }, { updatedAt: 'desc' }],
+    });
+    return rows.map((r) => this.mapEndpointDevice(r));
+  }
+
+  async saveEndpointHeartbeat(heartbeat: EndpointHeartbeatShape): Promise<void> {
+    await this.prisma.endpointHeartbeat.create({
+      data: {
+        id: heartbeat.id,
+        tenantId: heartbeat.tenantId,
+        deviceId: heartbeat.deviceId,
+        status: heartbeat.status,
+        agentVersion: heartbeat.agentVersion,
+        observedAt: dateOrNow(heartbeat.observedAt),
+        summary: json(heartbeat.summary),
+      },
+    });
+  }
+
+  async listEndpointHeartbeats(tenantId: string, deviceId: string): Promise<EndpointHeartbeatShape[]> {
+    const rows = await this.prisma.endpointHeartbeat.findMany({
+      where: { tenantId, deviceId },
+      orderBy: { observedAt: 'desc' },
+      take: 20,
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      tenantId: r.tenantId as EndpointHeartbeatShape['tenantId'],
+      deviceId: r.deviceId as EndpointHeartbeatShape['deviceId'],
+      status: r.status as EndpointHeartbeatShape['status'],
+      agentVersion: r.agentVersion,
+      observedAt: toISO(r.observedAt)!,
+      summary: r.summary as Record<string, unknown>,
+    }));
+  }
+
+  async saveEndpointDiagnosticSnapshot(snapshot: EndpointDiagnosticSnapshotShape): Promise<void> {
+    await this.prisma.endpointDiagnosticSnapshot.create({
+      data: {
+        id: snapshot.id,
+        tenantId: snapshot.tenantId,
+        deviceId: snapshot.deviceId,
+        kind: snapshot.kind,
+        payload: json(snapshot.payload),
+        collectedAt: dateOrNow(snapshot.collectedAt),
+        sourceAgentVersion: snapshot.sourceAgentVersion,
+        createdAt: dateOrNow(snapshot.createdAt),
+      },
+    });
+  }
+
+  async listEndpointDiagnosticSnapshots(tenantId: string, deviceId: string): Promise<EndpointDiagnosticSnapshotShape[]> {
+    const rows = await this.prisma.endpointDiagnosticSnapshot.findMany({
+      where: { tenantId, deviceId },
+      orderBy: { collectedAt: 'desc' },
+      take: 50,
+    });
+    return rows.map((r) => ({
+      id: r.id as EndpointDiagnosticSnapshotShape['id'],
+      tenantId: r.tenantId as EndpointDiagnosticSnapshotShape['tenantId'],
+      deviceId: r.deviceId as EndpointDiagnosticSnapshotShape['deviceId'],
+      kind: r.kind as EndpointDiagnosticSnapshotShape['kind'],
+      payload: r.payload as Record<string, unknown>,
+      collectedAt: toISO(r.collectedAt)!,
+      sourceAgentVersion: r.sourceAgentVersion,
+      createdAt: toISO(r.createdAt)!,
+    }));
+  }
+
+  async saveEndpointCommand(command: EndpointCommandShape): Promise<void> {
+    await this.prisma.endpointCommand.upsert({
+      where: { id: command.id },
+      create: {
+        id: command.id,
+        tenantId: command.tenantId,
+        deviceId: command.deviceId,
+        commandKind: command.commandKind,
+        status: command.status,
+        nonce: command.nonce,
+        idempotencyKey: command.idempotencyKey,
+        requestedByUserId: command.requestedByUserId,
+        requestedAt: dateOrNow(command.requestedAt),
+        claimedAt: command.claimedAt ? dateOrNow(command.claimedAt) : null,
+        completedAt: command.completedAt ? dateOrNow(command.completedAt) : null,
+        expiresAt: dateOrNow(command.expiresAt),
+        policyDecision: json(command.policyDecision),
+        result: command.result ? json(command.result) : undefined,
+        errorCode: command.errorCode,
+        errorMessage: command.errorMessage,
+        createdAt: dateOrNow(command.createdAt),
+        updatedAt: dateOrNow(command.updatedAt),
+      },
+      update: {
+        status: command.status,
+        claimedAt: command.claimedAt ? dateOrNow(command.claimedAt) : null,
+        completedAt: command.completedAt ? dateOrNow(command.completedAt) : null,
+        policyDecision: json(command.policyDecision),
+        result: command.result ? json(command.result) : undefined,
+        errorCode: command.errorCode,
+        errorMessage: command.errorMessage,
+        updatedAt: dateOrNow(command.updatedAt),
+      },
+    });
+  }
+
+  async getEndpointCommand(tenantId: string, id: string): Promise<EndpointCommandShape | undefined> {
+    const row = await this.prisma.endpointCommand.findFirst({ where: { tenantId, id } });
+    return row ? this.mapEndpointCommand(row) : undefined;
+  }
+
+  async getEndpointCommandByIdempotencyKey(tenantId: string, idempotencyKey: string): Promise<EndpointCommandShape | undefined> {
+    const row = await this.prisma.endpointCommand.findFirst({ where: { tenantId, idempotencyKey } });
+    return row ? this.mapEndpointCommand(row) : undefined;
+  }
+
+  async claimNextEndpointCommand(tenantId: string, deviceId: string, options: { now: string }): Promise<EndpointCommandShape | undefined> {
+    const candidate = await this.prisma.endpointCommand.findFirst({
+      where: { tenantId, deviceId, status: 'queued', expiresAt: { gt: dateOrNow(options.now) } },
+      orderBy: { requestedAt: 'asc' },
+    });
+    if (!candidate) return undefined;
+    const updated = await this.prisma.endpointCommand.update({
+      where: { id: candidate.id },
+      data: { status: 'claimed', claimedAt: dateOrNow(options.now), updatedAt: dateOrNow(options.now) },
+    });
+    return this.mapEndpointCommand(updated);
+  }
+
+  async listEndpointCommands(tenantId: string, deviceId?: string): Promise<EndpointCommandShape[]> {
+    const rows = await this.prisma.endpointCommand.findMany({
+      where: { tenantId, ...(deviceId ? { deviceId } : {}) },
+      orderBy: { requestedAt: 'desc' },
+      take: 50,
+    });
+    return rows.map((r) => this.mapEndpointCommand(r));
+  }
+
+  async saveEndpointCommandResult(result: EndpointCommandResultShape): Promise<void> {
+    await this.prisma.endpointCommandResult.create({
+      data: {
+        id: result.id,
+        commandId: result.commandId,
+        tenantId: result.tenantId,
+        deviceId: result.deviceId,
+        status: result.status,
+        payload: json(result.payload),
+        errorCode: result.errorCode,
+        errorMessage: result.errorMessage,
+        submittedAt: dateOrNow(result.submittedAt),
+      },
+    });
+  }
+
+  async getEndpointCommandResult(tenantId: string, commandId: string): Promise<EndpointCommandResultShape | undefined> {
+    const r = await this.prisma.endpointCommandResult.findFirst({ where: { tenantId, commandId } });
+    return r ? {
+      id: r.id as EndpointCommandResultShape['id'],
+      commandId: r.commandId as EndpointCommandResultShape['commandId'],
+      tenantId: r.tenantId as EndpointCommandResultShape['tenantId'],
+      deviceId: r.deviceId as EndpointCommandResultShape['deviceId'],
+      status: r.status as EndpointCommandResultShape['status'],
+      payload: r.payload as Record<string, unknown>,
+      errorCode: r.errorCode ?? undefined,
+      errorMessage: r.errorMessage ?? undefined,
+      submittedAt: toISO(r.submittedAt)!,
+    } : undefined;
+  }
+
+  private mapEndpointDevice(row: {
+    id: string; tenantId: string; displayName: string; hostname: string; deviceKey: string; fingerprint: string; platform: string; agentVersion: string; status: string; lastSeenAt: Date | null; enrolledAt: Date; createdAt: Date; updatedAt: Date;
+  }): EndpointDeviceShape {
+    return {
+      id: row.id as EndpointDeviceShape['id'],
+      tenantId: row.tenantId as EndpointDeviceShape['tenantId'],
+      displayName: row.displayName,
+      hostname: row.hostname,
+      deviceKey: row.deviceKey,
+      fingerprint: row.fingerprint,
+      platform: row.platform,
+      agentVersion: row.agentVersion,
+      status: row.status as EndpointDeviceShape['status'],
+      lastSeenAt: toISO(row.lastSeenAt),
+      enrolledAt: toISO(row.enrolledAt)!,
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
+  }
+
+  private mapEndpointCommand(row: {
+    id: string; tenantId: string; deviceId: string; commandKind: string; status: string; nonce: string; idempotencyKey: string; requestedByUserId: string; requestedAt: Date; claimedAt: Date | null; completedAt: Date | null; expiresAt: Date; policyDecision: unknown; result: unknown; errorCode: string | null; errorMessage: string | null; createdAt: Date; updatedAt: Date;
+  }): EndpointCommandShape {
+    return {
+      id: row.id as EndpointCommandShape['id'],
+      tenantId: row.tenantId as EndpointCommandShape['tenantId'],
+      deviceId: row.deviceId as EndpointCommandShape['deviceId'],
+      commandKind: row.commandKind as EndpointCommandShape['commandKind'],
+      status: row.status as EndpointCommandShape['status'],
+      nonce: row.nonce,
+      idempotencyKey: row.idempotencyKey,
+      requestedByUserId: row.requestedByUserId,
+      requestedAt: toISO(row.requestedAt)!,
+      claimedAt: toISO(row.claimedAt),
+      completedAt: toISO(row.completedAt),
+      expiresAt: toISO(row.expiresAt)!,
+      policyDecision: row.policyDecision as Record<string, unknown>,
+      result: row.result as Record<string, unknown> | undefined,
+      errorCode: row.errorCode ?? undefined,
+      errorMessage: row.errorMessage ?? undefined,
+      createdAt: toISO(row.createdAt)!,
+      updatedAt: toISO(row.updatedAt)!,
+    };
   }
 }

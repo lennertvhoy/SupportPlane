@@ -3499,6 +3499,182 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
   });
 });
 
+describe('Endpoint agent diagnostics API', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    process.env['SUPPORTPLANE_ENDPOINT_ENROLLMENT_TOKEN'] = 'test-enroll-token';
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  after(async () => {
+    if (app) await app.close();
+  });
+
+  async function registerDevice(tenantId = 'tenant-endpoint-a', deviceKey = `device-${Date.now()}`) {
+    const res = await supertest(server)
+      .post('/endpoint-agent/register')
+      .send({
+        tenantId,
+        enrollmentToken: 'test-enroll-token',
+        deviceKey,
+        displayName: 'Endpoint Test Device',
+        hostname: 'endpoint-test-host',
+        platform: 'linux test',
+        agentVersion: '0.1.0-test',
+        inventory: { readOnly: true, hostname: 'endpoint-test-host' },
+      })
+      .expect(201);
+    return res.body as { device: { id: string; deviceKey: string }; deviceToken: string };
+  }
+
+  it('registers, heartbeats, requests, claims, and records read-only command results', async () => {
+    const registered = await registerDevice();
+
+    await supertest(server)
+      .post('/endpoint-agent/heartbeat')
+      .set('x-endpoint-tenant-id', 'tenant-endpoint-a')
+      .set('x-endpoint-device-key', registered.device.deviceKey)
+      .set('x-endpoint-device-token', registered.deviceToken)
+      .send({ agentVersion: '0.1.0-test', status: 'online', summary: { readOnly: true } })
+      .expect(201);
+
+    const requested = await supertest(server)
+      .post(`/endpoint-devices/${registered.device.id}/commands`)
+      .set('x-tenant-id', 'tenant-endpoint-a')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({ commandKind: 'collect_disk', idempotencyKey: 'tenant-endpoint-a:collect-disk:1' })
+      .expect(201);
+
+    assert.strictEqual(requested.body.command.commandKind, 'collect_disk');
+    assert.strictEqual(requested.body.command.policyDecision.arbitraryShellAllowed, false);
+    assert.strictEqual(requested.body.command.policyDecision.remediationAllowed, false);
+
+    const claimed = await supertest(server)
+      .post('/endpoint-agent/commands/claim')
+      .set('x-endpoint-tenant-id', 'tenant-endpoint-a')
+      .set('x-endpoint-device-key', registered.device.deviceKey)
+      .set('x-endpoint-device-token', registered.deviceToken)
+      .send({})
+      .expect(201);
+    assert.strictEqual(claimed.body.command.id, requested.body.command.id);
+    assert.ok(claimed.body.command.nonce);
+
+    await supertest(server)
+      .post(`/endpoint-agent/commands/${claimed.body.command.id}/result`)
+      .set('x-endpoint-tenant-id', 'tenant-endpoint-a')
+      .set('x-endpoint-device-key', registered.device.deviceKey)
+      .set('x-endpoint-device-token', registered.deviceToken)
+      .send({ nonce: claimed.body.command.nonce, status: 'succeeded', payload: { kind: 'disk', readOnly: true } })
+      .expect(201);
+
+    const detail = await supertest(server)
+      .get(`/endpoint-devices/${registered.device.id}`)
+      .set('x-tenant-id', 'tenant-endpoint-a')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .expect(200);
+    assert.strictEqual(detail.body.device.status, 'online');
+    assert.ok(detail.body.heartbeats.length >= 1);
+    assert.ok(detail.body.snapshots.find((s: { kind: string }) => s.kind === 'inventory'));
+    assert.strictEqual(detail.body.commands[0].status, 'succeeded');
+  });
+
+  it('rejects unknown commands, arbitrary shell payloads, duplicate results, and cross-device result submission', async () => {
+    const deviceA = await registerDevice('tenant-endpoint-b', 'endpoint-b-a');
+    const deviceB = await registerDevice('tenant-endpoint-b', 'endpoint-b-b');
+
+    await supertest(server)
+      .post(`/endpoint-devices/${deviceA.device.id}/commands`)
+      .set('x-tenant-id', 'tenant-endpoint-b')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({ commandKind: 'shell', command: 'whoami' })
+      .expect(400);
+
+    await supertest(server)
+      .post(`/endpoint-devices/${deviceA.device.id}/commands`)
+      .set('x-tenant-id', 'tenant-endpoint-b')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({ commandKind: 'ping_self', shell: 'whoami' })
+      .expect(400);
+
+    const requested = await supertest(server)
+      .post(`/endpoint-devices/${deviceA.device.id}/commands`)
+      .set('x-tenant-id', 'tenant-endpoint-b')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({ commandKind: 'ping_self', idempotencyKey: 'tenant-endpoint-b:ping:1' })
+      .expect(201);
+
+    const replayRequest = await supertest(server)
+      .post(`/endpoint-devices/${deviceA.device.id}/commands`)
+      .set('x-tenant-id', 'tenant-endpoint-b')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({ commandKind: 'ping_self', idempotencyKey: 'tenant-endpoint-b:ping:1' })
+      .expect(201);
+    assert.strictEqual(replayRequest.body.idempotentReplay, true);
+    assert.strictEqual(replayRequest.body.command.id, requested.body.command.id);
+
+    const claimed = await supertest(server)
+      .post('/endpoint-agent/commands/claim')
+      .set('x-endpoint-tenant-id', 'tenant-endpoint-b')
+      .set('x-endpoint-device-key', deviceA.device.deviceKey)
+      .set('x-endpoint-device-token', deviceA.deviceToken)
+      .send({})
+      .expect(201);
+
+    await supertest(server)
+      .post(`/endpoint-agent/commands/${claimed.body.command.id}/result`)
+      .set('x-endpoint-tenant-id', 'tenant-endpoint-b')
+      .set('x-endpoint-device-key', deviceB.device.deviceKey)
+      .set('x-endpoint-device-token', deviceB.deviceToken)
+      .send({ nonce: claimed.body.command.nonce, status: 'succeeded', payload: { ok: true } })
+      .expect(404);
+
+    await supertest(server)
+      .post(`/endpoint-agent/commands/${claimed.body.command.id}/result`)
+      .set('x-endpoint-tenant-id', 'tenant-endpoint-b')
+      .set('x-endpoint-device-key', deviceA.device.deviceKey)
+      .set('x-endpoint-device-token', deviceA.deviceToken)
+      .send({ nonce: claimed.body.command.nonce, status: 'succeeded', payload: { ok: true } })
+      .expect(201);
+
+    await supertest(server)
+      .post(`/endpoint-agent/commands/${claimed.body.command.id}/result`)
+      .set('x-endpoint-tenant-id', 'tenant-endpoint-b')
+      .set('x-endpoint-device-key', deviceA.device.deviceKey)
+      .set('x-endpoint-device-token', deviceA.deviceToken)
+      .send({ nonce: claimed.body.command.nonce, status: 'succeeded', payload: { ok: true } })
+      .expect(403);
+  });
+
+  it('enforces RBAC and tenant boundary on operator device routes', async () => {
+    const registered = await registerDevice('tenant-endpoint-c', 'endpoint-c-a');
+
+    await supertest(server)
+      .post(`/endpoint-devices/${registered.device.id}/commands`)
+      .set('x-tenant-id', 'tenant-endpoint-c')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .send({ commandKind: 'ping_self' })
+      .expect(403);
+
+    await supertest(server)
+      .get(`/endpoint-devices/${registered.device.id}`)
+      .set('x-tenant-id', 'other-tenant')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .expect(404);
+  });
+});
+
 describe('Redaction unit tests', () => {
   it('redactString removes Authorization Bearer tokens', async () => {
     const { redactString } = await import('../src/evidence-bundle/redaction.js');

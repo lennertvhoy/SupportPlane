@@ -47,6 +47,8 @@ current_state:
     final_head_after_bl_108_repair: 4b771068ad666191e99f688065c457d098e26b7f
     head_before_bl_089_123_124_125_126_127: c4d0fa6e4c87663d5974ed3b26
     final_head_after_bl_089_123_124_125_126_127: 5e5fc226b93d0dff0457494c87663d5974ed3b26
+    head_before_bl_055_060_118: ee11447f8928d778178f0144b1a0a0c623468c95
+    final_head_after_bl_055_060_118: recorded_in_final_handoff
     worktree_status_at_state_update: clean
 
   current_product_truth:
@@ -107,6 +109,19 @@ current_state:
       sip_trunk: false
       recording: false
       transcription: false
+    endpoint_agent:
+      current: local_outbound_read_only_diagnostics_foundation
+      app_path: apps/endpoint-agent
+      outbound_only: true
+      registration: tenant_enrollment_token_plus_device_token_local_sandbox
+      heartbeat_inventory: true
+      fixed_commands: [collect_inventory, collect_disk, collect_network, collect_services, ping_self]
+      arbitrary_shell: false
+      remediation: false
+      device_console_route: /device-console
+      accepted_items: [BL-055, BL-056, BL-058, BL-059, BL-060]
+      partial_items: [BL-057, BL-118]
+      known_gaps: [installed_software_inventory, production_enrollment_hardening, deeper_consent_model]
     evidence:
       current: local sandbox JSON and Markdown bundle persisted to MinIO with direct read/checksum proof
       object_storage_artifact_persistence: true (MinIO local sandbox, direct object read/checksum proven)
@@ -121,7 +136,7 @@ current_state:
       - no real AI provider
       - no internet email sending (Mailpit local capture only)
       - no real telephony or PBX
-      - no endpoint agent
+      - no production endpoint agent or remediation
       - no Tauri operator companion
       - no screen monitoring or OCR
       - no production secrets

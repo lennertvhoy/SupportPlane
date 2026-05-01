@@ -1,0 +1,23 @@
+{
+  "name": "@supportplane/endpoint-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SupportPlane local endpoint agent for outbound-only read-only diagnostics",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/src/index.js",
+    "dev": "tsx src/index.ts",
+    "smoke": "tsx src/smoke.ts",
+    "test": "tsc && node --test dist/test/**/*.test.js"
+  },
+  "dependencies": {
+    "@supportplane/contracts": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

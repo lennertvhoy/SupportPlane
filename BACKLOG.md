@@ -92,12 +92,12 @@ Status markers:
 ## MVP 4 - Endpoint Agent Read-Only Diagnostics
 
 - [BL-054] `[superseded by BL-118]` Scaffold Go endpoint agent with build targets for Windows, Linux, and macOS. Superseded by the optional endpoint diagnostics foundation path; no agent exists today.
-- [BL-055] `[planned]` Implement agent registration, device identity, and outbound-only connection model.
-- [BL-056] `[planned]` Implement heartbeat, version reporting, and device inventory basics.
-- [BL-057] `[planned]` Implement read-only diagnostics for disk, network, service status, and installed software inventory.
-- [BL-058] `[planned]` Implement endpoint command/result protocol with replay protection.
-- [BL-059] `[planned]` Implement Device Console UI with known endpoints, status, diagnostics, and action history.
-- [BL-060] `[planned]` Add endpoint agent integration tests against local API fixtures.
+- [BL-055] `[accepted]` Implement agent registration, device identity, and outbound-only connection model. Local endpoint agent registers with tenant enrollment token, stores device token locally, and only initiates outbound API calls.
+- [BL-056] `[accepted]` Implement heartbeat, version reporting, and device inventory basics. Agent heartbeat updates device status/last seen/version and submits inventory snapshots.
+- [BL-057] `[partial]` Implement read-only diagnostics for disk, network, service status, and installed software inventory. Disk, network, status, and Linux process/service summaries are implemented with fixed read-only collectors. Installed software/package inventory remains a gap.
+- [BL-058] `[accepted]` Implement endpoint command/result protocol with replay protection. Commands use fixed enum kinds, tenant/device scope, nonce, idempotency key, expiry, and duplicate-result replay rejection.
+- [BL-059] `[accepted]` Implement Device Console UI with known endpoints, status, diagnostics, and action history. `/device-console` lists devices, detail, inventory/snapshots, read-only diagnostic request controls, command history, results, and policy-denied viewer state.
+- [BL-060] `[accepted]` Add endpoint agent integration tests against local API fixtures. API tests cover registration, heartbeat, inventory, command request/claim/result, replay, arbitrary execution rejection, RBAC, tenant boundary, and cross-device rejection. Agent tests prove fixed collector dispatch.
 
 ## MVP 5 - Approval-Gated Remediation
 
@@ -178,7 +178,7 @@ Status markers:
 - [BL-126] `[accepted]` Adapter config schema discovery. Dynamic adapter schema discovery endpoints expose config schemas for registered adapters (zammad, osticket, mock). `additionalProperties: false` enforcement. Evidence: same folder as BL-123. Dependencies: BL-123.
 - [BL-127] `[partial/local-fixture]` osTicket read-only adapter foundation. `OsTicketAdapterFactory` with capabilities `['read_tickets', 'read_customers']` (no write). `MockOsTicketConnectorAdapter` returns deterministic fixture data. No real osTicket service deployed. Evidence: same folder as BL-123. Dependencies: BL-123.
 - [BL-117] `[accepted]` Local Asterisk AMI call-event bridge. Asterisk 22.8.2 sandbox deployed in cluster; AMI event ingestion endpoint accepts canonical call events; telephony registry lists mock-telephony and asterisk-ami adapters; Call Console shows Asterisk-sourced calls with honest sandbox labels. FreePBX GUI deferred. No PSTN, no SIP trunk, no recording, no transcription. Evidence: 2 screenshots + 15 CLI artifacts.
-- [BL-118] `[planned]` Optional endpoint diagnostics foundation. Start read-only diagnostics with osquery or equivalent after core flow works. Dependencies: BL-116. Non-claims: no arbitrary shell or remediation. Evidence expected: read-only diagnostics, consent, RBAC, and denial proof.
+- [BL-118] `[partial]` Optional endpoint diagnostics foundation. Local outbound endpoint agent, fixed read-only diagnostics, Device Console, audit, policy decision point, and denial proof are implemented. Remaining gaps: installed software/package inventory, production enrollment/device key hardening, and deeper consent model. Non-claims: no arbitrary shell, remediation, remote desktop, screen monitoring, or OCR.
 - [BL-119] `[planned]` Optional Tauri operator companion scaffold. Create desktop companion scaffold only after privacy/consent requirements are explicit. Dependencies: BL-116/BL-118 as applicable. Non-claims: no screen capture or OCR by scaffold alone. Evidence expected: explicit start/stop sharing state.
 - [BL-120] `[planned]` Optional consent-gated screen/OCR observation. Add OCR/screen text extraction only after consent, retention, redaction, and privacy design are accepted. Dependencies: BL-119 and separate privacy design. Non-claims: no ambient surveillance, raw pixel retention by default, or remote desktop observation. Evidence expected: consent-gated OCR fixture and redaction/no-secret proof.
 

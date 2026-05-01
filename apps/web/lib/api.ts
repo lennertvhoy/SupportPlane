@@ -79,6 +79,71 @@ export interface AuditEvent {
   createdAt: string;
 }
 
+export interface EndpointDevice {
+  id: string;
+  tenantId: string;
+  displayName: string;
+  hostname: string;
+  deviceKey: string;
+  fingerprint: string;
+  platform: string;
+  agentVersion: string;
+  status: 'online' | 'offline' | 'stale' | 'disabled';
+  lastSeenAt?: string;
+  enrolledAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EndpointHeartbeat {
+  id: string;
+  tenantId: string;
+  deviceId: string;
+  status: string;
+  agentVersion: string;
+  observedAt: string;
+  summary: Record<string, unknown>;
+}
+
+export interface EndpointDiagnosticSnapshot {
+  id: string;
+  tenantId: string;
+  deviceId: string;
+  kind: string;
+  payload: Record<string, unknown>;
+  collectedAt: string;
+  sourceAgentVersion: string;
+  createdAt: string;
+}
+
+export interface EndpointCommand {
+  id: string;
+  tenantId: string;
+  deviceId: string;
+  commandKind: string;
+  status: string;
+  nonce: string;
+  idempotencyKey: string;
+  requestedByUserId: string;
+  requestedAt: string;
+  claimedAt?: string;
+  completedAt?: string;
+  expiresAt: string;
+  policyDecision: Record<string, unknown>;
+  result?: Record<string, unknown>;
+  errorCode?: string;
+  errorMessage?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EndpointDeviceDetail {
+  device: EndpointDevice;
+  heartbeats: EndpointHeartbeat[];
+  snapshots: EndpointDiagnosticSnapshot[];
+  commands: EndpointCommand[];
+}
+
 export interface TicketReference {
   id: string;
   tenantId: string;
@@ -1752,6 +1817,20 @@ export const api = {
 
   updateAdminRetentionPolicy: (body: Partial<RetentionPolicy>, identity?: DevIdentity) =>
     apiFetch<{ policy: RetentionPolicy }>('/admin/policies/retention', { method: 'PUT', body: JSON.stringify(body) }, identity),
+
+  // Endpoint devices / read-only diagnostics
+  listEndpointDevices: (identity?: DevIdentity) =>
+    apiFetch<{ devices: EndpointDevice[] }>('/endpoint-devices', { method: 'GET' }, identity),
+
+  getEndpointDevice: (id: string, identity?: DevIdentity) =>
+    apiFetch<EndpointDeviceDetail>(`/endpoint-devices/${id}`, { method: 'GET' }, identity),
+
+  requestEndpointDiagnostic: (id: string, commandKind: string, identity?: DevIdentity) =>
+    apiFetch<{ command: EndpointCommand; idempotentReplay: boolean }>(
+      `/endpoint-devices/${id}/commands`,
+      { method: 'POST', body: JSON.stringify({ commandKind }) },
+      identity
+    ),
 
   checkConnectorReadiness: (installationId: string, identity?: DevIdentity) =>
     apiFetch<ConnectorReadinessResult>(`/connector-installations/${installationId}/readiness`, { method: 'POST' }, identity),

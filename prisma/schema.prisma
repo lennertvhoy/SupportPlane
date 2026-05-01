@@ -45,6 +45,11 @@ model Tenant {
   sharingStates       SharingState[]
   deliveryPolicies    DeliveryPolicy[]
   tenantPolicies      TenantPolicy[]
+  endpointDevices     EndpointDevice[]
+  endpointHeartbeats  EndpointHeartbeat[]
+  endpointDiagnosticSnapshots EndpointDiagnosticSnapshot[]
+  endpointCommands    EndpointCommand[]
+  endpointCommandResults EndpointCommandResult[]
 
   @@index([slug])
   @@index([status])
@@ -751,4 +756,127 @@ model TenantPolicy {
   @@index([tenantId])
   @@index([policyType])
   @@map("tenant_policies")
+}
+
+model EndpointDevice {
+  id           String   @id @default(cuid())
+  tenantId     String
+  displayName  String
+  hostname     String
+  deviceKey    String
+  tokenHash    String
+  fingerprint  String
+  platform     String
+  agentVersion String
+  status       String   @default("online")
+  lastSeenAt   DateTime?
+  enrolledAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant      Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  heartbeats  EndpointHeartbeat[]
+  snapshots   EndpointDiagnosticSnapshot[]
+  commands    EndpointCommand[]
+  results     EndpointCommandResult[]
+
+  @@unique([tenantId, deviceKey])
+  @@unique([tenantId, fingerprint])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, lastSeenAt])
+  @@map("endpoint_devices")
+}
+
+model EndpointHeartbeat {
+  id           String   @id @default(cuid())
+  tenantId     String
+  deviceId     String
+  status       String
+  agentVersion String
+  observedAt   DateTime @default(now())
+  summary      Json     @default("{}")
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  device EndpointDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, deviceId])
+  @@index([observedAt])
+  @@map("endpoint_heartbeats")
+}
+
+model EndpointDiagnosticSnapshot {
+  id                 String   @id @default(cuid())
+  tenantId           String
+  deviceId           String
+  kind               String
+  payload            Json     @default("{}")
+  collectedAt        DateTime @default(now())
+  sourceAgentVersion String
+  createdAt          DateTime @default(now())
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  device EndpointDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, deviceId])
+  @@index([tenantId, deviceId, kind])
+  @@index([collectedAt])
+  @@map("endpoint_diagnostic_snapshots")
+}
+
+model EndpointCommand {
+  id                String   @id @default(cuid())
+  tenantId          String
+  deviceId          String
+  commandKind       String
+  status            String   @default("queued")
+  nonce             String
+  idempotencyKey    String
+  requestedByUserId String
+  requestedAt       DateTime @default(now())
+  claimedAt         DateTime?
+  completedAt       DateTime?
+  expiresAt         DateTime
+  policyDecision    Json     @default("{}")
+  result            Json?
+  errorCode         String?
+  errorMessage      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  device EndpointDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  results EndpointCommandResult[]
+
+  @@unique([tenantId, idempotencyKey])
+  @@unique([tenantId, nonce])
+  @@index([tenantId])
+  @@index([tenantId, deviceId])
+  @@index([tenantId, status])
+  @@index([expiresAt])
+  @@map("endpoint_commands")
+}
+
+model EndpointCommandResult {
+  id           String   @id @default(cuid())
+  commandId    String
+  tenantId     String
+  deviceId     String
+  status       String
+  payload      Json     @default("{}")
+  errorCode    String?
+  errorMessage String?
+  submittedAt  DateTime @default(now())
+
+  tenant  Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  device  EndpointDevice  @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  command EndpointCommand @relation(fields: [commandId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, commandId])
+  @@index([tenantId])
+  @@index([tenantId, deviceId])
+  @@index([submittedAt])
+  @@map("endpoint_command_results")
 }
