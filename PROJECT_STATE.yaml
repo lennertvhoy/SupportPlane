@@ -110,33 +110,50 @@ current_state:
       recording: false
       transcription: false
     endpoint_agent:
-      current: local_outbound_read_only_diagnostics_foundation
+      current: local_outbound_read_only_diagnostics_foundation_platform_aware
       app_path: apps/endpoint-agent
       outbound_only: true
       registration: tenant_enrollment_token_plus_device_token_local_sandbox
       heartbeat_inventory: true
       fixed_commands: [collect_inventory, collect_disk, collect_network, collect_services, ping_self]
+      platform_aware_collectors: true
+      platforms: [linux, win32, darwin]
       arbitrary_shell: false
       remediation: false
       device_console_route: /device-console
       accepted_items: [BL-055, BL-056, BL-058, BL-059, BL-060]
-      partial_items: [BL-057, BL-118]
-      known_gaps: [installed_software_inventory, production_enrollment_hardening, deeper_consent_model]
+      partial_items: [BL-057, BL-118, BL-129]
+      known_gaps: [installed_software_inventory, production_enrollment_hardening, deeper_consent_model, windows_real_runner, windows_service_enumeration, windows_remediation]
     tool_execution:
-      current: remote_tool_execution_safety_foundation_accepted
+      current: remote_tool_execution_safety_foundation_truth_repaired
       manifest: local_tool_manifest_json_with_integrity_hash
       registry_count: 7
       registry_tools: [diagnostic.inventory, diagnostic.disk, diagnostic.network, diagnostic.services, diagnostic.status, remediation.flush_dns_cache, remediation.clear_temp_preview]
-      policy_engine: role_tenant_device_risk_allowlist
+      policy_engine: role_tenant_device_risk_allowlist_platform_aware
       read_only_auto_approval: true
       remediation_requires_approval: true
       arbitrary_shell_blocked: true
       fixed_implementation_only: true
       endpoint_command_kind_allowlist: [collect_inventory, collect_disk, collect_network, collect_services, ping_self, flush_dns_cache, clear_temp_preview]
       audit_events: [tool_invocation_requested, tool_dispatch_created, tool_approval_requested, tool_approval_decided, tool_result_received, arbitrary_execution_rejected]
-      accepted_items: [BL-061, BL-062, BL-063, BL-064, BL-065, BL-066, BL-067, BL-068]
+      accepted_items: [BL-061, BL-062, BL-063, BL-064, BL-066, BL-068]
+      partial_items: [BL-065, BL-067]
       evidence_folder: output/playwright/session-121-bl061-068-tool-execution-safety-foundation/
-      known_gaps: [web_ui_tool_registry_page, web_ui_approval_queue, web_ui_device_console_tool_integration, tool_manifest_digital_signing, production_enrollment_hardening]
+      known_gaps: [web_ui_tool_registry_page, web_ui_approval_queue, web_ui_device_console_tool_integration, tool_manifest_digital_signing, production_enrollment_hardening, remediation_end_to_end_result, note_draft_browser_proof]
+    windows_endpoint:
+      current: architecture_grade_contracts_policy_agent_ui_docs
+      platform_enum: [linux, win32, darwin, unknown]
+      platform_normalization: true
+      agent_collectors: [inventory, disk, network, services_placeholder, ping_self]
+      windows_collectors_safe: [inventory, disk, network, ping_self]
+      windows_collectors_unsupported: [services, flush_dns_cache, clear_temp_preview]
+      ui_platform_badges: true
+      ui_unsupported_tool_state: true
+      mocked_windows_seed: true
+      real_windows_runner: false
+      documentation: docs/WINDOWS_ENDPOINT_SUPPORT.md
+      tests: [platform_policy_api_tests, agent_collector_unit_tests, platform_normalization_tests]
+      backlog_items: [BL-129, BL-130, BL-131, BL-132, BL-133]
     evidence:
       current: local sandbox JSON and Markdown bundle persisted to MinIO with direct read/checksum proof
       object_storage_artifact_persistence: true (MinIO local sandbox, direct object read/checksum proven)

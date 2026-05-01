@@ -105,10 +105,10 @@ Status markers:
 - [BL-062] `[accepted]` Implement policy engine for role, tenant, device group, risk level, and tool allowlist checks. Fixed `implementationId` mapped to `EndpointCommandKind` with allowlist validation.
 - [BL-063] `[accepted]` Implement approval request lifecycle, manager approval/rejection, and timeout behavior. RBAC enforced — viewer denied, admin allowed.
 - [BL-064] `[accepted]` Implement read-only tool invocation flow with audit events and before/after summaries. Read-only diagnostics auto-approved and dispatched to endpoint commands.
-- [BL-065] `[accepted]` Implement low-risk tools: flush DNS, restart approved service, and clear temp directory. Approval queue with approve/deny lifecycle; approved invocations dispatch to endpoint commands.
+- [BL-065] `[partial]` Implement low-risk tools: flush DNS, restart approved service, and clear temp directory. Approval queue with approve/deny lifecycle exists and approved invocations dispatch to endpoint commands. However, remediation tools are disabled in the manifest (`enabled: false`) and the endpoint agent returns `unsupported: true` for all remediation commands. End-to-end execution with a real result is not yet proven. Marked partial until a safe remediation implementation executes and returns a result after approval.
 - [BL-066] `[accepted]` Implement execution gateway dispatch to endpoint agent fixed implementations only. Audit events generated for all invocations, approvals, and results.
-- [BL-067] `[accepted]` Implement tool result summarization and ticket note draft from remediation outcome. Tool registry with integrity-validated manifest, idempotent upsert.
-- [BL-068] `[accepted]` Add remediation safety tests proving arbitrary shell is blocked. Arbitrary shell, command, script, argv, executable fields rejected in `requestedInput`.
+- [BL-067] `[partial]` Implement tool result summarization and ticket note draft from remediation outcome. Backend `ToolResultNoteDraftService` exists with full API, store methods, Prisma model, and contracts. UI now includes a 'Create note draft' button on completed invocations in the Device Console. Marked partial until browser proof verifies the full user-facing flow end-to-end.
+- [BL-068] `[accepted]` Add remediation safety tests proving arbitrary shell is blocked. Arbitrary shell, command, script, argv, executable, powershell, cmd fields rejected in `requestedInput`.
 
 ## Integrations After MVP
 
@@ -181,6 +181,11 @@ Status markers:
 - [BL-118] `[partial]` Optional endpoint diagnostics foundation. Local outbound endpoint agent, fixed read-only diagnostics, Device Console, audit, policy decision point, and denial proof are implemented. Remaining gaps: installed software/package inventory, production enrollment/device key hardening, and deeper consent model. Non-claims: no arbitrary shell, remediation, remote desktop, screen monitoring, or OCR.
 - [BL-119] `[planned]` Optional Tauri operator companion scaffold. Create desktop companion scaffold only after privacy/consent requirements are explicit. Dependencies: BL-116/BL-118 as applicable. Non-claims: no screen capture or OCR by scaffold alone. Evidence expected: explicit start/stop sharing state.
 - [BL-120] `[planned]` Optional consent-gated screen/OCR observation. Add OCR/screen text extraction only after consent, retention, redaction, and privacy design are accepted. Dependencies: BL-119 and separate privacy design. Non-claims: no ambient surveillance, raw pixel retention by default, or remote desktop observation. Evidence expected: consent-gated OCR fixture and redaction/no-secret proof.
+- [BL-129] `[partial/local-mock]` Windows endpoint agent compatibility foundation. Platform-aware contracts, policy enforcement, collector modules, and UI platform badges implemented. Windows-safe read-only collectors (status, inventory, disk, network) return structured results without arbitrary shell. Windows service/process enumeration and remediation return `unsupported` with honest notes. Mocked Windows endpoint in seed data. Tests use mocked platform provider. Real Windows runner verification is not yet proven.
+- [BL-130] `[planned]` Windows diagnostics collectors completion. Implement safe Windows service enumeration without PowerShell (e.g., via Node APIs or WMI bindings if available). Implement installed software inventory via safe Windows APIs. Requires real Windows runner or accepted safe abstraction.
+- [BL-131] `[planned]` Windows tool-manifest compatibility completion. Validate all diagnostic.tools work on Windows where supported. Ensure remediation tools are either safely implemented or explicitly disabled with honest messaging.
+- [BL-132] `[planned]` Windows service/install packaging plan. Design Windows service wrapper, installer MSI/EXE strategy, and auto-start behavior. Document deployment path for IT environments.
+- [BL-133] `[planned]` Windows verification strategy. Real Windows runner CI harness or manual verification runbook. Prove endpoint agent registration, heartbeat, diagnostics, and policy enforcement on actual Windows host.
 
 ## WATCHLIST
 

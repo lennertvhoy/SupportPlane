@@ -1249,3 +1249,68 @@ Screenshots: 2 (no duplicates)
 ### Next Recommended Action
 
 - P1 [BL-057/BL-118] Endpoint diagnostics completion gaps (installed software inventory, consent/enrollment hardening).
+
+---
+
+## Session 122 — 2026-05-01 — Windows Endpoint Foundation + Tool Execution Closure
+
+### Scope
+
+- BL-065 truth repair (downgraded to `[partial]`)
+- BL-067 truth repair (downgraded to `[partial]`)
+- Windows platform support foundation
+- Tool execution policy closure (arbitrary shell rejection expansion)
+- UI platform badges and compatibility highlighting
+
+### Changes
+
+- Added `EndpointPlatform` enum (`linux`, `win32`, `darwin`, `unknown`) to `packages/contracts/src/endpoint-agent.ts` with `normalizePlatform()` and `platformDisplayLabel()` utilities.
+- Updated `ToolManifestRecord.supportedPlatforms` from `string[]` to `EndpointPlatform[]`.
+- Refactored agent collectors: deleted monolithic `src/collectors.ts`, split into `linux.ts`, `win32.ts`, `darwin.ts`, `shared.ts`, `index.ts`. Added `src/platform.ts` for platform provider abstraction.
+- Windows disk collector uses `C:\`; Windows services returns honest unsupported placeholder.
+- Added `ToolPolicyService.evaluateToolInvocation` platform gate: rejects tools when `devicePlatform` is not in `tool.supportedPlatforms`.
+- Updated device registration to normalize platform via `normalizePlatform()`.
+- Added UI platform badges on Tool Registry page (Linux=accent/emerald, Windows=blue, macOS=purple, unknown=muted).
+- Added Device Console platform display label and unsupported tool highlighting per selected device.
+- Added demo Windows device (`endpoint-windows-001`, `windows-mock-host`, `platform: win32`) to `prisma/seed.ts`.
+- Expanded arbitrary shell rejection fields to include `powershell` and `cmd` in manifest validation and gateway request scanning.
+- Fixed `ToolResultNoteDraftService` error response for incomplete invocations from 404→400.
+- Added `docs/WINDOWS_ENDPOINT_SUPPORT.md` documenting honest limitations and future work.
+- Added CORS port `3201` to `apps/api/src/main.ts` dev allowlist.
+
+### Tests
+
+- API suite: 178/178 passing (added 9 new tests in `Tool execution and platform policy API` suite).
+- Endpoint agent suite: 12/12 passing (platform provider + collectors).
+- New API tests: arbitrary `powershell`/`cmd` rejection, platform policy denial (Linux-only tool on Windows device), cross-tenant note draft denial, incomplete invocation note draft denial.
+
+### Verification
+
+- BL-065: `flush_dns_cache` and `clear_temp_preview` remain `enabled: false` in manifest; agent returns `unsupported: true` for all platforms.
+- BL-067: Backend `ToolResultNoteDraftService.createDraftFromResult` exists and is tested; no UI flow calls `createToolNoteDraft` — honestly partial.
+- Platform policy: Windows device + `diagnostic.disk` → `allowed: true`; Windows device + `diagnostic.services` → `platform_unsupported`.
+- Local runtime: API on :4100, Web on :3201, PostgreSQL on :5434 with seeded data.
+
+### Evidence
+
+- Folder: `output/playwright/session-122-windows-endpoint-foundation/`
+- Files: 7 PNG screenshots
+  - `01-home-logged-in.png` — logged-in operator view
+  - `02-device-console.png` — registered endpoints list with Windows and Linux devices
+  - `03-disk-diagnostic-invoke.png` — Windows device tool buttons with unsupported markers
+  - `04-linux-workstation-tools.png` — Linux device tool buttons (all enabled, no unsupported)
+  - `05-tool-registry-all-platforms.png` — all 7 tools with platform badges (Linux/Windows/macOS)
+  - `06-device-console-windows.png` — full Windows device console with identity, tools, invocation history, policy JSON
+  - `07-device-console-linux.png` — full Linux device console with identity, tools, policy JSON
+
+### Known gaps
+
+- No real Windows endpoint was used for verification; all behavior validated via unit tests and mocked device records on Fedora Linux.
+- Windows `fs.statfs('C:\\')` may behave differently on real Windows.
+- Service enumeration and remediation explicitly return `unsupported` rather than faking success.
+- BL-065 remediation collectors not implemented (honestly partial).
+- BL-067 note draft UI not wired (honestly partial).
+
+### Next Recommended Action
+
+- P1 [BL-130/BL-131/BL-132/BL-133] Windows diagnostics completion, tool-manifest compatibility, service packaging, verification strategy.
