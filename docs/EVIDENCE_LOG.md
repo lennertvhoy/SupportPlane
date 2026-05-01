@@ -2,6 +2,17 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-01-146: GLPI connector truth fix and connector truth regression tests
+
+- Files: `packages/connectors/src/glpi-adapter.ts`, `apps/api/src/connectors/connectors.service.ts`, `apps/api/test/api.test.ts`
+- Source/System: local API test suite
+- Action: Fixed `GlpiConnectorAdapter.connect()` to reject with an honest error instead of silently instantiating `MockGlpiHttpClient` when real credentials are provided. Added `unsupportedRealClient: true` to GLPI classification in `getAllConnectorStatus()`. Added regression tests proving GLPI/osTicket/MeshCentral/Fortinet with real config return `error`/`UNSUPPORTED`, GLPI with no config returns `fixture`, and no connector reports `live` status.
+- Proves:
+  - GLPI real adapter path is now honestly blocked; no silent mock fallback occurs.
+  - Connector status API correctly reports `error`/`UNSUPPORTED` for all connectors lacking real HTTP client implementations.
+- Type: code-and-test-verification
+- as_of: 2026-05-01T17:33:00+02:00
+
 ## EV-2026-05-01-133 through EV-2026-05-01-145: Session 124 Large Backlog Slice — Windows readiness, remediation, retrieval, connector truth
 
 - Files: `output/playwright/session-124-large-backlog-slice/01-runtime-identity-health.json` through `13-console-network-summary.txt`

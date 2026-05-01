@@ -70,9 +70,13 @@ export class GlpiConnectorAdapter implements TicketingAdapterClient {
       );
     }
     this.config = parsed.data;
-    // Real HTTP client would be instantiated here; kept mock-only for this slice.
-    this.httpClient = new MockGlpiHttpClient();
-    return Promise.resolve();
+    // Real GLPI HTTP client is not implemented. Reject honestly rather than silently falling back to mock.
+    return Promise.reject(
+      buildConnectorError(
+        ConnectorErrorCode.enum.CONFIG_MISSING,
+        'Real GLPI HTTP client not implemented'
+      )
+    );
   }
 
   async getTicket(tenantId: TenantId, externalTicketId: string): Promise<TicketReferenceShape> {

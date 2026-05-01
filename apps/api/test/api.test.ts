@@ -662,6 +662,137 @@ describe('Zammad connector endpoints', () => {
     }
   });
 
+  it('GET /connectors/status marks GLPI with real config as unsupported error', async () => {
+    const envKeys = ['GLPI_BASE_URL', 'GLPI_API_TOKEN'];
+    const previous = new Map(envKeys.map((key) => [key, process.env[key]]));
+    process.env.GLPI_BASE_URL = 'https://glpi.example.test';
+    process.env.GLPI_API_TOKEN = 'redacted-test-token';
+
+    try {
+      const res = await supertest(server)
+        .get('/connectors/status')
+        .set('x-tenant-id', 'tenant-a')
+        .set('x-user-id', 'user-1')
+        .expect(200);
+
+      const glpi = (res.body.connectors as Array<Record<string, unknown>>).find((c) => c.id === 'glpi');
+      assert.ok(glpi);
+      assert.strictEqual(glpi.mode, 'error');
+      assert.strictEqual(glpi.credentialSource, 'env');
+      assert.strictEqual(glpi.errorCode, 'UNSUPPORTED');
+      assert.strictEqual(glpi.fixtureWarning, undefined);
+      assert.match(String(glpi.lastError), /Fixture fallback is disabled/);
+    } finally {
+      for (const [key, value] of previous) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+
+  it('GET /connectors/status marks osTicket with real config as unsupported error', async () => {
+    const envKeys = ['OSTICKET_BASE_URL', 'OSTICKET_API_TOKEN'];
+    const previous = new Map(envKeys.map((key) => [key, process.env[key]]));
+    process.env.OSTICKET_BASE_URL = 'https://osticket.example.test';
+    process.env.OSTICKET_API_TOKEN = 'redacted-test-token';
+
+    try {
+      const res = await supertest(server)
+        .get('/connectors/status')
+        .set('x-tenant-id', 'tenant-a')
+        .set('x-user-id', 'user-1')
+        .expect(200);
+
+      const osticket = (res.body.connectors as Array<Record<string, unknown>>).find((c) => c.id === 'osticket');
+      assert.ok(osticket);
+      assert.strictEqual(osticket.mode, 'error');
+      assert.strictEqual(osticket.credentialSource, 'env');
+      assert.strictEqual(osticket.errorCode, 'UNSUPPORTED');
+      assert.strictEqual(osticket.fixtureWarning, undefined);
+      assert.match(String(osticket.lastError), /Fixture fallback is disabled/);
+    } finally {
+      for (const [key, value] of previous) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+
+  it('GET /connectors/status marks MeshCentral with real config as unsupported error', async () => {
+    const envKeys = ['MESHCENTRAL_BASE_URL', 'MESHCENTRAL_API_TOKEN'];
+    const previous = new Map(envKeys.map((key) => [key, process.env[key]]));
+    process.env.MESHCENTRAL_BASE_URL = 'https://meshcentral.example.test';
+    process.env.MESHCENTRAL_API_TOKEN = 'redacted-test-token';
+
+    try {
+      const res = await supertest(server)
+        .get('/connectors/status')
+        .set('x-tenant-id', 'tenant-a')
+        .set('x-user-id', 'user-1')
+        .expect(200);
+
+      const meshcentral = (res.body.connectors as Array<Record<string, unknown>>).find((c) => c.id === 'meshcentral');
+      assert.ok(meshcentral);
+      assert.strictEqual(meshcentral.mode, 'error');
+      assert.strictEqual(meshcentral.credentialSource, 'env');
+      assert.strictEqual(meshcentral.errorCode, 'UNSUPPORTED');
+      assert.strictEqual(meshcentral.fixtureWarning, undefined);
+      assert.match(String(meshcentral.lastError), /Fixture fallback is disabled/);
+    } finally {
+      for (const [key, value] of previous) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+
+  it('GET /connectors/status never reports live status for any connector', async () => {
+    const envKeys = [
+      'GLPI_BASE_URL',
+      'GLPI_API_TOKEN',
+      'OSTICKET_BASE_URL',
+      'OSTICKET_API_TOKEN',
+      'MESHCENTRAL_BASE_URL',
+      'MESHCENTRAL_API_TOKEN',
+      'FORTINET_BASE_URL',
+      'FORTINET_API_TOKEN',
+    ];
+    const previous = new Map(envKeys.map((key) => [key, process.env[key]]));
+    for (const key of envKeys) {
+      delete process.env[key];
+    }
+
+    try {
+      const res = await supertest(server)
+        .get('/connectors/status')
+        .set('x-tenant-id', 'tenant-a')
+        .set('x-user-id', 'user-1')
+        .expect(200);
+
+      for (const connector of res.body.connectors as Array<Record<string, unknown>>) {
+        assert.notStrictEqual(connector.mode, 'live', `${connector.id} must not report live mode`);
+        assert.notStrictEqual(connector.status, 'live', `${connector.id} must not report live status`);
+      }
+    } finally {
+      for (const [key, value] of previous) {
+        if (value === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = value;
+        }
+      }
+    }
+  });
+
   it('POST /connectors/zammad/test returns success in mock mode', async () => {
     const res = await supertest(server)
       .post('/connectors/zammad/test')

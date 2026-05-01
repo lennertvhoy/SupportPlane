@@ -340,6 +340,7 @@ export class ConnectorsService {
         baseUrlEnv: 'GLPI_BASE_URL',
         tokenEnv: 'GLPI_API_TOKEN',
         fixtureByDefault: true,
+        unsupportedRealClient: true,
         fixtureWarning: 'GLPI is fixture-backed until GLPI_BASE_URL and GLPI_API_TOKEN are configured; no real GLPI network call is made.',
         configHint: 'GLPI is not fully configured. Set GLPI_BASE_URL and GLPI_API_TOKEN to enable the real adapter path.',
       }),
