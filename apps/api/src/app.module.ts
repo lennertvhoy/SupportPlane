@@ -33,6 +33,6 @@ import { GdprModule } from './gdpr/gdpr.module.js';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(CorrelationMiddleware).forRoutes('*');
-    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'auth/service-accounts', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies', 'admin/policies', 'endpoint-devices', 'admin/devices', 'admin/tools', 'admin/tool-invocations', 'admin/tool-approvals', 'knowledge', 'model-usage', 'ai-chat', 'audit-events', 'gdpr');
+    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'auth/service-accounts', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies', 'admin/policies', 'endpoint-devices', 'admin/devices', 'admin/tools', 'admin/tool-invocations', 'admin/tool-approvals', 'knowledge', 'model-usage', 'ai-chat', 'audit-events', 'gdpr', 'admin/ai-provider-readiness');
   }
 }

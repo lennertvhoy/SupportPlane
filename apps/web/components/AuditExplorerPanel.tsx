@@ -33,7 +33,7 @@ const API_BASE = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_B
 
 async function fetchAuditEvents(query: Record<string, string>): Promise<AuditExplorerResponse> {
   const params = new URLSearchParams(query);
-  const url = `${API_BASE}/support-sessions/audit-events?${params.toString()}`;
+  const url = `${API_BASE}/audit-events?${params.toString()}`;
   const res = await fetch(url, {
     headers: {
       'x-tenant-id': 'dev-tenant',
