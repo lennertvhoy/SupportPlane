@@ -2654,7 +2654,7 @@
 
 ## EV-2026-05-01-152: Session 125 — Governed AI Operations and Admin Controls
 
-- Files: `output/playwright/session-125-governed-ai-evidence-admin/01-admin-dashboard.png` through `09-model-usage-summary.json` (13 files total)
+- Files: `output/playwright/session-125-governed-ai-evidence-admin/01-admin-dashboard.png` through `09-model-usage-summary.json` (13 files total) **SUPERSEDED by session-126-governed-ai-vertical-closure**
 - Source/System: Chromium via Playwright against local Web (`localhost:3200`) and local API (`localhost:4110`), plus terminal-captured JSON/text artifacts.
 - Store/Auth mode for runtime verification: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
 - Local API proof:
