@@ -1488,3 +1488,79 @@ Repaired Session 123 to closure-grade status by fixing the critical Internal Ser
 
 - P1 [BL-130/BL-131] Windows diagnostics collectors completion
 - P2 [BL-132] Real GLPI or MeshCentral instance connection with credential references
+
+
+---
+
+## Session 123c — Final Closure Proof Repair
+
+**Date:** 2026-05-01  
+**Type:** closure proof repair only (no new features)  
+**Git HEAD:** `0e395791279df7dffabe7b1275139a7efbff65f3`  
+**Worktree:** clean  
+
+### Problem
+
+Session 123b implementation was correct, but the final handoff contained contradictory evidence:
+- Claimed final commit: `b022c08` (later corrected to `0e39579`)
+- Uploaded runtime identity proof (`07-runtime-identity-health.json`) showed `head: ba97d90...` — the pre-commit HEAD
+- Evidence index claimed "dirty worktree" and "Git HEAD: ba97d90 + pending changes"
+- These claims contradicted each other and the actual committed state
+
+### Fixes Applied
+
+1. **Verified actual Git truth:**
+   - `git rev-parse HEAD` = `0e395791279df7dffabe7b1275139a7efbff65f3`
+   - `git status --short` = empty (clean worktree)
+   - `git log --oneline -5` shows `0e39579` as HEAD
+
+2. **Restarted API from current HEAD** and verified runtime identity:
+   - `GET /health` returns `head: "0e395791279df7dffabe7b1275139a7efbff65f3"`
+   - **Runtime HEAD == Git HEAD** ✅
+
+3. **Captured fresh closure evidence** in `output/playwright/session-123c-final-closure-proof/` (5 files, max 10):
+   - `01-runtime-identity-health.json` — API health with correct HEAD
+   - `02-git-status.txt` — clean worktree proof
+   - `03-git-log.txt` — commit history
+   - `04-cockpit-policy-editor-no-error.png` — browser proof that 500 error remains fixed
+   - `05-evidence-index.md` — explains stale claim repair and supersedence
+
+4. **Updated stale Session 123b evidence index** (`08-evidence-index.md`) to:
+   - Mark `07-runtime-identity-health.json` as stale/superseded
+   - Correct "Git HEAD: ba97d90" to final commit `0e39579`
+   - Correct "dirty worktree" to "committed and clean"
+   - Add explicit stale claims table
+
+5. **Fixed BACKLOG.md Fortinet capability mismatch**:
+   - Code registers `read_firewall_context`
+   - BACKLOG.md incorrectly claimed `['read_firewall_status', 'read_interfaces']`
+   - Updated to match code ground truth
+
+6. **Verified backlog mapping** for BL-069/071/072/073/074:
+   - All mappings match BACKLOG.md definitions
+   - osTicket correctly mapped to BL-127, not BL-069-074 range
+
+### Validation Gate (Rerun)
+
+- `git status --short --branch`: PASS (clean, `## main`)
+- `python3 scripts/check_state_docs.py`: PASS
+- Runtime identity (`curl /health`): PASS — head matches Git HEAD
+- Browser Policy Editor check: PASS — no 500 error
+
+### Evidence
+
+- Folder: `output/playwright/session-123c-final-closure-proof/`
+- Files: 5 (under 10-file cap)
+- Supersedes: `session-123b-real-connectors-golden-workflow-closure/07-runtime-identity-health.json`
+
+### Known Limitations (Unchanged)
+
+- Fortinet capability is `read_firewall_context` per code; BACKLOG.md now matches.
+- pgvector not available; lexical fallback for knowledge retrieval.
+- GLPI, MeshCentral, Fortinet mock/unconfigured only.
+- No external knowledge ingestion pipeline.
+
+### Next Recommended Action
+
+- P1 [BL-130/BL-131] Windows diagnostics collectors completion
+- P2 [BL-132] Real GLPI or MeshCentral instance connection with credential references

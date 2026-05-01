@@ -2592,3 +2592,28 @@
   - **Validation gate**: All typecheck, lint, test, build, state docs, BL-116 verifier, and observability baseline checks pass.
 - Type: integration-and-browser-runtime-verification
 - as_of: 2026-05-01T13:37:00+02:00
+
+
+## EV-2026-05-01-147 through EV-2026-05-01-151: Session 123c — Final Closure Proof Repair
+
+- Files: `output/playwright/session-123c-final-closure-proof/01-runtime-identity-health.json` through `05-evidence-index.md`
+- Source/System: Chromium via Playwright against local Web (`localhost:3200`) and local API (`localhost:4110`), plus terminal-captured JSON/text artifacts.
+- Store/Auth mode for runtime verification: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
+- Local API proof:
+  - `GET /health` returns `{"head":"0e395791279df7dffabe7b1275139a7efbff65f3",...}` which **exactly matches** `git rev-parse HEAD`.
+  - `git status --short --branch` returns `## main` with zero modifications.
+  - `git log --oneline -5` shows `0e39579` as HEAD.
+- Shows:
+  - `01-runtime-identity-health.json` — API `/health` JSON with `head: 0e395791279df7dffabe7b1275139a7efbff65f3`, `storeMode: postgres`, `authMode: local`.
+  - `02-git-status.txt` — `## main` with no modifications; clean worktree.
+  - `03-git-log.txt` — Last 5 commits showing `0e39579` at HEAD.
+  - `04-cockpit-policy-editor-no-error.png` — Full-page cockpit screenshot with Session 123 selected, Policy Editor (BL-076) showing delivery/connector/ai/retention v1 tabs, no Internal Server Error.
+  - `05-evidence-index.md` — Explicit stale-claims table mapping Session 123b contradictions to corrections; backlog mapping verification; Fortinet capability mismatch note.
+- Proves:
+  - **Runtime identity consistency:** API `/health` `head` field equals current Git HEAD. No stale runtime evidence.
+  - **Clean worktree:** No uncommitted changes at closure time.
+  - **BL-076 500 fix is durable:** Policy Editor renders without errors from current committed code.
+  - **Stale claim repair:** Session 123b evidence index and runtime JSON contradictions are documented and superseded.
+  - **Backlog mapping accuracy:** BL-069=GLPI, BL-071=MeshCentral, BL-072=Fortinet, BL-073=knowledge schema, BL-074=knowledge retrieval, BL-127=osTicket.
+- Type: runtime-identity-and-closure-proof-repair
+- as_of: 2026-05-01T13:54:00+02:00

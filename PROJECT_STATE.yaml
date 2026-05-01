@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-01T13:37:00+02:00
+  updated_at: 2026-05-01T13:54:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -549,11 +549,11 @@ current_state:
   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-123b-real-connectors-golden-workflow-closure/
-    latest_screenshot_count: 8
+    latest_folder: output/playwright/session-123c-final-closure-proof/
+    latest_screenshot_count: 1
     latest_duplicate_count: 0
-    latest_cli_artifacts: 1
-    total_files_in_latest_folder: 8
+    latest_cli_artifacts: 3
+    total_files_in_latest_folder: 5
     cli_artifacts:
       - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md
       - output/playwright/session-107-bl106-evidence-reconciliation/screenshot-md5s.txt
