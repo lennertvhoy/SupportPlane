@@ -20,14 +20,19 @@ import { AuditModule } from './audit/audit.module.js';
 import { EndpointDevicesModule } from './endpoint-devices/endpoint-devices.module.js';
 import { ToolExecutionModule } from './tool-execution/tool-execution.module.js';
 import { KnowledgeModule } from './knowledge/knowledge.module.js';
+import { ModelUsageModule } from './model-usage/model-usage.module.js';
+import { AiGatewayModule } from './ai-gateway/ai-gateway.module.js';
+import { AiChatModule } from './ai-chat/ai-chat.module.js';
+import { AuditExplorerModule } from './audit-explorer/audit-explorer.module.js';
+import { GdprModule } from './gdpr/gdpr.module.js';
 
 @Module({
-  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule, AdminPolicyModule, EndpointDevicesModule, ToolExecutionModule, KnowledgeModule],
+  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule, AdminPolicyModule, EndpointDevicesModule, ToolExecutionModule, KnowledgeModule, ModelUsageModule, AiGatewayModule, AiChatModule, AuditExplorerModule, GdprModule],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(CorrelationMiddleware).forRoutes('*');
-    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'auth/service-accounts', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies', 'admin/policies', 'endpoint-devices', 'admin/devices', 'admin/tools', 'admin/tool-invocations', 'admin/tool-approvals', 'knowledge');
+    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'auth/service-accounts', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies', 'admin/policies', 'endpoint-devices', 'admin/devices', 'admin/tools', 'admin/tool-invocations', 'admin/tool-approvals', 'knowledge', 'model-usage', 'ai-chat', 'audit-events', 'gdpr');
   }
 }

@@ -7,6 +7,8 @@ import {
   Body,
   Req,
   Res,
+  Query,
+  NotImplementedException,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { SupportSessionsService } from './support-sessions.service.js';
@@ -21,12 +23,17 @@ import type {
   StructuredScreenObservationUploadRequest,
   ScreenObservationSharingStateRequest,
 } from '@supportplane/contracts';
+import { AuditExplorerService } from '../audit-explorer/audit-explorer.service.js';
+import { EvidencePdfService } from '../evidence-bundle/evidence-pdf.service.js';
+import { AiChatService } from '../ai-chat/ai-chat.service.js';
 
 @Controller('support-sessions')
 export class SupportSessionsController {
   constructor(
     @Inject(SupportSessionsService)
-    private readonly service: SupportSessionsService
+    private readonly service: SupportSessionsService,
+    @Inject(AiChatService)
+    private readonly aiChatService: AiChatService
   ) {}
 
   @Get()
@@ -208,6 +215,47 @@ export class SupportSessionsController {
     return;
   }
 
+  @Get(':id/evidence-bundle.pdf')
+  async getEvidenceBundlePdf(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param('id') id: string
+  ) {
+    const identity = getCurrentIdentity(req);
+    const result = await this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.json);
+    const pdfService = new EvidencePdfService();
+    try {
+      const pdfBuffer = await pdfService.generatePdf(result.bundle);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="evidence-bundle-${id}.pdf"`);
+      res.send(pdfBuffer);
+      return;
+    } catch {
+      throw new NotImplementedException('PDF generation is not available — pdfmake or fonts failed to load. Use .json or .md export instead.');
+    }
+  }
+
+  @Get('audit-events')
+  async auditEvents(
+    @Req() req: Request,
+    @Query() query: Record<string, string>
+  ) {
+    const identity = getCurrentIdentity(req);
+    const auditService = new AuditExplorerService();
+    return auditService.queryAuditEvents({
+      tenantId: identity.tenantId,
+      eventType: query.eventType,
+      actorId: query.actorId,
+      actorType: query.actorType,
+      resourceType: query.resourceType,
+      resourceId: query.resourceId,
+      dateFrom: query.dateFrom,
+      dateTo: query.dateTo,
+      limit: query.limit ? parseInt(query.limit, 10) : undefined,
+      offset: query.offset ? parseInt(query.offset, 10) : undefined,
+    });
+  }
+
   @Post(':id/screen-observations/mock')
   async captureMockScreenObservation(
     @Req() req: Request,
@@ -295,5 +343,61 @@ export class SupportSessionsController {
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.createContextPacketFromObservation(identity, id, observationId, body);
+  }
+
+  @Post(':id/ticket-summary')
+  generateTicketSummary(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body()
+    body: {
+      ticketReferenceId?: string;
+      modelSelection?: { provider?: string; model?: string };
+    } = {}
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.service.generateTicketSummary(identity, id, body);
+  }
+
+  @Post(':id/ai-chat')
+  createAiChatSession(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { title?: string }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.aiChatService.createChatSession(identity, { sessionId: id, title: body.title });
+  }
+
+  @Get(':id/ai-chat')
+  listAiChatSessions(@Req() req: Request, @Param('id') _id: string) {
+    const identity = getCurrentIdentity(req);
+    return this.aiChatService.listChatSessions(identity);
+  }
+
+  @Get(':id/ai-chat/:chatId')
+  getAiChatSession(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('chatId') chatId: string
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.aiChatService.getChatSession(identity, chatId);
+  }
+
+  @Post(':id/ai-chat/:chatId/messages')
+  sendAiChatMessage(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Param('chatId') chatId: string,
+    @Body()
+    body: {
+      content: string;
+      role?: string;
+      modelSelection?: { provider?: string; model?: string };
+    }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.aiChatService.sendMessage(identity, chatId, body);
   }
 }

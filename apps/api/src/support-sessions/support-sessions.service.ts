@@ -1,5 +1,18 @@
 import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 import { randomUUID } from 'crypto';
+
+function createPrismaClient(): PrismaClient {
+  const databaseUrl = process.env['DATABASE_URL'];
+  if (!databaseUrl) {
+    throw new Error('DATABASE_URL environment variable is required for SupportSessionsService');
+  }
+  const pool = new Pool({ connectionString: databaseUrl });
+  const adapter = new PrismaPg(pool);
+  return new PrismaClient({ adapter });
+}
 import { InMemoryStore } from './in-memory.store.js';
 import type { Store } from '../store/store.interface.js';
 import {
@@ -30,6 +43,8 @@ import {
   type TicketReference as TicketReferenceShape,
   type ScreenObservation as ScreenObservationShape,
   type ScreenObservationId,
+  type RetentionPolicy as RetentionPolicyShape,
+  type ModelUsageLogEntry,
 
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
@@ -46,10 +61,13 @@ import {
   createDefaultModelGateway,
   GenerateDraftResponse,
   ModelSelection,
-  type GenerateDraftResponse as GenerateDraftResponseShape,
   GreetingSuggestionResponse,
+  GenerateSummaryResponse,
+  type GenerateDraftResponse as GenerateDraftResponseShape,
   type GreetingSuggestionResponse as GreetingSuggestionResponseShape,
+  type GenerateSummaryResponse as GenerateSummaryResponseShape,
 } from '@supportplane/ai';
+import { ModelUsageService } from '../model-usage/model-usage.service.js';
 import { type DevIdentity } from '../auth/auth.types.js';
 import { requirePermission } from '../auth/rbac.js';
 import { ConnectorsService } from '../connectors/connectors.service.js';
@@ -67,6 +85,7 @@ export class SupportSessionsService {
     ConnectorMode.enum.mock,
     'mock-adapter-001' as TicketingAdapterId
   );
+  private readonly modelUsageService = new ModelUsageService();
 
   constructor(
     @Inject(ConnectorsService)
@@ -76,6 +95,89 @@ export class SupportSessionsService {
     @Inject(InMemoryStore)
     private readonly store: Store
   ) {}
+
+  private async logModelUsage(
+    identity: DevIdentity,
+    sessionId: string | undefined,
+    feature: ModelUsageLogEntry['feature'],
+    response: GenerateDraftResponseShape | GreetingSuggestionResponseShape
+  ): Promise<void> {
+    const provider = response.provider;
+    const isMock = provider === 'mock';
+    const fallbackUsed = (response.usage as Record<string, unknown>).fallbackUsed === true;
+    const status: ModelUsageLogEntry['status'] = isMock || fallbackUsed ? 'fallback_mock' : 'succeeded';
+
+    await this.modelUsageService.logUsage({
+      id: randomUUID(),
+      tenantId: identity.tenantId,
+      actorId: identity.userId,
+      actorType: 'user',
+      sessionId,
+      feature,
+      provider,
+      model: response.model,
+      latencyMs: response.usage.latencyMs ?? 0,
+      status,
+      metadata: {
+        promptId: response.prompt.id,
+        promptVersion: response.prompt.version,
+        contextHash: response.contextHash,
+        fallbackUsed,
+        noCloudCall: (response.usage as Record<string, unknown>).noCloudCall ?? true,
+      },
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  private async logBlockedUsage(
+    identity: DevIdentity,
+    sessionId: string | undefined,
+    feature: ModelUsageLogEntry['feature'],
+    provider: string,
+    model: string,
+    errorCode: string
+  ): Promise<void> {
+    await this.modelUsageService.logUsage({
+      id: randomUUID(),
+      tenantId: identity.tenantId,
+      actorId: identity.userId,
+      actorType: 'user',
+      sessionId,
+      feature,
+      provider,
+      model,
+      latencyMs: 0,
+      status: 'blocked_by_policy',
+      errorCode,
+      metadata: { source: 'support-sessions.service', blockedByPolicy: true },
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  // ─── Retention enforcement (BL-081) — partial implementation ──────────────
+  private async getRetentionPolicy(identity: DevIdentity): Promise<RetentionPolicyShape | undefined> {
+    try {
+      return (await this.store.getTenantPolicy(identity.tenantId, 'retention', null)) as RetentionPolicyShape | undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private shouldStoreAiOutput(retention: RetentionPolicyShape | undefined): { store: boolean; metadataOnly: boolean } {
+    if (!retention || !retention.enabled) return { store: true, metadataOnly: false };
+    const mode = retention.outputRetentionMode;
+    if (mode === 'none') return { store: false, metadataOnly: false };
+    if (mode === 'metadata_only') return { store: true, metadataOnly: true };
+    return { store: true, metadataOnly: false };
+  }
+
+  private shouldStoreAiPrompt(retention: RetentionPolicyShape | undefined): { store: boolean; metadataOnly: boolean } {
+    if (!retention || !retention.enabled) return { store: true, metadataOnly: false };
+    const mode = retention.promptRetentionMode;
+    if (mode === 'none') return { store: false, metadataOnly: false };
+    if (mode === 'metadata_only') return { store: true, metadataOnly: true };
+    return { store: true, metadataOnly: false };
+  }
 
   private async getAdapter(identity: DevIdentity, installation?: { id: string; secretReferenceIds: string[]; config?: Record<string, unknown> }): Promise<{
     adapter: TicketingAdapterClient;
@@ -379,6 +481,52 @@ export class SupportSessionsService {
       ? ModelSelection.parse(dto.modelSelection)
       : undefined;
 
+    // BL-029: Check tenant AI policy before calling model gateway
+    const aiPolicy = await this.store.getTenantPolicy(identity.tenantId, 'ai');
+    if (aiPolicy && aiPolicy.policyType === 'ai') {
+      const policy = aiPolicy as import('@supportplane/contracts').AiPolicy;
+      if (!policy.allowDraftGeneration) {
+        await this.logBlockedUsage(
+          identity,
+          session.id,
+          'draft',
+          modelSelection?.provider ?? 'mock',
+          modelSelection?.model ?? 'mock-support-note-v1',
+          'draft_generation_disabled_by_policy'
+        );
+        return GenerateDraftResponse.parse({
+          draft: '[DRAFT GENERATION BLOCKED BY POLICY]\n\nYour tenant AI policy does not allow draft generation. Contact your administrator.',
+          provider: modelSelection?.provider ?? 'mock',
+          model: modelSelection?.model ?? 'mock-support-note-v1',
+          prompt: { id: 'blocked', version: 'blocked', purpose: 'Blocked by tenant AI policy' },
+          contextHash: 'blocked_by_policy',
+          usage: { latencyMs: 0, placeholder: true, providerMode: 'mock', runtime: 'mock', fallbackUsed: false, noCloudCall: true },
+          safety: { mockOnly: true, externalCallMade: false, cloudCallMade: false, localProviderCallMade: false, fallbackUsed: false, policyChecks: ['blocked_by_policy'], reviewRequired: true, writebackAllowed: false, autonomousSend: false, redactionApplied: true, runtime: 'mock' },
+          generatedAt: new Date().toISOString(),
+        });
+      }
+      if (modelSelection?.provider && !policy.allowedProviders.includes(modelSelection.provider as never)) {
+        await this.logBlockedUsage(
+          identity,
+          session.id,
+          'draft',
+          modelSelection.provider,
+          modelSelection.model ?? 'unknown',
+          'provider_not_allowed_by_policy'
+        );
+        return GenerateDraftResponse.parse({
+          draft: `[DRAFT GENERATION BLOCKED BY POLICY]\n\nProvider "${modelSelection.provider}" is not in the allowed providers list for your tenant.`,
+          provider: modelSelection.provider,
+          model: modelSelection.model ?? 'unknown',
+          prompt: { id: 'blocked', version: 'blocked', purpose: 'Blocked by tenant AI policy' },
+          contextHash: 'blocked_by_policy',
+          usage: { latencyMs: 0, placeholder: true, providerMode: 'mock', runtime: 'mock', fallbackUsed: false, noCloudCall: true },
+          safety: { mockOnly: true, externalCallMade: false, cloudCallMade: false, localProviderCallMade: false, fallbackUsed: false, policyChecks: ['blocked_by_policy'], reviewRequired: true, writebackAllowed: false, autonomousSend: false, redactionApplied: true, runtime: 'mock' },
+          generatedAt: new Date().toISOString(),
+        });
+      }
+    }
+
     const response = GenerateDraftResponse.parse(
       await this.modelGateway.generateDraft({
         tenantId: identity.tenantId,
@@ -391,18 +539,14 @@ export class SupportSessionsService {
       })
     );
 
-    await this.appendAuditEvent(
-      identity,
-      sessionId,
-      AuditEventType.enum.ai_draft_generated,
-      'support_session',
-      session.id,
-      {
-        provider: response.provider,
-        model: response.model,
-        promptId: response.prompt.id,
-        promptVersion: response.prompt.version,
-        contextHash: response.contextHash,
+    await this.logModelUsage(identity, session.id, 'draft', response);
+
+    const retention = await this.getRetentionPolicy(identity);
+    const promptDecision = this.shouldStoreAiPrompt(retention);
+    const outputDecision = this.shouldStoreAiOutput(retention);
+
+    if (outputDecision.store) {
+      const metadata: Record<string, unknown> = {
         mockOnly: response.safety.mockOnly,
         providerMode: response.usage.providerMode,
         fallbackUsed: response.usage.fallbackUsed,
@@ -412,8 +556,29 @@ export class SupportSessionsService {
         latencyMs: response.usage.latencyMs,
         autonomousSend: response.safety.autonomousSend,
         writebackAllowed: response.safety.writebackAllowed,
+      };
+      if (!outputDecision.metadataOnly) {
+        metadata['provider'] = response.provider;
+        metadata['model'] = response.model;
       }
-    );
+      if (!promptDecision.metadataOnly && promptDecision.store) {
+        metadata['promptId'] = response.prompt.id;
+        metadata['promptVersion'] = response.prompt.version;
+        metadata['contextHash'] = response.contextHash;
+      }
+      if (promptDecision.metadataOnly) {
+        metadata['promptId'] = '[REDACTED]';
+        metadata['promptVersion'] = '[REDACTED]';
+      }
+      await this.appendAuditEvent(
+        identity,
+        sessionId,
+        AuditEventType.enum.ai_draft_generated,
+        'support_session',
+        session.id,
+        metadata
+      );
+    }
 
     return response;
   }
@@ -468,24 +633,150 @@ export class SupportSessionsService {
       })
     );
 
-    await this.appendAuditEvent(
-      identity,
-      sessionId,
-      AuditEventType.enum.greeting_suggestion_generated,
-      'support_session',
-      session.id,
-      {
-        provider: response.provider,
-        model: response.model,
-        promptId: response.prompt.id,
-        promptVersion: response.prompt.version,
-        contextHash: response.contextHash,
+    await this.logModelUsage(identity, session.id, 'greeting', response);
+
+    const retention = await this.getRetentionPolicy(identity);
+    const promptDecision = this.shouldStoreAiPrompt(retention);
+    const outputDecision = this.shouldStoreAiOutput(retention);
+
+    if (outputDecision.store) {
+      const metadata: Record<string, unknown> = {
         tone: response.suggestion.tone,
         callEventId: callEvent?.id,
-        greetingText: response.suggestion.greetingText,
         mockOnly: response.safety.mockOnly,
+      };
+      if (!outputDecision.metadataOnly) {
+        metadata['provider'] = response.provider;
+        metadata['model'] = response.model;
+        metadata['greetingText'] = response.suggestion.greetingText;
+      } else {
+        metadata['greetingText'] = '[REDACTED]';
       }
+      if (!promptDecision.metadataOnly && promptDecision.store) {
+        metadata['promptId'] = response.prompt.id;
+        metadata['promptVersion'] = response.prompt.version;
+        metadata['contextHash'] = response.contextHash;
+      }
+      if (promptDecision.metadataOnly) {
+        metadata['promptId'] = '[REDACTED]';
+        metadata['promptVersion'] = '[REDACTED]';
+      }
+      await this.appendAuditEvent(
+        identity,
+        sessionId,
+        AuditEventType.enum.greeting_suggestion_generated,
+        'support_session',
+        session.id,
+        metadata
+      );
+    }
+
+    return response;
+  }
+
+  async generateTicketSummary(
+    identity: DevIdentity,
+    sessionId: string,
+    dto: {
+      ticketReferenceId?: string;
+      modelSelection?: { provider?: string; model?: string };
+    }
+  ): Promise<GenerateSummaryResponseShape> {
+    requirePermission(identity, 'ai:generate');
+    const session = await this.getSession(identity, sessionId);
+    const contextPackets = await this.store.getContextPackets(
+      identity.tenantId,
+      sessionId
     );
+    const ticketReferences = await this.store.getTicketReferences(
+      identity.tenantId,
+      sessionId
+    );
+
+    const modelSelection = dto.modelSelection
+      ? ModelSelection.parse(dto.modelSelection)
+      : undefined;
+
+    const response = GenerateSummaryResponse.parse(
+      await this.modelGateway.generateSummary({
+        tenantId: identity.tenantId,
+        actorId: identity.userId,
+        session,
+        ticketReferences,
+        contextPackets,
+        modelSelection,
+      })
+    );
+
+    // Store summary in TicketSummary via Prisma
+    const prisma = createPrismaClient();
+    try {
+      const ticketRef = dto.ticketReferenceId
+        ? ticketReferences.find((t) => t.id === dto.ticketReferenceId)
+        : ticketReferences[0];
+
+      if (ticketRef) {
+        await prisma.ticketSummary.create({
+          data: {
+            id: randomUUID(),
+            tenantId: identity.tenantId,
+            ticketReferenceId: ticketRef.id,
+            sessionId,
+            generatedBy: identity.userId,
+            summaryText: response.summary,
+            keyPoints: response.keyPoints,
+            sentiment: response.sentiment ?? null,
+            source: response.provider,
+            redactionLog: [],
+            mockDevOnly: true,
+            createdAt: new Date(response.generatedAt),
+            updatedAt: new Date(response.generatedAt),
+          },
+        });
+      }
+    } catch {
+      // Best-effort persistence; do not fail the request if storage fails
+    } finally {
+      await prisma.$disconnect().catch(() => {});
+    }
+
+    await this.logModelUsage(identity, session.id, 'summary', response as unknown as GenerateDraftResponseShape);
+
+    const retention = await this.getRetentionPolicy(identity);
+    const promptDecision = this.shouldStoreAiPrompt(retention);
+    const outputDecision = this.shouldStoreAiOutput(retention);
+
+    if (outputDecision.store) {
+      const metadata: Record<string, unknown> = {
+        mockOnly: response.safety.mockOnly,
+        providerMode: response.usage.providerMode,
+        fallbackUsed: response.usage.fallbackUsed,
+        noCloudCall: response.usage.noCloudCall,
+        localProviderCallMade: response.safety.localProviderCallMade,
+        latencyMs: response.usage.latencyMs,
+      };
+      if (!outputDecision.metadataOnly) {
+        metadata['provider'] = response.provider;
+        metadata['model'] = response.model;
+      }
+      if (!promptDecision.metadataOnly && promptDecision.store) {
+        metadata['promptId'] = response.prompt.id;
+        metadata['promptVersion'] = response.prompt.version;
+        metadata['contextHash'] = response.contextHash;
+      }
+      if (promptDecision.metadataOnly) {
+        metadata['promptId'] = '[REDACTED]';
+        metadata['promptVersion'] = '[REDACTED]';
+      }
+      await this.appendAuditEvent(
+        identity,
+        sessionId,
+        AuditEventType.enum.ai_draft_generated,
+        'support_session',
+        session.id,
+        metadata
+      );
+    }
 
     return response;
   }

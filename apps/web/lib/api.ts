@@ -758,6 +758,10 @@ export interface RetentionPolicy {
   screenObservationRetentionDays: number;
   evidenceBundleRetentionDays: number;
   actionOutboxRetentionDays: number;
+  promptRetentionMode: 'none' | 'metadata_only' | 'full';
+  outputRetentionMode: 'none' | 'metadata_only' | 'full';
+  promptRetentionDays: number;
+  outputRetentionDays: number;
   autoPurgeEnabled: boolean;
   purgeRequiresApproval: boolean;
   minimumPurgeApproverRole: 'admin' | 'owner' | 'operator';
@@ -1980,6 +1984,44 @@ export const api = {
 
   updateAdminRetentionPolicy: (body: Partial<RetentionPolicy>, identity?: DevIdentity) =>
     apiFetch<{ policy: RetentionPolicy }>('/admin/policies/retention', { method: 'PUT', body: JSON.stringify(body) }, identity),
+
+  // GDPR (BL-082)
+  gdprExportPreview: (body: { subjectType: string; subjectId: string }, identity?: DevIdentity) =>
+    apiFetch<{
+      subjectType: string;
+      subjectId: string;
+      dryRun: true;
+      recordCounts: Record<string, number>;
+      records: Record<string, unknown[]>;
+      redacted: boolean;
+      generatedAt: string;
+      warning: string;
+    }>('/gdpr/export-preview', { method: 'POST', body: JSON.stringify(body) }, identity),
+
+  gdprDeletePreview: (body: { subjectType: string; subjectId: string }, identity?: DevIdentity) =>
+    apiFetch<{
+      subjectType: string;
+      subjectId: string;
+      dryRun: true;
+      wouldDeleteCounts: Record<string, number>;
+      wouldAnonymizeCounts: Record<string, number>;
+      details: Array<{ entity: string; id: string; action: 'delete' | 'anonymize' | 'retain'; reason: string }>;
+      generatedAt: string;
+      warning: string;
+    }>('/gdpr/delete-preview', { method: 'POST', body: JSON.stringify(body) }, identity),
+
+  gdprExport: (body: { subjectType: string; subjectId: string }, identity?: DevIdentity) =>
+    apiFetch<{
+      subjectType: string;
+      subjectId: string;
+      dryRun: true;
+      recordCounts: Record<string, number>;
+      records: Record<string, unknown[]>;
+      redacted: boolean;
+      generatedAt: string;
+      status: string;
+      warning: string;
+    }>('/gdpr/export', { method: 'POST', body: JSON.stringify(body) }, identity),
 
   // Endpoint devices / read-only diagnostics
   listEndpointDevices: (identity?: DevIdentity) =>

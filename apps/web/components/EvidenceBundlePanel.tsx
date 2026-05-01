@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { RefreshCw, Copy, CheckCircle } from 'lucide-react';
+import { RefreshCw, Copy, CheckCircle, FileDown, ScrollText } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
+import { EvidenceBundleTimeline } from './EvidenceBundleTimeline';
 import type { EvidenceBundleExportResponse } from '@/lib/api';
 
 interface EvidenceBundlePanelProps {
@@ -23,7 +24,7 @@ export function EvidenceBundlePanel({
   error,
   onGenerate,
 }: EvidenceBundlePanelProps) {
-  const [activeTab, setActiveTab] = useState<'summary' | 'json' | 'markdown'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'json' | 'markdown' | 'timeline'>('summary');
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (text: string) => {
@@ -45,6 +46,40 @@ export function EvidenceBundlePanel({
             <Badge variant="success" className="text-[10px]">
               {bundle.format}
             </Badge>
+          )}
+          {bundle && sessionId && (
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch(`http://localhost:4110/support-sessions/${sessionId}/evidence-bundle.pdf`, {
+                    headers: {
+                      'x-tenant-id': 'dev-tenant',
+                      'x-user-id': 'dev-user',
+                      'x-user-role': 'support_agent',
+                    },
+                    credentials: 'include',
+                  });
+                  if (!res.ok) {
+                    const body = await res.json().catch(() => null);
+                    alert(body?.message ?? `PDF download failed: HTTP ${res.status}`);
+                    return;
+                  }
+                  const blob = await res.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `evidence-bundle-${sessionId}.pdf`;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                } catch {
+                  alert('PDF download failed');
+                }
+              }}
+              className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] font-medium text-cockpit-300 hover:bg-cockpit-800"
+            >
+              <FileDown size={10} />
+              PDF
+            </button>
           )}
           <button
             onClick={onGenerate}
@@ -115,6 +150,17 @@ export function EvidenceBundlePanel({
               }`}
             >
               Markdown
+            </button>
+            <button
+              onClick={() => setActiveTab('timeline')}
+              className={`rounded px-2 py-1 text-[10px] font-medium ${
+                activeTab === 'timeline'
+                  ? 'bg-cockpit-700 text-cockpit-100'
+                  : 'text-cockpit-500 hover:text-cockpit-300'
+              }`}
+            >
+              <ScrollText size={10} className="mr-1 inline" />
+              Timeline
             </button>
           </div>
 
@@ -202,6 +248,12 @@ export function EvidenceBundlePanel({
               <pre className="max-h-64 overflow-auto rounded border border-cockpit-700 bg-cockpit-950 p-2 text-[10px] text-cockpit-300">
                 {markdown}
               </pre>
+            </div>
+          )}
+
+          {activeTab === 'timeline' && (
+            <div className="max-h-80 overflow-auto">
+              <EvidenceBundleTimeline bundle={bundle?.bundle} />
             </div>
           )}
         </div>

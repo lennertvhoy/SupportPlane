@@ -7,11 +7,13 @@ import {
   GreetingSuggestionTone,
   GreetingSuggestionRequest,
   GreetingSuggestionResponse,
+  ChatRole,
   type AIContextPacket as AIContextPacketShape,
   type SupportSession as SupportSessionShape,
   type TicketReference as TicketReferenceShape,
   type GreetingSuggestionRequest as GreetingSuggestionRequestShape,
   type GreetingSuggestionResponse as GreetingSuggestionResponseShape,
+  type ChatRole as ChatRoleShape,
 } from '@supportplane/contracts';
 
 export { GreetingSuggestionTone, GreetingSuggestionRequest, GreetingSuggestionResponse };
@@ -94,10 +96,57 @@ export const GenerateDraftResponse = z.object({
 });
 export type GenerateDraftResponse = z.infer<typeof GenerateDraftResponse>;
 
+export const GenerateSummaryRequest = z.object({
+  tenantId: z.string().min(1),
+  actorId: z.string().min(1),
+  session: SupportSession,
+  ticketReferences: z.array(TicketReference).default([]),
+  contextPackets: z.array(AIContextPacket).default([]),
+  modelSelection: ModelSelection.optional(),
+});
+export type GenerateSummaryRequest = z.infer<typeof GenerateSummaryRequest>;
+
+export const GenerateSummaryResponse = z.object({
+  summary: z.string().min(1),
+  keyPoints: z.array(z.string()).default([]),
+  sentiment: z.string().optional(),
+  provider: AiProviderId,
+  model: z.string().min(1).max(128),
+  prompt: PromptTemplate,
+  contextHash: ContextHash,
+  usage: ModelUsageMetadata,
+  safety: AiSafetyMetadata,
+  generatedAt: z.string().datetime(),
+});
+export type GenerateSummaryResponse = z.infer<typeof GenerateSummaryResponse>;
+
+export const GenerateChatRequest = z.object({
+  tenantId: z.string().min(1),
+  actorId: z.string().min(1),
+  messages: z.array(z.object({
+    role: ChatRole,
+    content: z.string(),
+  })),
+  modelSelection: ModelSelection.optional(),
+});
+export type GenerateChatRequest = z.infer<typeof GenerateChatRequest>;
+
+export const GenerateChatResponse = z.object({
+  content: z.string().min(1),
+  provider: AiProviderId,
+  model: z.string().min(1).max(128),
+  usage: ModelUsageMetadata,
+  safety: AiSafetyMetadata,
+  generatedAt: z.string().datetime(),
+});
+export type GenerateChatResponse = z.infer<typeof GenerateChatResponse>;
+
 export interface AiProvider {
   readonly id: AiProviderId;
   generateDraft(request: GenerateDraftRequest): Promise<GenerateDraftResponse>;
   generateGreeting(request: GreetingSuggestionRequest): Promise<GreetingSuggestionResponse>;
+  generateSummary(request: GenerateSummaryRequest): Promise<GenerateSummaryResponse>;
+  generateChat(request: GenerateChatRequest): Promise<GenerateChatResponse>;
 }
 
 export class ModelGateway {
@@ -128,6 +177,36 @@ export class ModelGateway {
       throw new Error(`AI provider ${selection.provider} is not configured`);
     }
     return provider.generateGreeting({
+      ...request,
+      modelSelection: selection,
+    });
+  }
+
+  async generateSummary(
+    input: GenerateSummaryRequest
+  ): Promise<GenerateSummaryResponse> {
+    const request = GenerateSummaryRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const provider = this.providers.find((p) => p.id === selection.provider);
+    if (!provider) {
+      throw new Error(`AI provider ${selection.provider} is not configured`);
+    }
+    return provider.generateSummary({
+      ...request,
+      modelSelection: selection,
+    });
+  }
+
+  async generateChat(
+    input: GenerateChatRequest
+  ): Promise<GenerateChatResponse> {
+    const request = GenerateChatRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const provider = this.providers.find((p) => p.id === selection.provider);
+    if (!provider) {
+      throw new Error(`AI provider ${selection.provider} is not configured`);
+    }
+    return provider.generateChat({
       ...request,
       modelSelection: selection,
     });
@@ -277,6 +356,92 @@ export class MockAiProvider implements AiProvider {
       generatedAt: new Date().toISOString(),
     });
   }
+
+  private readonly summaryPrompt: PromptTemplate = {
+    id: 'ticket-summary',
+    version: 'mock-v1',
+    purpose: 'Generate a structured summary from ticket context.',
+  };
+
+  async generateSummary(
+    input: GenerateSummaryRequest
+  ): Promise<GenerateSummaryResponse> {
+    const request = GenerateSummaryRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const contextHash = computeContextHash({
+      session: request.session,
+      ticketReferences: request.ticketReferences,
+      contextPackets: request.contextPackets,
+      prompt: this.summaryPrompt,
+    });
+    const primaryTicket = request.ticketReferences[0];
+    return GenerateSummaryResponse.parse({
+      summary: `[MOCK AI SUMMARY] Session "${request.session.title}" ${primaryTicket ? `linked to ticket ${primaryTicket.externalTicketId} (${primaryTicket.subject})` : 'with no linked tickets'}.`,
+      keyPoints: ['Mock key point: context reviewed deterministically', 'Mock key point: no real AI model was called'],
+      sentiment: 'neutral',
+      provider: this.id,
+      model: selection.model,
+      prompt: this.summaryPrompt,
+      contextHash,
+      usage: {
+        latencyMs: 0,
+        placeholder: true,
+        providerMode: 'mock',
+        runtime: 'mock',
+        fallbackUsed: false,
+        noCloudCall: true,
+      },
+      safety: {
+        mockOnly: true,
+        externalCallMade: false,
+        cloudCallMade: false,
+        localProviderCallMade: false,
+        fallbackUsed: false,
+        policyChecks: ['mock_provider_only', 'review_required', 'writeback_disabled'],
+        reviewRequired: true,
+        writebackAllowed: false,
+        autonomousSend: false,
+        redactionApplied: true,
+        runtime: 'mock',
+      },
+      generatedAt: new Date().toISOString(),
+    });
+  }
+
+  async generateChat(
+    input: GenerateChatRequest
+  ): Promise<GenerateChatResponse> {
+    const request = GenerateChatRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const lastMessage = request.messages[request.messages.length - 1]?.content ?? '';
+    return GenerateChatResponse.parse({
+      content: `[MOCK AI CHAT RESPONSE]\nYou said: "${lastMessage}"\n\nThis is a deterministic mock response. No real AI model was called. No cloud API was used.`,
+      provider: this.id,
+      model: selection.model,
+      usage: {
+        latencyMs: 0,
+        placeholder: true,
+        providerMode: 'mock',
+        runtime: 'mock',
+        fallbackUsed: false,
+        noCloudCall: true,
+      },
+      safety: {
+        mockOnly: true,
+        externalCallMade: false,
+        cloudCallMade: false,
+        localProviderCallMade: false,
+        fallbackUsed: false,
+        policyChecks: ['mock_provider_only', 'review_required'],
+        reviewRequired: true,
+        writebackAllowed: false,
+        autonomousSend: false,
+        redactionApplied: true,
+        runtime: 'mock',
+      },
+      generatedAt: new Date().toISOString(),
+    });
+  }
 }
 
 export interface OllamaClient {
@@ -405,6 +570,182 @@ export class OllamaAiProvider implements AiProvider {
       ...input,
       modelSelection: { provider: 'mock', model: 'mock-greeting-v1' },
     });
+  }
+
+  private readonly summaryPrompt: PromptTemplate = {
+    id: 'ticket-summary',
+    version: 'ollama-local-v1',
+    purpose: 'Generate a structured summary from redacted local SupportPlane ticket context.',
+  };
+
+  async generateSummary(input: GenerateSummaryRequest): Promise<GenerateSummaryResponse> {
+    const request = GenerateSummaryRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const selectedModel = selection.model === 'mock-support-note-v1' ? this.model : selection.model;
+    const redactedContext = redactAiContext({
+      session: request.session,
+      ticketReferences: request.ticketReferences,
+      contextPackets: request.contextPackets,
+    });
+    const contextHash = computeContextHash({ ...redactedContext, prompt: this.summaryPrompt });
+    const requestedAt = new Date().toISOString();
+    const start = Date.now();
+
+    try {
+      const summary = await this.client.generate({
+        baseUrl: this.baseUrl,
+        model: selectedModel,
+        prompt: buildSummaryPrompt(redactedContext),
+        timeoutMs: this.timeoutMs,
+      });
+      const lines = summary.split('\n').filter((l) => l.trim());
+      return GenerateSummaryResponse.parse({
+        summary: labelOllamaSummary(summary, false),
+        keyPoints: lines.slice(0, 3),
+        sentiment: 'neutral',
+        provider: this.id,
+        model: selectedModel,
+        prompt: this.summaryPrompt,
+        contextHash,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: false,
+          providerMode: 'local',
+          runtime: 'ollama',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: false,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: false,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: true,
+          fallbackUsed: false,
+          policyChecks: ['ollama_local_provider', 'redaction_before_provider_call', 'review_required'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'ollama',
+        },
+        generatedAt: requestedAt,
+      });
+    } catch (error) {
+      if (!this.fallbackEnabled) {
+        throw error;
+      }
+      return GenerateSummaryResponse.parse({
+        summary: labelOllamaSummary(`[OLLAMA FALLBACK] Ticket summary unavailable. Fallback summary for session "${request.session.title}".`, true),
+        keyPoints: ['Ollama was unavailable', 'Deterministic fallback used'],
+        sentiment: 'unknown',
+        provider: this.id,
+        model: selectedModel,
+        prompt: this.summaryPrompt,
+        contextHash,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: true,
+          providerMode: 'local',
+          runtime: 'ollama',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: true,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: true,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: false,
+          fallbackUsed: true,
+          policyChecks: ['ollama_unavailable_deterministic_fallback', 'redaction_before_provider_call', 'review_required'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'ollama',
+        },
+        generatedAt: requestedAt,
+      });
+    }
+  }
+
+  async generateChat(input: GenerateChatRequest): Promise<GenerateChatResponse> {
+    const request = GenerateChatRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const selectedModel = selection.model === 'mock-support-note-v1' ? this.model : selection.model;
+    const lastMessage = request.messages[request.messages.length - 1]?.content ?? '';
+    const start = Date.now();
+    const requestedAt = new Date().toISOString();
+
+    try {
+      const content = await this.client.generate({
+        baseUrl: this.baseUrl,
+        model: selectedModel,
+        prompt: buildChatPrompt(request.messages),
+        timeoutMs: this.timeoutMs,
+      });
+      return GenerateChatResponse.parse({
+        content: labelOllamaChat(content, false),
+        provider: this.id,
+        model: selectedModel,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: false,
+          providerMode: 'local',
+          runtime: 'ollama',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: false,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: false,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: true,
+          fallbackUsed: false,
+          policyChecks: ['ollama_local_provider', 'review_required'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'ollama',
+        },
+        generatedAt: requestedAt,
+      });
+    } catch (error) {
+      if (!this.fallbackEnabled) {
+        throw error;
+      }
+      return GenerateChatResponse.parse({
+        content: labelOllamaChat(`[OLLAMA FALLBACK] Local Ollama is unavailable.\n\nYour message: "${lastMessage}"`, true),
+        provider: this.id,
+        model: selectedModel,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: true,
+          providerMode: 'local',
+          runtime: 'ollama',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: true,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: true,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: false,
+          fallbackUsed: true,
+          policyChecks: ['ollama_unavailable_deterministic_fallback', 'review_required'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'ollama',
+        },
+        generatedAt: requestedAt,
+      });
+    }
   }
 }
 
@@ -597,6 +938,182 @@ export class LmStudioAiProvider implements AiProvider {
       modelSelection: { provider: 'mock', model: 'mock-greeting-v1' },
     });
   }
+
+  private readonly summaryPrompt: PromptTemplate = {
+    id: 'ticket-summary',
+    version: 'lmstudio-local-v1',
+    purpose: 'Generate a structured summary from redacted local SupportPlane ticket context via LM Studio.',
+  };
+
+  async generateSummary(input: GenerateSummaryRequest): Promise<GenerateSummaryResponse> {
+    const request = GenerateSummaryRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const selectedModel = selection.model === 'mock-support-note-v1' ? this.model : selection.model;
+    const redactedContext = redactAiContext({
+      session: request.session,
+      ticketReferences: request.ticketReferences,
+      contextPackets: request.contextPackets,
+    });
+    const contextHash = computeContextHash({ ...redactedContext, prompt: this.summaryPrompt });
+    const requestedAt = new Date().toISOString();
+    const start = Date.now();
+
+    try {
+      const summary = await this.client.generate({
+        baseUrl: this.baseUrl,
+        model: selectedModel,
+        prompt: buildSummaryPrompt(redactedContext),
+        timeoutMs: this.timeoutMs,
+      });
+      const lines = summary.split('\n').filter((l) => l.trim());
+      return GenerateSummaryResponse.parse({
+        summary: labelLmStudioSummary(summary, false),
+        keyPoints: lines.slice(0, 3),
+        sentiment: 'neutral',
+        provider: this.id,
+        model: selectedModel,
+        prompt: this.summaryPrompt,
+        contextHash,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: false,
+          providerMode: 'local',
+          runtime: 'lmstudio',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: false,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: false,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: true,
+          fallbackUsed: false,
+          policyChecks: ['lmstudio_local_provider', 'redaction_before_provider_call', 'review_required'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'lmstudio',
+        },
+        generatedAt: requestedAt,
+      });
+    } catch (error) {
+      if (!this.fallbackEnabled) {
+        throw error;
+      }
+      return GenerateSummaryResponse.parse({
+        summary: labelLmStudioSummary(`[LM STUDIO FALLBACK] Ticket summary unavailable. Fallback summary for session "${request.session.title}".`, true),
+        keyPoints: ['LM Studio was unavailable', 'Deterministic fallback used'],
+        sentiment: 'unknown',
+        provider: this.id,
+        model: selectedModel,
+        prompt: this.summaryPrompt,
+        contextHash,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: true,
+          providerMode: 'local',
+          runtime: 'lmstudio',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: true,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: true,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: false,
+          fallbackUsed: true,
+          policyChecks: ['lmstudio_unavailable_deterministic_fallback', 'redaction_before_provider_call', 'review_required'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'lmstudio',
+        },
+        generatedAt: requestedAt,
+      });
+    }
+  }
+
+  async generateChat(input: GenerateChatRequest): Promise<GenerateChatResponse> {
+    const request = GenerateChatRequest.parse(input);
+    const selection = ModelSelection.parse(request.modelSelection ?? {});
+    const selectedModel = selection.model === 'mock-support-note-v1' ? this.model : selection.model;
+    const lastMessage = request.messages[request.messages.length - 1]?.content ?? '';
+    const start = Date.now();
+    const requestedAt = new Date().toISOString();
+
+    try {
+      const content = await this.client.generate({
+        baseUrl: this.baseUrl,
+        model: selectedModel,
+        prompt: buildChatPrompt(request.messages),
+        timeoutMs: this.timeoutMs,
+      });
+      return GenerateChatResponse.parse({
+        content: labelLmStudioChat(content, false),
+        provider: this.id,
+        model: selectedModel,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: false,
+          providerMode: 'local',
+          runtime: 'lmstudio',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: false,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: false,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: true,
+          fallbackUsed: false,
+          policyChecks: ['lmstudio_local_provider', 'review_required'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'lmstudio',
+        },
+        generatedAt: requestedAt,
+      });
+    } catch (error) {
+      if (!this.fallbackEnabled) {
+        throw error;
+      }
+      return GenerateChatResponse.parse({
+        content: labelLmStudioChat(`[LM STUDIO FALLBACK] Local LM Studio is unavailable.\n\nYour message: "${lastMessage}"`, true),
+        provider: this.id,
+        model: selectedModel,
+        usage: {
+          latencyMs: Date.now() - start,
+          placeholder: true,
+          providerMode: 'local',
+          runtime: 'lmstudio',
+          runtimeBaseUrlRedacted: redactBaseUrl(this.baseUrl),
+          fallbackUsed: true,
+          noCloudCall: true,
+        },
+        safety: {
+          mockOnly: true,
+          externalCallMade: false,
+          cloudCallMade: false,
+          localProviderCallMade: false,
+          fallbackUsed: true,
+          policyChecks: ['lmstudio_unavailable_deterministic_fallback', 'review_required'],
+          reviewRequired: true,
+          writebackAllowed: false,
+          autonomousSend: false,
+          redactionApplied: true,
+          runtime: 'lmstudio',
+        },
+        generatedAt: requestedAt,
+      });
+    }
+  }
 }
 
 import {
@@ -614,6 +1131,7 @@ export {
   clearAiProviderRegistry,
   getRegisteredAiProviderIds,
 } from './registry.js';
+export { getProviderReadiness } from './readiness.js';
 export type { AiProviderRegistration, AiProviderSummary } from './registry.js';
 
 function populateDefaultAiProviders(): void {
@@ -738,11 +1256,58 @@ function labelOllamaDraft(draft: string, fallbackUsed: boolean): string {
   return `${label}\n${draft}`;
 }
 
+function buildSummaryPrompt(context: unknown): string {
+  return [
+    'You are SupportPlane local AI running through host-controlled Ollama.',
+    'Generate a concise structured summary from the redacted ticket context below.',
+    'Output format: first line is the summary, following lines are key points.',
+    stableStringify(context),
+  ].join('\n\n');
+}
+
+function labelOllamaSummary(summary: string, fallbackUsed: boolean): string {
+  const label = fallbackUsed
+    ? '[OLLAMA LOCAL FALLBACK SUMMARY - deterministic fallback - review required]'
+    : '[OLLAMA LOCAL SUMMARY - no cloud AI - review required]';
+  return `${label}\n${summary}`;
+}
+
+function buildChatPrompt(messages: Array<{ role: ChatRoleShape; content: string }>): string {
+  const history = messages.map((m) => `${m.role}: ${m.content}`).join('\n');
+  return [
+    'You are SupportPlane local AI assistant running through host-controlled Ollama.',
+    'Respond concisely and helpfully. Do not claim to have sent any messages or performed any actions.',
+    'Conversation history:',
+    history,
+  ].join('\n\n');
+}
+
+function labelOllamaChat(content: string, fallbackUsed: boolean): string {
+  const label = fallbackUsed
+    ? '[OLLAMA LOCAL FALLBACK CHAT - deterministic fallback - review required]'
+    : '[OLLAMA LOCAL CHAT - no cloud AI - review required]';
+  return `${label}\n${content}`;
+}
+
 function labelLmStudioDraft(draft: string, fallbackUsed: boolean): string {
   const label = fallbackUsed
     ? '[LM STUDIO LOCAL FALLBACK - deterministic mock/test fallback - review required before any writeback]'
     : '[LM STUDIO LOCAL DRAFT - no cloud AI - review required before any writeback]';
   return `${label}\n${draft}`;
+}
+
+function labelLmStudioSummary(summary: string, fallbackUsed: boolean): string {
+  const label = fallbackUsed
+    ? '[LM STUDIO LOCAL FALLBACK SUMMARY - deterministic fallback - review required]'
+    : '[LM STUDIO LOCAL SUMMARY - no cloud AI - review required]';
+  return `${label}\n${summary}`;
+}
+
+function labelLmStudioChat(content: string, fallbackUsed: boolean): string {
+  const label = fallbackUsed
+    ? '[LM STUDIO LOCAL FALLBACK CHAT - deterministic fallback - review required]'
+    : '[LM STUDIO LOCAL CHAT - no cloud AI - review required]';
+  return `${label}\n${content}`;
 }
 
 function redactBaseUrl(baseUrl: string): string {

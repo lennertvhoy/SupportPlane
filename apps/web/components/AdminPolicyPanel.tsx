@@ -255,6 +255,10 @@ export function AdminPolicyPanel({ identity }: { identity: AuthIdentity }) {
             <NumberRow label="Audit log retention (days)" value={retentionPolicy.auditLogRetentionDays} min={1} max={3650} onChange={(v) => updateRetention({ auditLogRetentionDays: v })} disabled={!canWrite || saving} />
             <NumberRow label="Call recording retention (days)" value={retentionPolicy.callRecordingRetentionDays} min={1} max={3650} onChange={(v) => updateRetention({ callRecordingRetentionDays: v })} disabled={!canWrite || saving} />
             <NumberRow label="Screen observation retention (days)" value={retentionPolicy.screenObservationRetentionDays} min={1} max={3650} onChange={(v) => updateRetention({ screenObservationRetentionDays: v })} disabled={!canWrite || saving} />
+            <SelectRow label="Prompt retention mode" value={retentionPolicy.promptRetentionMode} options={['none','metadata_only','full']} onChange={(v) => updateRetention({ promptRetentionMode: v as RetentionPolicy['promptRetentionMode'] })} disabled={!canWrite || saving} />
+            <SelectRow label="Output retention mode" value={retentionPolicy.outputRetentionMode} options={['none','metadata_only','full']} onChange={(v) => updateRetention({ outputRetentionMode: v as RetentionPolicy['outputRetentionMode'] })} disabled={!canWrite || saving} />
+            <NumberRow label="Prompt retention (days)" value={retentionPolicy.promptRetentionDays} min={1} max={3650} onChange={(v) => updateRetention({ promptRetentionDays: v })} disabled={!canWrite || saving} />
+            <NumberRow label="Output retention (days)" value={retentionPolicy.outputRetentionDays} min={1} max={3650} onChange={(v) => updateRetention({ outputRetentionDays: v })} disabled={!canWrite || saving} />
             <LockedRow label="Auto-purge" status="Locked OFF" color="red" />
           </div>
         )}
