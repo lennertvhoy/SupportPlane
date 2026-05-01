@@ -54,10 +54,10 @@ Status markers:
 - [BL-023] `[partial/local-mock]` Implement Zammad write path for internal notes and audited writeback outcomes. (mock-only, no real writeback)
 - [BL-024] `[superseded by BL-091]` Implement AIContextPacket builder with customer, ticket, session, and policy context.
 - [BL-025] `[partial/local-mock]` Implement redaction layer for PII/secrets before model calls and logs. (pattern-based redaction)
-- [BL-026] `[partial/local-mock]` Implement model gateway with mock provider first and OpenAI/Azure OpenAI provider slots. (mock-only)
-- [BL-027] `[partial/local-mock]` Implement AI chat endpoint that stores messages, model metadata, and context hashes. (mock-only)
-- [BL-028] `[partial/local-mock]` Implement ticket summary generation with prompt template versioning. (mock-only)
-- [BL-029] `[partial/local-mock]` Implement draft internal note generation and human-reviewed writeback flow. (mock-only)
+- [BL-026] `[partial/mock-default-real-when-configured]` Implement model gateway with mock provider first and OpenAI/Azure OpenAI provider slots. Mock is default; Ollama and LM Studio local providers are real and proven when configured. Cloud provider slots do not exist.
+- [BL-027] `[partial/scaffold]` Implement AI chat endpoint that stores messages, model metadata, and context hashes. No chat message model, API, or UI exists. Current AI interaction is one-shot draft/greeting generation only.
+- [BL-028] `[partial/scaffold]` Implement ticket summary generation with prompt template versioning. `TicketSummary` Prisma model exists but is unused. `TicketSummaryPanel` is a ticket search panel, not an AI summary generator. No dedicated ticket summary API or service method.
+- [BL-029] `[partial/mock-default-real-when-configured]` Implement draft internal note generation and human-reviewed writeback flow. Full draft generation → review → sandbox writeback flow exists and is runtime-proven with local AI. Mock is default. Production writeback and cloud AI are blocked by policy.
 - [BL-030] `[accepted]` Implement append-only AuditEvent writer with initial event types and hash-chain placeholder.
 - [BL-031] `[superseded by BL-091]` Implement Support Cockpit session list, selected session view, and timeline.
 - [BL-032] `[superseded by BL-091]` Implement AI Context Quality panel with loaded/missing/warning states.
@@ -121,14 +121,14 @@ Status markers:
 
 ## Admin, Governance, And Compliance Evidence
 
-- [BL-075] `[partial/local-mock]` Build Admin users, roles, teams, tenants, and connector installation screens. (basic policy panel and auth UI exist; full admin screens not yet built)
+- [BL-075] `[partial/local-mock]` Build Admin users, roles, teams, tenants, and connector installation screens. Policy editor (BL-076) is accepted and solid. No standalone admin area, user/role/tenant management pages, or admin navigation exists.
 - [BL-076] `[accepted]` Build policy editor for tools, risk levels, approvals, model policies, and retention settings. Admin CRUD API endpoints with RBAC enforcement, safety validation (rejects real network/cloud AI/autonomous send), audit events with redacted before/after diffs, compact tabbed UI panel. Runtime verified in Kind cluster.
-- [BL-077] `[planned]` Build audit explorer with filtering by tenant, session, actor, decision, target, and event type.
-- [BL-078] `[partial/local-mock]` Build evidence bundle viewer with timeline, AI context used, actions proposed, approvals, blocked actions, and writebacks. (summary/JSON/Markdown tabs exist; full viewer not yet built)
-- [BL-079] `[planned]` Add evidence export to JSON and Markdown, then PDF later.
-- [BL-080] `[planned]` Add model usage log with provider, model, prompt version, hashes, latency, token usage, and cost estimate.
-- [BL-081] `[planned]` Add tenant-level prompt/output retention controls.
-- [BL-082] `[planned]` Add GDPR-oriented export/delete request groundwork without overclaiming compliance.
+- [BL-077] `[partial/scaffold]` Build audit explorer with filtering by tenant, session, actor, decision, target, and event type. Audit events are stored and shown per-session in `AuditTrailPanel`. No global audit explorer, filtering API, filter UI, or pagination exists.
+- [BL-078] `[partial/local-mock]` Build evidence bundle viewer with timeline, AI context used, actions proposed, approvals, blocked actions, and writebacks. Evidence bundle builder is comprehensive (BL-112 accepted). UI panel shows summary counts and raw JSON/Markdown. A visual chronological timeline viewer is not implemented.
+- [BL-079] `[planned]` Add evidence export to JSON and Markdown, then PDF later. JSON and Markdown export are implemented. No PDF generation library, endpoint, or UI exists.
+- [BL-080] `[partial/scaffold]` Add model usage log with provider, model, prompt version, hashes, latency, token usage, and cost estimate. Usage metadata is captured per-request in AI responses and stored in audit events. Telemetry service is in-memory only (non-persistent, capped at 100 entries). No persisted usage log table, API, or UI exists. Token usage and cost estimation are not implemented.
+- [BL-081] `[partial/scaffold]` Add tenant-level prompt/output retention controls. General retention policy configuration exists (session, audit, call recording, screen observation, evidence bundle, action outbox retention days). No prompt/output-specific retention fields. Retention is not enforced — no purge worker, no scheduled deletion, and `autoPurgeEnabled` is locked off.
+- [BL-082] `[partial/scaffold]` Add GDPR-oriented export/delete request groundwork without overclaiming compliance. Session-level data export exists via evidence bundles (foundational for subject access requests). No dedicated GDPR workflow, delete-request handling, DSAR tracking, or legal-compliance framework exists.
 
 ## Production Hardening
 

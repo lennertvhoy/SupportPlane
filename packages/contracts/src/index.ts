@@ -27,3 +27,6 @@ export * from './endpoint-agent.js';
 export * from './tool-manifest.js';
 export * from './tool-execution.js';
 export * from './knowledge.js';
+export * from './model-usage.js';
+export * from './ai-chat.js';
+export * from './gdpr.js';

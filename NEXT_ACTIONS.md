@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-01 14:35 CEST
+**Updated At:** 2026-05-01 14:41 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
@@ -25,6 +25,26 @@
   - Owner: future Windows hardening slice
   - Next action: run the fixed service/software collectors and packaging scaffold on a real Windows host or Windows CI runner; capture registration, heartbeat, diagnostic, and policy-denial proof.
   - Exit criteria: agent runs on actual Windows, registers, heartbeats, diagnostics and policy enforcement are proven, and unsupported remediation remains honestly labeled unless safely implemented.
+
+- [BL-026/027/028/029] **AI cockpit hardening**
+  - Owner: Session 125
+  - Next action: close acceptance gaps for AI features: add cloud provider stubs (501) to model gateway, add token usage approximation to draft generation, and scope chat/ticket-summary as future schema work.
+  - Exit criteria: BL-026 status honestly reflects `mock-default-real-when-configured` with explicit missing cloud slots. BL-029 usage metadata is enriched or documented as approximate. Chat and ticket-summary scoped to future sessions.
+
+- [BL-075/077] **Admin and audit explorer**
+  - Owner: Session 125
+  - Next action: build standalone `/admin` shell with user/role/tenant pages, and add global `/audit-events` endpoint with filtering API + dedicated audit explorer page.
+  - Exit criteria: Admin users/roles/tenants are CRUD-able via UI with RBAC. Audit explorer supports filtering by event type, actor, date range, and session with pagination.
+
+- [BL-078/079] **Evidence bundle viewer and export**
+  - Owner: Session 125
+  - Next action: add visual timeline tab to `EvidenceBundlePanel`, and evaluate PDF export library for future implementation.
+  - Exit criteria: Evidence bundle panel shows a chronological timeline view of audit events, call events, and actions. PDF export is scoped with a chosen library and honest `planned` status.
+
+- [BL-080/081/082] **AI governance and compliance groundwork**
+  - Owner: Session 125
+  - Next action: add persisted `ModelUsageLog` table and API, add prompt/output retention fields to retention policy, and scope GDPR export/delete request models.
+  - Exit criteria: Model usage is queryable per tenant/session. Retention policy includes prompt/output fields (enforcement deferred). GDPR groundwork scoped with schema design and explicit non-compliance claims.
 
 ## Queue Rules
 

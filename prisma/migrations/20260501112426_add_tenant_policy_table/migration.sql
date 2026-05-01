@@ -23,11 +23,5 @@ CREATE INDEX "tenant_policies_policyType_idx" ON "tenant_policies"("policyType")
 -- CreateIndex
 CREATE UNIQUE INDEX "tenant_policies_tenantId_policyType_scopeId_key" ON "tenant_policies"("tenantId", "policyType", "scopeId");
 
--- CreateIndex
-CREATE INDEX "tool_invocations_approvalId_idx" ON "tool_invocations"("approvalId");
-
--- CreateIndex
-CREATE INDEX "tool_manifest_records_status_idx" ON "tool_manifest_records"("status");
-
 -- AddForeignKey
 ALTER TABLE "tenant_policies" ADD CONSTRAINT "tenant_policies_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -55,6 +55,10 @@ model Tenant {
   toolResultNoteDrafts ToolResultNoteDraft[]
   knowledgeSources     KnowledgeSource[]
   knowledgeArticles    KnowledgeArticle[]
+  modelUsageLogs       ModelUsageLog[]
+  aiChatSessions       AiChatSession[]
+  aiChatMessages       AiChatMessage[]
+  dataSubjectRequests  DataSubjectRequest[]
 
   @@index([slug])
   @@index([status])
@@ -1067,4 +1071,102 @@ model KnowledgeArticle {
   @@index([tenantId, status])
   @@index([tenantId, embeddingProvider])
   @@map("knowledge_articles")
+}
+
+// BL-080 Model Usage Log
+model ModelUsageLog {
+  id               String   @id @default(cuid())
+  tenantId         String
+  actorId          String
+  actorType        String   @default("user")
+  sessionId        String?
+  ticketId         String?
+  feature          String   // chat, summary, draft, greeting, retrieval, other
+  provider         String
+  model            String
+  promptTokens     Int?
+  completionTokens Int?
+  totalTokens      Int?
+  latencyMs        Int
+  estimatedCostUsd Float?
+  status           String   // succeeded, failed, blocked_by_policy, fallback_mock
+  errorCode        String?
+  metadata         Json     @default("{}")
+  createdAt        DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, feature])
+  @@index([tenantId, provider])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@index([createdAt])
+  @@map("model_usage_logs")
+}
+
+// BL-027 AI Chat Session
+model AiChatSession {
+  id        String   @id @default(cuid())
+  tenantId  String
+  sessionId String?  // linked SupportSession
+  title     String?
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messages AiChatMessage[]
+
+  @@index([tenantId])
+  @@index([tenantId, sessionId])
+  @@index([tenantId, status])
+  @@map("ai_chat_sessions")
+}
+
+// BL-027 AI Chat Message
+model AiChatMessage {
+  id            String   @id @default(cuid())
+  tenantId      String
+  chatSessionId String
+  role          String   // user, assistant, system
+  content       String
+  provider      String?
+  model         String?
+  usageMetadata Json?    @default("{}")
+  createdAt     DateTime @default(now())
+
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  chatSession AiChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, chatSessionId])
+  @@index([chatSessionId, createdAt])
+  @@map("ai_chat_messages")
+}
+
+// BL-082 Data Subject Request (GDPR groundwork)
+model DataSubjectRequest {
+  id          String   @id @default(cuid())
+  tenantId    String
+  requestType String   // export, delete, anonymize
+  subjectType String   // user, customer, tenant
+  subjectId   String
+  status      String   @default("pending") // pending, processing, completed, failed, cancelled
+  dryRun      Boolean  @default(true)
+  resultUrl   String?
+  resultCount Int?
+  errorCode   String?
+  metadata    Json     @default("{}")
+  requestedBy String
+  requestedAt DateTime @default(now())
+  completedAt DateTime?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, requestType])
+  @@index([subjectId])
+  @@map("data_subject_requests")
 }

@@ -16,6 +16,8 @@ CREATE TABLE "tool_manifest_records" (
     CONSTRAINT "tool_manifest_records_pkey" PRIMARY KEY ("id")
 );
 
+CREATE INDEX "tool_manifest_records_status_idx" ON "tool_manifest_records"("status");
+
 CREATE TABLE "tool_definitions" (
     "id" TEXT NOT NULL,
     "manifestId" TEXT NOT NULL,
@@ -74,6 +76,7 @@ CREATE INDEX "tool_invocations_toolDefinitionId_idx" ON "tool_invocations"("tool
 CREATE UNIQUE INDEX "tool_invocations_approvalId_key" ON "tool_invocations"("approvalId");
 CREATE INDEX "tool_invocations_endpointCommandId_idx" ON "tool_invocations"("endpointCommandId");
 CREATE INDEX "tool_invocations_createdAt_idx" ON "tool_invocations"("createdAt");
+CREATE INDEX "tool_invocations_approvalId_idx" ON "tool_invocations"("approvalId");
 
 ALTER TABLE "tool_invocations" ADD CONSTRAINT "tool_invocations_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "tool_invocations" ADD CONSTRAINT "tool_invocations_deviceId_fkey" FOREIGN KEY ("deviceId") REFERENCES "endpoint_devices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
