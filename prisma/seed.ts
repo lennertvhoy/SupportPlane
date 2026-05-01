@@ -507,8 +507,8 @@ async function main() {
       fingerprint: 'fp-windows-mock',
       platform: 'win32',
       agentVersion: '0.1.0-readonly',
-      status: 'online',
-      lastSeenAt: new Date(),
+      status: 'offline',
+      lastSeenAt: null,
       enrolledAt: new Date(),
     },
   ];

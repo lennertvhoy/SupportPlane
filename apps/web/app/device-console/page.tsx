@@ -162,12 +162,17 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
                   {tools.map((tool) => {
                     const supported = tool.supportedPlatforms.length === 0 || tool.supportedPlatforms.includes(selectedDevice.platform as 'linux' | 'win32' | 'darwin' | 'unknown');
                     const isEnabled = tool.enabled && supported;
+                    const unsupportedLabel = !supported
+                      ? tool.supportedPlatforms.length === 1
+                        ? `${platformDisplayLabel(tool.supportedPlatforms[0] as 'linux' | 'win32' | 'darwin' | 'unknown')}-only`
+                        : 'unsupported'
+                      : null;
                     return (
-                      <button key={tool.toolKey} type="button" disabled={!canRequest || commandLoading != null || !isEnabled} onClick={() => isEnabled && invokeTool(tool.toolKey)} className="inline-flex items-center gap-2 rounded border border-cockpit-700 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-200 hover:border-accent-500 disabled:cursor-not-allowed disabled:opacity-40" title={`${tool.displayName}${!supported ? ' — Unsupported on this endpoint platform' : ''}${!tool.enabled ? ' — Disabled in registry' : ''}`}>
+                      <button key={tool.toolKey} type="button" disabled={!canRequest || commandLoading != null || !isEnabled} onClick={() => isEnabled && invokeTool(tool.toolKey)} className="inline-flex items-center gap-2 rounded border border-cockpit-700 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-200 hover:border-accent-500 disabled:cursor-not-allowed disabled:opacity-40" title={`${tool.displayName}${unsupportedLabel ? ` — ${unsupportedLabel}` : ''}${!tool.enabled ? ' — Disabled in registry' : ''}`}>
                         {commandLoading === tool.toolKey ? <Loader2 size={15} className="animate-spin" /> : <Wrench size={15} />}
                         {tool.displayName}
                         {tool.approvalRequired && <span className="ml-1 text-[10px] text-amber-300">(approval)</span>}
-                        {!supported && <span className="ml-1 text-[10px] text-red-300">(unsupported)</span>}
+                        {unsupportedLabel && <span className="ml-1 text-[10px] text-red-300">({unsupportedLabel})</span>}
                         {!tool.enabled && <span className="ml-1 text-[10px] text-cockpit-500">(disabled)</span>}
                       </button>
                     );

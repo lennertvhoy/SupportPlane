@@ -4,7 +4,7 @@ import { collectInventory, collectNetwork, pingSelf, runFixedDiagnostic } from '
 import * as linux from '../src/collectors/linux.js';
 import * as win32 from '../src/collectors/win32.js';
 import * as darwin from '../src/collectors/darwin.js';
-import { getWindowsReadonlyCommandTemplate, WINDOWS_READONLY_COMMANDS } from '../src/collectors/windows-command-runner.js';
+import { getWindowsReadonlyCommandTemplate, runWindowsReadonlyCommand, WINDOWS_READONLY_COMMANDS } from '../src/collectors/windows-command-runner.js';
 import { getAgentPlatform, normalizePlatform, platformDisplayLabel } from '../src/platform.js';
 
 describe('endpoint-agent read-only collectors', () => {
@@ -135,6 +135,27 @@ describe('platform-specific collectors', () => {
     assert.strictEqual(flush.unsupported, true);
     assert.strictEqual(clear.unsupported, true);
   });
+
+  it('win32 clearTempPreview returns unsupported', async () => {
+    const result = await win32.clearTempPreview();
+    assert.strictEqual(result.unsupported, true);
+    assert.ok(result.note.includes('Windows') || result.note.includes('not implemented'));
+    assert.strictEqual(result.readOnly, true);
+  });
+
+  it('linux clearTempPreview returns unsupported', async () => {
+    const result = await linux.clearTempPreview();
+    assert.strictEqual(result.unsupported, true);
+    assert.ok(result.note.includes('not implemented'));
+    assert.strictEqual(result.readOnly, true);
+  });
+
+  it('runWindowsReadonlyCommand rejects on non-win32 platforms', async () => {
+    await assert.rejects(
+      () => runWindowsReadonlyCommand('services', 'linux'),
+      /Windows command services is only available on win32/,
+    );
+  });
 });
 
 describe('win32 parser fixtures and command templates', () => {
@@ -194,5 +215,71 @@ HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Nod
 
     const services = getWindowsReadonlyCommandTemplate('services');
     assert.deepStrictEqual(services.args, ['query', 'type=', 'service', 'state=', 'all']);
+  });
+
+  it('Windows readonly command templates contain no interpolation placeholders', () => {
+    for (const [name, template] of Object.entries(WINDOWS_READONLY_COMMANDS)) {
+      const json = JSON.stringify(template);
+      assert.ok(!json.includes('%s'), `${name} must not contain printf-style interpolation`);
+      assert.ok(!json.includes('${'), `${name} must not contain template literal interpolation`);
+      assert.ok(!json.includes('{{'), `${name} must not contain handlebars-style interpolation`);
+    }
+  });
+
+  it('parses empty sc.exe output', () => {
+    assert.deepStrictEqual(win32.parseScQueryOutput(''), []);
+    assert.deepStrictEqual(win32.parseScQueryOutput('   \n\n  '), []);
+  });
+
+  it('parses malformed sc.exe output with missing fields', () => {
+    const services = win32.parseScQueryOutput(`
+SERVICE_NAME: Foo
+        TYPE               : 10  WIN32
+
+SERVICE_NAME: Bar
+        DISPLAY_NAME: Bar Service
+`);
+    assert.strictEqual(services.length, 2);
+    assert.strictEqual(services[0]?.serviceName, 'Foo');
+    assert.strictEqual(services[0]?.state, undefined);
+    assert.strictEqual(services[1]?.displayName, 'Bar Service');
+    assert.strictEqual(services[1]?.type, undefined);
+  });
+
+  it('parses empty reg.exe output', () => {
+    assert.deepStrictEqual(win32.parseRegistryUninstallOutput(''), []);
+    assert.deepStrictEqual(win32.parseRegistryUninstallOutput('\n\n'), []);
+  });
+
+  it('parses malformed reg.exe output with missing display name', () => {
+    const software = win32.parseRegistryUninstallOutput(`
+HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\NoName
+    Publisher    REG_SZ    SomeVendor
+    DisplayVersion    REG_SZ    1.0.0
+
+HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Good
+    DisplayName    REG_SZ    GoodApp
+`);
+    assert.strictEqual(software.length, 1);
+    assert.strictEqual(software[0]?.name, 'GoodApp');
+  });
+
+  it('parses reg.exe output with unexpected lines and extra whitespace', () => {
+    const software = win32.parseRegistryUninstallOutput(`
+HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\App1
+    DisplayName    REG_SZ    App One
+    weird line without reg value
+    DisplayVersion    REG_SZ    2.0.0
+
+    extra spaces before value    REG_SZ    ignored
+`);
+    assert.strictEqual(software.length, 1);
+    assert.deepStrictEqual(software[0], {
+      name: 'App One',
+      version: '2.0.0',
+      publisher: undefined,
+      installDate: undefined,
+      uninstallKey: 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\App1',
+    });
   });
 });
