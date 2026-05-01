@@ -295,10 +295,13 @@ exact commands and pass/fail results.
 
 ### Screenshot budget and quality rule (mandatory)
 
-- **Max 20 files per evidence folder, always.** This is a hard cap on the total
-  file count inside the folder, not just screenshots. It includes PNGs, JSON
-  artifacts, text files, scripts, and any other file type. No prompt or closure
-  requirement may override this cap.
+- **MAX 20 FILES PER EVIDENCE FOLDER — HARD CAP, NEVER EXCEED.**
+  This is an absolute limit on the total file count inside any single evidence
+  folder. It counts PNGs, JSON artifacts, text files, Markdown indexes, scripts,
+  and every other file type together. No prompt, closure requirement, or user
+  instruction may override this cap. If you are at 19 files and need one more
+  proof state, you must combine states or delete a redundant file first.
+  **COUNT FILES WITH `ls | wc -l` BEFORE CLAIMING CLOSURE.**
 - **Do not create redundant `.html` wrappers** for JSON or text artifacts.
   Either screenshot the raw JSON directly (browser can render `file:///*.json`
   or data URLs) or commit the JSON/txt as a CLI artifact without a wrapper.
@@ -342,7 +345,8 @@ unchecked, the session is not closure-grade.
 - [ ] `docs/EVIDENCE_LOG.md` updated if evidence was captured
 - [ ] Evidence folder exists under `output/playwright/` with correct sequential
       session number (checked via `ls output/playwright/ | sort -V`)
-- [ ] Evidence folder contains **15 files or fewer** (hard cap is 20)
+- [ ] Evidence folder contains **20 files or fewer** (hard cap is 20, never exceed)
+      — verify with `ls <folder> | wc -l` before ending session
 - [ ] No redundant `.html` wrappers in evidence folder
 - [ ] No old/superseded evidence folders left behind for the same backlog item
 - [ ] `git status --short --branch` output included in handoff
