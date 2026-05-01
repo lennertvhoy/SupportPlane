@@ -107,26 +107,30 @@ export class SupportSessionsService {
     const fallbackUsed = (response.usage as Record<string, unknown>).fallbackUsed === true;
     const status: ModelUsageLogEntry['status'] = isMock || fallbackUsed ? 'fallback_mock' : 'succeeded';
 
-    await this.modelUsageService.logUsage({
-      id: randomUUID(),
-      tenantId: identity.tenantId,
-      actorId: identity.userId,
-      actorType: 'user',
-      sessionId,
-      feature,
-      provider,
-      model: response.model,
-      latencyMs: response.usage.latencyMs ?? 0,
-      status,
-      metadata: {
-        promptId: response.prompt.id,
-        promptVersion: response.prompt.version,
-        contextHash: response.contextHash,
-        fallbackUsed,
-        noCloudCall: (response.usage as Record<string, unknown>).noCloudCall ?? true,
-      },
-      createdAt: new Date().toISOString(),
-    });
+    try {
+      await this.modelUsageService.logUsage({
+        id: randomUUID(),
+        tenantId: identity.tenantId,
+        actorId: identity.userId,
+        actorType: 'user',
+        sessionId,
+        feature,
+        provider,
+        model: response.model,
+        latencyMs: response.usage.latencyMs ?? 0,
+        status,
+        metadata: {
+          promptId: response.prompt.id,
+          promptVersion: response.prompt.version,
+          contextHash: response.contextHash,
+          fallbackUsed,
+          noCloudCall: (response.usage as Record<string, unknown>).noCloudCall ?? true,
+        },
+        createdAt: new Date().toISOString(),
+      });
+    } catch {
+      // Best-effort logging; do not fail the request if logging fails
+    }
   }
 
   private async logBlockedUsage(
@@ -137,21 +141,25 @@ export class SupportSessionsService {
     model: string,
     errorCode: string
   ): Promise<void> {
-    await this.modelUsageService.logUsage({
-      id: randomUUID(),
-      tenantId: identity.tenantId,
-      actorId: identity.userId,
-      actorType: 'user',
-      sessionId,
-      feature,
-      provider,
-      model,
-      latencyMs: 0,
-      status: 'blocked_by_policy',
-      errorCode,
-      metadata: { source: 'support-sessions.service', blockedByPolicy: true },
-      createdAt: new Date().toISOString(),
-    });
+    try {
+      await this.modelUsageService.logUsage({
+        id: randomUUID(),
+        tenantId: identity.tenantId,
+        actorId: identity.userId,
+        actorType: 'user',
+        sessionId,
+        feature,
+        provider,
+        model,
+        latencyMs: 0,
+        status: 'blocked_by_policy',
+        errorCode,
+        metadata: { source: 'support-sessions.service', blockedByPolicy: true },
+        createdAt: new Date().toISOString(),
+      });
+    } catch {
+      // Best-effort logging; do not fail the request if logging fails
+    }
   }
 
   // ─── Retention enforcement (BL-081) — partial implementation ──────────────
@@ -548,7 +556,7 @@ export class SupportSessionsService {
     // BL-029: Check tenant AI policy before calling model gateway
     const policyCheck = await this.checkAiPolicy(identity, session.id, 'draft', modelSelection);
     if (!policyCheck.allowed) {
-      return policyCheck.response;
+      throw new ForbiddenException({ code: 'blocked_by_policy', reason: policyCheck.reason });
     }
 
     let response: GenerateDraftResponseShape;
@@ -731,19 +739,7 @@ export class SupportSessionsService {
     // BL-028: Check tenant AI policy before calling model gateway
     const policyCheck = await this.checkAiPolicy(identity, session.id, 'summary', modelSelection);
     if (!policyCheck.allowed) {
-      // Return a summary-shaped blocked response
-      return {
-        summary: policyCheck.response.draft,
-        keyPoints: ['Blocked by tenant AI policy'],
-        sentiment: 'neutral',
-        provider: policyCheck.response.provider,
-        model: policyCheck.response.model,
-        prompt: policyCheck.response.prompt,
-        contextHash: policyCheck.response.contextHash,
-        usage: policyCheck.response.usage as GenerateSummaryResponseShape['usage'],
-        safety: policyCheck.response.safety as GenerateSummaryResponseShape['safety'],
-        generatedAt: policyCheck.response.generatedAt,
-      };
+      throw new ForbiddenException({ code: 'blocked_by_policy', reason: policyCheck.reason });
     }
 
     let response: GenerateSummaryResponseShape;
@@ -835,7 +831,7 @@ export class SupportSessionsService {
       await this.appendAuditEvent(
         identity,
         sessionId,
-        AuditEventType.enum.ai_draft_generated,
+        AuditEventType.enum.ai_summary_generated,
         'support_session',
         session.id,
         metadata
