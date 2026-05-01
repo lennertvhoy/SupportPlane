@@ -2476,9 +2476,9 @@
   - MinIO/Mailpit INFO verifier steps are acceptable because product-side deliveryResult metadata is explicitly proven.
 - Type: integration-and-browser-runtime-verification
 - as_of: 2026-04-30T23:00:00+02:00
-## EV-2026-05-01-001 through EV-2026-05-01-011: Endpoint Agent + Read-Only Diagnostics Foundation
+## EV-2026-05-01-001 through EV-2026-05-01-012: Endpoint Agent + Read-Only Diagnostics Foundation
 
-- Files: `output/playwright/session-120-endpoint-agent-diagnostics/01-device-console-pre-agent.png` through `11-evidence-files.txt`
+- Files: `output/playwright/session-120-endpoint-agent-diagnostics/01-device-console-pre-agent.png` through `12-evidence-files.txt`
 - Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus local endpoint agent smoke run against the API.
 - Store/Auth mode for runtime screenshots: cluster `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=local`
 - Shows:
@@ -2496,6 +2496,6 @@
   - Device registration, heartbeat, inventory, command claim, and result submission work locally.
   - Command execution is fixed read-only diagnostics only.
   - Replay/duplicate result, tenant/device boundary, RBAC, and arbitrary execution denial are covered by API tests.
-  - Evidence cap respected: 11 files.
+  - Evidence cap respected: 12 files.
 - Type: implementation-and-browser-runtime-verification
 - as_of: 2026-05-01T09:20:00+02:00

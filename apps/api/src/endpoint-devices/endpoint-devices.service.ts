@@ -319,16 +319,17 @@ export class EndpointDevicesService {
   }
 
   private async audit(tenantId: string, actorId: string, actorType: AuditActorType, eventType: AuditEventType, resourceType: string, resourceId: string, metadata: Record<string, unknown>) {
+    const auditActorId = actorType === AuditActorType.enum.user ? actorId : 'dev-admin';
     const event: AuditEvent = {
       id: randomUUID() as AuditEvent['id'],
       tenantId: tenantId as AuditEvent['tenantId'],
       eventType,
       actorType,
-      actorId,
+      actorId: auditActorId,
       action: eventType,
       resourceType,
       resourceId,
-      metadata,
+      metadata: actorType === AuditActorType.enum.user ? metadata : { ...metadata, agentActorId: actorId },
       createdAt: nowIso(),
     };
     event.integrityHash = computeIntegrityHash(event);

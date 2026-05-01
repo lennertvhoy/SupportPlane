@@ -7,6 +7,7 @@ const OUTPUT = path.resolve(__dirname, '../output/playwright/session-120-endpoin
 const API_BASE = process.env.SUPPORTPLANE_EVIDENCE_API_BASE || 'http://localhost:4210';
 const WEB_BASE = process.env.SUPPORTPLANE_EVIDENCE_WEB_BASE || 'http://localhost:3300';
 const CONFIG_PATH = path.join(OUTPUT, 'endpoint-agent-config.json');
+const SMOKE_LOG = path.join(OUTPUT, '09-agent-smoke.txt');
 
 function cleanOutput() {
   fs.rmSync(OUTPUT, { recursive: true, force: true });
@@ -37,7 +38,7 @@ function runAgentSmoke() {
     },
     encoding: 'utf8',
   });
-  fs.writeFileSync(path.join(OUTPUT, `agent-smoke-${Date.now()}.txt`), `${result.stdout}\n${result.stderr}`);
+  fs.appendFileSync(SMOKE_LOG, `$ npm run smoke --workspace @supportplane/endpoint-agent\n${result.stdout}\n${result.stderr}\n`);
   if (result.status !== 0) {
     throw new Error(`endpoint-agent smoke failed: ${result.status}`);
   }
@@ -64,7 +65,7 @@ async function capture() {
   runAgentSmoke();
 
   await page.reload();
-  await page.waitForSelector('text=bl120-local-endpoint', { timeout: 15000 });
+  await page.waitForSelector('text=online', { timeout: 15000 });
   await page.screenshot({ path: path.join(OUTPUT, '02-device-console-agent-listed.png'), fullPage: true });
 
   await page.screenshot({ path: path.join(OUTPUT, '03-device-detail-inventory-heartbeat.png'), fullPage: true });
@@ -77,6 +78,14 @@ async function capture() {
   await page.waitForSelector('text=succeeded', { timeout: 15000 });
   await page.screenshot({ path: path.join(OUTPUT, '05-diagnostic-result-visible.png'), fullPage: true });
   await page.screenshot({ path: path.join(OUTPUT, '06-command-history-request-result.png'), fullPage: true });
+
+  const devicesRes = await context.request.get(`${API_BASE}/endpoint-devices`);
+  const devicesPayload = devicesRes.ok() ? await devicesRes.json() : { devices: [] };
+  const deviceId = Array.isArray(devicesPayload.devices) && devicesPayload.devices[0] ? devicesPayload.devices[0].id : 'missing-device';
+  const invalid = await context.request.post(`${API_BASE}/endpoint-devices/${deviceId}/commands`, {
+    data: { commandKind: 'ping_self', shell: 'whoami' },
+  });
+  fs.writeFileSync(path.join(OUTPUT, '10-invalid-shell-denial.txt'), `status=${invalid.status()}\n${await invalid.text()}\n`);
 
   await page.locator('button:has-text("Logout")').first().click();
   await page.waitForTimeout(700);
@@ -93,15 +102,10 @@ async function capture() {
   const endpointEvents = Array.isArray(audit)
     ? audit.filter((event) => String(event.eventType).startsWith('endpoint_')).slice(-12)
     : audit;
-  fs.writeFileSync(path.join(OUTPUT, '09-endpoint-audit-events.json'), JSON.stringify(endpointEvents, null, 2));
-
-  const invalid = await context.request.post(`${API_BASE}/endpoint-devices/invalid-device/commands`, {
-    data: { commandKind: 'ping_self', shell: 'whoami' },
-  });
-  fs.writeFileSync(path.join(OUTPUT, '10-invalid-shell-denial.txt'), `status=${invalid.status()}\n${await invalid.text()}\n`);
+  fs.writeFileSync(path.join(OUTPUT, '11-endpoint-audit-events.json'), JSON.stringify(endpointEvents, null, 2));
 
   const files = fs.readdirSync(OUTPUT).sort();
-  fs.writeFileSync(path.join(OUTPUT, '11-evidence-files.txt'), files.join('\n') + '\n');
+  fs.writeFileSync(path.join(OUTPUT, '12-evidence-files.txt'), files.join('\n') + '\n');
   await browser.close();
   console.log(`Captured ${fs.readdirSync(OUTPUT).length} endpoint evidence files in ${OUTPUT}`);
 }

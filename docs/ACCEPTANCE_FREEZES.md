@@ -2072,7 +2072,7 @@ and must be protected from quiet regression.
   - BL-118 endpoint diagnostics foundation: local safe foundation implemented; production enrollment hardening and deeper consent model remain
 - evidence_folder: output/playwright/session-120-endpoint-agent-diagnostics/
 - screenshot_count: 8
-- evidence_file_count: 11
+- evidence_file_count: 12
 - known_limitations:
   - No remediation, arbitrary shell, remote desktop, OCR, or screen monitoring.
   - Endpoint enrollment token is local sandbox only.
