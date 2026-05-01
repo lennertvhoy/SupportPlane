@@ -6,12 +6,13 @@ const { spawnSync } = require('child_process');
 const OUTPUT = path.resolve(__dirname, '../output/playwright/session-120-endpoint-agent-diagnostics');
 const API_BASE = process.env.SUPPORTPLANE_EVIDENCE_API_BASE || 'http://localhost:4210';
 const WEB_BASE = process.env.SUPPORTPLANE_EVIDENCE_WEB_BASE || 'http://localhost:3300';
-const CONFIG_PATH = path.join(OUTPUT, 'endpoint-agent-config.json');
+const CONFIG_PATH = '/tmp/supportplane-endpoint-agent-bl120-config.json';
 const SMOKE_LOG = path.join(OUTPUT, '09-agent-smoke.txt');
 
 function cleanOutput() {
   fs.rmSync(OUTPUT, { recursive: true, force: true });
   fs.mkdirSync(OUTPUT, { recursive: true });
+  fs.rmSync(CONFIG_PATH, { force: true });
 }
 
 async function login(page, email) {
@@ -104,8 +105,9 @@ async function capture() {
     : audit;
   fs.writeFileSync(path.join(OUTPUT, '11-endpoint-audit-events.json'), JSON.stringify(endpointEvents, null, 2));
 
-  const files = fs.readdirSync(OUTPUT).sort();
-  fs.writeFileSync(path.join(OUTPUT, '12-evidence-files.txt'), files.join('\n') + '\n');
+  const manifestFile = '12-evidence-files.txt';
+  const files = [...fs.readdirSync(OUTPUT), manifestFile].sort();
+  fs.writeFileSync(path.join(OUTPUT, manifestFile), files.join('\n') + '\n');
   await browser.close();
   console.log(`Captured ${fs.readdirSync(OUTPUT).length} endpoint evidence files in ${OUTPUT}`);
 }
