@@ -1496,13 +1496,13 @@ Repaired Session 123 to closure-grade status by fixing the critical Internal Ser
 
 **Date:** 2026-05-01  
 **Type:** closure proof repair only (no new features)  
-**Git HEAD:** `0e395791279df7dffabe7b1275139a7efbff65f3`  
+**Git HEAD:** `8803e5278108cf0c4320835bab49ea9cf7597c66`  
 **Worktree:** clean  
 
 ### Problem
 
 Session 123b implementation was correct, but the final handoff contained contradictory evidence:
-- Claimed final commit: `b022c08` (later corrected to `0e39579`)
+- Claimed final commit: `b022c08` (later corrected to `0e39579`, then final commit `8803e52` after evidence recapture and doc updates)
 - Uploaded runtime identity proof (`07-runtime-identity-health.json`) showed `head: ba97d90...` — the pre-commit HEAD
 - Evidence index claimed "dirty worktree" and "Git HEAD: ba97d90 + pending changes"
 - These claims contradicted each other and the actual committed state
@@ -1510,12 +1510,12 @@ Session 123b implementation was correct, but the final handoff contained contrad
 ### Fixes Applied
 
 1. **Verified actual Git truth:**
-   - `git rev-parse HEAD` = `0e395791279df7dffabe7b1275139a7efbff65f3`
+   - `git rev-parse HEAD` = `8803e5278108cf0c4320835bab49ea9cf7597c66`
    - `git status --short` = empty (clean worktree)
-   - `git log --oneline -5` shows `0e39579` as HEAD
+   - `git log --oneline -5` shows `8803e52` as HEAD
 
 2. **Restarted API from current HEAD** and verified runtime identity:
-   - `GET /health` returns `head: "0e395791279df7dffabe7b1275139a7efbff65f3"`
+   - `GET /health` returns `head: "8803e5278108cf0c4320835bab49ea9cf7597c66"`
    - **Runtime HEAD == Git HEAD** ✅
 
 3. **Captured fresh closure evidence** in `output/playwright/session-123c-final-closure-proof/` (5 files, max 10):
@@ -1527,7 +1527,7 @@ Session 123b implementation was correct, but the final handoff contained contrad
 
 4. **Updated stale Session 123b evidence index** (`08-evidence-index.md`) to:
    - Mark `07-runtime-identity-health.json` as stale/superseded
-   - Correct "Git HEAD: ba97d90" to final commit `0e39579`
+   - Correct "Git HEAD: ba97d90" to final commit `8803e52`
    - Correct "dirty worktree" to "committed and clean"
    - Add explicit stale claims table
 

@@ -49,6 +49,8 @@ current_state:
     final_head_after_bl_089_123_124_125_126_127: 5e5fc226b93d0dff0457494c87663d5974ed3b26
     head_before_session_123b_repair: ba97d90ed0723cb25b304cd29f26e676f984efb2
     final_head_after_session_123b_repair: b022c08330fe3f6f9f2d9c41e76b1a6c0e7e5d30
+    head_before_session_123c_closure_proof_repair: 0e395791279df7dffabe7b1275139a7efbff65f3
+    final_head_after_session_123c_closure_proof_repair: 8803e5278108cf0c4320835bab49ea9cf7597c66
     head_before_bl_055_060_118: ee11447f8928d778178f0144b1a0a0c623468c95
     final_head_after_bl_055_060_118: recorded_in_final_handoff
     worktree_status_at_state_update: clean
