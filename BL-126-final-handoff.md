@@ -57,7 +57,7 @@ $ curl -s http://localhost:4110/health | python3 -m json.tool
     "version": "0.1.0",
     "status": "ok",
     "branch": "main",
-    "head": "d4cc7440bfcc552a464f1a2ccc4d877902112f14",
+    "head": "5628fb8a1c136ace63dda696fa1d4e0866d9e457",
     ...
 }
 
@@ -110,7 +110,7 @@ $ python3 scripts/check_state_docs.py
 
 **Repo:** `/home/ff/Documents/Projects/SupportPlane`
 **Branch:** main
-**Git HEAD:** `d4cc7440bfcc552a464f1a2ccc4d877902112f14`
+**Git HEAD:** `5628fb8a1c136ace63dda696fa1d4e0866d9e457`
 **API:** NestJS on localhost:4110 (rebuilt and restarted)
 **Web:** Next.js on localhost:3200
 **DB:** PostgreSQL on localhost:5434
