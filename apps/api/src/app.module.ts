@@ -18,14 +18,15 @@ import { CorrelationMiddleware } from './telemetry/correlation.middleware.js';
 import { TelemetryModule } from './telemetry/telemetry.module.js';
 import { AuditModule } from './audit/audit.module.js';
 import { EndpointDevicesModule } from './endpoint-devices/endpoint-devices.module.js';
+import { ToolExecutionModule } from './tool-execution/tool-execution.module.js';
 
 @Module({
-  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule, AdminPolicyModule, EndpointDevicesModule],
+  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule, AdminPolicyModule, EndpointDevicesModule, ToolExecutionModule],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(CorrelationMiddleware).forRoutes('*');
-    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'auth/service-accounts', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies', 'admin/policies', 'endpoint-devices');
+    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'auth/service-accounts', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies', 'admin/policies', 'endpoint-devices', 'admin/devices', 'admin/tools', 'admin/tool-invocations', 'admin/tool-approvals');
   }
 }

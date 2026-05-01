@@ -1,7 +1,7 @@
 ---
 repo_mode: operating
 initialized_on: 2026-04-26
-last_updated: 2026-04-28
+last_updated: 2026-05-01
 ---
 
 # State Driven Development Template Contract
@@ -33,7 +33,10 @@ These rules apply in all modes:
 - negative searches stay negative: use `not found`, `not currently locatable`, or `not proven`
 - screenshots or evidence are required for user-visible changes
 - each backlog item gets exactly one screenshot folder under `output/playwright/`;
-  name it clearly (e.g., `session-046-operator-companion-closure-canonical/`).
+  name it with the **next sequential session number** after the highest existing
+  `session-NNN` folder in that directory (e.g., if the highest is `session-120`,
+  the next folder is `session-121-blXXX-description/`).
+  **Never use BL numbers as the session prefix.**
   if a canonical or final proof set supersedes an earlier partial folder,
   delete the old folder and update all doc references. do not leave multiple
   folders for the same backlog item
@@ -43,6 +46,9 @@ These rules apply in all modes:
   closure-grade complete. a backlog item may not be called complete if
   `BACKLOG.md` still lists it as future or planned without an honest status
   marker. superseded items must be marked as superseded, not left as future work.
+- **evidence capture is not optional:** if you implement a feature and verify it
+  at runtime, you must capture evidence before ending the session. "I'll do it
+  later" or "the user didn't ask" is not acceptable.
 - active queue stays short
 - history belongs in `WORKLOG.md`, not live state files
 - structured state must remain machine-checkable
@@ -289,20 +295,28 @@ exact commands and pass/fail results.
 
 ### Screenshot budget and quality rule (mandatory)
 
-- **Max 20 screenshots per backlog item, always.** No prompt, closure requirement,
-  or explicit proof-state list may override this hard cap.
+- **Max 20 files per evidence folder, always.** This is a hard cap on the total
+  file count inside the folder, not just screenshots. It includes PNGs, JSON
+  artifacts, text files, scripts, and any other file type. No prompt or closure
+  requirement may override this cap.
+- **Do not create redundant `.html` wrappers** for JSON or text artifacts.
+  Either screenshot the raw JSON directly (browser can render `file:///*.json`
+  or data URLs) or commit the JSON/txt as a CLI artifact without a wrapper.
 - If more than 20 proof states are requested, the coding agent must:
   - combine multiple proof states into composite screenshots where possible,
   - use API/CLI validation artifacts for non-visual checks,
   - and provide a proof-state mapping table showing how each required state is
-    covered by one of the max-20 screenshots, a CLI artifact, a committed test,
+    covered by one of the max-20 files, a CLI artifact, a committed test,
     or a documented not-applicable reason.
-- One backlog item gets exactly one canonical screenshot folder under
-  `output/playwright/`. Name it clearly (e.g.
-  `session-046-operator-companion-closure-canonical/`).
-- If a canonical or final proof set supersedes an earlier partial folder,
-  delete the old folder and update all doc references. Do not leave multiple
-  folders for the same backlog item.
+- One backlog item gets exactly one canonical evidence folder under
+  `output/playwright/`. The folder name **must use the next sequential session
+  number** after the highest existing `session-NNN` folder in that directory
+  (e.g. `session-121-bl061-068-tool-execution-safety/`).
+  **Never use raw BL numbers as the folder prefix.**
+- Before creating a new evidence folder, list existing folders (`ls
+  output/playwright/ | sort -V`) to find the next available number and to check
+  for existing folders covering the same backlog item. Delete superseded folders
+  and update `docs/EVIDENCE_LOG.md` references before creating the new one.
 - Duplicate screenshots are only allowed if explicitly justified, but should
   normally be avoided. After capture, run duplicate detection (e.g. `md5sum`)
   and report results. Unexplained duplicate screenshots fail closure.
@@ -316,6 +330,25 @@ exact commands and pass/fail results.
 - After capture, run duplicate detection (e.g. `md5sum`) and report results.
   Unexplained duplicate screenshots fail closure.
 
+### Coding agent self-checklist before ending any session (mandatory)
+
+Do not end a session until you have verified every item below. If any item is
+unchecked, the session is not closure-grade.
+
+- [ ] `BACKLOG.md` updated with honest status markers for affected items
+- [ ] `NEXT_ACTIONS.md` updated — closed items removed, new items added
+- [ ] `STATUS.md` updated if project state changed
+- [ ] `PROJECT_STATE.yaml` updated if structured truth changed
+- [ ] `docs/EVIDENCE_LOG.md` updated if evidence was captured
+- [ ] Evidence folder exists under `output/playwright/` with correct sequential
+      session number (checked via `ls output/playwright/ | sort -V`)
+- [ ] Evidence folder contains **15 files or fewer** (hard cap is 20)
+- [ ] No redundant `.html` wrappers in evidence folder
+- [ ] No old/superseded evidence folders left behind for the same backlog item
+- [ ] `git status --short --branch` output included in handoff
+- [ ] Exact test commands and pass/fail counts listed, not "tests pass"
+- [ ] Handoff includes all 7 sections from the report structure rule below
+
 ### Final handoff report structure rule (mandatory)
 
 Every final handoff must include a structured report with all of the following
@@ -326,8 +359,8 @@ sections. Missing sections make the handoff incomplete.
 3. **What Changed** — concise bullet list of code, schema, UI, and doc changes
 4. **Verification** — exact commands run and exact pass/fail results (counts,
    not "tests pass")
-5. **Evidence Inventory** — screenshot folder path, count, and a numbered list
-   mapping each screenshot file to the state it proves
+5. **Evidence Inventory** — evidence folder path, total file count, and a numbered
+   list mapping each file to the state it proves
 6. **Risks and Limitations** — honest list of what is NOT implemented, what is
    mock-only, and what requires future work
 7. **Next Recommended Action** — one concrete next step or backlog item

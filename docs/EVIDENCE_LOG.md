@@ -2,6 +2,38 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-01-121 through EV-2026-05-01-132: BL-061 through BL-068 — Remote Tool Execution Safety Foundation (ACCEPTED)
+
+- Files: `output/playwright/session-121-bl061-068-tool-execution-safety-foundation/01-tool-registry.png` through `07-e2e-invocation-completed.png`
+- Source/System: Chromium via Playwright against local API (`localhost:4110`), plus terminal-rendered JSON/text proof pages.
+- Store/Auth mode for runtime verification: `SUPPORTPLANE_STORE=postgres`, `SUPPORTPLANE_AUTH_MODE=dev`
+- Local API proof:
+  - Tool manifest loaded with integrity hash validation; 7 tools upserted idempotently by `toolKey`.
+  - `EndpointCommandKind` enum expanded to include `flush_dns_cache` and `clear_temp_preview`.
+  - `EndpointDevicesService` DI fixed: `@Inject(ToolExecutionGatewayService)` added to resolve undefined `toolGateway`.
+- Shows:
+  - `01-tool-registry.png` — 7 tool definitions from validated manifest.
+  - `02-safety-rejection.png` — `requestedInput: {shell: "rm -rf /"}` → 400 Bad Request.
+  - `03-read-only-invoke.png` — `diagnostic.status` invoke → 201, status=queued, endpointCommandId created.
+  - `04-remediation-approval-required.png` — `remediation.flush_dns_cache` invoke → 201, status=approval_required.
+  - `05-approval-queue.png` — Approval queue with requested, approved, and denied entries.
+  - `06-viewer-denied.png` — Viewer role invoke → 403 Forbidden.
+  - `07-e2e-invocation-completed.png` — Invocation after agent result submission: status=succeeded, normalizedResult populated, completedAt set.
+- CLI artifacts:
+  - `validation-gate.txt` (includes 169 tests, 0 failures)
+- Proves:
+  - BL-061: Read-only diagnostics auto-approved and dispatched to endpoint commands.
+  - BL-062: Fixed `implementationId` mapped to `EndpointCommandKind` with allowlist validation.
+  - BL-063: RBAC enforced — viewer denied, admin allowed.
+  - BL-064: Remediation tools require approval before dispatch.
+  - BL-065: Approval queue with approve/deny lifecycle; approved invocations dispatch to endpoint commands.
+  - BL-066: Audit events generated for all invocations, approvals, and results.
+  - BL-067: Tool registry with integrity-validated manifest, idempotent upsert.
+  - BL-068: Arbitrary shell, command, script, argv, executable fields rejected in `requestedInput`.
+  - End-to-end result flow: command result submission correctly updates invocation status and normalizedResult.
+- Type: integration-and-api-verification
+- as_of: 2026-05-01T08:50:00+02:00
+
 ## EV-2026-04-29-113 through EV-2026-04-29-120: BL-108 Repair — Real Host-Controlled Ollama Model Call (ACCEPTED)
 
 - Files: `output/playwright/session-110-bl108-ollama-host-call-model-selection/01-cluster-api-health-current-head.png` through `08-next-actions-md.png`

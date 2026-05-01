@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { createHash, randomBytes, randomUUID } from 'crypto';
+import { ToolExecutionGatewayService } from '../tool-execution/tool-execution-gateway.service.js';
 import {
   AuditActorType,
   AuditEventType,
@@ -41,7 +42,10 @@ function makeFingerprint(tenantId: string, deviceKey: string, hostname: string):
 
 @Injectable()
 export class EndpointDevicesService {
-  constructor(@Inject(InMemoryStore) private readonly store: Store) {}
+  constructor(
+    @Inject(InMemoryStore) private readonly store: Store,
+    @Inject(ToolExecutionGatewayService) private readonly toolGateway: ToolExecutionGatewayService,
+  ) {}
 
   async registerDevice(body: {
     tenantId?: string;
@@ -206,6 +210,14 @@ export class EndpointDevicesService {
       status,
       readOnly: true,
     });
+
+    // Notify tool execution gateway if this command was dispatched from a tool invocation
+    try {
+      await this.toolGateway.onCommandResult(device.tenantId, command.id, result.payload);
+    } catch {
+      // Non-fatal: tool gateway integration is best-effort for endpoint command results
+    }
+
     return { result };
   }
 

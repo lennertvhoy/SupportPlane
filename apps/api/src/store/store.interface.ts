@@ -22,6 +22,11 @@ import type {
   EndpointDiagnosticSnapshot as EndpointDiagnosticSnapshotShape,
   EndpointCommand as EndpointCommandShape,
   EndpointCommandResult as EndpointCommandResultShape,
+  ToolManifestRecord as ToolManifestRecordShape,
+  ToolDefinition as ToolDefinitionShape,
+  ToolInvocation as ToolInvocationShape,
+  ToolApproval as ToolApprovalShape,
+  ToolResultNoteDraft as ToolResultNoteDraftShape,
 } from '@supportplane/contracts';
 
 export interface SharingStateShape {
@@ -135,4 +140,29 @@ export interface Store {
   listEndpointCommands(tenantId: string, deviceId?: string): Promise<EndpointCommandShape[]> | EndpointCommandShape[];
   saveEndpointCommandResult(result: EndpointCommandResultShape): Promise<void> | void;
   getEndpointCommandResult(tenantId: string, commandId: string): Promise<EndpointCommandResultShape | undefined> | EndpointCommandResultShape | undefined;
+
+  // Tool manifest/registry
+  saveToolManifestRecord(record: ToolManifestRecordShape): Promise<void> | void;
+  getToolManifestRecord(id: string): Promise<ToolManifestRecordShape | undefined> | ToolManifestRecordShape | undefined;
+  listToolManifestRecords(): Promise<ToolManifestRecordShape[]> | ToolManifestRecordShape[];
+
+  saveToolDefinition(def: ToolDefinitionShape): Promise<void> | void;
+  getToolDefinition(id: string): Promise<ToolDefinitionShape | undefined> | ToolDefinitionShape | undefined;
+  getToolDefinitionByKey(toolKey: string): Promise<ToolDefinitionShape | undefined> | ToolDefinitionShape | undefined;
+  listToolDefinitions(options?: { manifestId?: string; enabled?: boolean; category?: string }): Promise<ToolDefinitionShape[]> | ToolDefinitionShape[];
+
+  // Tool invocation/approval
+  saveToolInvocation(invocation: ToolInvocationShape): Promise<void> | void;
+  getToolInvocation(tenantId: string, id: string): Promise<ToolInvocationShape | undefined> | ToolInvocationShape | undefined;
+  listToolInvocations(tenantId: string, options?: { deviceId?: string; status?: string; toolKey?: string }): Promise<ToolInvocationShape[]> | ToolInvocationShape[];
+
+  saveToolApproval(approval: ToolApprovalShape): Promise<void> | void;
+  getToolApproval(tenantId: string, id: string): Promise<ToolApprovalShape | undefined> | ToolApprovalShape | undefined;
+  getToolApprovalByInvocationId(invocationId: string): Promise<ToolApprovalShape | undefined> | ToolApprovalShape | undefined;
+  listToolApprovals(tenantId: string, options?: { status?: string; requestedByUserId?: string }): Promise<ToolApprovalShape[]> | ToolApprovalShape[];
+
+  saveToolResultNoteDraft(draft: ToolResultNoteDraftShape): Promise<void> | void;
+  getToolResultNoteDraft(tenantId: string, id: string): Promise<ToolResultNoteDraftShape | undefined> | ToolResultNoteDraftShape | undefined;
+  getToolResultNoteDraftByInvocationId(invocationId: string): Promise<ToolResultNoteDraftShape | undefined> | ToolResultNoteDraftShape | undefined;
+  listToolResultNoteDrafts(tenantId: string): Promise<ToolResultNoteDraftShape[]> | ToolResultNoteDraftShape[];
 }

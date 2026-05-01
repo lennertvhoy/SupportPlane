@@ -1197,3 +1197,55 @@ Screenshots: 2 (no duplicates)
 - Installed software/package inventory is not complete; BL-057 remains partial.
 - BL-118 remains partial because production enrollment hardening and deeper consent model are not complete.
 - No remediation, arbitrary shell, remote desktop, OCR, or screen monitoring implemented.
+
+## 2026-05-01 — BL-061 through BL-068 Remote Tool Execution Safety Foundation
+
+**Type:** implementation / remote tool execution safety foundation
+**Status:** accepted
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+
+### What changed
+
+- Added `ToolManifestRecord`, `ToolDefinition`, `ToolInvocation`, `ToolApproval`, `ToolResultNoteDraft` Prisma models with relations and indexes.
+- Added contracts package schemas: `ToolManifest`, `ToolDefinition`, `ToolInvocation`, `ToolApproval`, `ToolPolicyDecision`, plus `computeManifestIntegrityHash()` and `validateLocalManifest()` rejecting executable fields.
+- Added `ToolRegistryService` loading `local-tool-manifest.json`, validating integrity hash, idempotent upsert by `toolKey`.
+- Added `ToolPolicyService` enforcing role (viewer denied), enabled status, read-only allowed, remediation requires approval.
+- Added `ToolExecutionGatewayService` dispatching only fixed `EndpointCommandKind` values with allowlist validation; rejecting arbitrary shell/command/script/argv/executable fields in `requestedInput`.
+- Added `ToolApprovalService` with lifecycle management (requested → approved/denied/expired/consumed).
+- Added `ToolRegistryController`, `ToolExecutionController`, `ToolApprovalController` with explicit `@Inject()` decorators.
+- Added audit event types for tool execution; fixed FK violation by using valid user ID (`dev-admin`) for system actor events.
+- Added `'admin/devices'` to `CurrentIdentityMiddleware` route list.
+- Expanded `EndpointCommandKind` enum to include `flush_dns_cache` and `clear_temp_preview`.
+- Fixed `EndpointDevicesService` DI: added `@Inject(ToolExecutionGatewayService)` to resolve undefined `toolGateway` that was silently failing invocation result callbacks.
+- Seeded database with dev-tenant, dev-admin user, roles, and 7 tool definitions (5 read-only diagnostics + 2 disabled remediation previews).
+
+### Verification
+
+- BL-068 safety: `requestedInput: {shell: "rm -rf /"}` → 400 Bad Request
+- BL-068 safety: `requestedInput: {command: "whoami"}` → 400 Bad Request
+- BL-063 RBAC: viewer role → 403 Forbidden; admin role → 201 Created
+- BL-061 read-only: `diagnostic.status` invoke → 201, status=queued, endpointCommandId created
+- BL-064/065 remediation: `remediation.flush_dns_cache` invoke → 201, status=approval_required
+- BL-065 approval: approve endpoint → approval status=approved, invocation dispatched to endpoint command
+- BL-065 approval: deny endpoint → approval status=denied
+- End-to-end result flow: invoke → claim → result → invocation updates to status=succeeded with normalizedResult and completedAt
+- API test suite: 169 tests, 0 failures
+
+### Evidence
+
+- Folder: `output/playwright/session-121-bl061-068-tool-execution-safety-foundation/`
+- Files: 15 (7 JSON + 7 PNG + 1 validation-gate.txt)
+- EVIDENCE_LOG.md updated: EV-2026-05-01-121 through EV-2026-05-01-132
+
+### Known gaps
+
+- Web UI tool registry page not yet built.
+- Web UI approval queue not yet built.
+- Device Console tool integration not yet built.
+- Tool manifest digital signing placeholder only (integrity hash validated, no cryptographic signature).
+- Production enrollment hardening not complete.
+
+### Next Recommended Action
+
+- P1 [BL-057/BL-118] Endpoint diagnostics completion gaps (installed software inventory, consent/enrollment hardening).

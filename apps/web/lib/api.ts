@@ -144,6 +144,73 @@ export interface EndpointDeviceDetail {
   commands: EndpointCommand[];
 }
 
+export interface ToolDefinition {
+  id: string;
+  manifestId: string;
+  toolKey: string;
+  displayName: string;
+  description?: string;
+  category: string;
+  riskLevel: string;
+  implementationId: string;
+  readOnly: boolean;
+  remediation: boolean;
+  approvalRequired: boolean;
+  requiredPermission: string;
+  supportedPlatforms: string[];
+  inputSchema: Record<string, unknown>;
+  outputSchema: Record<string, unknown>;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ToolInvocation {
+  id: string;
+  tenantId: string;
+  deviceId: string;
+  toolDefinitionId: string;
+  toolKey: string;
+  requestedByUserId: string;
+  status: string;
+  policyDecision: Record<string, unknown>;
+  approvalId?: string;
+  endpointCommandId?: string;
+  requestedInput: Record<string, unknown>;
+  normalizedResult: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+}
+
+export interface ToolApproval {
+  id: string;
+  tenantId: string;
+  invocationId: string;
+  requestedByUserId: string;
+  approvedByUserId?: string;
+  status: string;
+  reason?: string;
+  comment?: string;
+  expiresAt: string;
+  decidedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ToolResultNoteDraft {
+  id: string;
+  tenantId: string;
+  invocationId: string;
+  ticketId?: string;
+  title?: string;
+  body: string;
+  status: string;
+  createdByUserId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TicketReference {
   id: string;
   tenantId: string;
@@ -1884,6 +1951,34 @@ export const api = {
   // Worker status
   getWorkerStatus: (identity?: DevIdentity) =>
     apiFetch<WorkerStatus>(`/outbox/worker/status`, { method: 'GET' }, identity),
+
+  // Tool registry / execution
+  listTools: (identity?: DevIdentity) =>
+    apiFetch<{ tools: ToolDefinition[] }>('/admin/tools', { method: 'GET' }, identity),
+
+  getTool: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ tool: ToolDefinition | null }>(`/admin/tools/${id}`, { method: 'GET' }, identity),
+
+  invokeTool: (deviceId: string, toolKey: string, body: { requestedInput?: Record<string, unknown>; idempotencyKey?: string }, identity?: DevIdentity) =>
+    apiFetch<{ invocation: ToolInvocation; policyDecision: Record<string, unknown> }>(`/admin/devices/${deviceId}/tools/${toolKey}/invoke`, { method: 'POST', body: JSON.stringify(body) }, identity),
+
+  listToolInvocations: (identity?: DevIdentity) =>
+    apiFetch<{ invocations: ToolInvocation[] }>('/admin/tool-invocations', { method: 'GET' }, identity),
+
+  getToolInvocation: (id: string, identity?: DevIdentity) =>
+    apiFetch<{ invocation: ToolInvocation | null }>(`/admin/tool-invocations/${id}`, { method: 'GET' }, identity),
+
+  createToolNoteDraft: (invocationId: string, body: { ticketId?: string; title?: string }, identity?: DevIdentity) =>
+    apiFetch<{ draft: ToolResultNoteDraft }>(`/admin/tool-invocations/${invocationId}/note-draft`, { method: 'POST', body: JSON.stringify(body) }, identity),
+
+  listToolApprovals: (identity?: DevIdentity) =>
+    apiFetch<{ approvals: ToolApproval[] }>('/admin/tool-approvals', { method: 'GET' }, identity),
+
+  approveTool: (id: string, body: { reason?: string }, identity?: DevIdentity) =>
+    apiFetch<{ approval: ToolApproval }>(`/admin/tool-approvals/${id}/approve`, { method: 'POST', body: JSON.stringify(body) }, identity),
+
+  denyTool: (id: string, body: { reason?: string }, identity?: DevIdentity) =>
+    apiFetch<{ approval: ToolApproval }>(`/admin/tool-approvals/${id}/deny`, { method: 'POST', body: JSON.stringify(body) }, identity),
 };
 
 export { ApiClientError };

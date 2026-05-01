@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-04-30T14:00:00+02:00
+  updated_at: 2026-05-01T08:55:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -122,6 +122,21 @@ current_state:
       accepted_items: [BL-055, BL-056, BL-058, BL-059, BL-060]
       partial_items: [BL-057, BL-118]
       known_gaps: [installed_software_inventory, production_enrollment_hardening, deeper_consent_model]
+    tool_execution:
+      current: remote_tool_execution_safety_foundation_accepted
+      manifest: local_tool_manifest_json_with_integrity_hash
+      registry_count: 7
+      registry_tools: [diagnostic.inventory, diagnostic.disk, diagnostic.network, diagnostic.services, diagnostic.status, remediation.flush_dns_cache, remediation.clear_temp_preview]
+      policy_engine: role_tenant_device_risk_allowlist
+      read_only_auto_approval: true
+      remediation_requires_approval: true
+      arbitrary_shell_blocked: true
+      fixed_implementation_only: true
+      endpoint_command_kind_allowlist: [collect_inventory, collect_disk, collect_network, collect_services, ping_self, flush_dns_cache, clear_temp_preview]
+      audit_events: [tool_invocation_requested, tool_dispatch_created, tool_approval_requested, tool_approval_decided, tool_result_received, arbitrary_execution_rejected]
+      accepted_items: [BL-061, BL-062, BL-063, BL-064, BL-065, BL-066, BL-067, BL-068]
+      evidence_folder: output/playwright/session-121-bl061-068-tool-execution-safety-foundation/
+      known_gaps: [web_ui_tool_registry_page, web_ui_approval_queue, web_ui_device_console_tool_integration, tool_manifest_digital_signing, production_enrollment_hardening]
     evidence:
       current: local sandbox JSON and Markdown bundle persisted to MinIO with direct read/checksum proof
       object_storage_artifact_persistence: true (MinIO local sandbox, direct object read/checksum proven)

@@ -50,6 +50,9 @@ model Tenant {
   endpointDiagnosticSnapshots EndpointDiagnosticSnapshot[]
   endpointCommands    EndpointCommand[]
   endpointCommandResults EndpointCommandResult[]
+  toolInvocations     ToolInvocation[]
+  toolApprovals       ToolApproval[]
+  toolResultNoteDrafts ToolResultNoteDraft[]
 
   @@index([slug])
   @@index([status])
@@ -779,6 +782,7 @@ model EndpointDevice {
   snapshots   EndpointDiagnosticSnapshot[]
   commands    EndpointCommand[]
   results     EndpointCommandResult[]
+  toolInvocations ToolInvocation[]
 
   @@unique([tenantId, deviceKey])
   @@unique([tenantId, fingerprint])
@@ -879,4 +883,134 @@ model EndpointCommandResult {
   @@index([tenantId, deviceId])
   @@index([submittedAt])
   @@map("endpoint_command_results")
+}
+
+// BL-061 Tool Manifest Registry
+model ToolManifestRecord {
+  id              String   @id @default(cuid())
+  manifestVersion String
+  registryVersion String
+  source          String
+  integrityHash   String
+  status          String   @default("active")
+  loadedAt        DateTime @default(now())
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tools ToolDefinition[]
+
+  @@index([status])
+  @@map("tool_manifest_records")
+}
+
+// BL-061 Tool Definition
+model ToolDefinition {
+  id                  String   @id @default(cuid())
+  manifestId          String
+  toolKey             String
+  displayName         String
+  description         String?
+  category            String
+  riskLevel           String
+  implementationId    String
+  readOnly            Boolean  @default(true)
+  remediation         Boolean  @default(false)
+  approvalRequired    Boolean  @default(false)
+  requiredPermission  String   @default("endpoint_command:create")
+  supportedPlatforms  Json     @default("[]")
+  inputSchema         Json     @default("{}")
+  outputSchema        Json     @default("{}")
+  enabled             Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  manifest    ToolManifestRecord @relation(fields: [manifestId], references: [id], onDelete: Cascade)
+  invocations ToolInvocation[]
+
+  @@unique([toolKey])
+  @@index([manifestId])
+  @@index([category])
+  @@index([riskLevel])
+  @@index([enabled])
+  @@map("tool_definitions")
+}
+
+// BL-063/064 Tool Invocation
+model ToolInvocation {
+  id                  String   @id @default(cuid())
+  tenantId            String
+  deviceId            String
+  toolDefinitionId    String
+  toolKey             String
+  requestedByUserId   String
+  status              String   @default("requested")
+  policyDecision      Json     @default("{}")
+  approvalId          String? @unique
+  endpointCommandId   String?
+  requestedInput      Json     @default("{}")
+  normalizedResult    Json     @default("{}")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  completedAt         DateTime?
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  device          EndpointDevice   @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  toolDefinition  ToolDefinition   @relation(fields: [toolDefinitionId], references: [id], onDelete: Cascade)
+  approval        ToolApproval?    @relation(fields: [approvalId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, deviceId])
+  @@index([tenantId, status])
+  @@index([toolDefinitionId])
+  @@index([approvalId])
+  @@index([endpointCommandId])
+  @@index([createdAt])
+  @@map("tool_invocations")
+}
+
+// BL-063 Tool Approval
+model ToolApproval {
+  id                String   @id @default(cuid())
+  tenantId          String
+  invocationId      String   @unique
+  requestedByUserId String
+  approvedByUserId  String?
+  status            String   @default("requested")
+  reason            String?
+  comment           String?
+  expiresAt         DateTime
+  decidedAt         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant     Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invocation ToolInvocation?
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([requestedByUserId])
+  @@index([approvedByUserId])
+  @@index([expiresAt])
+  @@map("tool_approvals")
+}
+
+// BL-067 Tool Result Note Draft
+model ToolResultNoteDraft {
+  id              String   @id @default(cuid())
+  tenantId        String
+  invocationId    String   @unique
+  ticketId        String?
+  title           String?
+  body            String
+  status          String   @default("draft")
+  createdByUserId String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("tool_result_note_drafts")
 }

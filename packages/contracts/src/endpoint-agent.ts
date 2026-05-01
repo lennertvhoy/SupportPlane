@@ -32,6 +32,8 @@ export const EndpointCommandKind = z.enum([
   'collect_network',
   'collect_services',
   'ping_self',
+  'flush_dns_cache',
+  'clear_temp_preview',
 ]);
 export type EndpointCommandKind = z.infer<typeof EndpointCommandKind>;
 

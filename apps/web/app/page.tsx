@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Activity, Cpu, AlertTriangle, Phone, MonitorCog } from 'lucide-react';
+import { Activity, Cpu, AlertTriangle, Phone, MonitorCog, Wrench, ShieldAlert } from 'lucide-react';
 import { SessionListPanel } from '@/components/SessionListPanel';
 import { TicketContextPanel } from '@/components/TicketContextPanel';
 import { AiContextPanel } from '@/components/AiContextPanel';
@@ -372,6 +372,20 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
           >
             <MonitorCog size={10} />
             Device Console
+          </button>
+          <button
+            onClick={() => window.location.href = '/tool-registry'}
+            className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
+          >
+            <Wrench size={10} />
+            Tool Registry
+          </button>
+          <button
+            onClick={() => window.location.href = '/approval-queue'}
+            className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
+          >
+            <ShieldAlert size={10} />
+            Approval Queue
           </button>
         </div>
       </header>

@@ -145,6 +145,19 @@ export const AuditEventType = z.enum([
   'endpoint_command_result_received',
   'endpoint_command_replay_rejected',
   'endpoint_command_rejected',
+  // BL-061 through BL-068 Tool Execution Safety Foundation
+  'tool_manifest_loaded',
+  'tool_manifest_rejected',
+  'tool_invocation_requested',
+  'tool_invocation_policy_allowed',
+  'tool_invocation_policy_denied',
+  'tool_approval_requested',
+  'tool_approval_approved',
+  'tool_approval_denied',
+  'tool_dispatch_created',
+  'tool_result_received',
+  'tool_note_draft_created',
+  'arbitrary_execution_rejected',
 ]);
 
 export type AuditEventType = z.infer<typeof AuditEventType>;

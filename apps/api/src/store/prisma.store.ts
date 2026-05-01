@@ -30,6 +30,11 @@ import type {
   EndpointDiagnosticSnapshot as EndpointDiagnosticSnapshotShape,
   EndpointCommand as EndpointCommandShape,
   EndpointCommandResult as EndpointCommandResultShape,
+  ToolManifestRecord as ToolManifestRecordShape,
+  ToolDefinition as ToolDefinitionShape,
+  ToolInvocation as ToolInvocationShape,
+  ToolApproval as ToolApprovalShape,
+  ToolResultNoteDraft as ToolResultNoteDraftShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from './store.interface.js';
 
@@ -1846,6 +1851,359 @@ export class PrismaStore implements Store {
       errorMessage: row.errorMessage ?? undefined,
       createdAt: toISO(row.createdAt)!,
       updatedAt: toISO(row.updatedAt)!,
+    };
+  }
+
+  // Tool manifest/registry
+  async saveToolManifestRecord(record: ToolManifestRecordShape): Promise<void> {
+    await this.prisma.toolManifestRecord.upsert({
+      where: { id: record.id },
+      create: {
+        id: record.id,
+        manifestVersion: record.manifestVersion,
+        registryVersion: record.registryVersion,
+        source: record.source,
+        integrityHash: record.integrityHash,
+        status: record.status,
+        loadedAt: dateOrNow(record.loadedAt),
+        metadata: json(record.metadata),
+        createdAt: dateOrNow(record.createdAt),
+        updatedAt: dateOrNow(record.updatedAt),
+      },
+      update: {
+        manifestVersion: record.manifestVersion,
+        registryVersion: record.registryVersion,
+        source: record.source,
+        integrityHash: record.integrityHash,
+        status: record.status,
+        loadedAt: dateOrNow(record.loadedAt),
+        metadata: json(record.metadata),
+        updatedAt: dateOrNow(record.updatedAt),
+      },
+    });
+  }
+
+  async getToolManifestRecord(id: string): Promise<ToolManifestRecordShape | undefined> {
+    const r = await this.prisma.toolManifestRecord.findUnique({ where: { id } });
+    return r ? this.mapToolManifestRecord(r) : undefined;
+  }
+
+  async listToolManifestRecords(): Promise<ToolManifestRecordShape[]> {
+    const rows = await this.prisma.toolManifestRecord.findMany({ orderBy: { loadedAt: 'desc' } });
+    return rows.map((r) => this.mapToolManifestRecord(r));
+  }
+
+  private mapToolManifestRecord(r: {
+    id: string; manifestVersion: string; registryVersion: string; source: string; integrityHash: string; status: string; loadedAt: Date; metadata: unknown; createdAt: Date; updatedAt: Date;
+  }): ToolManifestRecordShape {
+    return {
+      id: r.id as ToolManifestRecordShape['id'],
+      manifestVersion: r.manifestVersion,
+      registryVersion: r.registryVersion,
+      source: r.source,
+      integrityHash: r.integrityHash,
+      status: r.status as ToolManifestRecordShape['status'],
+      loadedAt: toISO(r.loadedAt)!,
+      metadata: r.metadata as Record<string, unknown>,
+      createdAt: toISO(r.createdAt)!,
+      updatedAt: toISO(r.updatedAt)!,
+    };
+  }
+
+  async saveToolDefinition(def: ToolDefinitionShape): Promise<void> {
+    await this.prisma.toolDefinition.upsert({
+      where: { id: def.id },
+      create: {
+        id: def.id,
+        manifestId: def.manifestId,
+        toolKey: def.toolKey,
+        displayName: def.displayName,
+        description: def.description,
+        category: def.category,
+        riskLevel: def.riskLevel,
+        implementationId: def.implementationId,
+        readOnly: def.readOnly,
+        remediation: def.remediation,
+        approvalRequired: def.approvalRequired,
+        requiredPermission: def.requiredPermission,
+        supportedPlatforms: def.supportedPlatforms as string[],
+        inputSchema: json(def.inputSchema),
+        outputSchema: json(def.outputSchema),
+        enabled: def.enabled,
+        createdAt: dateOrNow(def.createdAt),
+        updatedAt: dateOrNow(def.updatedAt),
+      },
+      update: {
+        manifestId: def.manifestId,
+        toolKey: def.toolKey,
+        displayName: def.displayName,
+        description: def.description,
+        category: def.category,
+        riskLevel: def.riskLevel,
+        implementationId: def.implementationId,
+        readOnly: def.readOnly,
+        remediation: def.remediation,
+        approvalRequired: def.approvalRequired,
+        requiredPermission: def.requiredPermission,
+        supportedPlatforms: def.supportedPlatforms as string[],
+        inputSchema: json(def.inputSchema),
+        outputSchema: json(def.outputSchema),
+        enabled: def.enabled,
+        updatedAt: dateOrNow(def.updatedAt),
+      },
+    });
+  }
+
+  async getToolDefinition(id: string): Promise<ToolDefinitionShape | undefined> {
+    const r = await this.prisma.toolDefinition.findUnique({ where: { id } });
+    return r ? this.mapToolDefinition(r) : undefined;
+  }
+
+  async getToolDefinitionByKey(toolKey: string): Promise<ToolDefinitionShape | undefined> {
+    const r = await this.prisma.toolDefinition.findUnique({ where: { toolKey } });
+    return r ? this.mapToolDefinition(r) : undefined;
+  }
+
+  async listToolDefinitions(options?: { manifestId?: string; enabled?: boolean; category?: string }): Promise<ToolDefinitionShape[]> {
+    const rows = await this.prisma.toolDefinition.findMany({
+      where: {
+        ...(options?.manifestId ? { manifestId: options.manifestId } : {}),
+        ...(options?.enabled !== undefined ? { enabled: options.enabled } : {}),
+        ...(options?.category ? { category: options.category } : {}),
+      },
+      orderBy: { displayName: 'asc' },
+    });
+    return rows.map((r) => this.mapToolDefinition(r));
+  }
+
+  private mapToolDefinition(r: {
+    id: string; manifestId: string; toolKey: string; displayName: string; description: string | null; category: string; riskLevel: string; implementationId: string; readOnly: boolean; remediation: boolean; approvalRequired: boolean; requiredPermission: string; supportedPlatforms: unknown; inputSchema: unknown; outputSchema: unknown; enabled: boolean; createdAt: Date; updatedAt: Date;
+  }): ToolDefinitionShape {
+    return {
+      id: r.id as ToolDefinitionShape['id'],
+      manifestId: r.manifestId as ToolDefinitionShape['manifestId'],
+      toolKey: r.toolKey,
+      displayName: r.displayName,
+      description: r.description ?? undefined,
+      category: r.category as ToolDefinitionShape['category'],
+      riskLevel: r.riskLevel as ToolDefinitionShape['riskLevel'],
+      implementationId: r.implementationId,
+      readOnly: r.readOnly,
+      remediation: r.remediation,
+      approvalRequired: r.approvalRequired,
+      requiredPermission: r.requiredPermission,
+      supportedPlatforms: r.supportedPlatforms as string[],
+      inputSchema: r.inputSchema as Record<string, unknown>,
+      outputSchema: r.outputSchema as Record<string, unknown>,
+      enabled: r.enabled,
+      createdAt: toISO(r.createdAt)!,
+      updatedAt: toISO(r.updatedAt)!,
+    };
+  }
+
+  // Tool invocation/approval
+  async saveToolInvocation(invocation: ToolInvocationShape): Promise<void> {
+    await this.prisma.toolInvocation.upsert({
+      where: { id: invocation.id },
+      create: {
+        id: invocation.id,
+        tenantId: invocation.tenantId,
+        deviceId: invocation.deviceId,
+        toolDefinitionId: invocation.toolDefinitionId,
+        toolKey: invocation.toolKey,
+        requestedByUserId: invocation.requestedByUserId,
+        status: invocation.status,
+        policyDecision: json(invocation.policyDecision),
+        approvalId: invocation.approvalId ?? null,
+        endpointCommandId: invocation.endpointCommandId ?? null,
+        requestedInput: json(invocation.requestedInput),
+        normalizedResult: json(invocation.normalizedResult),
+        createdAt: dateOrNow(invocation.createdAt),
+        updatedAt: dateOrNow(invocation.updatedAt),
+        completedAt: invocation.completedAt ? dateOrNow(invocation.completedAt) : null,
+      },
+      update: {
+        status: invocation.status,
+        policyDecision: json(invocation.policyDecision),
+        approvalId: invocation.approvalId ?? null,
+        endpointCommandId: invocation.endpointCommandId ?? null,
+        requestedInput: json(invocation.requestedInput),
+        normalizedResult: json(invocation.normalizedResult),
+        updatedAt: dateOrNow(invocation.updatedAt),
+        completedAt: invocation.completedAt ? dateOrNow(invocation.completedAt) : null,
+      },
+    });
+  }
+
+  async getToolInvocation(tenantId: string, id: string): Promise<ToolInvocationShape | undefined> {
+    const r = await this.prisma.toolInvocation.findFirst({ where: { tenantId, id } });
+    return r ? this.mapToolInvocation(r) : undefined;
+  }
+
+  async listToolInvocations(tenantId: string, options?: { deviceId?: string; status?: string; toolKey?: string }): Promise<ToolInvocationShape[]> {
+    const rows = await this.prisma.toolInvocation.findMany({
+      where: {
+        tenantId,
+        ...(options?.deviceId ? { deviceId: options.deviceId } : {}),
+        ...(options?.status ? { status: options.status } : {}),
+        ...(options?.toolKey ? { toolKey: options.toolKey } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    return rows.map((r) => this.mapToolInvocation(r));
+  }
+
+  private mapToolInvocation(r: {
+    id: string; tenantId: string; deviceId: string; toolDefinitionId: string; toolKey: string; requestedByUserId: string; status: string; policyDecision: unknown; approvalId: string | null; endpointCommandId: string | null; requestedInput: unknown; normalizedResult: unknown; createdAt: Date; updatedAt: Date; completedAt: Date | null;
+  }): ToolInvocationShape {
+    return {
+      id: r.id as ToolInvocationShape['id'],
+      tenantId: r.tenantId as ToolInvocationShape['tenantId'],
+      deviceId: r.deviceId,
+      toolDefinitionId: r.toolDefinitionId,
+      toolKey: r.toolKey,
+      requestedByUserId: r.requestedByUserId,
+      status: r.status as ToolInvocationShape['status'],
+      policyDecision: r.policyDecision as Record<string, unknown>,
+      approvalId: r.approvalId ?? undefined,
+      endpointCommandId: r.endpointCommandId ?? undefined,
+      requestedInput: r.requestedInput as Record<string, unknown>,
+      normalizedResult: r.normalizedResult as Record<string, unknown>,
+      createdAt: toISO(r.createdAt)!,
+      updatedAt: toISO(r.updatedAt)!,
+      completedAt: toISO(r.completedAt),
+    };
+  }
+
+  async saveToolApproval(approval: ToolApprovalShape): Promise<void> {
+    await this.prisma.toolApproval.upsert({
+      where: { id: approval.id },
+      create: {
+        id: approval.id,
+        tenantId: approval.tenantId,
+        invocationId: approval.invocationId,
+        requestedByUserId: approval.requestedByUserId,
+        approvedByUserId: approval.approvedByUserId ?? null,
+        status: approval.status,
+        reason: approval.reason ?? null,
+        comment: approval.comment ?? null,
+        expiresAt: dateOrNow(approval.expiresAt),
+        decidedAt: approval.decidedAt ? dateOrNow(approval.decidedAt) : null,
+        createdAt: dateOrNow(approval.createdAt),
+        updatedAt: dateOrNow(approval.updatedAt),
+      },
+      update: {
+        approvedByUserId: approval.approvedByUserId ?? null,
+        status: approval.status,
+        reason: approval.reason ?? null,
+        comment: approval.comment ?? null,
+        decidedAt: approval.decidedAt ? dateOrNow(approval.decidedAt) : null,
+        updatedAt: dateOrNow(approval.updatedAt),
+      },
+    });
+  }
+
+  async getToolApproval(tenantId: string, id: string): Promise<ToolApprovalShape | undefined> {
+    const r = await this.prisma.toolApproval.findFirst({ where: { tenantId, id } });
+    return r ? this.mapToolApproval(r) : undefined;
+  }
+
+  async getToolApprovalByInvocationId(invocationId: string): Promise<ToolApprovalShape | undefined> {
+    const r = await this.prisma.toolApproval.findUnique({ where: { invocationId } });
+    return r ? this.mapToolApproval(r) : undefined;
+  }
+
+  async listToolApprovals(tenantId: string, options?: { status?: string; requestedByUserId?: string }): Promise<ToolApprovalShape[]> {
+    const rows = await this.prisma.toolApproval.findMany({
+      where: {
+        tenantId,
+        ...(options?.status ? { status: options.status } : {}),
+        ...(options?.requestedByUserId ? { requestedByUserId: options.requestedByUserId } : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    return rows.map((r) => this.mapToolApproval(r));
+  }
+
+  private mapToolApproval(r: {
+    id: string; tenantId: string; invocationId: string; requestedByUserId: string; approvedByUserId: string | null; status: string; reason: string | null; comment: string | null; expiresAt: Date; decidedAt: Date | null; createdAt: Date; updatedAt: Date;
+  }): ToolApprovalShape {
+    return {
+      id: r.id as ToolApprovalShape['id'],
+      tenantId: r.tenantId as ToolApprovalShape['tenantId'],
+      invocationId: r.invocationId as ToolApprovalShape['invocationId'],
+      requestedByUserId: r.requestedByUserId,
+      approvedByUserId: r.approvedByUserId ?? undefined,
+      status: r.status as ToolApprovalShape['status'],
+      reason: r.reason ?? undefined,
+      comment: r.comment ?? undefined,
+      expiresAt: toISO(r.expiresAt)!,
+      decidedAt: toISO(r.decidedAt),
+      createdAt: toISO(r.createdAt)!,
+      updatedAt: toISO(r.updatedAt)!,
+    };
+  }
+
+  async saveToolResultNoteDraft(draft: ToolResultNoteDraftShape): Promise<void> {
+    await this.prisma.toolResultNoteDraft.upsert({
+      where: { id: draft.id },
+      create: {
+        id: draft.id,
+        tenantId: draft.tenantId,
+        invocationId: draft.invocationId,
+        ticketId: draft.ticketId ?? null,
+        title: draft.title ?? null,
+        body: draft.body,
+        status: draft.status,
+        createdByUserId: draft.createdByUserId,
+        createdAt: dateOrNow(draft.createdAt),
+        updatedAt: dateOrNow(draft.updatedAt),
+      },
+      update: {
+        ticketId: draft.ticketId ?? null,
+        title: draft.title ?? null,
+        body: draft.body,
+        status: draft.status,
+        updatedAt: dateOrNow(draft.updatedAt),
+      },
+    });
+  }
+
+  async getToolResultNoteDraft(tenantId: string, id: string): Promise<ToolResultNoteDraftShape | undefined> {
+    const r = await this.prisma.toolResultNoteDraft.findFirst({ where: { tenantId, id } });
+    return r ? this.mapToolResultNoteDraft(r) : undefined;
+  }
+
+  async getToolResultNoteDraftByInvocationId(invocationId: string): Promise<ToolResultNoteDraftShape | undefined> {
+    const r = await this.prisma.toolResultNoteDraft.findUnique({ where: { invocationId } });
+    return r ? this.mapToolResultNoteDraft(r) : undefined;
+  }
+
+  async listToolResultNoteDrafts(tenantId: string): Promise<ToolResultNoteDraftShape[]> {
+    const rows = await this.prisma.toolResultNoteDraft.findMany({
+      where: { tenantId },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+    return rows.map((r) => this.mapToolResultNoteDraft(r));
+  }
+
+  private mapToolResultNoteDraft(r: {
+    id: string; tenantId: string; invocationId: string; ticketId: string | null; title: string | null; body: string; status: string; createdByUserId: string; createdAt: Date; updatedAt: Date;
+  }): ToolResultNoteDraftShape {
+    return {
+      id: r.id as ToolResultNoteDraftShape['id'],
+      tenantId: r.tenantId as ToolResultNoteDraftShape['tenantId'],
+      invocationId: r.invocationId as ToolResultNoteDraftShape['invocationId'],
+      ticketId: r.ticketId ?? undefined,
+      title: r.title ?? undefined,
+      body: r.body,
+      status: r.status as ToolResultNoteDraftShape['status'],
+      createdByUserId: r.createdByUserId,
+      createdAt: toISO(r.createdAt)!,
+      updatedAt: toISO(r.updatedAt)!,
     };
   }
 }

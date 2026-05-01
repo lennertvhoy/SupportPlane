@@ -22,6 +22,11 @@ import type {
   EndpointDiagnosticSnapshot as EndpointDiagnosticSnapshotShape,
   EndpointCommand as EndpointCommandShape,
   EndpointCommandResult as EndpointCommandResultShape,
+  ToolManifestRecord as ToolManifestRecordShape,
+  ToolDefinition as ToolDefinitionShape,
+  ToolInvocation as ToolInvocationShape,
+  ToolApproval as ToolApprovalShape,
+  ToolResultNoteDraft as ToolResultNoteDraftShape,
 } from '@supportplane/contracts';
 import type { Store, SharingStateShape } from '../store/store.interface.js';
 
@@ -48,6 +53,11 @@ export class InMemoryStore implements Store {
   private endpointSnapshots = new Map<string, EndpointDiagnosticSnapshotShape>();
   private endpointCommands = new Map<string, EndpointCommandShape>();
   private endpointCommandResults = new Map<string, EndpointCommandResultShape>();
+  private toolManifestRecords = new Map<string, ToolManifestRecordShape>();
+  private toolDefinitions = new Map<string, ToolDefinitionShape>();
+  private toolInvocations = new Map<string, ToolInvocationShape>();
+  private toolApprovals = new Map<string, ToolApprovalShape>();
+  private toolResultNoteDrafts = new Map<string, ToolResultNoteDraftShape>();
 
   saveSession(session: SupportSessionShape): void {
     this.sessions.set(`${session.tenantId}:${session.id}`, session);
@@ -447,5 +457,103 @@ export class InMemoryStore implements Store {
 
   getEndpointCommandResult(tenantId: string, commandId: string): EndpointCommandResultShape | undefined {
     return this.endpointCommandResults.get(`${tenantId}:${commandId}`);
+  }
+
+  // Tool manifest/registry
+  saveToolManifestRecord(record: ToolManifestRecordShape): void {
+    this.toolManifestRecords.set(record.id, record);
+  }
+
+  getToolManifestRecord(id: string): ToolManifestRecordShape | undefined {
+    return this.toolManifestRecords.get(id);
+  }
+
+  listToolManifestRecords(): ToolManifestRecordShape[] {
+    return Array.from(this.toolManifestRecords.values()).sort((a, b) => b.loadedAt.localeCompare(a.loadedAt));
+  }
+
+  saveToolDefinition(def: ToolDefinitionShape): void {
+    this.toolDefinitions.set(def.id, def);
+  }
+
+  getToolDefinition(id: string): ToolDefinitionShape | undefined {
+    return this.toolDefinitions.get(id);
+  }
+
+  getToolDefinitionByKey(toolKey: string): ToolDefinitionShape | undefined {
+    return Array.from(this.toolDefinitions.values()).find((d) => d.toolKey === toolKey);
+  }
+
+  listToolDefinitions(options?: { manifestId?: string; enabled?: boolean; category?: string }): ToolDefinitionShape[] {
+    return Array.from(this.toolDefinitions.values())
+      .filter((d) => {
+        if (options?.manifestId && d.manifestId !== options.manifestId) return false;
+        if (options?.enabled !== undefined && d.enabled !== options.enabled) return false;
+        if (options?.category && d.category !== options.category) return false;
+        return true;
+      })
+      .sort((a, b) => a.displayName.localeCompare(b.displayName));
+  }
+
+  // Tool invocation/approval
+  saveToolInvocation(invocation: ToolInvocationShape): void {
+    this.toolInvocations.set(`${invocation.tenantId}:${invocation.id}`, invocation);
+  }
+
+  getToolInvocation(tenantId: string, id: string): ToolInvocationShape | undefined {
+    return this.toolInvocations.get(`${tenantId}:${id}`);
+  }
+
+  listToolInvocations(tenantId: string, options?: { deviceId?: string; status?: string; toolKey?: string }): ToolInvocationShape[] {
+    return Array.from(this.toolInvocations.values())
+      .filter((i) => {
+        if (i.tenantId !== tenantId) return false;
+        if (options?.deviceId && i.deviceId !== options.deviceId) return false;
+        if (options?.status && i.status !== options.status) return false;
+        if (options?.toolKey && i.toolKey !== options.toolKey) return false;
+        return true;
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  saveToolApproval(approval: ToolApprovalShape): void {
+    this.toolApprovals.set(`${approval.tenantId}:${approval.id}`, approval);
+  }
+
+  getToolApproval(tenantId: string, id: string): ToolApprovalShape | undefined {
+    return this.toolApprovals.get(`${tenantId}:${id}`);
+  }
+
+  getToolApprovalByInvocationId(invocationId: string): ToolApprovalShape | undefined {
+    return Array.from(this.toolApprovals.values()).find((a) => a.invocationId === invocationId);
+  }
+
+  listToolApprovals(tenantId: string, options?: { status?: string; requestedByUserId?: string }): ToolApprovalShape[] {
+    return Array.from(this.toolApprovals.values())
+      .filter((a) => {
+        if (a.tenantId !== tenantId) return false;
+        if (options?.status && a.status !== options.status) return false;
+        if (options?.requestedByUserId && a.requestedByUserId !== options.requestedByUserId) return false;
+        return true;
+      })
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }
+
+  saveToolResultNoteDraft(draft: ToolResultNoteDraftShape): void {
+    this.toolResultNoteDrafts.set(`${draft.tenantId}:${draft.id}`, draft);
+  }
+
+  getToolResultNoteDraft(tenantId: string, id: string): ToolResultNoteDraftShape | undefined {
+    return this.toolResultNoteDrafts.get(`${tenantId}:${id}`);
+  }
+
+  getToolResultNoteDraftByInvocationId(invocationId: string): ToolResultNoteDraftShape | undefined {
+    return Array.from(this.toolResultNoteDrafts.values()).find((d) => d.invocationId === invocationId);
+  }
+
+  listToolResultNoteDrafts(tenantId: string): ToolResultNoteDraftShape[] {
+    return Array.from(this.toolResultNoteDrafts.values())
+      .filter((d) => d.tenantId === tenantId)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 }

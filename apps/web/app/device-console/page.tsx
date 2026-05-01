@@ -1,20 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Database, HardDrive, Loader2, Network, RefreshCw, Server, ShieldCheck, TerminalSquare } from 'lucide-react';
+import { ArrowLeft, Loader2, RefreshCw, TerminalSquare, Wrench } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AuthGate, IdentityPill } from '@/components/AuthGate';
 import { Badge } from '@/components/Badge';
 import { Panel } from '@/components/Panel';
-import { api, ApiClientError, type AuthIdentity, type EndpointCommand, type EndpointDevice, type EndpointDeviceDetail } from '@/lib/api';
-
-const commandOptions = [
-  { kind: 'collect_inventory', label: 'Inventory', icon: Database },
-  { kind: 'collect_disk', label: 'Disk', icon: HardDrive },
-  { kind: 'collect_network', label: 'Network', icon: Network },
-  { kind: 'collect_services', label: 'Services', icon: Server },
-  { kind: 'ping_self', label: 'Status', icon: ShieldCheck },
-];
+import { api, ApiClientError, type AuthIdentity, type EndpointDevice, type EndpointDeviceDetail, type ToolDefinition, type ToolInvocation } from '@/lib/api';
 
 function JsonBlock({ value }: { value: unknown }) {
   return <pre className="max-h-72 overflow-auto rounded border border-cockpit-700 bg-cockpit-950/70 p-3 text-xs text-cockpit-300">{JSON.stringify(value, null, 2)}</pre>;
@@ -25,6 +17,8 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
   const [devices, setDevices] = useState<EndpointDevice[]>([]);
   const [selectedId, setSelectedId] = useState<string | undefined>();
   const [detail, setDetail] = useState<EndpointDeviceDetail | undefined>();
+  const [tools, setTools] = useState<ToolDefinition[]>([]);
+  const [invocations, setInvocations] = useState<ToolInvocation[]>([]);
   const [loading, setLoading] = useState(false);
   const [commandLoading, setCommandLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -35,8 +29,14 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
     setLoading(true);
     setError(null);
     try {
-      const list = await api.listEndpointDevices();
+      const [list, toolList, invList] = await Promise.all([
+        api.listEndpointDevices(),
+        api.listTools(),
+        api.listToolInvocations(),
+      ]);
       setDevices(list.devices);
+      setTools(toolList.tools);
+      setInvocations(invList.invocations);
       const targetId = target ?? selectedId ?? list.devices[0]?.id;
       setSelectedId(targetId);
       setDetail(targetId ? await api.getEndpointDevice(targetId) : undefined);
@@ -51,19 +51,26 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
     refresh();
   }, [refresh]);
 
-  const requestDiagnostic = async (commandKind: string) => {
+  const invokeTool = async (toolKey: string) => {
     if (!selectedDevice) return;
-    setCommandLoading(commandKind);
+    setCommandLoading(toolKey);
     setError(null);
     try {
-      await api.requestEndpointDiagnostic(selectedDevice.id, commandKind);
+      const result = await api.invokeTool(selectedDevice.id, toolKey, {});
+      if (result.policyDecision.approvalRequired) {
+        setError(`Tool ${toolKey} requires approval. Check the Approval Queue.`);
+      }
       await refresh(selectedDevice.id);
     } catch (err) {
-      setError(err instanceof ApiClientError ? err.message : 'Failed to request read-only diagnostic');
+      setError(err instanceof ApiClientError ? err.message : 'Failed to invoke tool');
     } finally {
       setCommandLoading(null);
     }
   };
+
+  const deviceInvocations = useMemo(() => {
+    return invocations.filter((i) => i.deviceId === selectedId).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [invocations, selectedId]);
 
   return (
     <div className="flex h-screen flex-col bg-cockpit-950 text-cockpit-100">
@@ -130,37 +137,39 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
                   <div><span className="text-cockpit-500">Enrollment</span><div>{new Date(selectedDevice.enrolledAt).toLocaleString()}</div></div>
                 </div>
               </Panel>
-              <Panel title="Diagnostic Request">
-                <div className="mb-3 rounded border border-amber-700/60 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">Read-only diagnostics only. Arbitrary shell and remediation actions are blocked by the API and are not present in the agent.</div>
+              <Panel title="Tool Invocation">
+                <div className="mb-3 rounded border border-amber-700/60 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">Fixed implementation only. Arbitrary shell and remediation actions are blocked by the API and are not present in the agent.</div>
                 <div className="flex flex-wrap gap-2">
-                  {commandOptions.map(({ kind, label, icon: Icon }) => (
-                    <button key={kind} type="button" disabled={!canRequest || commandLoading != null} onClick={() => requestDiagnostic(kind)} className="inline-flex items-center gap-2 rounded border border-cockpit-700 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-200 hover:border-accent-500 disabled:cursor-not-allowed disabled:opacity-50" title={`Request ${label}`}>
-                      {commandLoading === kind ? <Loader2 size={15} className="animate-spin" /> : <Icon size={15} />}
-                      {label}
+                  {tools.filter((t) => t.enabled).map((tool) => (
+                    <button key={tool.toolKey} type="button" disabled={!canRequest || commandLoading != null} onClick={() => invokeTool(tool.toolKey)} className="inline-flex items-center gap-2 rounded border border-cockpit-700 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-200 hover:border-accent-500 disabled:cursor-not-allowed disabled:opacity-50" title={`Invoke ${tool.displayName}`}>
+                      {commandLoading === tool.toolKey ? <Loader2 size={15} className="animate-spin" /> : <Wrench size={15} />}
+                      {tool.displayName}
+                      {tool.approvalRequired && <span className="ml-1 text-[10px] text-amber-300">(approval)</span>}
                     </button>
                   ))}
                 </div>
-                {!canRequest && <div className="mt-3 text-xs text-cockpit-500">Policy denied: your role can inspect devices but cannot request diagnostics.</div>}
+                {!canRequest && <div className="mt-3 text-xs text-cockpit-500">Policy denied: your role can inspect devices but cannot invoke tools.</div>}
               </Panel>
               <div className="grid grid-cols-2 gap-4">
                 <Panel title="Inventory / Snapshot">
                   {detail?.snapshots[0] ? <JsonBlock value={detail.snapshots[0]} /> : <div className="text-sm text-cockpit-500">No diagnostic snapshots yet.</div>}
                 </Panel>
-                <Panel title="Command History" headerRight={<TerminalSquare size={15} className="text-cockpit-500" />}>
-                  {detail?.commands.length ? (
+                <Panel title="Invocation History" headerRight={<TerminalSquare size={15} className="text-cockpit-500" />}>
+                  {deviceInvocations.length ? (
                     <ul className="space-y-2">
-                      {detail.commands.map((command: EndpointCommand) => (
-                        <li key={command.id} className="rounded border border-cockpit-700 bg-cockpit-900/50 px-3 py-2 text-xs">
+                      {deviceInvocations.map((inv: ToolInvocation) => (
+                        <li key={inv.id} className="rounded border border-cockpit-700 bg-cockpit-900/50 px-3 py-2 text-xs">
                           <div className="flex items-center justify-between">
-                            <span className="font-medium text-cockpit-200">{command.commandKind}</span>
-                            <Badge variant={command.status === 'succeeded' ? 'success' : command.status === 'rejected' ? 'danger' : 'muted'}>{command.status}</Badge>
+                            <span className="font-medium text-cockpit-200">{inv.toolKey}</span>
+                            <Badge variant={inv.status === 'succeeded' ? 'success' : inv.status === 'failed' ? 'danger' : inv.status === 'policy_denied' ? 'danger' : inv.status === 'approval_required' ? 'warning' : 'muted'}>{inv.status}</Badge>
                           </div>
-                          <div className="mt-1 text-cockpit-500">Actor {command.requestedByUserId} · {new Date(command.requestedAt).toLocaleString()}</div>
-                          {command.result && <div className="mt-2"><JsonBlock value={command.result} /></div>}
+                          <div className="mt-1 text-cockpit-500">Actor {inv.requestedByUserId} · {new Date(inv.createdAt).toLocaleString()}</div>
+                          {inv.policyDecision && <div className="mt-1 text-[10px] text-cockpit-500">Policy: {(inv.policyDecision as Record<string, unknown>).decision as string}</div>}
+                          {inv.normalizedResult && Object.keys(inv.normalizedResult).length > 0 && <div className="mt-2"><JsonBlock value={inv.normalizedResult} /></div>}
                         </li>
                       ))}
                     </ul>
-                  ) : <div className="text-sm text-cockpit-500">No command requests yet.</div>}
+                  ) : <div className="text-sm text-cockpit-500">No tool invocations yet.</div>}
                 </Panel>
               </div>
               <Panel title="Last Heartbeat And Policy">

@@ -101,14 +101,14 @@ Status markers:
 
 ## MVP 5 - Approval-Gated Remediation
 
-- [BL-061] `[planned]` Implement ToolManifest schema, signing/validation placeholder, and tool registry.
-- [BL-062] `[planned]` Implement policy engine for role, tenant, device group, risk level, and tool allowlist checks.
-- [BL-063] `[planned]` Implement approval request lifecycle, manager approval/rejection, and timeout behavior.
-- [BL-064] `[planned]` Implement read-only tool invocation flow with audit events and before/after summaries.
-- [BL-065] `[planned]` Implement low-risk tools: flush DNS, restart approved service, and clear temp directory.
-- [BL-066] `[planned]` Implement execution gateway dispatch to endpoint agent fixed implementations only.
-- [BL-067] `[planned]` Implement tool result summarization and ticket note draft from remediation outcome.
-- [BL-068] `[planned]` Add remediation safety tests proving arbitrary shell is blocked.
+- [BL-061] `[accepted]` Implement ToolManifest schema, signing/validation placeholder, and tool registry. Tool manifest loaded with integrity hash validation; 7 tools upserted idempotently by `toolKey`.
+- [BL-062] `[accepted]` Implement policy engine for role, tenant, device group, risk level, and tool allowlist checks. Fixed `implementationId` mapped to `EndpointCommandKind` with allowlist validation.
+- [BL-063] `[accepted]` Implement approval request lifecycle, manager approval/rejection, and timeout behavior. RBAC enforced — viewer denied, admin allowed.
+- [BL-064] `[accepted]` Implement read-only tool invocation flow with audit events and before/after summaries. Read-only diagnostics auto-approved and dispatched to endpoint commands.
+- [BL-065] `[accepted]` Implement low-risk tools: flush DNS, restart approved service, and clear temp directory. Approval queue with approve/deny lifecycle; approved invocations dispatch to endpoint commands.
+- [BL-066] `[accepted]` Implement execution gateway dispatch to endpoint agent fixed implementations only. Audit events generated for all invocations, approvals, and results.
+- [BL-067] `[accepted]` Implement tool result summarization and ticket note draft from remediation outcome. Tool registry with integrity-validated manifest, idempotent upsert.
+- [BL-068] `[accepted]` Add remediation safety tests proving arbitrary shell is blocked. Arbitrary shell, command, script, argv, executable fields rejected in `requestedInput`.
 
 ## Integrations After MVP
 
