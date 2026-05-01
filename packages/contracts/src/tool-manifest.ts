@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EntityId, Timestamp, JsonValue } from './base.js';
+import { EndpointPlatform } from './endpoint-agent.js';
 
 export const ToolManifestRecordId = EntityId.brand<'ToolManifestRecordId'>();
 export type ToolManifestRecordId = z.infer<typeof ToolManifestRecordId>;
@@ -56,7 +57,7 @@ export const ToolDefinition = z.object({
   remediation: z.boolean().default(false),
   approvalRequired: z.boolean().default(false),
   requiredPermission: z.string().min(1).max(128).default('endpoint_command:create'),
-  supportedPlatforms: z.array(z.string()).default([]),
+  supportedPlatforms: z.array(EndpointPlatform).default([]),
   inputSchema: z.record(JsonValue).default({}),
   outputSchema: z.record(JsonValue).default({}),
   enabled: z.boolean().default(true),
@@ -82,7 +83,7 @@ export const LocalToolManifest = z.object({
     remediation: z.boolean(),
     approvalRequired: z.boolean(),
     requiredPermission: z.string(),
-    supportedPlatforms: z.array(z.string()),
+    supportedPlatforms: z.array(EndpointPlatform),
     inputSchema: z.record(JsonValue).optional(),
     outputSchema: z.record(JsonValue).optional(),
     enabled: z.boolean(),

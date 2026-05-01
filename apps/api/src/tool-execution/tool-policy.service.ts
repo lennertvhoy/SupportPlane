@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import {
   ToolPolicyDecision,
+  normalizePlatform,
   type ToolDefinition as ToolDefinitionShape,
 } from '@supportplane/contracts';
 import type { Store } from '../store/store.interface.js';
@@ -52,11 +53,22 @@ export class ToolPolicyService {
     }
 
     // 3. Platform compatibility
-    if (devicePlatform && tool.supportedPlatforms.length > 0 && !tool.supportedPlatforms.includes(devicePlatform)) {
+    const canonicalPlatform = devicePlatform ? normalizePlatform(devicePlatform) : undefined;
+    if (canonicalPlatform && canonicalPlatform !== 'unknown' && tool.supportedPlatforms.length > 0 && !tool.supportedPlatforms.includes(canonicalPlatform)) {
       return {
         allowed: false,
-        decision: 'platform_unsupported',
-        reason: `Platform ${devicePlatform} is not in supported platforms: ${tool.supportedPlatforms.join(', ')}`,
+        decision: 'unsupported_platform',
+        reason: `Platform ${canonicalPlatform} is not in supported platforms: ${tool.supportedPlatforms.join(', ')}`,
+        ...base,
+        remediationAllowed: false,
+        approvalRequired: false,
+      };
+    }
+    if (canonicalPlatform === 'unknown' && tool.supportedPlatforms.length > 0) {
+      return {
+        allowed: false,
+        decision: 'unsupported_platform',
+        reason: `Unknown platform ${devicePlatform} is not supported.`,
         ...base,
         remediationAllowed: false,
         approvalRequired: false,

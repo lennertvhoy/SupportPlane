@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import os from 'os';
-import { AGENT_VERSION, collectInventory, runFixedDiagnostic } from './collectors.js';
+import { AGENT_VERSION, collectInventory, runFixedDiagnostic } from './collectors/index.js';
 
 interface AgentConfig {
   apiUrl: string;

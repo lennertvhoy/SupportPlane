@@ -482,7 +482,53 @@ async function main() {
     });
   }
 
-  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, credential references, and delivery policies');
+  const endpointDevices = [
+    {
+      id: 'endpoint-linux-001',
+      tenantId: 'dev-tenant',
+      displayName: 'Linux Workstation',
+      hostname: 'linux-workstation',
+      deviceKey: 'linux-workstation-key',
+      tokenHash: 'local-hash-linux',
+      fingerprint: 'fp-linux-workstation',
+      platform: 'linux',
+      agentVersion: '0.1.0-readonly',
+      status: 'online',
+      lastSeenAt: new Date(),
+      enrolledAt: new Date(),
+    },
+    {
+      id: 'endpoint-windows-001',
+      tenantId: 'dev-tenant',
+      displayName: 'Windows Endpoint (Mock)',
+      hostname: 'windows-mock-host',
+      deviceKey: 'windows-mock-key',
+      tokenHash: 'local-hash-windows',
+      fingerprint: 'fp-windows-mock',
+      platform: 'win32',
+      agentVersion: '0.1.0-readonly',
+      status: 'online',
+      lastSeenAt: new Date(),
+      enrolledAt: new Date(),
+    },
+  ];
+
+  for (const device of endpointDevices) {
+    await prisma.endpointDevice.upsert({
+      where: { id: device.id },
+      create: device,
+      update: {
+        displayName: device.displayName,
+        hostname: device.hostname,
+        platform: device.platform,
+        agentVersion: device.agentVersion,
+        status: device.status,
+        lastSeenAt: device.lastSeenAt,
+      },
+    });
+  }
+
+  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, credential references, delivery policies, and endpoint devices');
 }
 
 main()

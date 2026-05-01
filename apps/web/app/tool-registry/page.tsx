@@ -15,6 +15,13 @@ function riskBadge(riskLevel: string) {
   return <Badge variant="muted">{riskLevel}</Badge>;
 }
 
+function platformBadge(platform: string) {
+  if (platform === 'linux') return <Badge variant="info">Linux</Badge>;
+  if (platform === 'win32') return <Badge variant="info">Windows</Badge>;
+  if (platform === 'darwin') return <Badge variant="info">macOS</Badge>;
+  return <Badge variant="muted">{platform}</Badge>;
+}
+
 function ToolRegistryContent({ identity, logout }: { identity: AuthIdentity; logout: () => Promise<void> }) {
   const router = useRouter();
   const [tools, setTools] = useState<ToolDefinition[]>([]);
@@ -97,7 +104,7 @@ function ToolRegistryContent({ identity, logout }: { identity: AuthIdentity; log
                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-cockpit-500">
                       <span>Category: {tool.category}</span>
                       <span>Implementation: <span className="font-mono text-cockpit-400">{tool.implementationId}</span></span>
-                      <span>Platforms: {tool.supportedPlatforms.join(', ') || 'any'}</span>
+                      <span className="flex items-center gap-1">Platforms: {tool.supportedPlatforms.length > 0 ? tool.supportedPlatforms.map((p) => <span key={p}>{platformBadge(p)}</span>) : <Badge variant="muted">any</Badge>}</span>
                       <span>Permission: {tool.requiredPermission}</span>
                     </div>
                   </div>

@@ -3675,6 +3675,212 @@ describe('Endpoint agent diagnostics API', () => {
   });
 });
 
+describe('Tool execution and platform policy API', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  after(async () => {
+    if (app) await app.close();
+  });
+
+  async function registerDevice(tenantId: string, deviceKey: string, platform: string) {
+    const res = await supertest(server)
+      .post('/endpoint-agent/register')
+      .send({
+        tenantId,
+        enrollmentToken: 'test-enroll-token',
+        deviceKey,
+        displayName: `Test ${platform}`,
+        hostname: 'test-host',
+        platform,
+        agentVersion: '0.1.0-test',
+        inventory: { readOnly: true },
+      })
+      .expect(201);
+    return res.body as { device: { id: string; deviceKey: string; platform: string }; deviceToken: string };
+  }
+
+  it('lists tools with platform compatibility in registry', async () => {
+    const res = await supertest(server)
+      .get('/admin/tools')
+      .set('x-tenant-id', 'tenant-tool-a')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+    assert.ok(Array.isArray(res.body.tools));
+    const inventoryTool = res.body.tools.find((t: { toolKey: string }) => t.toolKey === 'diagnostic.inventory');
+    assert.ok(inventoryTool);
+    assert.ok(inventoryTool.supportedPlatforms.includes('linux'));
+    assert.ok(inventoryTool.supportedPlatforms.includes('win32'));
+    assert.ok(inventoryTool.supportedPlatforms.includes('darwin'));
+    const servicesTool = res.body.tools.find((t: { toolKey: string }) => t.toolKey === 'diagnostic.services');
+    assert.ok(servicesTool);
+    assert.ok(servicesTool.supportedPlatforms.includes('linux'));
+    assert.ok(!servicesTool.supportedPlatforms.includes('win32'));
+  });
+
+  it('allows Windows-supported read-only tool on Windows device', async () => {
+    const device = await registerDevice('tenant-tool-b', 'win-device-1', 'win32');
+    assert.strictEqual(device.device.platform, 'win32');
+
+    const res = await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/diagnostic.status/invoke`)
+      .set('x-tenant-id', 'tenant-tool-b')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+
+    assert.strictEqual(res.body.policyDecision.allowed, true);
+    assert.strictEqual(res.body.policyDecision.decision, 'read_only_allowed');
+    assert.strictEqual(res.body.invocation.status, 'queued');
+  });
+
+  it('denies Linux-only tool on Windows device with platform reason', async () => {
+    const device = await registerDevice('tenant-tool-c', 'win-device-2', 'win32');
+
+    const res = await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/diagnostic.services/invoke`)
+      .set('x-tenant-id', 'tenant-tool-c')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+
+    assert.strictEqual(res.body.policyDecision.allowed, false);
+    assert.strictEqual(res.body.policyDecision.decision, 'unsupported_platform');
+    assert.ok(res.body.policyDecision.reason.includes('win32'));
+    assert.strictEqual(res.body.invocation.status, 'policy_denied');
+  });
+
+  it('denies tool on unknown platform device', async () => {
+    const device = await registerDevice('tenant-tool-d', 'unknown-device-1', 'freebsd');
+
+    const res = await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/diagnostic.status/invoke`)
+      .set('x-tenant-id', 'tenant-tool-d')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+
+    assert.strictEqual(res.body.policyDecision.allowed, false);
+    assert.strictEqual(res.body.policyDecision.decision, 'unsupported_platform');
+    assert.ok(res.body.policyDecision.reason.includes('Unknown'));
+    assert.strictEqual(res.body.invocation.status, 'policy_denied');
+  });
+
+  it('rejects arbitrary shell, command, script, argv, executable, powershell, cmd in tool invocation', async () => {
+    const device = await registerDevice('tenant-tool-e', 'linux-device-shell', 'linux');
+
+    for (const field of ['shell', 'command', 'script', 'argv', 'executable', 'powershell', 'cmd']) {
+      const res = await supertest(server)
+        .post(`/admin/devices/${device.device.id}/tools/diagnostic.status/invoke`)
+        .set('x-tenant-id', 'tenant-tool-e')
+        .set('x-user-id', 'operator-1')
+        .set('x-user-role', 'operator')
+        .send({ requestedInput: { [field]: 'whoami' } })
+        .expect(400);
+      assert.ok(res.body.message.includes('Arbitrary'), `Expected Arbitrary rejection for ${field}`);
+    }
+  });
+
+  it('denies viewer tool invocation', async () => {
+    const device = await registerDevice('tenant-tool-f', 'linux-device-viewer', 'linux');
+
+    await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/diagnostic.status/invoke`)
+      .set('x-tenant-id', 'tenant-tool-f')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .send({})
+      .expect(403);
+  });
+
+  it('denies cross-tenant tool invocation', async () => {
+    const device = await registerDevice('tenant-tool-g', 'linux-device-xtenant', 'linux');
+
+    await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/diagnostic.status/invoke`)
+      .set('x-tenant-id', 'other-tenant')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(404);
+  });
+
+  it('creates note draft from completed tool invocation', async () => {
+    const device = await registerDevice('tenant-tool-h', 'linux-device-draft', 'linux');
+
+    const invoked = await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/diagnostic.status/invoke`)
+      .set('x-tenant-id', 'tenant-tool-h')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+
+    const invocationId = invoked.body.invocation.id;
+
+    // Claim and complete the command via agent API
+    const claimed = await supertest(server)
+      .post('/endpoint-agent/commands/claim')
+      .set('x-endpoint-tenant-id', 'tenant-tool-h')
+      .set('x-endpoint-device-key', device.device.deviceKey)
+      .set('x-endpoint-device-token', device.deviceToken)
+      .send({})
+      .expect(201);
+
+    await supertest(server)
+      .post(`/endpoint-agent/commands/${claimed.body.command.id}/result`)
+      .set('x-endpoint-tenant-id', 'tenant-tool-h')
+      .set('x-endpoint-device-key', device.device.deviceKey)
+      .set('x-endpoint-device-token', device.deviceToken)
+      .send({ nonce: claimed.body.command.nonce, status: 'succeeded', payload: { ok: true, readOnly: true } })
+      .expect(201);
+
+    // Now create note draft
+    const draftRes = await supertest(server)
+      .post(`/admin/tool-invocations/${invocationId}/note-draft`)
+      .set('x-tenant-id', 'tenant-tool-h')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({ title: 'Test draft' })
+      .expect(201);
+
+    assert.ok(draftRes.body.draft);
+    assert.strictEqual(draftRes.body.draft.status, 'draft');
+    assert.ok(draftRes.body.draft.body.includes('diagnostic.status'));
+    assert.ok(draftRes.body.draft.body.includes('Generated by SupportPlane'));
+  });
+
+  it('denies note draft for incomplete invocation', async () => {
+    const device = await registerDevice('tenant-tool-i', 'linux-device-nodraft', 'linux');
+
+    const invoked = await supertest(server)
+      .post(`/admin/devices/${device.device.id}/tools/diagnostic.status/invoke`)
+      .set('x-tenant-id', 'tenant-tool-i')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(201);
+
+    await supertest(server)
+      .post(`/admin/tool-invocations/${invoked.body.invocation.id}/note-draft`)
+      .set('x-tenant-id', 'tenant-tool-i')
+      .set('x-user-id', 'operator-1')
+      .set('x-user-role', 'operator')
+      .send({})
+      .expect(404);
+  });
+});
+
 describe('Redaction unit tests', () => {
   it('redactString removes Authorization Bearer tokens', async () => {
     const { redactString } = await import('../src/evidence-bundle/redaction.js');

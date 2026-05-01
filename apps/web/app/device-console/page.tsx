@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { AuthGate, IdentityPill } from '@/components/AuthGate';
 import { Badge } from '@/components/Badge';
 import { Panel } from '@/components/Panel';
-import { api, ApiClientError, type AuthIdentity, type EndpointDevice, type EndpointDeviceDetail, type ToolDefinition, type ToolInvocation } from '@/lib/api';
+import { api, ApiClientError, type AuthIdentity, type EndpointDevice, type EndpointDeviceDetail, type ToolDefinition, type ToolInvocation, type ToolResultNoteDraft } from '@/lib/api';
+import { platformDisplayLabel } from '@supportplane/contracts';
 
 function JsonBlock({ value }: { value: unknown }) {
   return <pre className="max-h-72 overflow-auto rounded border border-cockpit-700 bg-cockpit-950/70 p-3 text-xs text-cockpit-300">{JSON.stringify(value, null, 2)}</pre>;
@@ -22,6 +23,8 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
   const [loading, setLoading] = useState(false);
   const [commandLoading, setCommandLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [draftLoading, setDraftLoading] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Record<string, ToolResultNoteDraft>>({});
   const canRequest = identity.permissions.includes('*') || identity.permissions.includes('endpoint_command:create');
   const selectedDevice = useMemo(() => detail?.device ?? devices.find((d) => d.id === selectedId), [detail, devices, selectedId]);
 
@@ -68,6 +71,18 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
     }
   };
 
+  const createNoteDraft = async (invocationId: string) => {
+    setDraftLoading(invocationId);
+    try {
+      const res = await api.createToolNoteDraft(invocationId, { title: `Result: ${invocationId.slice(0, 8)}` });
+      setDrafts((prev) => ({ ...prev, [invocationId]: res.draft }));
+    } catch (err) {
+      setError(err instanceof ApiClientError ? err.message : 'Failed to create note draft');
+    } finally {
+      setDraftLoading(null);
+    }
+  };
+
   const deviceInvocations = useMemo(() => {
     return invocations.filter((i) => i.deviceId === selectedId).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }, [invocations, selectedId]);
@@ -110,7 +125,10 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
                         <span className="truncate text-sm font-medium text-cockpit-100">{device.displayName}</span>
                         <Badge variant={device.status === 'online' ? 'success' : 'muted'}>{device.status}</Badge>
                       </div>
-                      <div className="mt-1 truncate text-xs text-cockpit-500">{device.platform}</div>
+                      <div className="mt-1 flex items-center gap-1 truncate text-xs text-cockpit-500">
+                        <Badge variant="info">{platformDisplayLabel(device.platform as 'linux' | 'win32' | 'darwin' | 'unknown')}</Badge>
+                        <span>{device.platform}</span>
+                      </div>
                       <div className="mt-2 text-[11px] text-cockpit-500">Last seen {device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString() : 'never'}</div>
                     </button>
                   </li>
@@ -132,6 +150,7 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
               <Panel title="Device Identity" headerRight={<Badge variant="info">Tenant {selectedDevice.tenantId}</Badge>}>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div><span className="text-cockpit-500">Hostname</span><div>{selectedDevice.hostname}</div></div>
+                  <div><span className="text-cockpit-500">Platform</span><div><Badge variant="info">{platformDisplayLabel(selectedDevice.platform as 'linux' | 'win32' | 'darwin' | 'unknown')}</Badge> <span className="text-xs text-cockpit-500">{selectedDevice.platform}</span></div></div>
                   <div><span className="text-cockpit-500">Agent</span><div>{selectedDevice.agentVersion}</div></div>
                   <div><span className="text-cockpit-500">Fingerprint</span><div className="break-all text-xs">{selectedDevice.fingerprint}</div></div>
                   <div><span className="text-cockpit-500">Enrollment</span><div>{new Date(selectedDevice.enrolledAt).toLocaleString()}</div></div>
@@ -140,13 +159,19 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
               <Panel title="Tool Invocation">
                 <div className="mb-3 rounded border border-amber-700/60 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">Fixed implementation only. Arbitrary shell and remediation actions are blocked by the API and are not present in the agent.</div>
                 <div className="flex flex-wrap gap-2">
-                  {tools.filter((t) => t.enabled).map((tool) => (
-                    <button key={tool.toolKey} type="button" disabled={!canRequest || commandLoading != null} onClick={() => invokeTool(tool.toolKey)} className="inline-flex items-center gap-2 rounded border border-cockpit-700 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-200 hover:border-accent-500 disabled:cursor-not-allowed disabled:opacity-50" title={`Invoke ${tool.displayName}`}>
-                      {commandLoading === tool.toolKey ? <Loader2 size={15} className="animate-spin" /> : <Wrench size={15} />}
-                      {tool.displayName}
-                      {tool.approvalRequired && <span className="ml-1 text-[10px] text-amber-300">(approval)</span>}
-                    </button>
-                  ))}
+                  {tools.map((tool) => {
+                    const supported = tool.supportedPlatforms.length === 0 || tool.supportedPlatforms.includes(selectedDevice.platform as 'linux' | 'win32' | 'darwin' | 'unknown');
+                    const isEnabled = tool.enabled && supported;
+                    return (
+                      <button key={tool.toolKey} type="button" disabled={!canRequest || commandLoading != null || !isEnabled} onClick={() => isEnabled && invokeTool(tool.toolKey)} className="inline-flex items-center gap-2 rounded border border-cockpit-700 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-200 hover:border-accent-500 disabled:cursor-not-allowed disabled:opacity-40" title={`${tool.displayName}${!supported ? ' — Unsupported on this endpoint platform' : ''}${!tool.enabled ? ' — Disabled in registry' : ''}`}>
+                        {commandLoading === tool.toolKey ? <Loader2 size={15} className="animate-spin" /> : <Wrench size={15} />}
+                        {tool.displayName}
+                        {tool.approvalRequired && <span className="ml-1 text-[10px] text-amber-300">(approval)</span>}
+                        {!supported && <span className="ml-1 text-[10px] text-red-300">(unsupported)</span>}
+                        {!tool.enabled && <span className="ml-1 text-[10px] text-cockpit-500">(disabled)</span>}
+                      </button>
+                    );
+                  })}
                 </div>
                 {!canRequest && <div className="mt-3 text-xs text-cockpit-500">Policy denied: your role can inspect devices but cannot invoke tools.</div>}
               </Panel>
@@ -166,6 +191,19 @@ function DeviceConsoleContent({ identity, logout }: { identity: AuthIdentity; lo
                           <div className="mt-1 text-cockpit-500">Actor {inv.requestedByUserId} · {new Date(inv.createdAt).toLocaleString()}</div>
                           {inv.policyDecision && <div className="mt-1 text-[10px] text-cockpit-500">Policy: {(inv.policyDecision as Record<string, unknown>).decision as string}</div>}
                           {inv.normalizedResult && Object.keys(inv.normalizedResult).length > 0 && <div className="mt-2"><JsonBlock value={inv.normalizedResult} /></div>}
+                          {inv.status === 'succeeded' && (
+                            <div className="mt-2">
+                              {drafts[inv.id] ? (
+                                <div className="rounded border border-cockpit-700 bg-cockpit-900/50 px-2 py-1 text-[11px] text-cockpit-300">
+                                  Draft created: {drafts[inv.id].title}
+                                </div>
+                              ) : (
+                                <button type="button" disabled={draftLoading === inv.id} onClick={() => createNoteDraft(inv.id)} className="inline-flex items-center gap-1 rounded border border-cockpit-700 bg-cockpit-900 px-2 py-1 text-[11px] text-cockpit-200 hover:border-accent-500 disabled:opacity-50">
+                                  {draftLoading === inv.id ? <Loader2 size={12} className="animate-spin" /> : 'Create note draft'}
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>

@@ -20,7 +20,7 @@ import { ToolRegistryService } from './tool-registry.service.js';
 import { ToolPolicyService } from './tool-policy.service.js';
 import { ToolApprovalService } from './tool-approval.service.js';
 
-const FORBIDDEN_EXECUTABLE_FIELDS = ['command', 'shell', 'script', 'argv', 'executable', 'program'];
+const FORBIDDEN_EXECUTABLE_FIELDS = ['command', 'shell', 'script', 'argv', 'executable', 'program', 'powershell', 'cmd'];
 
 @Injectable()
 export class ToolExecutionGatewayService {

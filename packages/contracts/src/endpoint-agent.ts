@@ -16,6 +16,26 @@ export type EndpointCommandResultId = z.infer<typeof EndpointCommandResultId>;
 export const EndpointDeviceStatus = z.enum(['online', 'offline', 'stale', 'disabled']);
 export type EndpointDeviceStatus = z.infer<typeof EndpointDeviceStatus>;
 
+export const EndpointPlatform = z.enum(['linux', 'win32', 'darwin', 'unknown']);
+export type EndpointPlatform = z.infer<typeof EndpointPlatform>;
+
+export function normalizePlatform(input: string): EndpointPlatform {
+  const lower = input.toLowerCase().trim();
+  if (lower === 'linux' || lower.startsWith('linux')) return 'linux';
+  if (lower === 'win32' || lower === 'windows' || lower.startsWith('win')) return 'win32';
+  if (lower === 'darwin' || lower === 'macos' || lower.startsWith('mac')) return 'darwin';
+  return 'unknown';
+}
+
+export function platformDisplayLabel(platform: EndpointPlatform): string {
+  switch (platform) {
+    case 'linux': return 'Linux';
+    case 'win32': return 'Windows';
+    case 'darwin': return 'macOS';
+    case 'unknown': return 'Unknown';
+  }
+}
+
 export const EndpointDiagnosticKind = z.enum([
   'inventory',
   'disk',
@@ -55,7 +75,7 @@ export const EndpointDevice = z.object({
   hostname: z.string().min(1).max(160),
   deviceKey: z.string().min(8).max(256),
   fingerprint: z.string().min(8).max(256),
-  platform: z.string().min(1).max(80),
+  platform: EndpointPlatform,
   agentVersion: z.string().min(1).max(80),
   status: EndpointDeviceStatus,
   lastSeenAt: Timestamp.optional(),
