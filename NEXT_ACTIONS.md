@@ -1,10 +1,15 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-02 19:00 CEST
+**Updated At:** 2026-05-02 20:45 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
 ## Active Work
+
+- [BL-136] **Real E2E demo readiness / enterprise review packaging**
+  - Owner: future slice
+  - Next action: start K8s cluster and re-verify sandbox E2E flow from ENTERPRISE_DEMO_GUIDE.md scenarios A and B with fresh browser evidence.
+  - Exit criteria: cluster running, Zammad read/writeback proven, Ollama real model call proven, evidence bundle with MinIO checksum, all 4 demo scenarios browser-verified.
 
 - [BL-073/BL-074] **Knowledge retrieval hardening**
   - Owner: future slice

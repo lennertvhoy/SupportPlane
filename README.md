@@ -63,13 +63,13 @@ production software. Do not deploy to production or use with real customer data.
 
 - **Support Cockpit UI** — Session list, ticket context, AI context quality, draft notes, audit trail, evidence bundles.
 - **Tenant isolation & RBAC** — Local auth with admin/operator/viewer roles, server-side permission checks, cross-tenant denial.
-- **Mock AI gateway** — Deterministic draft suggestions with visible model metadata and review-required gates.
+- **Mock AI gateway** — Deterministic draft suggestions with visible model metadata and review-required gates (mock in standalone mode; real Ollama AI available in cluster mode).
 - **Action / outbox workflow** — Create → submit → approve → queue → mock deliver, with durable PostgreSQL state and audit trail.
 - **Delivery policy controls** — Kill switch, approval gates, mock-only enforcement, real network locked OFF.
 - **Connector runtime boundary** — Config validation, runtime readiness, runtime resolver, credential reference metadata (no secret resolution).
 - **Evidence bundles** — JSON and Markdown export with session summary, audit timeline, and honest mock disclaimers.
 - **Call simulator** — Fake incoming call webhook, caller matching, call console lifecycle.
-- **Endpoint diagnostics foundation** — Local outbound-only endpoint agent, heartbeat/inventory, fixed read-only diagnostics, Device Console, and audit trail. No arbitrary shell or remediation.
+- **Endpoint diagnostics foundation** — Local outbound-only endpoint agent, heartbeat/inventory, fixed read-only diagnostics, Device Console, and audit trail. No arbitrary shell. Low-risk remediation (flush DNS) is partial (BL-065).
 
 ### What is intentionally not implemented
 

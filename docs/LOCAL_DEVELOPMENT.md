@@ -4,6 +4,8 @@
 **Scope:** Local Podman/Docker-compatible development topology and local auth
 **Last updated:** 2026-05-02
 
+> **Note:** For the full sandbox cluster with real Zammad/Ollama/OpenBao integrations, see `docs/ENTERPRISE_DEMO_GUIDE.md`.
+
 ## Prerequisites
 
 - Node.js >= 22.0.0
@@ -21,7 +23,7 @@
 
 - PostgreSQL, NATS, and MinIO run in containers via `compose.yaml`.
 - The API (NestJS) and Web (Next.js) run on the host via `npm run dev`.
-- BL-093 adds a host-run local worker/process-once command that calls the API and uses PostgreSQL outbox state. The compose worker container may still be a placeholder; NATS is not consumed by BL-093.
+- BL-093 (accepted) added a host-run local worker/process-once command that calls the API and uses PostgreSQL outbox state. The compose worker container may still be a placeholder; NATS is not consumed by BL-093.
 - BL-102 defines the next strategic target: a local Kubernetes-on-Podman sandbox. That cluster has been implemented and verified (BL-103 through BL-116 accepted). See `docs/LOCAL_KUBERNETES_PODMAN_TARGET.md` for cluster setup. This compose runbook remains the current runnable local MVP path (no cluster required).
 
 ## Port map
@@ -157,7 +159,7 @@ podman compose -f infra/docker-compose/compose.yaml down -v
 
 - **Persistence mode:** The API supports both `memory` (default) and `postgres` stores via `SUPPORTPLANE_STORE` env var. PostgreSQL persistence requires `SUPPORTPLANE_STORE=postgres` and `DATABASE_URL` pointing to the local PostgreSQL container (default port 5434). Run `npx prisma migrate deploy` and `npx prisma db seed` before first use in postgres mode.
 - **Auth mode:** `SUPPORTPLANE_AUTH_MODE=local` requires seeded local login/session behavior. `SUPPORTPLANE_AUTH_MODE=dev` preserves old dev-only mock identity headers for tests and legacy dev flows.
-- **No production authentication:** Local auth is not SSO/OAuth/SAML/OIDC and has no MFA, password reset, rate limiting, or production password policy claims.
+- **No production authentication:** Local auth is not SSO/OAuth/SAML. OIDC is available in cluster sandbox mode (BL-083 accepted with Keycloak). MFA hook exists but is not enforced. Password reset, rate limiting, and production password policy are not implemented.
 - **AI provider:** Ollama local AI (gemma4:e4b) is available via BL-108/121 when running in cluster mode. The local MVP mode uses deterministic mock AI and model gating. Production cloud AI remains blocked.
 - **Ticketing integration:** Real Zammad sandbox read and sandbox writeback are accepted (BL-107, BL-111) when running in the local Kubernetes cluster. Local MVP mode uses `MockTicketingAdapter`.
 - **Zammad connector:** Real Zammad sandbox read and sandbox writeback are accepted (BL-107, BL-111) when running in the local Kubernetes cluster. Local MVP mode still uses `MockTicketingAdapter`. See `docs/ZAMMAD_CONNECTOR.md`, `docs/REAL_WRITEBACK_PATH_DESIGN.md`, and `docs/SELF_HOSTED_STACK.md`.

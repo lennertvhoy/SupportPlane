@@ -22,7 +22,7 @@ The Zammad connector is a safe, policy-gated boundary for integrating SupportPla
 - No network calls are made.
 - The UI shows "Mock mode", "No real writeback unless configured", and "Credentials not stored in browser".
 
-## Future real Zammad sandbox configuration
+## Real Zammad sandbox configuration (accepted BL-107/BL-111)
 
 The sandbox path uses server-side OpenBao credential resolution (BL-109). The connector runtime service (`resolveCanonicalAdapterId()`) selects the appropriate adapter. BL-107 proved real sandbox read access; BL-109 introduced server-side OpenBao credential resolution; BL-111 added approval-gated sandbox-only internal-note writeback. Any temporary local env configuration must be documented as dev-only and replaced by the resolver path.
 
@@ -62,7 +62,7 @@ The adapter will attempt to connect on startup. Connection failures are recorded
 | Connector test | Yes | Yes | `POST /connectors/zammad/test` |
 | Ticket read | Yes | Yes | `POST /support-sessions/:id/zammad/ticket-context` |
 | Internal note draft | Yes | Yes | `POST /support-sessions/:id/zammad/internal-note-draft` |
-| Internal note writeback | Yes (mock-safe) | Yes | `POST /support-sessions/:id/zammad/internal-note-writeback` |
+| Internal note writeback | Yes (mock-safe) | Yes (sandbox) | `POST /support-sessions/:id/zammad/internal-note-writeback` |
 
 ## Unsupported operations
 
@@ -92,16 +92,16 @@ These assumptions are verified against the local Zammad 6.5 sandbox instance (BL
 4. Open the Support Cockpit at `http://localhost:3200`.
 5. Create a session, load any ticket ID (e.g. `TICKET-101`), generate a draft, and trigger writeback.
 6. All operations are deterministic and safe.
+7. For real sandbox testing (cluster mode), see `docs/ENTERPRISE_DEMO_GUIDE.md`.
 
-## How to verify against a real Zammad instance later
+## How to verify against real Zammad sandbox (cluster mode)
 
-1. Create a personal access token in your Zammad profile.
-2. Set `ZAMMAD_CONNECTOR_MODE=zammad`, `ZAMMAD_BASE_URL`, and `ZAMMAD_API_TOKEN`.
-3. Restart the API.
-4. Use `POST /connectors/zammad/test` to verify connectivity.
-5. Load a real ticket ID through the Support Cockpit.
-6. Document the exact Zammad version, endpoint behavior, and any deviations from the assumptions above.
-7. Update this document and add new evidence artifacts.
+1. Ensure the local Kubernetes cluster is running and the Zammad sandbox is seeded (see `docs/ENTERPRISE_DEMO_GUIDE.md`).
+2. SupportPlane uses server-side OpenBao credential resolution (BL-109) via `FetchZammadHttpClient` — no env var credentials needed in cluster mode.
+3. Use the cluster API (`localhost:4210`) and Web (`localhost:3300`) with port-forwarding as described in the cluster runbook.
+4. The standalone MVP mode still uses env vars for testing (`ZAMMAD_CONNECTOR_MODE`, `ZAMMAD_BASE_URL`, `ZAMMAD_API_TOKEN`); cluster mode uses server-side OpenBao credential resolution via `FetchZammadHttpClient`.
+5. Document the exact Zammad version, endpoint behavior, and any deviations from the assumptions above.
+6. Update this document and add new evidence artifacts.
 
 ## Audit events
 

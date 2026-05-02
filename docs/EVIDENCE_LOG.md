@@ -2,6 +2,21 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-02-160: Session 129 — Real E2E Demo Readiness / Enterprise Review Packaging (PARTIAL/DOCS-READY)
+
+- Evidence folder: `output/playwright/session-129-real-e2e-demo-readiness/`
+- Source/System: Chromium via Playwright against local API (`localhost:4110`), local Web (`localhost:3202`), plus CLI artifacts
+- Action: Created enterprise-grade docs for demo readiness and enterprise review. Built REALITY_MATRIX.md (23 systems classified as REAL_LOCAL_NOW, SANDBOX_CODE_READY, MOCK_BY_POLICY, MOCK_BY_GAP, MOCK_NOT_IMPLEMENTED, PARTIAL). Created ENTERPRISE_DEMO_GUIDE.md with 4 credible demo scenarios (A: sandbox ticket intake, B: AI draft with evidence trail, C: governance/audit/RBAC, D: endpoint diagnostics + Windows-aware). Fixed severe staleness in SANDBOX_INTEGRATION_ACCEPTANCE.md (was "future acceptance contract" claiming cluster doesn't work, now reflects BL-116 accepted). Applied drift fixes to 7 additional docs. K8s cluster was DOWN — sandbox integrations could not be re-verified at runtime.
+- Proves:
+  - Reality matrix is honest and comprehensive
+  - Enterprise demo guide provides runnable scenarios
+  - 9 docs updated to match current accepted truth
+  - Validation gate passes: typecheck PASS, lint PASS, state docs PASS, docs hygiene PASS, 373/376 tests pass
+  - API runtime identity matches git HEAD
+  - BL-136 is partial/docs-ready; cluster startup needed for full E2E verification
+- Type: documentation-and-evidence
+- as_of: 2026-05-02T20:45:00+02:00
+
 ## EV-2026-05-02-147: BL-134 docs governance closure — infrastructure accepted, high-leverage drift fixed
 
 - Evidence folder: `output/playwright/session-128-docs-governance-closure/`

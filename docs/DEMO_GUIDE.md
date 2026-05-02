@@ -1,6 +1,8 @@
 # SupportPlane Demo Guide
 
-**Purpose:** A scripted walkthrough of the local/mock MVP demo.  
+**Purpose:** A scripted walkthrough of the standalone local MVP demo. For the full sandbox cluster demo, see [Enterprise Demo Guide](ENTERPRISE_DEMO_GUIDE.md).
+
+> **Note:** This guide covers the standalone local MVP path (no Kubernetes cluster). For the full sandbox cluster demo with real Zammad/Ollama/OpenBao/NATS/MinIO/Mailpit, see [Enterprise Demo Guide](ENTERPRISE_DEMO_GUIDE.md).
 **Prerequisites:** PostgreSQL running on `localhost:5434`, API on `localhost:4110`, Web on `localhost:3200`.
 
 ---
@@ -92,7 +94,7 @@ In the **Ticket Context** panel, enter `TICKET-101` and click **Load**.
 Scroll to the **Connector** panel. Expand the installation card.
 
 **Expected:**
-- `Local Zammad Mock` — `zammad` type, `active` status
+- `Local Zammad Mock` — `zammad` type, `active` status (standalone mode: mock; cluster mode: real sandbox — see [Enterprise Demo Guide](ENTERPRISE_DEMO_GUIDE.md))
 - `Mock mode` badge
 - `Locked ON` mock mode toggle
 - Credential reference: `Dev Zammad API Token (Placeholder)` — status `active`
@@ -105,7 +107,7 @@ Click **Readiness** → expect `Mock ready` badge, `realReady: false`, `writebac
 ---
 
 ### 7. Generate local-only support note/action
-Scroll to the **Draft Note** panel. Click **Generate mock draft**.
+Scroll to the **Draft Note** panel. Click **Generate mock draft** (standalone mode; real Ollama AI is available in cluster mode — see [Enterprise Demo Guide](ENTERPRISE_DEMO_GUIDE.md)).
 
 **Expected:**
 - Textarea fills with `MOCK AI DRAFT` content
@@ -169,8 +171,8 @@ Click **Logout**, then log in as `viewer@supportplane.local`.
 Open `docs/REAL_WRITEBACK_PATH_DESIGN.md` in an editor or browser.
 
 **Expected sections visible:**
-- Current truth (mock-only)
-- Why real writeback is blocked today (7 reasons)
+- Current truth (sandbox writeback accepted, production writeback blocked)
+- Why production writeback is blocked (sandbox writeback is accepted via BL-111)
 - Required architecture (credential broker, encrypted storage, network egress, approval gates)
 - Phased path: Phase 0 → Phase 4
 - Explicit non-goals

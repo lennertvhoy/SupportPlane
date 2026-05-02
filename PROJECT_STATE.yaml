@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-02T19:00:00+02:00
+  updated_at: 2026-05-02T20:45:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -55,6 +55,8 @@ current_state:
     final_head_after_session_125: 746c4a37a9fb0c8bb4f445d7842d770a7af605fc
     head_before_bl_055_060_118: ee11447f8928d778178f0144b1a0a0c623468c95
     final_head_after_bl_055_060_118: recorded_in_final_handoff
+    head_before_bl_136: 24abf6a
+    final_head_after_bl_136: 18881e4
     worktree_status_at_state_update: clean
 
   current_product_truth:
@@ -457,13 +459,13 @@ current_state:
 
   backlog:
     source: BACKLOG.md
-    highest_id: BL-135
+    highest_id: BL-136
     accepted_current_slice: BL-123_session_real_connectors_golden_workflow
     planned_real_e2e_items:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-073, BL-074, BL-069, BL-071, BL-072, BL-127, BL-065, BL-130, BL-131, BL-132, BL-133, BL-135]
+    active_queue_items: [BL-136, BL-073, BL-074, BL-069, BL-071, BL-072, BL-127, BL-065, BL-130, BL-131, BL-132, BL-133, BL-135]
 
   documentation:
     primary_user_guide: README.md
@@ -607,6 +609,19 @@ current_state:
       - WORKLOG.md
       - docs/EVIDENCE_LOG.md
       - docs/ACCEPTANCE_FREEZES.md
+    created_in_session_129:
+      - docs/REALITY_MATRIX.md
+      - docs/ENTERPRISE_DEMO_GUIDE.md
+    updated_in_session_129:
+      - docs/SANDBOX_INTEGRATION_ACCEPTANCE.md
+      - docs/DEMO_GUIDE.md
+      - docs/REAL_E2E_SANDBOX_FLOW.md
+      - docs/ZAMMAD_CONNECTOR.md
+      - docs/IMPLEMENTATION_PHASES_REAL_E2E.md
+      - docs/WORKFLOW_TRUTH.md
+      - docs/LOCAL_DEVELOPMENT.md
+      - README.md
+      - docs/README.md
 
   evidence:
     ledger: docs/EVIDENCE_LOG.md

@@ -1,7 +1,7 @@
 # Implementation Phases for Real E2E Sandbox
 
 **Backlog:** BL-102  
-**Status:** execution roadmap only.
+**Status:** Historical roadmap. Phases 0–11 accepted (BL-116 accepted 2026-04-30).
 
 ## Phase 0 - Current Local/Mock MVP Freeze
 
@@ -28,9 +28,9 @@
 - **Safety gates:** real writeback still disabled; no real credentials.
 - **Rollback plan:** delete local cluster and keep compose/local dev path.
 - **Must not claim:** real integration or production deployment.
-- **Exit criteria:** cluster exists and SupportPlane app/PostgreSQL run with persistent local data. BL-103 satisfied only the cluster/namespaces/image-load subset.
+- **Exit criteria met:** cluster, namespaces, app images, PostgreSQL persistence all accepted (BL-103/BL-104/BL-105).
 
-## Phase 2 - Self-Hosted Service Topology
+## Phase 2 - Self-Hosted Service Topology (ACCEPTED as BL-106)
 
 - **Goal:** Add Zammad, OpenBao, NATS JetStream, Mailpit, MinIO; decide whether Ollama runs inside cluster or as controlled host service; add readiness checks.
 - **Files likely touched:** Kubernetes service manifests/charts, local runbook, prerequisite script.
@@ -43,7 +43,7 @@
 - **Must not claim:** SupportPlane uses these services until integration phases prove it.
 - **Exit criteria:** services are healthy and isolated as local sandbox dependencies.
 
-## Phase 3 - Zammad Sandbox Read Connector
+## Phase 3 - Zammad Sandbox Read Connector (ACCEPTED as BL-107)
 
 - **Goal:** Real Zammad customer/ticket lookup and deterministic seed/bootstrap script.
 - **Files likely touched:** `packages/connectors`, `apps/api`, seed/bootstrap scripts, docs/tests.
@@ -56,7 +56,7 @@
 - **Must not claim:** production Zammad or writeback.
 - **Exit criteria:** deterministic Zammad ticket/customer read works against sandbox.
 
-## Phase 4 - Ollama Local AI Provider
+## Phase 4 - Ollama Local AI Provider (ACCEPTED as BL-108)
 
 - **Goal:** Real local AI draft/summary generation with model metadata, context hashing, prompt versioning, and deterministic test fallback.
 - **Files likely touched:** `packages/ai`, `apps/api`, web draft panels, docs/tests.
@@ -69,7 +69,7 @@
 - **Must not claim:** production model governance.
 - **Exit criteria:** local Ollama draft works and stores provenance.
 
-## Phase 5 - OpenBao Credential Resolver
+## Phase 5 - OpenBao Credential Resolver (ACCEPTED as BL-109)
 
 - **Goal:** Credential reference resolves server-side; no raw secret response; disable path and audit events.
 - **Files likely touched:** API credential resolver, connector runtime, OpenBao config, tests/docs.
@@ -82,7 +82,7 @@
 - **Must not claim:** production-grade secrets management.
 - **Exit criteria:** server-side local placeholder resolution works without leakage.
 
-## Phase 6 - NATS JetStream Worker Semantics
+## Phase 6 - NATS JetStream Worker Semantics (ACCEPTED as BL-110)
 
 - **Goal:** Durable stream/consumer, outbox bridge, idempotency key, retry/dead-letter, worker status UI/API.
 - **Files likely touched:** worker app, API outbox bridge, contracts, web delivery operations.
@@ -95,7 +95,7 @@
 - **Must not claim:** production broker cluster.
 - **Exit criteria:** durable worker semantics proven locally.
 
-## Phase 7 - Sandbox-Only Zammad Internal Note Writeback
+## Phase 7 - Sandbox-Only Zammad Internal Note Writeback (ACCEPTED as BL-111/BL-115)
 
 - **Goal:** Internal notes only, sandbox connector installation only, approval required, kill switch, dry-run first, explicit real sandbox network-call evidence.
 - **Files likely touched:** connector driver, worker, delivery policy, audit/evidence, web action center.
@@ -108,7 +108,7 @@
 - **Must not claim:** production writeback, public replies, broad ticket mutations.
 - **Exit criteria:** exactly one internal note writes to sandbox Zammad and duplicate processing does not duplicate it.
 
-## Phase 8 - MinIO Evidence Artifact Persistence
+## Phase 8 - MinIO Evidence Artifact Persistence (ACCEPTED as BL-112)
 
 - **Goal:** Store evidence bundle as JSON/Markdown object with checksum and object key in UI; retention marked dev/local.
 - **Files likely touched:** evidence service, worker/API, MinIO config, web evidence panel.
@@ -121,7 +121,7 @@
 - **Must not claim:** compliance-grade evidence.
 - **Exit criteria:** evidence artifacts persist in MinIO with checksum.
 
-## Phase 9 - Mailpit Local Notification Capture
+## Phase 9 - Mailpit Local Notification Capture (ACCEPTED as BL-113)
 
 - **Goal:** Send local SMTP notification to Mailpit and show captured-mail evidence.
 - **Files likely touched:** notification service, Mailpit config, evidence/audit, web panel if needed.
@@ -134,7 +134,7 @@
 - **Must not claim:** real email delivery.
 - **Exit criteria:** Mailpit captures local message and no internet email is sent.
 
-## Phase 10 - Observability
+## Phase 10 - Observability (ACCEPTED as BL-114)
 
 - **Goal:** OTel collector, logs/traces/metrics, correlation IDs; not production monitoring.
 - **Files likely touched:** API/worker telemetry config, observability manifests, docs.

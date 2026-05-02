@@ -1,7 +1,7 @@
 # Real E2E Sandbox Flow
 
 **Backlog:** BL-102  
-**Status:** target workflow. Most steps are now accepted real sandbox (BL-116 accepted). All core phases through BL-117 are complete.
+**Status:** Accepted (BL-116). All core phases through BL-117 are complete. Most steps are now REAL NOW in the matrix.
 
 ## Target Flow Status Matrix
 
@@ -10,7 +10,7 @@
 | 1 | Operator logs into SupportPlane. | REAL NOW | Local username/password demo auth works. | Cluster Web/API preserve local auth or documented dev auth. |
 | 2 | Operator creates/selects a SupportSession. | REAL NOW | Sessions persist in PostgreSQL in local mode. | Same behavior works in cluster. |
 | 3 | SupportPlane loads customer/ticket from self-hosted Zammad sandbox. | REAL NOW | Real Zammad sandbox read via FetchZammadHttpClient with server-side OpenBao credential resolution (BL-107 accepted). | Real Zammad API read against sandbox with provenance. |
-| 4 | SupportPlane builds AIContextPacket with ticket/customer/session/policy provenance. | REAL NOW | Context packets exist for mock ticket/session data. | Packet includes real Zammad provenance and policy source. |
+| 4 | SupportPlane builds AIContextPacket with ticket/customer/session/policy provenance. | REAL NOW | Context packets include real Zammad sandbox data (BL-107 accepted). | Packet includes real Zammad provenance and policy source. |
 | 5 | Ollama generates draft note and/or ticket summary. | REAL NOW | Real Ollama model calls to gemma4:e4b with fallbackUsed=false (BL-108/BL-121 accepted). | Local Ollama provider, model metadata, prompt version, context hash, latency. |
 | 6 | Operator reviews the draft. | REAL NOW | Review-required local workflow exists. | UI shows local model output and source context. |
 | 7 | Operator submits for review. | REAL NOW | Action lifecycle supports review state. | Same lifecycle uses real sandbox draft metadata. |
@@ -25,13 +25,13 @@
 | 16 | Mailpit captures optional local notification email. | REAL NOW | SMTP message captured in Mailpit; 13 messages proven; no internet email (BL-113 accepted). | SMTP message captured in Mailpit; no internet email. |
 | 17 | Evidence bundle is generated. | REAL NOW | JSON/Markdown local/mock bundle exists. | Bundle includes real sandbox provenance and artifact metadata. |
 | 18 | Evidence JSON/Markdown is stored in MinIO. | REAL NOW | Evidence artifact persisted to MinIO with SHA-256 checksum (BL-112 accepted). | Object key, checksum, local disclaimer stored and visible. |
-| 19 | UI shows full provenance chain. | LOCAL/DEV-ONLY | UI shows mock provenance, policy, outbox, evidence. | UI shows Zammad/Ollama/OpenBao/NATS/MinIO provenance without secrets. |
+| 19 | UI shows full provenance chain. | REAL NOW (full provenance chain proven in BL-116) | UI shows mock provenance, policy, outbox, evidence. | UI shows Zammad/Ollama/OpenBao/NATS/MinIO provenance without secrets. |
 | 20 | Demo proves viewer RBAC denial and kill-switch denial. | REAL NOW | Viewer denial and policy gates are proven for mock/local. | Same denial paths proven against sandbox writeback. |
 
-## Required API Endpoints
+## Implemented API Endpoints
 
 - Existing local endpoints: auth, sessions, ticket context, draft generation, actions, outbox, delivery policies, connector runtime, evidence bundle.
-- Target additions or migrations:
+- Accepted additions (BL-103 through BL-116):
   - Zammad sandbox read endpoint or connector driver path.
   - Ollama provider endpoint/path through existing AI gateway.
   - OpenBao-backed credential resolution path, server-side only.
@@ -39,7 +39,7 @@
   - MinIO evidence artifact write/read metadata.
   - Mailpit notification status metadata.
 
-## Required UI Panels
+## Implemented UI Panels
 
 - Runtime identity header.
 - Sessions.

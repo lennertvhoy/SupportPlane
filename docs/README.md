@@ -20,6 +20,7 @@ These files define current project truth, governance, and workflow state.
 | `EVIDENCE_LOG.md` | Proof ledger for user-facing claims and external planning references |
 | `ACCEPTANCE_FREEZES.md` | Accepted user-facing milestone ledger |
 | `BOOTSTRAP_QUALITY.md` | Rubric for judging bootstrap output quality |
+| `REALITY_MATRIX.md` | System-by-system real vs mock vs sandbox status inventory |
 
 ## Architecture Docs
 
@@ -48,6 +49,7 @@ Operational guides for local development, deployment, and maintenance.
 | `LOCAL_DEVELOPMENT.md` | Local development setup, env vars, and runbook |
 | `DEMO_GUIDE.md` | Demo walkthrough guide |
 | `DEMO_RUNBOOK.md` | Demo reset and operation runbook |
+| `ENTERPRISE_DEMO_GUIDE.md` | Enterprise-grade demo guide with credible sandbox-backed scenarios |
 | `RELEASE_RUNBOOK.md` | Release packaging and deployment runbook |
 | `RUNBOOK_BACKUP_RESTORE.md` | PostgreSQL and object storage backup/restore |
 | `MVP_COMPLETION_AUDIT.md` | MVP completion audit record |

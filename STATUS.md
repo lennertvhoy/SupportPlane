@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-02 19:00 CEST
+**Updated At:** 2026-05-02 20:45 CEST
 **Execution Mode:** operating
-**Project State:** session_128_docs_governance_closure
+**Project State:** session_129_real_e2e_demo_readiness
 **Public URL:** not configured
 
 ## Snapshot
@@ -14,6 +14,7 @@
 - **BL-073/074 partial/hybrid-ready.** Knowledge retrieval with lexical fallback.
 - **BL-129 accepted; BL-130/131/132 partial Linux-tested.** Windows endpoint foundation.
 - **BL-134 accepted.** Documentation governance infrastructure (docs index, DOC_STANDARD.md, AGENTS.md freshness gate, check_docs_hygiene.py) plus high-leverage drift fixes (9 docs updated). Per-doc deep content audit deferred to BL-135 (planned).
+- **BL-136 partial/docs-ready.** Real E2E demo readiness. Created REALITY_MATRIX.md (23 systems classified), ENTERPRISE_DEMO_GUIDE.md (4 scenarios), and fixed 9 docs for enterprise review quality. Cluster was down so sandbox integrations not re-verified.
 
 ## Active Blockers
 
@@ -24,5 +25,5 @@
 
 ## Notes
 
-- API HEAD: `24abf6a` (Session 126 repair).
-- Evidence: `output/playwright/session-128-docs-governance-closure/` (this session).
+- API HEAD: `18881e4` (Session 129 real E2E demo readiness).
+- Evidence: `output/playwright/session-129-real-e2e-demo-readiness/`.
