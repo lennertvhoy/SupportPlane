@@ -1699,3 +1699,36 @@ Session 123b implementation was correct, but the final handoff contained contrad
 - P1 [BL-130/BL-131] Windows diagnostics collectors and tool-manifest compatibility completion
 - P2 [BL-083] Full Store pattern refactor to eliminate direct PrismaClient usage
 - P3 [BL-084] Cloud AI provider real configuration and connection
+
+
+## Session 129 — Real E2E Demo Readiness / Enterprise Review Packaging
+
+**Date:** 2026-05-02 20:45 CEST
+**Git HEAD:** 9aee4af
+**Branch:** main
+
+### What Changed
+- **New docs:** REALITY_MATRIX.md (23 systems classified), ENTERPRISE_DEMO_GUIDE.md (4 scenarios)
+- **Severe doc fix:** SANDBOX_INTEGRATION_ACCEPTANCE.md (was "future acceptance contract", now reflects BL-116 accepted plus gateway references)
+- **Moderate doc fixes:** DEMO_GUIDE.md (mock-only → standalone/cluster distinction, writeback truth), REAL_E2E_SANDBOX_FLOW.md (target→accepted, future→past tense), ZAMMAD_CONNECTOR.md (future→accepted, env var→OpenBao), IMPLEMENTATION_PHASES_REAL_E2E.md (roadmap→historical, added acceptance markers)
+- **Minor doc fixes:** WORKFLOW_TRUTH.md (BL-113/114 accepted suffixes), LOCAL_DEVELOPMENT.md (BL-093 tense, OIDC availability), README.md (remediation contradiction fix, cluster AI note)
+- **Updated:** docs/README.md (added REALITY_MATRIX, ENTERPRISE_DEMO_GUIDE), all state docs
+
+### Verification
+- typecheck: PASS (all workspaces)
+- lint: PASS (0 errors)
+- tests: 379 tests, 373 pass, 3 fail (pre-existing in apps/web), 3 skipped
+- state docs: PASS
+- docs hygiene: PASS (5/5)
+- API runtime identity: matches git HEAD 18881e4
+- Web: Next.js 15.5.15 on port 3202, HTTP 200
+
+### Evidence
+- Folder: output/playwright/session-129-real-e2e-demo-readiness/ (7 files)
+- Screenshots: API health, Connector status (Playwright via 127.0.0.1:4110)
+- CLI artifacts: Validation gate, AI provider readiness JSON, baseline runtime
+- 0 duplicate screenshots (unique md5)
+
+### Key Limitation
+K8s cluster was DOWN this session. All sandbox integrations marked SANDBOX_CODE_READY in REALITY_MATRIX.md were previously proven (BL-103–116 accepted), but could not be re-verified at runtime. The new docs accurately distinguish "real sandbox when cluster is up" from "standalone local MVP."
+
