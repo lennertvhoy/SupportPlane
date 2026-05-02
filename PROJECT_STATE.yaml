@@ -62,8 +62,8 @@ current_state:
       Session 130 state doc updates only; no new code commits. Worktree
       is dirty with 2 modified files (.opencode/opencode.json,
       infra/kubernetes/local-podman/app/app-configmap.yaml).
-    final_head_after_bl_136_session_130: to_be_recorded
-    worktree_status_at_state_update: dirty_session_130_state_docs_only
+    final_head_after_bl_136_session_130: f0c6a9102b9f59293db22b28bf82376f18ecea9f
+    worktree_status_at_state_update: clean
 
   current_product_truth:
     lifecycle_stage: real_self_hosted_sandbox_acceptance_frozen
