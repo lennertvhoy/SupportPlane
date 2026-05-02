@@ -2,7 +2,7 @@
 
 **Product:** SupportPlane  
 **Scope:** Local Podman/Docker-compatible development topology and local auth
-**Last updated:** 2026-04-28
+**Last updated:** 2026-05-02
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@
 - PostgreSQL, NATS, and MinIO run in containers via `compose.yaml`.
 - The API (NestJS) and Web (Next.js) run on the host via `npm run dev`.
 - BL-093 adds a host-run local worker/process-once command that calls the API and uses PostgreSQL outbox state. The compose worker container may still be a placeholder; NATS is not consumed by BL-093.
-- BL-102 adds the next strategic target: a future local Kubernetes-on-Podman sandbox. That cluster is not implemented or verified yet; this compose runbook remains the current runnable local MVP path.
+- BL-102 defines the next strategic target: a local Kubernetes-on-Podman sandbox. That cluster has been implemented and verified (BL-103 through BL-116 accepted). See `docs/LOCAL_KUBERNETES_PODMAN_TARGET.md` for cluster setup. This compose runbook remains the current runnable local MVP path (no cluster required).
 
 ## Port map
 
@@ -105,15 +105,14 @@ The web app listens on `http://localhost:3200` by default.
 
 ### 5. Optional local worker commands
 
-The worker is local/mock-only and API-driven:
+The worker supports both PostgreSQL outbox and NATS JetStream bridge (BL-110 accepted):
 
 ```bash
 npm run status --workspace @supportplane/worker
 npm run process-once --workspace @supportplane/worker
 ```
 
-It reports `queueBackend: "postgres-local-outbox"` and does not use NATS or any
-external broker.
+It reports `queueBackend: "postgres-local-outbox"` or `queueBackend: "nats-jetstream"` depending on configuration.
 
 ### 6. Full verification
 
@@ -159,10 +158,10 @@ podman compose -f infra/docker-compose/compose.yaml down -v
 - **Persistence mode:** The API supports both `memory` (default) and `postgres` stores via `SUPPORTPLANE_STORE` env var. PostgreSQL persistence requires `SUPPORTPLANE_STORE=postgres` and `DATABASE_URL` pointing to the local PostgreSQL container (default port 5434). Run `npx prisma migrate deploy` and `npx prisma db seed` before first use in postgres mode.
 - **Auth mode:** `SUPPORTPLANE_AUTH_MODE=local` requires seeded local login/session behavior. `SUPPORTPLANE_AUTH_MODE=dev` preserves old dev-only mock identity headers for tests and legacy dev flows.
 - **No production authentication:** Local auth is not SSO/OAuth/SAML/OIDC and has no MFA, password reset, rate limiting, or production password policy claims.
-- **No real AI provider:** The AI gateway uses deterministic mock output.
-- **No real ticketing integration:** `MockTicketingAdapter` returns fixture data.
-- **Zammad connector is mock-only in the accepted MVP:** real Zammad sandbox integration is now planned under BL-107 and BL-111. Do not claim real Zammad read/write from this runbook. See `docs/ZAMMAD_CONNECTOR.md`, `docs/REAL_WRITEBACK_PATH_DESIGN.md`, and `docs/SELF_HOSTED_STACK.md`.
-- **No worker runtime:** The worker container is a placeholder that sleeps; no background job processing exists yet.
+- **AI provider:** Ollama local AI (gemma4:e4b) is available via BL-108/121 when running in cluster mode. The local MVP mode uses deterministic mock AI and model gating. Production cloud AI remains blocked.
+- **Ticketing integration:** Real Zammad sandbox read and sandbox writeback are accepted (BL-107, BL-111) when running in the local Kubernetes cluster. Local MVP mode uses `MockTicketingAdapter`.
+- **Zammad connector:** Real Zammad sandbox read and sandbox writeback are accepted (BL-107, BL-111) when running in the local Kubernetes cluster. Local MVP mode still uses `MockTicketingAdapter`. See `docs/ZAMMAD_CONNECTOR.md`, `docs/REAL_WRITEBACK_PATH_DESIGN.md`, and `docs/SELF_HOSTED_STACK.md`.
+- **Worker runtime:** The outbox worker processes background jobs via PostgreSQL-backed outbox with optional NATS JetStream bridge (BL-110 accepted).
 - **No production deployment claims:** This topology is for local development only.
 
 ## Local auth seed users

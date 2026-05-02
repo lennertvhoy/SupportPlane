@@ -2,20 +2,17 @@
 
 **Product:** SupportPlane  
 **Scope:** BL-007 Zammad connector boundary  
-**Last updated:** 2026-04-29
+**Last updated:** 2026-05-02
 
-> BL-102 truth update: the accepted runtime still treats Zammad behavior as
-> mock/local only. Real Zammad sandbox read is planned under BL-107 and
-> sandbox-only internal-note writeback under BL-111. Do not claim real Zammad
-> read/write until those backlog items are implemented and verified against the
-> local self-hosted sandbox.
+> **BL-116 truth update:** Real Zammad sandbox read (BL-107 accepted via FetchZammadHttpClient with server-side OpenBao credential resolution) and sandbox-only internal-note writeback (BL-111 accepted, approval-gated, idempotent) are proven against the local self-hosted sandbox. The connector supports three modes: `mock` (deterministic fixture, no network), `sandbox` (real sandbox Zammad via cluster DNS), and `zammad` (production path, blocked by policy).
 
 ## Overview
 
-The Zammad connector is a safe, mock-first boundary for integrating SupportPlane with a Zammad ticketing instance. The accepted MVP uses only mock mode:
+The Zammad connector is a safe, policy-gated boundary for integrating SupportPlane with a Zammad ticketing instance. It supports three modes:
 
-- **mock** (default) — deterministic, no external credentials, used for tests and local UI.
-- **zammad** — historical/future adapter path. It is not accepted as the current runtime path and must not be used for production or claimed as verified real integration without a dedicated sandbox backlog slice.
+- **mock** (default) — deterministic, no external credentials, used for tests and local MVP UI.
+- **sandbox** — real Zammad sandbox read and writeback via `FetchZammadHttpClient` with server-side OpenBao credential resolution (BL-107, BL-111 accepted).
+- **zammad** — production path, blocked by delivery policy; do not use for real production data.
 
 ## Mock mode behavior
 
@@ -27,11 +24,7 @@ The Zammad connector is a safe, mock-first boundary for integrating SupportPlane
 
 ## Future real Zammad sandbox configuration
 
-The future sandbox path should not rely on raw env tokens as the long-term
-credential model. BL-107 should prove read-only sandbox access; BL-109 should
-introduce server-side OpenBao credential resolution; BL-111 should add
-approval-gated sandbox-only internal-note writeback. Any temporary local env
-configuration must be documented as dev-only and replaced by the resolver path.
+The sandbox path uses server-side OpenBao credential resolution (BL-109). The connector runtime service (`resolveCanonicalAdapterId()`) selects the appropriate adapter. BL-107 proved real sandbox read access; BL-109 introduced server-side OpenBao credential resolution; BL-111 added approval-gated sandbox-only internal-note writeback. Any temporary local env configuration must be documented as dev-only and replaced by the resolver path.
 
 Historical variables that may appear in older code/docs:
 
@@ -81,7 +74,7 @@ The adapter will attempt to connect on startup. Connection failures are recorded
 
 ## Known assumptions (unverified)
 
-These assumptions are based on Zammad REST API documentation and community sources. They have **not** been verified against a live Zammad instance in this slice:
+These assumptions are verified against the local Zammad 6.5 sandbox instance (BL-107) and sandbox writeback (BL-111):
 
 - **Base URL:** The root Zammad URL (e.g. `https://helpdesk.example.com`). API routes are appended as `/api/v1/...`.
 - **Authentication:** `Authorization: Token token={apiToken}` header.
@@ -125,6 +118,6 @@ The following audit events are emitted by the connector boundary:
 All events include:
 - `tenantId`, `actorId`
 - `connectorType`: `zammad`
-- `connectorMode`: `mock` or `zammad`
+- `connectorMode`: `mock`, `sandbox`, or `zammad`
 - `externalTicketId` where applicable
 - Sanitized error code/message on failure (no tokens)

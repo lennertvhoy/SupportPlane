@@ -1,7 +1,7 @@
 # Real E2E Sandbox Flow
 
 **Backlog:** BL-102  
-**Status:** target workflow. Current implementation remains local/mock unless noted.
+**Status:** target workflow. Most steps are now accepted real sandbox (BL-116 accepted). All core phases through BL-117 are complete.
 
 ## Target Flow Status Matrix
 
@@ -9,22 +9,22 @@
 |---|---|---|---|---|
 | 1 | Operator logs into SupportPlane. | REAL NOW | Local username/password demo auth works. | Cluster Web/API preserve local auth or documented dev auth. |
 | 2 | Operator creates/selects a SupportSession. | REAL NOW | Sessions persist in PostgreSQL in local mode. | Same behavior works in cluster. |
-| 3 | SupportPlane loads customer/ticket from self-hosted Zammad sandbox. | MOCK NOW | Current Zammad connector returns deterministic fixtures only. | Real Zammad API read against sandbox with provenance. |
+| 3 | SupportPlane loads customer/ticket from self-hosted Zammad sandbox. | REAL NOW | Real Zammad sandbox read via FetchZammadHttpClient with server-side OpenBao credential resolution (BL-107 accepted). | Real Zammad API read against sandbox with provenance. |
 | 4 | SupportPlane builds AIContextPacket with ticket/customer/session/policy provenance. | REAL NOW | Context packets exist for mock ticket/session data. | Packet includes real Zammad provenance and policy source. |
-| 5 | Ollama generates draft note and/or ticket summary. | MOCK NOW | Deterministic mock AI only. | Local Ollama provider, model metadata, prompt version, context hash, latency. |
+| 5 | Ollama generates draft note and/or ticket summary. | REAL NOW | Real Ollama model calls to gemma4:e4b with fallbackUsed=false (BL-108/BL-121 accepted). | Local Ollama provider, model metadata, prompt version, context hash, latency. |
 | 6 | Operator reviews the draft. | REAL NOW | Review-required local workflow exists. | UI shows local model output and source context. |
 | 7 | Operator submits for review. | REAL NOW | Action lifecycle supports review state. | Same lifecycle uses real sandbox draft metadata. |
 | 8 | Admin/authorized operator approves. | REAL NOW | RBAC and approval state exist. | Approval required for sandbox writeback. |
 | 9 | Delivery policy evaluates the action. | REAL NOW | Policy blocks real network and allows mock delivery only. | Policy can allow sandbox-only internal-note writeback under gates. |
 | 10 | Outbox item is queued. | REAL NOW | PostgreSQL outbox exists. | Outbox bridges to NATS JetStream or accepted durable worker path. |
-| 11 | NATS JetStream worker consumes/processes action. | TARGET SANDBOX | NATS container exists in compose but is not consumed. | Durable stream/consumer, retries, dead-letter, idempotency proof. |
-| 12 | Worker resolves Zammad credential via OpenBao. | TARGET SANDBOX | Credential references are metadata placeholders only. | Server-side resolver obtains local placeholder token without leakage. |
-| 13 | Worker performs sandbox-only internal-note writeback to Zammad. | TARGET SANDBOX | No real writeback exists. | One internal note written to sandbox ticket only. |
-| 14 | Worker stores writeback result. | TARGET SANDBOX | Mock delivery attempts stored. | Real sandbox result stored with redacted HTTP summary. |
+| 11 | NATS JetStream worker consumes/processes action. | REAL NOW | NATS JetStream durable consumer processes outbox actions via product stream (BL-110 accepted). | Durable stream/consumer, retries, dead-letter, idempotency proof. |
+| 12 | Worker resolves Zammad credential via OpenBao. | REAL NOW | Server-side OpenBao resolver for Zammad token, no raw secret in API/UI (BL-109 accepted). | Server-side resolver obtains local placeholder token without leakage. |
+| 13 | Worker performs sandbox-only internal-note writeback to Zammad. | REAL NOW | Approval-gated idempotent sandbox writeback proven (BL-111 accepted). | One internal note written to sandbox ticket only. |
+| 14 | Worker stores writeback result. | REAL NOW | Real sandbox result stored with redacted HTTP summary (BL-111 accepted). | Real sandbox result stored with redacted HTTP summary. |
 | 15 | Worker emits audit events. | REAL NOW | Local audit events exist. | Events include real sandbox writeback, policy, resolver, worker IDs. |
-| 16 | Mailpit captures optional local notification email. | TARGET SANDBOX | No real email sending exists. | SMTP message captured in Mailpit; no internet email. |
+| 16 | Mailpit captures optional local notification email. | REAL NOW | SMTP message captured in Mailpit; 13 messages proven; no internet email (BL-113 accepted). | SMTP message captured in Mailpit; no internet email. |
 | 17 | Evidence bundle is generated. | REAL NOW | JSON/Markdown local/mock bundle exists. | Bundle includes real sandbox provenance and artifact metadata. |
-| 18 | Evidence JSON/Markdown is stored in MinIO. | TARGET SANDBOX | MinIO compose exists but evidence is not stored there. | Object key, checksum, local disclaimer stored and visible. |
+| 18 | Evidence JSON/Markdown is stored in MinIO. | REAL NOW | Evidence artifact persisted to MinIO with SHA-256 checksum (BL-112 accepted). | Object key, checksum, local disclaimer stored and visible. |
 | 19 | UI shows full provenance chain. | LOCAL/DEV-ONLY | UI shows mock provenance, policy, outbox, evidence. | UI shows Zammad/Ollama/OpenBao/NATS/MinIO provenance without secrets. |
 | 20 | Demo proves viewer RBAC denial and kill-switch denial. | REAL NOW | Viewer denial and policy gates are proven for mock/local. | Same denial paths proven against sandbox writeback. |
 

@@ -52,5 +52,9 @@ backups/
 release/
 
 
+# OpenCode runtime artifacts (config is committed)
+.opencode/.playwright*
+.opencode/.cache
+
 # Session evidence (preserved on disk, not in git)
 output/

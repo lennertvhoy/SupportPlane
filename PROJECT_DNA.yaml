@@ -180,7 +180,11 @@ governance:
   evidence_artifact_root: docs/evidence
   acceptance_freeze_log: docs/ACCEPTANCE_FREEZES.md
   hygiene_check: scripts/check_state_docs.py
+  docs_hygiene_check: scripts/check_docs_hygiene.py
   bootstrap_gate_check: scripts/check_state_docs.py --bootstrap-gate
+  docs_freshness_gate: AGENTS.md self-checklist doc freshness gate
+  docs_index: docs/README.md
+  docs_standard: docs/DOC_STANDARD.md
   update_policy:
     status: when_current_truth_changes
     project_state: when_structured_truth_changes
@@ -188,3 +192,5 @@ governance:
     project_adapter: when stack, ports, integrations, or vocabulary changes
     worklog: when_work_is_completed
     evidence_log: when_external claims or user-facing behavior are verified
+    docs_index: when_docs_are_added_removed_or_reorganized
+    docs_standard: when_doc_format_or_process_changes

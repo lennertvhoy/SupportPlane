@@ -2,7 +2,7 @@
 
 **Product:** SupportPlane
 **Execution Mode:** operating
-**Updated At:** 2026-04-30
+**Updated At:** 2026-05-02
 
 ## Purpose
 
@@ -186,6 +186,11 @@ Status markers:
 - [BL-131] `[partial/linux-tested]` Windows tool-manifest compatibility completion. Manifest now includes Windows services/software compatibility metadata and `collect_software` fixed command kind. API/contracts tests cover platform filtering and unsafe command-field rejection. Real Windows host compatibility remains unproven.
 - [BL-132] `[partial/docs-scaffold]` Windows service/install packaging plan. Added Windows packaging readiness script and service-wrapper scaffold documentation. MSI/EXE installer and real auto-start proof remain future work.
 - [BL-133] `[planned]` Windows verification strategy. Real Windows runner CI harness or manual verification runbook. Prove endpoint agent registration, heartbeat, diagnostics, and policy enforcement on actual Windows host.
+
+## Project Hygiene
+
+- [BL-134] `[accepted]` Enterprise-grade documentation governance infrastructure. Established docs/README.md categorized index (7 sections), docs/DOC_STANDARD.md (format, categories, update triggers, quality gate), AGENTS.md doc freshness gate (mandatory every-session checklist), and scripts/check_docs_hygiene.py (state docs, index coverage, freshness gate, BL-134 reference, no DESIGN.md). High-leverage drift fixes applied to WORKFLOW_TRUTH.md, BOUNDARY_MATRIX.md, REAL_E2E_SANDBOX_FLOW.md, BACKLOG_REAL_E2E_ROADMAP.md, IMPLEMENTATION_PHASES_REAL_E2E.md, LOCAL_DEVELOPMENT.md, ZAMMAD_CONNECTOR.md, THREAT_MODEL.md, and TICKET_CONTEXT_CONNECTOR_SAFETY.md. AGENTS.md strengthened with project quick reference table, essential commands, and sibling project warning. Non-claims: does not add features. Remaining per-doc content audit deferred to BL-135.
+- [BL-135] `[planned]` Per-doc content audit and full rewrite of remaining stale documentation. Complete a line-by-line audit of every doc in docs/* against current BACKLOG.md truth, rewrite remaining mock-era language to current sandbox truth, verify all cross-references, and purge orphaned files. BL-134 established the governance infrastructure and fixed high-leverage drift; BL-135 is the deep content audit covering ~40 remaining docs (historical reports excluded). Dependencies: BL-134. Non-claims: no new features.
 
 ## WATCHLIST
 

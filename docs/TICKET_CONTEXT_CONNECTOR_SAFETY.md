@@ -120,7 +120,7 @@ No new required env vars. Existing vars:
 
 - Connector config secrets (e.g., `apiToken`, `password`) are stored as plain JSON fields in the `ConnectorInstallation.config` column **for local/mock/dev use only**.
 - Secrets are redacted to `[REDACTED]` in all API GET responses and evidence bundle exports.
-- This is **not production credential management**. Production deployments must use a dedicated credential broker, encrypted secret storage, or secret references (see BL-084).
+- This is **not production credential management**. Production deployments must use a dedicated credential broker, encrypted secret storage, or secret references (see BL-109 for OpenBao sandbox resolver; production secrets remain future work).
 - The UI shows a `•••••••• (managed server-side)` placeholder without exposing secret values.
 
 ## Known Limitations

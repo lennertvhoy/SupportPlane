@@ -2,6 +2,21 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-02-147: BL-134 docs governance closure — infrastructure accepted, high-leverage drift fixed
+
+- Evidence folder: `output/playwright/session-128-docs-governance-closure/`
+- Source/System: CLI validation scripts
+- Action: Closed BL-134 as accepted. Governance infrastructure: docs/README.md index (7 sections), docs/DOC_STANDARD.md, AGENTS.md doc freshness gate with explicit checklist items, scripts/check_docs_hygiene.py (5 checks). High-leverage drift fixes applied to 9 docs: WORKFLOW_TRUTH.md, BOUNDARY_MATRIX.md, REAL_E2E_SANDBOX_FLOW.md, BACKLOG_REAL_E2E_ROADMAP.md, IMPLEMENTATION_PHASES_REAL_E2E.md, LOCAL_DEVELOPMENT.md, ZAMMAD_CONNECTOR.md, THREAT_MODEL.md, TICKET_CONTEXT_CONNECTOR_SAFETY.md. Created BL-135 for remaining per-doc deep content audit.
+- Proves:
+  - `scripts/check_docs_hygiene.py` passes all 5 checks.
+  - `scripts/check_state_docs.py` passes all state doc hygiene checks.
+  - `npm run typecheck` passes (all workspaces).
+  - `npm run lint` passes (zero errors).
+  - AGENTS.md now enforces doc freshness every session.
+  - 9 high-leverage docs updated to match current accepted truth.
+- Type: code-and-validation-evidence
+- as_of: 2026-05-02T19:00:00+02:00
+
 ## EV-2026-05-01-146: GLPI connector truth fix and connector truth regression tests
 
 - Files: `packages/connectors/src/glpi-adapter.ts`, `apps/api/src/connectors/connectors.service.ts`, `apps/api/test/api.test.ts`

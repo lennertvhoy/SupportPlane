@@ -1,7 +1,7 @@
 ---
 repo_mode: operating
 initialized_on: 2026-04-26
-last_updated: 2026-05-01
+last_updated: 2026-05-02
 ---
 
 # State Driven Development Template Contract
@@ -60,7 +60,44 @@ These rules apply in all modes:
 This repo currently operates in: `operating`
 
 SupportPlane bootstrap completed on 2026-04-26. The repo has a truthful product
-baseline and active queue, but no product runtime exists yet.
+baseline and active queue.
+
+## Project Quick Reference
+
+| Resource     | Detail                                            |
+| ------------ | ------------------------------------------------- |
+| Package mgr  | npm (workspaces)                                  |
+| Runtime      | Node.js >= 22.0.0                                 |
+| Language     | TypeScript 5.7+ (strict, ES2022, NodeNext)        |
+| Framework    | NestJS (API), Next.js 15 (Web)                    |
+| Database     | PostgreSQL (host port 5434)                       |
+| Queue        | NATS                                              |
+| Object store | MinIO (S3-compatible)                             |
+| Web UI       | `localhost:3200`                                  |
+| API          | `localhost:4110`                                  |
+| ORM          | Prisma 7                                          |
+| Tests        | Node.js native test runner (`node --test`)        |
+| Lint         | ESLint 9 + typescript-eslint                      |
+| Formatter    | Prettier                                          |
+
+### Essential Commands
+
+```bash
+npm install                    # Install all workspace dependencies
+npm run build                  # Build all workspaces
+npm run typecheck              # TypeScript check (tsc --noEmit)
+npm run lint                   # ESLint check
+npm test                       # Run all workspace tests
+npm run validate               # Contract validation + Prisma schema check
+npm run format:check           # Prettier format check
+npm run db:seed                # Seed database
+npm run health                 # Runtime health check
+```
+
+### Sibling Projects
+
+Do not edit or reference sibling project directories outside this repo
+without explicit user approval. The workspace root is `SupportPlane/`.
 
 ## Bootstrap Mode
 
@@ -343,6 +380,20 @@ unchecked, the session is not closure-grade.
 - [ ] `STATUS.md` updated if project state changed
 - [ ] `PROJECT_STATE.yaml` updated if structured truth changed
 - [ ] `docs/EVIDENCE_LOG.md` updated if evidence was captured
+- [ ] **Doc freshness gate (mandatory every session)**: documentation must be
+      current with the codebase before closure. Specifically:
+  - [ ] All `docs/*` and README files that reference changed code, APIs,
+        schemas, or runtime behavior have been updated to reflect this
+        session's changes.
+  - [ ] Any touched feature, runbook, architecture, integration, or security
+        doc has been updated to match current truth.
+  - [ ] No stale claims, TODO drift, or contradicted "accepted/complete"
+        states remain in any doc or state file.
+  - [ ] `docs/README.md` (the docs index) has been updated if docs were
+        added, removed, or reorganized.
+  - [ ] Final handoff must list all docs changed and the reason for each
+        change. If a doc update is not yet possible, the handoff must list
+        the exact doc gaps under Risks and Limitations.
 - [ ] Evidence folder exists under `output/playwright/` with correct sequential
       session number (checked via `ls output/playwright/ | sort -V`)
 - [ ] Evidence folder contains **20 files or fewer** (hard cap is 20, never exceed)

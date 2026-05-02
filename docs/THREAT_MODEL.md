@@ -24,7 +24,7 @@ integrations are implemented.
 - Server-side execution gateway.
 - Outbound-only endpoint agent communication by default.
 - Active-window-only operator companion capture by default.
-- Append-only audit events with hash chaining planned.
+- Append-only audit events with hash-chain placeholder (BL-030 accepted).
 - Tenant scoping in every domain object and database path.
 
 ## MVP Threat Boundary

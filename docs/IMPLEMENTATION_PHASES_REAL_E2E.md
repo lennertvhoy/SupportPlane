@@ -18,7 +18,7 @@
 
 ## Phase 1 - Local Kubernetes/Podman Cluster Foundation
 
-- **Status:** BL-103 cluster and namespace foundation accepted; BL-104 app manifests and BL-105 PostgreSQL persistence remain planned.
+- **Status:** BL-103 cluster and namespace foundation accepted; BL-104 app manifests and BL-105 PostgreSQL persistence accepted.
 - **Goal:** Choose and verify Kind/Podman, Minikube/Podman, or an alternative; create namespaces; add base manifest/Helm/kustomize structure; deploy SupportPlane API/Web/Worker and PostgreSQL; prove health checks and local image build/load.
 - **Files likely touched:** `infra/kubernetes/local-podman/`, app Dockerfiles if needed, README/runbooks, scripts.
 - **Backlog IDs:** BL-103, BL-104, BL-105.

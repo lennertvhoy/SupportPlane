@@ -8,21 +8,22 @@ diagnostics, remote support activity, and knowledge into governed
 `SupportSession` workflows where policy, approvals, tool manifests, execution
 gateways, and audit logs decide what is allowed.
 
-## Project Status: Local/Mock MVP With Real Self-Hosted Sandbox Roadmap
+## Project Status: Real Self-Hosted Sandbox Accepted (BL-116)
 
-The current repo is a **local/mock MVP**. It runs a local SupportPlane API, Web
-app, PostgreSQL-backed demo auth/state, deterministic mock connectors, mock AI,
-mock writeback, local endpoint diagnostics foundation, and local evidence export.
+The current repo has an **accepted real self-hosted sandbox** running on a local
+Kubernetes-on-Podman cluster (BL-116 accepted). It demonstrates: Zammad sandbox
+read/writeback, Ollama local AI, OpenBao credential resolution, NATS JetStream
+worker bridge, MinIO evidence persistence, Mailpit notification capture,
+observability baseline, and policy/audit/evidence governance. The local/mock MVP
+still runs standalone without the cluster.
+
 It is not production software and has no production deployment, production auth,
 production Zammad writeback, cloud AI, internet email, production telephony,
-endpoint remediation, screen monitoring, production secrets, or compliance claim.
+production endpoint remediation, screen monitoring, production secrets, or
+compliance claim.
 
-The next major goal is a **local Kubernetes-on-Podman self-hosted sandbox**. The
-target sandbox services are **Zammad, Ollama, OpenBao, NATS JetStream, Mailpit,
-MinIO, PostgreSQL, and observability**. The first real E2E goal is sandbox
-Zammad ticket lookup + local Ollama AI draft + approval-gated sandbox internal
-note writeback + MinIO evidence artifact, with Mailpit local capture where
-notifications are enabled.
+The next major goal is expanding the self-hosted sandbox and hardening
+partial/connector/Windows items toward broader acceptance.
 
 Roadmap references:
 
@@ -39,13 +40,26 @@ Roadmap references:
 - [Demo Guide](docs/DEMO_GUIDE.md)
 - [MVP Completion Audit](docs/MVP_COMPLETION_AUDIT.md)
 
-## What This Repo Is (Local / Mock MVP)
+## What This Repo Is (Real Sandbox + Local MVP)
 
-This repository contains a **local-only, mock-data, development-grade MVP** that
-demonstrates the core architecture and user experience. It is **not** production
-software. Do not deploy it to production or use it with real customer data.
+This repository contains a **real self-hosted sandbox** (accepted BL-116) running
+on a local Kubernetes-on-Podman cluster, plus a standalone **local-only,
+mock-data, development-grade MVP** that runs without the cluster. Neither is
+production software. Do not deploy to production or use with real customer data.
 
-### What the MVP demonstrates
+### What the sandbox demonstrates (cluster)
+
+- **Real Zammad sandbox read + writeback** — Reads real tickets/customers; approval-gated internal-note writeback to sandbox Zammad (BL-107, BL-111).
+- **Local Ollama AI** — Real model calls to host-controlled Ollama with gemma4:e4b, no cloud fallback (BL-108, BL-121).
+- **OpenBao credential resolution** — Server-side secret resolution for Zammad token, no raw secret in API/UI (BL-109).
+- **NATS JetStream worker bridge** — Durable outbox consumer with PostgreSQL as canonical truth (BL-110).
+- **MinIO evidence artifacts** — JSON/Markdown bundles persisted with SHA-256 checksum (BL-112).
+- **Mailpit notification capture** — Local SMTP capture for writeback notifications (BL-113).
+- **Observability** — Correlation IDs, Prometheus metrics, Grafana/Loki ready (BL-114).
+- **Local Asterisk AMI bridge** — Call events from real Asterisk 22.8.2 sandbox (BL-117).
+- **Network egress safety** — Deny-by-default, sandbox-only allowlist, kill switch (BL-115).
+
+### What the local MVP demonstrates (standalone)
 
 - **Support Cockpit UI** — Session list, ticket context, AI context quality, draft notes, audit trail, evidence bundles.
 - **Tenant isolation & RBAC** — Local auth with admin/operator/viewer roles, server-side permission checks, cross-tenant denial.
@@ -59,13 +73,13 @@ software. Do not deploy it to production or use it with real customer data.
 
 ### What is intentionally not implemented
 
-- **No real Zammad writeback** — All connector behavior is mock-only. See `docs/REAL_WRITEBACK_PATH_DESIGN.md` for the phased path to real writeback.
-- **No real AI provider** — No OpenAI, Azure, or other model API calls. All AI output is deterministic mock text.
-- **No real telephony / PBX** — Fake webhook simulation only. No voice, TTS, STT, or real phone integration.
+- **No production Zammad writeback** — Sandbox internal-note writeback is accepted (BL-111). No public replies or production writeback.
+- **No cloud AI provider** — Local Ollama AI is accepted (BL-108/BL-121). No OpenAI, Azure, or other cloud model API calls.
+- **No production telephony / PBX** — Local Asterisk AMI bridge is accepted (BL-117). No PSTN, SIP trunk, recording, or transcription.
 - **No real screen capture** — Web-based mock metadata only. No Tauri app, no raw pixels, no OCR, no desktop monitoring.
-- **No endpoint remediation** — Endpoint diagnostics are read-only fixed implementations only. No arbitrary shell, service restart, remote desktop, or mutation.
-- **No production auth** — Local password auth only. No SSO, OAuth, SAML, OIDC, MFA, or password reset.
-- **No production secrets management** — `secretRef` values are opaque placeholders. No Vault, KMS, or encrypted broker.
+- **No production endpoint remediation** — Low-risk flush-DNS is partial (BL-065). No arbitrary shell, service restart, remote desktop, or production remediation.
+- **No production auth** — Local password auth and Keycloak OIDC login accepted (BL-083). No SSO, SAML, MFA enforcement, or password reset.
+- **No production secrets management** — OpenBao local sandbox resolver accepted (BL-109). No production Vault, KMS, or encrypted broker.
 - **No compliance certification** — Not SOC 2, ISO 27001, or GDPR compliant.
 
 ## How to Run It Locally
@@ -167,18 +181,20 @@ SUPPORTPLANE_DEMO_RESET=allow bash scripts/reset_demo_data.sh
 apps/
   web/                 Next.js support cockpit
   api/                 NestJS API
-  worker/              async jobs and evidence generation (local mock only)
+  worker/              async jobs and evidence generation (NATS JetStream bridge accepted)
 packages/
   contracts/           Zod schemas and shared types
   policy/              Permission helpers
-  connectors/          Ticketing adapter interface and mock adapter
-  ai/                  Model gateway and mock provider
+  connectors/          Ticketing adapter interface, mock adapter, and Zammad sandbox adapter
+  ai/                  Model gateway, mock provider, and Ollama local provider
   audit/               Audit event types and integrity hash placeholder
   ui/                  Shared UI components
 infra/
   docker-compose/      Podman-compatible compose file
-  kubernetes/          Local Podman/Kubernetes namespace foundation; workloads still planned
+  kubernetes/          Local Podman/Kubernetes manifests (BL-103 through BL-114 accepted)
 docs/
+  README.md                 Documentation index
+  DOC_STANDARD.md           Documentation standard and update triggers
   MVP_COMPLETION_AUDIT.md   Current product truth and boundaries
   DEMO_GUIDE.md             Scripted demo walkthrough
   REAL_WRITEBACK_PATH_DESIGN.md   Design doc for future real writeback
@@ -190,18 +206,20 @@ scripts/
   check_local_k8s_prereqs.sh    Read-only local Kubernetes prerequisite check
   verify_*.sh               Feature-specific verification scripts
   health.js                 Runtime health check
-  check_state_docs.py       Documentation hygiene gate
+  check_state_docs.py       State documentation hygiene gate
+  check_docs_hygiene.py     Docs index and freshness hygiene gate
 ```
 
 ## Current Safety Boundary
 
-- All connector runtime decisions return `realNetworkAllowed: false`.
-- Delivery policy enforces `mockOnlyEnforced: true` and `allowRealNetworkCalls: false`.
-- Config validation rejects `mockMode: false` and any secret-like or real-network fields.
+- Connector runtime decisions default to `realNetworkAllowed: false` except for explicit sandbox Zammad allowlist (BL-115).
+- Delivery policy enforces `mockOnlyEnforced: true` for local MVP; sandbox writeback requires explicit enablement and policy gates.
+- Config validation rejects `mockMode: false` and any secret-like or real-network fields unless sandbox-enabled.
 - Credential references expose metadata only; `secretRef` is redacted to `[REDACTED]` in all API responses.
-- Evidence bundles include mock/dev-only disclaimers and never include raw secrets.
+- Evidence bundles include sandbox/local disclaimers and never include raw secrets.
 - Viewer role is denied all mutation endpoints server-side with `403`.
 - Cross-tenant access returns `404` for resources.
+- Network egress deny-by-default; sandbox-only allowlist enforced (BL-115).
 
 ## Evidence and Documentation
 

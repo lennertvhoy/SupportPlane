@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-01 16:45 CEST
+**Updated At:** 2026-05-02 19:00 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
@@ -25,6 +25,11 @@
   - Owner: future Windows hardening slice
   - Next action: run the fixed service/software collectors and packaging scaffold on a real Windows host or Windows CI runner; capture registration, heartbeat, diagnostic, and policy-denial proof.
   - Exit criteria: agent runs on actual Windows, registers, heartbeats, diagnostics and policy enforcement are proven, and unsupported remediation remains honestly labeled unless safely implemented.
+
+- [BL-135] **Per-doc content audit and full rewrite**
+  - Owner: future slice
+  - Next action: perform line-by-line audit of every doc in docs/* against current BACKLOG.md truth; rewrite remaining stale/mock-era language to current sandbox truth; verify all cross-references; purge orphaned files. ~40 docs remain (historical reports excluded). Dependencies: BL-134 accepted.
+  - Exit criteria: all docs reference current truth, no stale language, no broken cross-references, all orphaned files purged.
 
 ## Queue Rules
 
