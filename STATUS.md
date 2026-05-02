@@ -1,20 +1,18 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-02 20:45 CEST
+**Updated At:** 2026-05-02 22:30 CEST
 **Execution Mode:** operating
-**Project State:** session_129_real_e2e_demo_readiness
+**Project State:** session_130_real_e2e_runtime_demo_verification
 **Public URL:** not configured
 
 ## Snapshot
 
-- **BL-026/027/028/029 repaired.** Draft generation 500 fixed with safe model-selection parsing and provider error handling. AI chat and ticket summary now enforce tenant AI policy. Retention controls applied to chat output. 194 API tests pass.
-- **BL-075/077/078/079/080/081/082 partial/local-mock.** Admin shell, audit explorer, evidence timeline, PDF export, model usage, retention, and GDPR groundwork remain local-mock with honest labels. PDF returns real PDF when fonts available, 501 otherwise.
+- **BL-026/027/028/029 repaired; BL-075/077/078/079/080/081/082 partial/local-mock.** Draft generation 500 fixed with safe model-selection parsing and provider error handling. Admin shell, audit explorer, evidence timeline, PDF export, model usage, retention, and GDPR groundwork remain local-mock with honest labels.
 - **BL-061/062/063/064/066/067/068 accepted.** Remote Tool Execution Safety Foundation.
 - **BL-086/087/090 and BL-104 through BL-117, BL-121 accepted.** Production readiness and real sandbox acceptance freeze.
-- **BL-073/074 partial/hybrid-ready.** Knowledge retrieval with lexical fallback.
-- **BL-129 accepted; BL-130/131/132 partial Linux-tested.** Windows endpoint foundation.
-- **BL-134 accepted.** Documentation governance infrastructure (docs index, DOC_STANDARD.md, AGENTS.md freshness gate, check_docs_hygiene.py) plus high-leverage drift fixes (9 docs updated). Per-doc deep content audit deferred to BL-135 (planned).
-- **BL-136 partial/docs-ready.** Real E2E demo readiness. Created REALITY_MATRIX.md (23 systems classified), ENTERPRISE_DEMO_GUIDE.md (4 scenarios), and fixed 9 docs for enterprise review quality. Cluster was down so sandbox integrations not re-verified.
+- **BL-073/074 partial/hybrid-ready; BL-129 accepted; BL-130/131/132 partial Linux-tested.** Knowledge retrieval with lexical fallback. Windows endpoint foundation.
+- **BL-134 accepted.** Documentation governance infrastructure plus high-leverage drift fixes (9 docs). Per-doc deep content audit deferred to BL-135.
+- **BL-136 partial/runtime-verified.** K8s cluster restarted with all services; API running locally against cluster DB; Ollama gemma4:e4b configured; Zammad sandbox accessible. Scenario C (governance) verified; A (Zammad) and B (AI) partial; D not verified. 13 evidence files captured.
 
 ## Active Blockers
 
@@ -25,5 +23,5 @@
 
 ## Notes
 
-- API HEAD: `18881e4` (Session 129 real E2E demo readiness).
-- Evidence: `output/playwright/session-129-real-e2e-demo-readiness/`.
+- API HEAD: `a982066e4` (Session 130 runtime E2E demo verification).
+- Evidence: `output/playwright/session-130-bl136-runtime-e2e-verification/`.

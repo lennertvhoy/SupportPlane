@@ -2,6 +2,26 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-02-161: Session 130 — BL-136 Real E2E Runtime Demo Verification (PARTIAL/RUNTIME-VERIFIED)
+
+- Evidence folder: `output/playwright/session-130-bl136-runtime-e2e-verification/`
+- Source/System: Chromium via Playwright against local API (`localhost:4110`) running against cluster PostgreSQL (port-forward 5434), cluster Web via port-forward (`localhost:3201`), plus CLI artifacts
+- Action: Restarted K8s cluster (`supportplane-local`); all services healthy. Ran API locally against cluster DB to work around K8s API pod crash (Prisma 7 migration issue on tool_manifest_records table; migrations applied to cluster DB but pod image stale). Ollama gemma4:e4b confirmed available. Zammad sandbox running and accessible. Captured browser evidence (cockpit dashboard, session creation, admin dashboard, AI provider readiness) and CLI evidence (API health, git status, cluster pods, Ollama models, Zammad sandbox, connector status, AI readiness, model usage). Evaluated all 4 demo scenarios from ENTERPRISE_DEMO_GUIDE.md.
+- Proves:
+  - K8s cluster restarted successfully with all sandbox services running
+  - API runs locally against cluster PostgreSQL (workaround for pod crash)
+  - Ollama gemma4:e4b is configured and available
+  - Zammad sandbox is running and accessible
+  - Scenario C (Governance) verified: admin dashboard, policy editor, RBAC, audit explorer
+  - Scenario A (Zammad) partial: Zammad running but local API connector shows mock transport
+  - Scenario B (AI) partial: Ollama configured but policy enforces mockOnly=true
+  - Scenario D (Windows) not verified
+  - 13 evidence files captured (4 screenshots + 9 CLI artifacts)
+  - K8s API pod still crash-loops from old image (migrations applied, rebuild needed)
+  - Worktree dirty: 2 modified files (.opencode/opencode.json, app-configmap.yaml)
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-05-02T22:30:00+02:00
+
 ## EV-2026-05-02-160: Session 129 — Real E2E Demo Readiness / Enterprise Review Packaging (PARTIAL/DOCS-READY)
 
 - Evidence folder: `output/playwright/session-129-real-e2e-demo-readiness/`

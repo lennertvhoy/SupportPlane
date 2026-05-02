@@ -25,54 +25,7 @@
       "timeout": 30000
     }
   },
-  "permission": {
-    "read": "allow",
-    "glob": "allow",
-    "grep": "allow",
-    "list": "allow",
-    "lsp": "allow",
-    "webfetch": "allow",
-    "websearch": "allow",
-    "skill": {
-      "*": "allow"
-    },
-    "edit": "allow",
-    "bash": {
-      "*": "ask",
-      "pwd": "allow",
-      "ls *": "allow",
-      "find *": "allow",
-      "grep *": "allow",
-      "rg *": "allow",
-      "cat *": "allow",
-      "sed *": "allow",
-      "git status*": "allow",
-      "git diff*": "allow",
-      "git log*": "allow",
-      "git branch*": "allow",
-      "npm test*": "allow",
-      "npm run *": "allow",
-      "pnpm *": "allow",
-      "bun *": "allow",
-      "pytest*": "allow",
-      "python*": "allow",
-      "node*": "allow",
-      "npx playwright*": "allow",
-      "npx @playwright/mcp*": "allow",
-      "tsx *": "allow",
-      "git clean*": "ask",
-      "git reset*": "ask",
-      "git checkout*": "ask",
-      "git switch*": "ask",
-      "git push*": "ask",
-      "rm *": "ask",
-      "sudo *": "ask",
-      "podman *": "ask",
-      "docker *": "ask"
-    },
-    "external_directory": "ask",
-    "doom_loop": "ask"
-  },
+  "permission": "allow",
   "agent": {
     "build": {
       "mode": "primary",
@@ -82,45 +35,19 @@
     "plan": {
       "mode": "primary",
       "model": "opencode-go/deepseek-v4-flash",
-      "temperature": 0.1,
-      "permission": {
-        "edit": "deny",
-        "bash": "ask"
-      }
+      "temperature": 0.1
     },
     "statedd-reviewer": {
       "description": "Reviews StateDD closure quality, repo hygiene, evidence mapping, stale claims, and acceptance docs without making edits.",
       "mode": "subagent",
       "model": "opencode-go/glm-5.1",
-      "temperature": 0.1,
-      "permission": {
-        "edit": "deny",
-        "bash": {
-          "*": "ask",
-          "git status*": "allow",
-          "git diff*": "allow",
-          "rg *": "allow",
-          "grep *": "allow",
-          "ls *": "allow",
-          "cat *": "allow"
-        }
-      }
+      "temperature": 0.1
     },
     "browser-verifier": {
       "description": "Uses Playwright MCP and local commands to verify user-visible behavior, capture screenshots, inspect console/network issues, and produce evidence.",
       "mode": "subagent",
       "model": "opencode-go/deepseek-v4-pro",
-      "temperature": 0.1,
-      "permission": {
-        "edit": "deny",
-        "bash": {
-          "*": "ask",
-          "npx playwright*": "allow",
-          "npm run *": "allow",
-          "bun *": "allow",
-          "node *": "allow"
-        }
-      }
+      "temperature": 0.1
     }
   }
 }

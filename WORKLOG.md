@@ -1732,3 +1732,53 @@ Session 123b implementation was correct, but the final handoff contained contrad
 ### Key Limitation
 K8s cluster was DOWN this session. All sandbox integrations marked SANDBOX_CODE_READY in REALITY_MATRIX.md were previously proven (BL-103–116 accepted), but could not be re-verified at runtime. The new docs accurately distinguish "real sandbox when cluster is up" from "standalone local MVP."
 
+## 2026-05-02 - Session 130: BL-136 Real E2E Runtime Demo Verification (PARTIAL/RUNTIME-VERIFIED)
+
+**Type:** state-update / runtime-verification
+**Status:** PARTIAL/RUNTIME-VERIFIED
+**Repo Path:** /home/ff/Documents/Projects/SupportPlane
+**Git Branch:** main
+**Git Head:** a982066e4dd20881453902aebcde75eaf072cb0f
+**Worktree:** dirty (2 modified files: .opencode/opencode.json, infra/kubernetes/local-podman/app/app-configmap.yaml)
+
+### What was done
+
+- Restarted K8s cluster `supportplane-local` via `bash scripts/create_local_k8s_cluster.sh` and `kubectl apply -k infra/kubernetes/local-podman`
+- All sandbox services healthy: PostgreSQL, Zammad, OpenBao, NATS, Mailpit, MinIO
+- K8s API pod crash-loops due to Prisma 7 migration issue (missing `tool_manifest_records` table) — migrations applied to cluster DB but pod image is stale
+- Workaround: ran API locally on port 4110 against cluster PostgreSQL via port-forward `kubectl port-forward -n supportplane-data postgres-0 5434:5432`
+- Web served from cluster pod via port-forward on localhost:3201 (proxy API at localhost:4210)
+- Ollama gemma4:e4b confirmed available on localhost:11434
+- Zammad sandbox running in K8s, accessible via port-forward (localhost:8080)
+
+### Scenario Evaluation
+
+- **Scenario A (Zammad): PARTIAL** — Zammad sandbox running and accessible; local API connector shows "mock" transport because adapter is not registered in local runtime (K8s API pod crash prevented cluster-native execution)
+- **Scenario B (AI): PARTIAL** — Ollama gemma4:e4b configured and available; AI pipeline functional but delivery policy enforces mockOnly=true for safety; no real model call was made this session
+- **Scenario C (Governance): VERIFIED** — Admin dashboard, policy editor, RBAC enforcement, audit explorer all working through local API against cluster DB
+- **Scenario D (Windows): NOT VERIFIED** — No Windows host available
+
+### Evidence Captured
+
+- 4 browser screenshots: cockpit dashboard, session creation, admin dashboard, AI provider readiness
+- 9 CLI artifacts: API health, git status, cluster pods, Ollama models, Zammad sandbox, connector status, AI provider readiness, model usage, cluster services
+- Total: 13 files in `output/playwright/session-130-bl136-runtime-e2e-verification/`
+
+### State File Updates (this session)
+
+- STATUS.md: updated timestamp, project state, BL-136 snapshot, API HEAD, evidence folder
+- BACKLOG.md: BL-136 status changed from `partial/docs-ready` to `partial/runtime-verified` with updated description
+- NEXT_ACTIONS.md: BL-136 next action updated to fix K8s API pod and wire Zammad connector
+- PROJECT_STATE.yaml: metadata, head entries, evidence section updated
+- EVIDENCE_LOG.md: new entry EV-2026-05-02-161 prepended
+- WORKLOG.md: this entry appended
+- REALITY_MATRIX.md: K8s cluster row updated to SANDBOX_CODE_READY, key observations updated
+- ENTERPRISE_DEMO_GUIDE.md: session 130 note added, Path B instructions updated
+
+### Remaining for BL-136 full acceptance
+
+- Rebuild K8s API pod image with current Prisma migrations (fix crash-loop)
+- Wire Zammad connector adapter in local API runtime so connector shows real sandbox transport instead of mock
+- Re-verify Scenarios A and B with real Zammad read and real Ollama model call
+- Capture fresh browser evidence for all 4 scenarios
+

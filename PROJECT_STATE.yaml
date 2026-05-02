@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-02T20:45:00+02:00
+  updated_at: 2026-05-02T22:30:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -57,7 +57,13 @@ current_state:
     final_head_after_bl_055_060_118: recorded_in_final_handoff
     head_before_bl_136: 24abf6a
     final_head_after_bl_136: 18881e4
-    worktree_status_at_state_update: clean
+    head_before_bl_136_session_130: a982066e4dd20881453902aebcde75eaf072cb0f
+    head_before_bl_136_session_130_note: >
+      Session 130 state doc updates only; no new code commits. Worktree
+      is dirty with 2 modified files (.opencode/opencode.json,
+      infra/kubernetes/local-podman/app/app-configmap.yaml).
+    final_head_after_bl_136_session_130: to_be_recorded
+    worktree_status_at_state_update: dirty_session_130_state_docs_only
 
   current_product_truth:
     lifecycle_stage: real_self_hosted_sandbox_acceptance_frozen
@@ -612,7 +618,9 @@ current_state:
     created_in_session_129:
       - docs/REALITY_MATRIX.md
       - docs/ENTERPRISE_DEMO_GUIDE.md
-    updated_in_session_129:
+    created_in_session_130:
+      - output/playwright/session-130-bl136-runtime-e2e-verification/
+    updated_in_session_130:
       - docs/SANDBOX_INTEGRATION_ACCEPTANCE.md
       - docs/DEMO_GUIDE.md
       - docs/REAL_E2E_SANDBOX_FLOW.md
@@ -622,15 +630,24 @@ current_state:
       - docs/LOCAL_DEVELOPMENT.md
       - README.md
       - docs/README.md
+    updated_in_session_130:
+      - STATUS.md
+      - BACKLOG.md
+      - NEXT_ACTIONS.md
+      - PROJECT_STATE.yaml
+      - WORKLOG.md
+      - docs/EVIDENCE_LOG.md
+      - docs/REALITY_MATRIX.md
+      - docs/ENTERPRISE_DEMO_GUIDE.md
 
   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-123c-final-closure-proof/
-    latest_screenshot_count: 1
+    latest_folder: output/playwright/session-130-bl136-runtime-e2e-verification/
+    latest_screenshot_count: 4
     latest_duplicate_count: 0
-    latest_cli_artifacts: 3
-    total_files_in_latest_folder: 5
+    latest_cli_artifacts: 9
+    total_files_in_latest_folder: 13
     cli_artifacts:
       - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md
       - output/playwright/session-107-bl106-evidence-reconciliation/screenshot-md5s.txt

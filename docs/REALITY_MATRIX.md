@@ -2,7 +2,7 @@
 
 **Purpose:** Comprehensive inventory of current system status: real vs mock vs sandbox vs partial. Updated every session with this slice.
 **Last updated:** 2026-05-02
-**Session:** 129 — Real E2E Demo Readiness
+**Session:** 130 — Real E2E Runtime Demo Verification
 
 ## Legend
 
@@ -36,7 +36,7 @@
 
 | System | Status | Evidence |
 |--------|--------|----------|
-| Zammad connector | SANDBOX_CODE_READY | FetchZammadHttpClient for real HTTP; ZammadConnectorAdapter.connect() uses real client; OpenBao credential resolution server-side; writeInternalNote() is real and idempotent. Cluster must be up for runtime proof. |
+| Zammad connector | SANDBOX_CODE_READY | FetchZammadHttpClient for real HTTP; ZammadConnectorAdapter.connect() uses real client; OpenBao credential resolution server-side; writeInternalNote() is real and idempotent. Zammad sandbox is running (Session 130) and accessible via port-forward (localhost:8080). Local API connector shows "mock" transport because adapter not registered in local runtime (K8s API pod crash prevented cluster-native execution). Cluster path required for real sandbox transport. |
 | GLPI connector | MOCK_BY_GAP | GlpiConnectorAdapter.connect() rejects with honest "Real GLPI HTTP client not implemented"; only MockGlpiHttpClient exists. Honest status labels in API/UI. |
 | osTicket connector | MOCK_NOT_IMPLEMENTED | OsTicketConnectorAdapter returns fixture data only; no real HTTP client. Status shows fixture/unconfigured. |
 | MeshCentral connector | MOCK_NOT_IMPLEMENTED | MockMeshCentralClient only; no real HTTP client. Status reports unconfigured unless mockMode set. |
@@ -52,7 +52,7 @@
 | Ticket summary | REAL_LOCAL_NOW | POST /ticket-summary exists, persists TicketSummary, checks tenant AI policy |
 | Draft generation | REAL_LOCAL_NOW | 500 error repaired; safe model-selection parsing; policy-gated |
 | Model usage logging | REAL_LOCAL_NOW | ModelUsageLog table, query/summary APIs, admin UI panel |
-| Ollama real calls | SANDBOX_CODE_READY | Real model calls to gemma4:e4b proven in cluster sessions (BL-108/BL-121); fallbackUsed=false. Not verifiable without cluster. |
+| Ollama real calls | SANDBOX_CODE_READY | Real model calls to gemma4:e4b proven in cluster sessions (BL-108/BL-121); fallbackUsed=false. Ollama is running and gemma4:e4b confirmed available (Session 130, localhost:11434). Policy enforces mockOnly=true for safety in local API runtime. Real model call requires cluster API (pod crash prevents). |
 
 ## Governance & Admin
 
@@ -75,7 +75,7 @@
 | MinIO evidence persistence | SANDBOX_CODE_READY | Real S3 PutObject via AWS SDK; object key, checksum, content type. Uses cluster DNS minio.supportplane-data.svc.cluster.local. Cluster required. |
 | Mailpit notifications | SANDBOX_CODE_READY | Real nodemailer SMTP to mailpit.supportplane-integrations.svc.cluster.local:1025. Cluster required. |
 | Keycloak OIDC | SANDBOX_CODE_READY | Full browser OIDC redirect/callback/PKCE flow; realm role mapping; service account tokens with SHA-256 hashing. oidcReady=false (OIDC_ISSUER_URL not set). Cluster required. |
-| Kubernetes cluster | MANIFESTS_READY | All manifests exist in infra/kubernetes/local-podman/; cluster supportplane-local (Kind/Podman) was verified in BL-116. Cluster is DOWN this session. |
+| Kubernetes cluster | SANDBOX_CODE_READY | Cluster `supportplane-local` restarted in Session 130; all namespaces and services running. K8s API pod crash-loops from stale image (Prisma migration applied to DB but pod needs rebuild). API runs locally against cluster DB via port-forward. |
 
 ## Endpoint Agent
 
@@ -99,13 +99,14 @@
 | MOCK_BY_GAP | 2 | GLPI, Windows endpoint |
 | MOCK_NOT_IMPLEMENTED | 3 | osTicket, MeshCentral, Fortinet |
 | PARTIAL | 3 | AI gateway (no Ollama configured locally), Evidence bundle (PDF fallback), Endpoint diagnostics (Windows unverified), Low-risk remediation (one path only) |
-| MANIFESTS_READY | 1 | Kubernetes cluster |
+| MANIFESTS_READY | 0 | — |
+| SANDBOX_CODE_READY (not-verified-this-session) | 1 | K8s API pod (crash-looping; API verified locally against cluster DB) |
 
 ## Key Observations
 
-1. **Two-tier runtime:** The system has a "standalone local" mode (API + Web + PostgreSQL + NATS + MinIO via compose) and a "sandbox cluster" mode (K8s with full integrations). Currently only the standalone mode is running.
+1. **Two-tier runtime:** The system has a "standalone local" mode (API + Web + PostgreSQL + NATS + MinIO via compose) and a "sandbox cluster" mode (K8s with full integrations). Both are currently running (Session 130).
 
-2. **Cluster is DOWN this session:** All systems marked SANDBOX_CODE_READY or MANIFESTS_READY were previously proven (BL-116 accepted), but the Kind/Podman cluster `supportplane-local` is not running. This means Zammad, Ollama, OpenBao, NATS JetStream, MinIO evidence persistence, Mailpit, Keycloak, and full sandbox E2E workflows cannot be verified at runtime right now.
+2. **Cluster is UP but K8s API pod crash-loops:** All SANDBOX_CODE_READY services (Zammad, Ollama, OpenBao, NATS, Mailpit, MinIO) are running in the cluster. The K8s API pod crashes from a stale image (Prisma 7 tool_manifest_records migration). Workaround: API runs locally against cluster DB via port-forward. Local API connector shows mock transport because Zammad adapter is not registered in local runtime.
 
 3. **Most accepted BL items are real code, not mocks:** The 6 SANDBOX_CODE_READY systems all have real HTTP client/code paths — they were proven in previous cluster sessions. The current local runtime uses mock defaults because the cluster is not running.
 

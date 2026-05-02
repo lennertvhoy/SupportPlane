@@ -5,8 +5,11 @@ governed AI support cockpit across both standalone local and full sandbox
 cluster runtimes.
 
 **Current-truth scope:** This guide covers all features accepted through
-BL-129 (Session 129, 2026-05-02). Scenarios A, B, and C are cluster-backed.
-Scenario D uses local runtime plus local endpoint agent. All scenarios
+BL-136 (Session 130, 2026-05-02). Scenarios A, B, and C are cluster-backed;
+Scenario C is verified (Session 130). Scenarios A and B are partial/runtime-verified:
+Zammad sandbox is running and accessible but local API connector shows mock transport
+(Ollama configured but policy enforces mockOnly for safety). Scenario D uses
+local runtime plus local endpoint agent (not verified this session). All scenarios
 reference real code paths, never fabricated claims.
 
 **Non-claims:** This guide does not demonstrate production writeback,
@@ -14,7 +17,7 @@ production AI providers, production telephony, production secrets management,
 compliance certification, or real Windows endpoint execution. See
 [Non-Claims](#non-claims) below for the full list.
 
-**Last updated:** 2026-05-02 (Session 129)
+**Last updated:** 2026-05-02 (Session 130)
 
 ---
 
@@ -106,14 +109,16 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:4110 npm run dev
 
 Requires Kind with Podman provider, `kubectl`, and the existing cluster
 tooling. All sandbox integrations are real code — previously accepted
-(BL-116 through BL-117) but require a running cluster to verify.
+(BL-116 through BL-117) and the cluster was restarted in Session 130.
+Note: K8s API pod currently crash-loops from stale image; API can be
+run locally against cluster DB as a workaround.
 
 **Prerequisites:**
 
 - Podman >= 5.0 (tested on 5.8.2)
 - `kubectl` (configured for the `kind-supportplane-local` context)
 - `kind` (tested with Kind 0.22+)
-- Host Ollama on port 11435 with `gemma4:e4b` model (optional; cluster can use mock AI fallback if unavailable)
+- Host Ollama on port 11434 with `gemma4:e4b` model (optional; cluster can use mock AI fallback if unavailable)
 
 **Cluster startup:**
 
@@ -130,11 +135,31 @@ bash scripts/build_and_load_local_k8s_images.sh
 # 4. Wait for all pods to become Ready
 kubectl get pods -A --watch   # Ctrl+C when all Running/Ready
 
-# 5. Port-forward API and Web (two terminals)
+# 5. Port-forward cluster DB for local API (Session 130 workaround for crash-looping API pod)
+kubectl port-forward -n supportplane-data postgres-0 5434:5432
+
+# 6. Run API locally against cluster DB (terminal 1)
+cd apps/api
+API_PORT=4110 \
+SUPPORTPLANE_STORE=postgres \
+SUPPORTPLANE_AUTH_MODE=local \
+DATABASE_URL="postgresql://supportplane:supportplane_dev@localhost:5434/supportplane?schema=public" \
+npm run dev
+
+# 7. Port-forward cluster Web (terminal 2)
+kubectl port-forward -n supportplane-app svc/supportplane-web 3201:3200
+
+# 8. Open http://localhost:3201
+```
+
+**Legacy cluster-native Path B (when K8s API pod is healthy):**
+
+```bash
+# Port-forward API and Web (two terminals)
 kubectl port-forward -n supportplane-app svc/supportplane-api 4210:4110
 kubectl port-forward -n supportplane-app svc/supportplane-web 3300:3200
 
-# 6. Open http://localhost:3300
+# Open http://localhost:3300
 ```
 
 **What is real sandbox in Path B:**

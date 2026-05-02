@@ -1,0 +1,19 @@
+NAME                               STATUS   ROLES           AGE    VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION            CONTAINER-RUNTIME
+supportplane-local-control-plane   Ready    control-plane   3d6h   v1.31.4   10.89.3.2     <none>        Debian GNU/Linux 12 (bookworm)   6.19.13-200.fc43.x86_64   containerd://1.7.24
+NAME                                   READY   STATUS    RESTARTS        AGE
+supportplane-api-88ddccf77-ps824       1/1     Running   6 (11m ago)     14m
+supportplane-web-769477f877-fk2hq      1/1     Running   0               14m
+supportplane-worker-5bbddbd448-lzr4j   1/1     Running   7 (9m11s ago)   14m
+NAME                     READY   STATUS    RESTARTS      AGE
+minio-855cfdc549-grxrr   1/1     Running   4 (18m ago)   3d5h
+postgres-0               1/1     Running   4 (18m ago)   3d5h
+NAME                                 READY   STATUS    RESTARTS       AGE
+asterisk-68c84fb9f5-rw2j9            1/1     Running   3 (18m ago)    2d6h
+keycloak-5bcffcb659-2rxsw            1/1     Running   2 (18m ago)    2d1h
+keycloak-postgres-7db8f997f5-rvpms   1/1     Running   3 (18m ago)    2d3h
+mailpit-6bc6cdfb55-4c26r             1/1     Running   4 (18m ago)    3d5h
+nats-0                               1/1     Running   3 (18m ago)    3d1h
+openbao-5bc456ddfc-ks44c             1/1     Running   4 (18m ago)    3d5h
+zammad-0                             1/1     Running   10 (18m ago)   3d4h
+zammad-postgres-0                    1/1     Running   4 (18m ago)    3d5h
+zammad-redis-bb685c5fb-zrxz2         1/1     Running   4 (18m ago)    3d5h

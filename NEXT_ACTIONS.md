@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-02 20:45 CEST
+**Updated At:** 2026-05-02 22:30 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
@@ -8,8 +8,9 @@
 
 - [BL-136] **Real E2E demo readiness / enterprise review packaging**
   - Owner: future slice
-  - Next action: start K8s cluster and re-verify sandbox E2E flow from ENTERPRISE_DEMO_GUIDE.md scenarios A and B with fresh browser evidence.
-  - Exit criteria: cluster running, Zammad read/writeback proven, Ollama real model call proven, evidence bundle with MinIO checksum, all 4 demo scenarios browser-verified.
+  - Status: partial/runtime-verified (K8s cluster restarted, API locally against cluster DB, Ollama configured, Scenario C verified; A/B partial, D not verified)
+  - Next action: fix K8s API pod crash (Prisma migration mismatch); wire Zammad connector in local API runtime; re-verify Scenarios A and B end-to-end.
+  - Exit criteria: Zammad sandbox read/writeback from local API, Ollama real model call (not mock), evidence bundle with MinIO checksum, all 4 demo scenarios browser-verified.
 
 - [BL-073/BL-074] **Knowledge retrieval hardening**
   - Owner: future slice
