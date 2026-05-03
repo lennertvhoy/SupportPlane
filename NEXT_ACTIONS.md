@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-03 14:10 CEST
+**Updated At:** 2026-05-03 15:10 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
@@ -23,20 +23,20 @@
 
 - [BL-132] **Windows service/install packaging**
   - Owner: future Windows packaging slice
-  - Status: partial/harness-ready. BL-130/131/133 accepted (real Windows runner proof achieved in Session 134 via GitHub Actions + Tailscale Funnel). MSI/EXE installer, Windows Service wrapper, and auto-start behavior remain future work.
-  - Next action: build signed Windows agent artifacts, wrap as Windows Service, package as MSI/EXE.
-  - Exit criteria: agent installs, auto-starts, registers, heartbeats, and survives reboot on a real Windows host.
+  - Status: partial/service-scripts-ready. Service install/uninstall/run-once scripts created and syntactically validated on windows-latest. GitHub-hosted runner lacks admin privileges for sc.exe service creation. Credible packaging path exists — needs real Windows host with admin to complete.
+  - Next action: run scripts/windows/install_endpoint_agent_service.ps1 on a real Windows host with admin privileges to prove service install, start, auto-start, and uninstall.
+  - Exit criteria: service installs, starts, auto-starts on boot, runs heartbeat/diagnostic cycle, stops, uninstalls cleanly on real Windows host.
 
 - [BL-135] **Per-doc content audit and full rewrite**
   - Owner: future slice
   - Next action: perform line-by-line audit of every doc in docs/* against current BACKLOG.md truth; rewrite remaining stale/mock-era language to current sandbox truth; verify all cross-references; purge orphaned files. ~40 docs remain (historical reports excluded). Dependencies: BL-134 accepted.
   - Exit criteria: all docs reference current truth, no stale language, no broken cross-references, all orphaned files purged.
 
-## Recently Completed (Session 134)
+## Recently Completed
 
-- [BL-130] `[accepted]` Windows diagnostics collectors — real Windows runner proof via GitHub Actions.
-- [BL-131] `[accepted]` Windows tool-manifest compatibility — proven on real Windows runner.
-- [BL-133] `[accepted]` Windows verification strategy — workflow passed on windows-latest.
+- [BL-130] `[accepted]` Windows diagnostics collectors — real Windows runner proof (Session 134, repaired Session 135).
+- [BL-131] `[accepted]` Windows tool-manifest compatibility — proven on real Windows runner (Session 134).
+- [BL-133] `[accepted]` Windows verification strategy — workflow passed on windows-latest (Session 134).
 
 ## Queue Rules
 

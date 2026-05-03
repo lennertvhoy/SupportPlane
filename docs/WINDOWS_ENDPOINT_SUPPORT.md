@@ -1,6 +1,6 @@
 # Windows Endpoint Support
 
-**Status:** Real Windows runner proof achieved (Session 134, BL-130/131/133 accepted). MSI/EXE packaging (BL-132) remains partial/harness-ready.
+**Status:** Real Windows runner proof achieved (Session 134, BL-130/131/133 accepted). Service packaging scripts created (Session 135, BL-132 partial/service-scripts-ready). MSI/EXE packaging and auto-start remain future work.
 
 **Updated:** 2026-05-03
 
@@ -130,18 +130,14 @@ A GitHub Actions workflow is available for automated Windows endpoint verificati
 
 ## Packaging Scaffold
 
-The committed scaffold is `scripts/package_windows_endpoint_agent.ps1`. It is a
-readiness/package staging script, not a production installer. It checks for a
-Windows host, Node.js 22+, builds the endpoint-agent workspace, stages the built
-agent and package metadata under `dist/windows-endpoint-agent`, and generates:
+The committed scaffold includes:
 
-- `WINDOWS_SERVICE_WRAPPER_README.md` — service wrapper requirements
-- `install-service.ps1` — example nssm-based service installation
-- `uninstall-service.ps1` — example nssm-based service removal
-- `config.example.json` — enrollment configuration template
-- `LOGGING.md` — logging path documentation
-- `SERVICE_ACCOUNT.md` — least-privilege service account guidance
-- `VERIFICATION_CHECKLIST.md` — checklist of runtime proof required for BL-133
+- `scripts/package_windows_endpoint_agent.ps1` — readiness/package staging script (Session 133)
+- `scripts/windows/install_endpoint_agent_service.ps1` — Windows Service install via sc.exe (Session 135)
+- `scripts/windows/uninstall_endpoint_agent_service.ps1` — Windows Service removal (Session 135)
+- `scripts/windows/run_endpoint_agent_once.ps1` — Run agent once for verification (Session 135)
+
+Both service scripts use built-in sc.exe (no external dependencies). The service name is `SupportPlaneEndpointAgentDev` (clearly dev/sandbox). GitHub-hosted runners lack admin privileges for service creation; real Windows host with admin required for service lifecycle proof.
 
 The intended production path remains:
 

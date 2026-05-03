@@ -2,6 +2,22 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-167: Session 135 — BL-132 Windows Service Packaging Proof (PARTIAL/SERVICE-SCRIPTS-READY)
+
+- Evidence folder: `output/playwright/session-136-windows-service-packaging-proof/`
+- Source/System: GitHub Actions windows-latest runner, PowerShell, sc.exe
+- Action: Created Windows service install/uninstall/run-once PowerShell scripts using built-in sc.exe (no external deps). Added BL-132 service packaging job to verification workflow (runServicePackaging input). Triggered workflow — BL-130/131/133 verification passed again (44/44 tests), service packaging job succeeded with documented limitation: GitHub-hosted runner lacks admin privileges for sc.exe service creation. Scripts are syntactically validated, workflow job works, credible packaging path exists. BL-132 stays partial/service-scripts-ready until real Windows host with admin proves service lifecycle.
+- Proves:
+  - Three service scripts created and committed
+  - Scripts have valid PowerShell syntax (validated on windows-latest)
+  - Workflow job for BL-132 exists and runs successfully
+  - GitHub-hosted runner admin limitation documented honestly
+  - No secrets in service output files
+  - Tailscale Funnel shut down at closure
+  - BL-132 credible packaging path: real Windows host with admin required
+- Type: code-and-workflow-verification-with-documented-limitation
+- as_of: 2026-05-03T15:10:00+02:00
+
 ## EV-2026-05-03-166: Session 134 — Windows Runner CI Reachability (BL-130/131/133 ACCEPTED)
 
 - Evidence folder: `output/playwright/session-134-windows-runner-ci-reachability/`

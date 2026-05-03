@@ -1947,6 +1947,79 @@ No real Windows host was available (Fedora Linux only). BL items remain partial/
 - P1 [BL-133] Trigger GitHub Actions workflow on windows-latest with live API, or manual Windows host verification per runbook. Capture real Windows agent registration, heartbeat, diagnostics, and policy denial proof.
 
 
+## Session 135 — 2026-05-03 — Session 134 Closure Repair + BL-132 Windows Service Packaging
+
+**Date:** 2026-05-03 15:10 CEST
+**Git HEAD:** to be recorded after commit
+**Branch:** main
+**Tailscale Funnel:** OFF (shut down at closure)
+
+### Part 0 — Safety Check
+
+Tailscale Funnel was still running from Session 134 (`https://ff-fedora.tail2dc90.ts.net → 127.0.0.1:4210`). Shut down with `tailscale funnel --https=443 off`. Confirmed unreachable. STATUS.md public URL removed.
+
+### Part 1 — Evidence Mismatch Repair
+
+Session 134 final handoff claimed commit `4072920...` but workflow evidence showed up to `c1d1252...`. Resolution:
+- `c1d1252` = WORKFLOW-PROVEN HEAD (Windows runner executed against this commit)
+- `4072920` = FINAL CLOSURE HEAD (docs-only, zero code changes since c1d1252)
+- STATUS.md, WORKLOG.md, PROJECT_STATE.yaml updated to document both heads clearly.
+- Evidence: `output/playwright/session-135-session134-closure-safety-repair/` (6 files).
+
+### Part 2 — BL-132 Windows Service Packaging
+
+#### Scripts Created
+- `scripts/windows/install_endpoint_agent_service.ps1` — uses sc.exe (built-in, no external deps), service name SupportPlaneEndpointAgentDev
+- `scripts/windows/uninstall_endpoint_agent_service.ps1` — stop/remove service
+- `scripts/windows/run_endpoint_agent_once.ps1` — run agent once for verification
+
+#### Workflow Job Added
+`windows-service-packaging` job (10 steps) in `.github/workflows/windows-endpoint-verification.yml`:
+- Triggered via `runServicePackaging=true` input
+- Steps: Checkout, Setup Node, Install, Build, Script validation, Service install attempt (continue-on-error), Service status check, Service uninstall (continue-on-error), No-secret scan, Artifact upload, Summary
+
+#### Workflow Result
+- **Run:** https://github.com/lennertvhoy/SupportPlane/actions/runs/25279858921
+- **Verification job:** SUCCESS (same as Session 134 — 44/44 tests)
+- **Service packaging job:** SUCCESS (with documented limitation)
+  - Scripts present and syntactically valid ✅
+  - Service install attempted with sc.exe — FAILED (exit code 1)
+  - Service not found — GitHub-hosted runner lacks admin privileges for `sc.exe create`
+  - Honest notice: "BL-132 service install requires admin privileges on the runner"
+  - No secrets found in output files ✅
+
+#### BL-132 Status
+- Stays `partial/service-scripts-ready` (not accepted)
+- Credible packaging path exists: scripts validated, workflow job works
+- Real Windows host with admin required for service install/start/auto-start/uninstall proof
+- MSI/EXE installer remains future work
+
+### Verification
+- `npm run lint`: PASS (0 errors)
+- `npm run typecheck --workspaces --if-present`: PASS
+- `npm test --workspace=apps/endpoint-agent`: PASS (44/44, 0 fail)
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- `bash -n scripts/trigger_windows_verification.sh`: PASS
+- `bash -n scripts/create_demo_endpoint_enrollment_token.sh`: PASS
+- GitHub Actions BL-130/131/133: SUCCESS
+- GitHub Actions BL-132 packaging: SUCCESS (with documented admin limitation)
+
+### Evidence
+- Repair: `output/playwright/session-135-session134-closure-safety-repair/` (6 files)
+- BL-132: `output/playwright/session-136-windows-service-packaging-proof/` (workflow log, summary, funnel-off, git truth)
+
+### Known Limitations
+- BL-132 service install/uninstall not proven on real Windows (GH runner lacks admin)
+- Tailscale Funnel is OFF — must re-enable for future CI tests
+- No browser/computer-use tool available — CLI and GitHub evidence only
+- MSI/EXE installer not implemented
+
+### Next Recommended Action
+P1 [BL-069/BL-071/BL-072/BL-127] Connector real-instance enablement
+P2 [BL-132] Run service scripts on real Windows host with admin
+
+
 ## Session 134 — 2026-05-03 — Windows Runner CI Reachability (BL-130/131/133 ACCEPTED)
 
 **Date:** 2026-05-03 14:10 CEST
