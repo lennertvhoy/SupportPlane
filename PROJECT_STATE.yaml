@@ -64,7 +64,9 @@ current_state:
       infra/kubernetes/local-podman/app/app-configmap.yaml).
     final_head_after_bl_136_session_130: f0c6a9102b9f59293db22b28bf82376f18ecea9f
     head_before_bl_136_session_131: e5b1dc5272642916a63027434790027b70bcdf8d
-    final_head_after_bl_136_session_131: recorded_in_final_handoff
+    final_head_after_bl_136_session_131: 94c961874070178442f819067d58d3665fcf3da3
+    head_before_bl_136_session_132: 94c961874070178442f819067d58d3665fcf3da3
+    final_head_after_bl_136_session_132: recorded_in_final_handoff
     worktree_status_at_state_update: clean
 
   current_product_truth:
@@ -474,6 +476,8 @@ current_state:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
+     highest_id: BL-136
+     accepted_current_slice: BL-136_session_132_proof_repair
      active_queue_items: [BL-073, BL-074, BL-069, BL-071, BL-072, BL-127, BL-065, BL-130, BL-131, BL-132, BL-133, BL-135]
 
   documentation:
@@ -646,11 +650,11 @@ current_state:
    evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-131-bl136-e2e-acceptance-candidate/
+    latest_folder: output/playwright/session-132-bl136-proof-repair/
     latest_screenshot_count: 5
     latest_duplicate_count: 0
-    latest_cli_artifacts: 12
-    total_files_in_latest_folder: 18
+    latest_cli_artifacts: 14
+    total_files_in_latest_folder: 20
     cli_artifacts:
       - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md
       - output/playwright/session-107-bl106-evidence-reconciliation/screenshot-md5s.txt

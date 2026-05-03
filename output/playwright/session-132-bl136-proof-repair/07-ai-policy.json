@@ -1,0 +1,33 @@
+{
+    "policy": {
+        "id": "3b2ce3d0-74ec-4c2d-b702-315bd5a92dc4",
+        "name": "AI Policy",
+        "enabled": true,
+        "version": 3,
+        "tenantId": "dev-tenant",
+        "createdAt": "2026-04-30T21:24:53.538Z",
+        "updatedAt": "2026-05-02T20:16:20.941Z",
+        "updatedBy": "dev-admin",
+        "killSwitch": false,
+        "policyType": "ai",
+        "safetyFlags": {
+            "mockOnly": true,
+            "reviewRequired": true,
+            "cloudCallsAllowed": false,
+            "localProvidersOnly": true
+        },
+        "allowedModels": [],
+        "allowedProviders": [
+            "mock",
+            "ollama"
+        ],
+        "maxCostPerDayUsd": 100,
+        "redactionRequired": true,
+        "allowScreenContext": false,
+        "requireHumanReview": true,
+        "allowAutonomousSend": false,
+        "maxTokensPerRequest": 8192,
+        "allowDraftGeneration": true,
+        "allowGreetingSuggestions": true
+    }
+}

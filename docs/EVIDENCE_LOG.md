@@ -2,6 +2,23 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-163: Session 132 — BL-136 Proof Repair (ACCEPTED)
+
+- Evidence folder: `output/playwright/session-132-bl136-proof-repair/`
+- Source/System: Playwright Chromium against cluster Web UI (localhost:3201) and API (localhost:4210), plus CLI artifacts
+- Action: Repaired BL-136 closure proof. Rebuilt and redeployed K8s API/Web/Worker images so runtime HEAD (94c961) matches final commit HEAD (94c961). Added RBAC denial proof (viewer 403 on session creation). Reconciled AI policy mockOnly semantics: policy.safetyFlags.mockOnly=true is admin guard; response.safety.mockOnly=false means real local AI call. Re-captured all 3 scenarios (A: Zammad sandbox read, B: Ollama AI draft, C: Governance/Audit/RBAC) with fresh evidence.
+- Proves:
+  - Runtime HEAD 94c961 = final commit HEAD 94c961 (identity closure)
+  - Clean worktree after final commit (git status included in evidence)
+  - Zammad connector transport=real, credentialSource=vault, connected=true
+  - Ollama gemma4:e4b real model call: fallbackUsed=false, noCloudCall=true
+  - RBAC denial: viewer receives 403 Forbidden on session creation
+  - Audit events generated for demo actions
+  - AI policy mockOnly reconciled: naming collision between two schemas, not a bug
+  - 20 evidence files (5 browser screenshots + 14 CLI artifacts + 1 index), 0 duplicates
+- Type: closure-repair-and-runtime-verification
+- as_of: 2026-05-03T12:25:00+02:00
+
 ## EV-2026-05-03-162: Session 131 — BL-136 E2E Acceptance Candidate (ACCEPTED)
 
 - Evidence folder: `output/playwright/session-131-bl136-e2e-acceptance-candidate/`

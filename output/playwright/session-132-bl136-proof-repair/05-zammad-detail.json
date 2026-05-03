@@ -1,0 +1,18 @@
+{
+    "mode": "zammad",
+    "health": "unknown",
+    "adapterType": "zammad",
+    "capabilities": [
+        "read_tickets",
+        "read_customers",
+        "write_notes"
+    ],
+    "connected": true,
+    "metadata": {
+        "startupMode": "zammad",
+        "configured": true,
+        "credentialResolver": "openbao-local-sandbox",
+        "registryPattern": true
+    },
+    "_tenantId": "dev-tenant"
+}

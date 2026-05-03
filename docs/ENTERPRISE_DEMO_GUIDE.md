@@ -5,17 +5,17 @@ governed AI support cockpit across both standalone local and full sandbox
 cluster runtimes.
 
 **Current-truth scope:** This guide covers all features accepted through
-BL-136 (Session 131, 2026-05-03). Scenarios A (Zammad sandbox ticket read), B (Ollama AI draft),
-and C (Governance/Audit/RBAC) are verified with fresh browser/computer-use evidence from
-the K8s cluster API. Scenario D (Windows endpoint) remains unverified. All scenarios
-reference real code paths, never fabricated claims.
+BL-136 (Session 132, 2026-05-03). Scenarios A (Zammad sandbox ticket read), B (Ollama AI draft),
+and C (Governance/Audit/RBAC with viewer 403 denial) are verified with fresh browser/computer-use evidence.
+Runtime HEAD matches commit HEAD (94c961). Scenario D (Windows endpoint) remains unverified.
+All scenarios reference real code paths, never fabricated claims.
 
 **Non-claims:** This guide does not demonstrate production writeback,
 production AI providers, production telephony, production secrets management,
 compliance certification, or real Windows endpoint execution. See
 [Non-Claims](#non-claims) below for the full list.
 
-**Last updated:** 2026-05-03 (Session 131)
+**Last updated:** 2026-05-03 (Session 132)
 
 ---
 

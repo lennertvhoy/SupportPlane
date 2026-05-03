@@ -2,7 +2,7 @@
 
 **Purpose:** Comprehensive inventory of current system status: real vs mock vs sandbox vs partial. Updated every session with this slice.
 **Last updated:** 2026-05-03
-**Session:** 131 — BL-136 E2E Acceptance
+**Session:** 132 — BL-136 Proof Repair
 
 ## Legend
 
@@ -103,7 +103,7 @@
 
 ## Key Observations
 
-1. **BL-136 E2E acceptance achieved (Session 131):** Scenarios A (Zammad sandbox ticket read), B (Ollama real AI draft with gemma4:e4b, fallbackUsed=false), and C (Governance/Audit/RBAC) all proven end-to-end from the K8s cluster API with fresh browser/computer-use evidence. Scenario D (Windows) remains unverified.
+1. **BL-136 E2E acceptance achieved (Session 132, proof repaired):** Scenarios A (Zammad sandbox ticket read), B (Ollama real AI draft with gemma4:e4b, fallbackUsed=false), and C (Governance/Audit/RBAC) all proven end-to-end from the K8s cluster API with fresh browser/computer-use evidence. Scenario D (Windows) remains unverified.
 
 2. **K8s cluster fully operational:** All 3 app pods (API/Web/Worker) Ready; all sandbox integrations (Zammad, OpenBao, NATS, MinIO, Mailpit, Keycloak, Asterisk, Prometheus, Grafana, Loki) running. Cluster API serves via port-forward localhost:4210.
 

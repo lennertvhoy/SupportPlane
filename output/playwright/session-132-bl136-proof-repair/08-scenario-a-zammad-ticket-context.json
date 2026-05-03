@@ -1,0 +1,126 @@
+{
+    "ticketReference": {
+        "id": "zammad-tr-2",
+        "tenantId": "dev-tenant",
+        "adapterId": "zammad-adapter-001",
+        "externalTicketId": "2",
+        "subject": "VPN connection issue for remote office - TICKET-101",
+        "status": "open",
+        "priority": "normal",
+        "customerEmail": "support@acme.example",
+        "customerName": "Acme BVBA",
+        "rawData": {
+            "id": 2,
+            "group_id": 1,
+            "priority_id": 2,
+            "state_id": 2,
+            "organization_id": null,
+            "number": "68002",
+            "title": "VPN connection issue for remote office - TICKET-101",
+            "owner_id": 2,
+            "customer_id": 5,
+            "note": null,
+            "first_response_at": null,
+            "first_response_escalation_at": null,
+            "first_response_in_min": null,
+            "first_response_diff_in_min": null,
+            "close_at": null,
+            "close_escalation_at": null,
+            "close_in_min": null,
+            "close_diff_in_min": null,
+            "update_escalation_at": null,
+            "update_in_min": null,
+            "update_diff_in_min": null,
+            "last_close_at": null,
+            "last_contact_at": null,
+            "last_contact_agent_at": null,
+            "last_contact_customer_at": null,
+            "last_owner_update_at": "2026-04-29T16:01:14.883Z",
+            "create_article_type_id": 10,
+            "create_article_sender_id": 2,
+            "article_count": 75,
+            "escalation_at": null,
+            "pending_time": null,
+            "type": null,
+            "time_unit": null,
+            "preferences": {},
+            "updated_by_id": 2,
+            "created_by_id": 2,
+            "created_at": "2026-04-29T15:56:11.912Z",
+            "updated_at": "2026-05-01T11:29:43.881Z",
+            "checklist_id": null
+        },
+        "lastSyncedAt": "2026-05-03T10:14:52.342Z",
+        "createdAt": "2026-04-29T15:56:11.912Z",
+        "updatedAt": "2026-05-01T11:29:43.881Z"
+    },
+    "contextPacket": {
+        "id": "22ed5f71-f050-4004-baed-8f5f3bb83f1a",
+        "tenantId": "dev-tenant",
+        "sessionId": "6f455689-7cd3-4407-aa69-7929ed1b01d2",
+        "provenance": "ticket",
+        "sourceTicketIds": [
+            "zammad-tr-2"
+        ],
+        "sourceAdapterId": "zammad-adapter-001",
+        "payload": {
+            "ticketSubject": "VPN connection issue for remote office - TICKET-101",
+            "ticketStatus": "open",
+            "ticketPriority": "normal",
+            "customerEmail": "support@acme.example",
+            "customerName": "Acme BVBA",
+            "connectorMode": "zammad",
+            "connectorInstallationProvenance": {
+                "installationId": "conn-inst-dev-001",
+                "installationDisplayName": "Local Zammad Sandbox",
+                "adapterType": "zammad",
+                "capabilities": [
+                    "read_tickets",
+                    "read_customers",
+                    "write_notes"
+                ],
+                "credentialReferencesLinked": true,
+                "linkedCredentialReferenceCount": 1,
+                "realNetwork": true,
+                "writebackEnabled": false,
+                "noRealNetworkCall": false,
+                "credentialResolver": {
+                    "tenantId": "dev-tenant",
+                    "credentialReferenceId": "cred-ref-dev-001",
+                    "resolver": "openbao",
+                    "resolverMode": "local-sandbox",
+                    "secretPath": ".../dev/zammad",
+                    "status": "resolved",
+                    "resolvedAt": "2026-05-03T10:14:52.113Z",
+                    "secretExposed": false,
+                    "persistedRawSecret": false,
+                    "safeLabel": "OpenBao sandbox resolver",
+                    "secretRefHash": "1c7fe957d954e4d6e08a726e53a06c934324b301d04b925d0e4dc16d6eb1c512"
+                },
+                "egressDecision": "allowed_local_zammad_sandbox_read"
+            }
+        },
+        "redactionLog": [],
+        "createdAt": "2026-05-03T10:14:52.379Z"
+    },
+    "session": {
+        "id": "6f455689-7cd3-4407-aa69-7929ed1b01d2",
+        "tenantId": "dev-tenant",
+        "status": "open",
+        "priority": "normal",
+        "title": "BL-136 Proof Repair Session",
+        "assignedUserId": "dev-admin",
+        "linkedTicketIds": [
+            "zammad-tr-2"
+        ],
+        "aiContextPacketIds": [
+            "22ed5f71-f050-4004-baed-8f5f3bb83f1a"
+        ],
+        "screenObservationIds": [],
+        "callEventIds": [],
+        "auditEventIds": [],
+        "startedAt": "2026-05-03T10:14:52.049Z",
+        "createdAt": "2026-05-03T10:14:52.049Z",
+        "updatedAt": "2026-05-03T10:14:52.383Z"
+    }
+}

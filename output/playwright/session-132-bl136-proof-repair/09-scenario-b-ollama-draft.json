@@ -1,0 +1,39 @@
+{
+    "draft": "[OLLAMA LOCAL DRAFT - no cloud AI - review required before any writeback]\n**Internal Note:**\n\nCustomer: Acme BVBA\nSubject: VPN connection issue for remote office - TICKET-101\nStatus: Open\nPriority: Normal\n\nTicket details are being managed through the Local Zammad Sandbox connector (`conn-inst-dev-001`). The current session (`BL-136 Proof Repair Session`) is assigned to `dev-admin`.\n\nReference ticket ID: `zammad-tr-2` (Internal ID: 68002).\n\n***\n\n*Context Notes: Source/Target Adapter: zammad-adapter-001. Tenant ID: dev-tenant.*",
+    "provider": "ollama",
+    "model": "gemma4:e4b",
+    "prompt": {
+        "id": "support-note-draft",
+        "version": "ollama-local-v1",
+        "purpose": "Draft a reviewable internal support note from redacted local SupportPlane context."
+    },
+    "contextHash": "de90e89580ab076c325f40f15c338713b714853ff8f41cd5e1088647f9f844d0",
+    "usage": {
+        "latencyMs": 17055,
+        "placeholder": false,
+        "providerMode": "local",
+        "runtime": "ollama",
+        "runtimeBaseUrlRedacted": "http://10.88.0.1/...",
+        "fallbackUsed": false,
+        "noCloudCall": true
+    },
+    "safety": {
+        "mockOnly": false,
+        "externalCallMade": false,
+        "cloudCallMade": false,
+        "localProviderCallMade": true,
+        "fallbackUsed": false,
+        "policyChecks": [
+            "ollama_local_provider",
+            "redaction_before_provider_call",
+            "review_required",
+            "writeback_disabled"
+        ],
+        "reviewRequired": true,
+        "writebackAllowed": false,
+        "autonomousSend": false,
+        "redactionApplied": true,
+        "runtime": "ollama"
+    },
+    "generatedAt": "2026-05-03T10:14:52.420Z"
+}

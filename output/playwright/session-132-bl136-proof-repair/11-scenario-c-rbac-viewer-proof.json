@@ -1,0 +1,6 @@
+=== VIEWER IDENTITY ===
+{"userRole": "viewer", "roles": ["viewer"], "authMode": "local"}
+
+=== RBAC DENIAL (viewer cannot create session) ===
+
+{"message":"Forbidden: support_session:create requires a higher role","error":"Forbidden","statusCode":403}

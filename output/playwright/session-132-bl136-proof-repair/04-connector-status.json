@@ -1,0 +1,123 @@
+{
+    "connectors": [
+        {
+            "id": "zammad",
+            "key": "zammad",
+            "displayName": "Zammad",
+            "name": "Zammad",
+            "adapterType": "zammad",
+            "mode": "configured",
+            "status": "configured",
+            "transport": "real",
+            "capabilities": [
+                "read_tickets",
+                "read_customers",
+                "write_notes"
+            ],
+            "credentialSource": "vault",
+            "health": "unknown",
+            "lastCheck": {
+                "status": "ok",
+                "timestamp": "2026-05-03T10:14:51.921Z"
+            },
+            "lastChecked": "2026-05-03T10:14:51.921Z",
+            "errorCode": "OK",
+            "tenantScoped": true
+        },
+        {
+            "id": "glpi",
+            "key": "glpi",
+            "displayName": "GLPI",
+            "name": "GLPI",
+            "adapterType": "glpi",
+            "mode": "fixture",
+            "status": "fixture",
+            "transport": "fixture",
+            "capabilities": [
+                "read_tickets",
+                "read_customers"
+            ],
+            "credentialSource": "none",
+            "health": "healthy",
+            "lastCheck": {
+                "status": "ok",
+                "timestamp": "2026-05-03T10:14:51.921Z"
+            },
+            "lastChecked": "2026-05-03T10:14:51.921Z",
+            "errorCode": "OK",
+            "fixtureWarning": "GLPI is fixture-backed until GLPI_BASE_URL and GLPI_API_TOKEN are configured; no real GLPI network call is made.",
+            "tenantScoped": true
+        },
+        {
+            "id": "osticket",
+            "key": "osticket",
+            "displayName": "osTicket",
+            "name": "osTicket",
+            "adapterType": "osticket",
+            "mode": "fixture",
+            "status": "fixture",
+            "transport": "fixture",
+            "capabilities": [
+                "read_tickets",
+                "read_customers"
+            ],
+            "credentialSource": "none",
+            "health": "healthy",
+            "lastCheck": {
+                "status": "ok",
+                "timestamp": "2026-05-03T10:14:51.921Z"
+            },
+            "lastChecked": "2026-05-03T10:14:51.921Z",
+            "errorCode": "OK",
+            "fixtureWarning": "osTicket is fixture-backed in this slice; no real osTicket network call is made.",
+            "tenantScoped": true
+        },
+        {
+            "id": "meshcentral",
+            "key": "meshcentral",
+            "displayName": "MeshCentral",
+            "name": "MeshCentral",
+            "adapterType": "meshcentral",
+            "mode": "unconfigured",
+            "status": "unconfigured",
+            "transport": "unconfigured",
+            "capabilities": [
+                "read_devices"
+            ],
+            "credentialSource": "none",
+            "health": "unknown",
+            "lastCheck": {
+                "status": "error",
+                "timestamp": "2026-05-03T10:14:51.921Z"
+            },
+            "lastChecked": "2026-05-03T10:14:51.921Z",
+            "errorCode": "CONFIG_MISSING",
+            "lastError": "No MeshCentral instance configured. Set MESHCENTRAL_BASE_URL and MESHCENTRAL_API_TOKEN to enable future real readiness work.",
+            "tenantScoped": true
+        },
+        {
+            "id": "fortinet",
+            "key": "fortinet",
+            "displayName": "Fortinet",
+            "name": "Fortinet",
+            "adapterType": "fortinet",
+            "mode": "unconfigured",
+            "status": "unconfigured",
+            "transport": "unconfigured",
+            "capabilities": [
+                "read_firewall_context"
+            ],
+            "credentialSource": "none",
+            "health": "unknown",
+            "lastCheck": {
+                "status": "error",
+                "timestamp": "2026-05-03T10:14:51.921Z"
+            },
+            "lastChecked": "2026-05-03T10:14:51.921Z",
+            "errorCode": "CONFIG_MISSING",
+            "lastError": "No Fortinet instance configured. Set FORTINET_BASE_URL and FORTINET_API_TOKEN to enable future real readiness work.",
+            "tenantScoped": true
+        }
+    ],
+    "_tenantId": "dev-tenant"
+}

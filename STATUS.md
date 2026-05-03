@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-03 11:40 CEST
+**Updated At:** 2026-05-03 12:25 CEST
 **Execution Mode:** operating
-**Project State:** session_131_bl136_e2e_acceptance
+**Project State:** session_132_bl136_proof_repair
 **Public URL:** not configured
 
 ## Snapshot
@@ -12,7 +12,7 @@
 - **BL-086/087/090 and BL-104 through BL-117, BL-121 accepted.** Production readiness and real sandbox acceptance freeze.
 - **BL-073/074 partial/hybrid-ready; BL-129 accepted; BL-130/131/132 partial Linux-tested.** Knowledge retrieval with lexical fallback. Windows endpoint foundation.
 - **BL-134 accepted.** Documentation governance infrastructure plus high-leverage drift fixes (9 docs). Per-doc deep content audit deferred to BL-135.
-- **BL-136 accepted.** Scenarios A (Zammad sandbox ticket read), B (Ollama AI draft), and C (Governance/Audit/RBAC) proven end-to-end from K8s cluster API with fresh browser/CLI evidence. Zammad connector mode=zammad,transport=real. Ollama gemma4:e4b real model call (fallbackUsed=false). Scenario D (Windows) remains unverified.
+- **BL-136 accepted (repaired Session 132).** Runtime HEAD 94c961 matches commit HEAD. Scenarios A (Zammad sandbox ticket read), B (Ollama AI draft with gemma4:e4b, fallbackUsed=false), and C (Governance/Audit/RBAC with viewer 403 denial) proven end-to-end. AI policy mockOnly semantics reconciled (policy guard vs runtime transparency). Scenario D (Windows) remains unverified.
 
 ## Active Blockers
 
@@ -23,5 +23,5 @@
 
 ## Notes
 
-- API HEAD: to be recorded after commit (Session 131 E2E acceptance).
-- Evidence: `output/playwright/session-131-bl136-e2e-acceptance-candidate/` (18 files).
+- API HEAD: `94c961874070178442f819067d58d3665fcf3da3` (matches final commit).
+- Evidence: `output/playwright/session-132-bl136-proof-repair/` (20 files).

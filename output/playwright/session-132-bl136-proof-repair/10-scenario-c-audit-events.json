@@ -1,0 +1,36 @@
+{
+    "events": [
+        {
+            "id": "f7692ede-c3eb-404f-8b41-1f6dde2e8682",
+            "tenantId": "dev-tenant",
+            "sessionId": "6f455689-7cd3-4407-aa69-7929ed1b01d2",
+            "eventType": "ai_draft_generated",
+            "actorType": "user",
+            "actorId": "dev-admin",
+            "action": "ai_draft_generated",
+            "resourceType": "support_session",
+            "resourceId": "6f455689-7cd3-4407-aa69-7929ed1b01d2",
+            "metadata": {
+                "model": "gemma4:e4b",
+                "mockOnly": false,
+                "promptId": "support-note-draft",
+                "provider": "ollama",
+                "latencyMs": 17055,
+                "contextHash": "de90e89580ab076c325f40f15c338713b714853ff8f41cd5e1088647f9f844d0",
+                "noCloudCall": true,
+                "fallbackUsed": false,
+                "providerMode": "local",
+                "cloudCallMade": false,
+                "promptVersion": "ollama-local-v1",
+                "autonomousSend": false,
+                "writebackAllowed": false,
+                "localProviderCallMade": true
+            },
+            "integrityHash": "h49687a1c",
+            "createdAt": "2026-05-03T10:15:09.511Z"
+        }
+    ],
+    "total": 1,
+    "limit": 10,
+    "offset": 0
+}

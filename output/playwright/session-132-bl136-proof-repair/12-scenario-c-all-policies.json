@@ -1,0 +1,55 @@
+{
+    "policies": [
+        {
+            "policyType": "delivery",
+            "id": "delivery-policy-dev-001",
+            "name": "Default Delivery Policy",
+            "enabled": true,
+            "killSwitch": false,
+            "version": 1,
+            "updatedAt": "2026-05-02T20:06:28.379Z",
+            "updatedBy": "dev-admin"
+        },
+        {
+            "policyType": "ai",
+            "id": "3b2ce3d0-74ec-4c2d-b702-315bd5a92dc4",
+            "name": "AI Policy",
+            "enabled": true,
+            "killSwitch": false,
+            "version": 3,
+            "updatedAt": "2026-05-02T20:16:20.941Z",
+            "updatedBy": "dev-admin"
+        },
+        {
+            "policyType": "retention",
+            "id": "0f0f437a-49be-4172-8969-a64ea198d6d8",
+            "name": "Retention Policy",
+            "enabled": true,
+            "version": 2,
+            "updatedAt": "2026-04-30T21:25:22.014Z",
+            "updatedBy": "dev-admin"
+        },
+        {
+            "policyType": "connector",
+            "id": "9f9dc526-2332-4cb2-b118-9f9341f4425f",
+            "name": "Connector Policy",
+            "enabled": true,
+            "killSwitch": false,
+            "version": 1,
+            "updatedAt": "2026-04-30T21:25:01.905Z",
+            "updatedBy": null,
+            "scopeCount": 1
+        },
+        {
+            "policyType": "connector",
+            "id": "7c90f920-5361-4710-a05a-d6628ef3a112",
+            "name": "Connector Policy",
+            "enabled": true,
+            "killSwitch": false,
+            "version": 1,
+            "updatedAt": "2026-04-30T21:26:48.619Z",
+            "updatedBy": null,
+            "scopeCount": 1
+        }
+    ]
+}
