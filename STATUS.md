@@ -1,9 +1,9 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-03 14:10 CEST
+**Updated At:** 2026-05-03 14:30 CEST
 **Execution Mode:** operating
-**Project State:** session_134_windows_runner_ci_reachability
-**Public URL:** https://ff-fedora.tail2dc90.ts.net (Tailscale Funnel, temporary)
+**Project State:** session_135_s134_closure_safety_repair
+**Public URL:** not configured (funnel shut down at closure)
 
 ## Snapshot
 
@@ -25,9 +25,9 @@
 ## Notes
 
 - API HEAD (cluster): `94c961874070178442f819067d58d3665fcf3da3`.
-- Session 134 commit: `c1d125227da85f05885631754b21d116860df8f8` (provisional, may be updated after doc commits).
+- Workflow-proven HEAD: `c1d125227da85f05885631754b21d116860df8f8` (Windows runner executed against this commit).
+- Final closure HEAD: `4072920dc88a5e211a6b81b3839e863214c9dd9d` (docs/state updates only, no code changes since c1d1252).
 - Evidence: `output/playwright/session-134-windows-runner-ci-reachability/` (9 files).
-- Public API: `https://ff-fedora.tail2dc90.ts.net` via Tailscale Funnel (temporary for CI verification).
+- Public API: NOT CURRENTLY EXPOSED. Tailscale Funnel shut down at closure (`tailscale funnel --https=443 off`). Re-establish temporarily if CI verification is needed again.
 - Windows workflow run: https://github.com/lennertvhoy/SupportPlane/actions/runs/25278634388 (SUCCESS).
 - Enrollment token: `local-endpoint-enrollment-token` (hardcoded default; dev/demo only).
-- Tailscale Funnel running: `tailscale funnel 4210` (API port-forward). Shut down with `tailscale funnel --https=443 off` if no longer needed.

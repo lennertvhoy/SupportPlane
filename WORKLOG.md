@@ -1950,8 +1950,10 @@ No real Windows host was available (Fedora Linux only). BL items remain partial/
 ## Session 134 — 2026-05-03 — Windows Runner CI Reachability (BL-130/131/133 ACCEPTED)
 
 **Date:** 2026-05-03 14:10 CEST
-**Git HEAD:** c1d125227da85f05885631754b21d116860df8f8
+**Workflow-proven HEAD:** `c1d125227da85f05885631754b21d116860df8f8` (Windows runner executed against this commit)
+**Final closure HEAD:** `4072920dc88a5e211a6b81b3839e863214c9dd9d` (docs/state updates only, no code changes since c1d1252)
 **Branch:** main
+**Tailscale Funnel:** shut down at closure (session 135 repair confirmed off)
 
 ### Scope
 

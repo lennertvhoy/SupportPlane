@@ -1,13 +1,14 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-03T14:10:00+02:00
+  updated_at: 2026-05-03T14:30:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
     Condensed during BL-102 because the previous state file was near the
     repository 900-line limit. Historical detail remains in WORKLOG.md,
     BACKLOG.md, docs/EVIDENCE_LOG.md, and docs/ACCEPTANCE_FREEZES.md.
+    Tailscale Funnel shut down at Session 135 closure repair.
 
 workflow:
   repo_mode: operating
@@ -57,7 +58,13 @@ current_state:
     final_head_after_bl_055_060_118: recorded_in_final_handoff
     head_before_bl_136: 24abf6a
     final_head_after_bl_136: 18881e4
-    head_before_bl_136_session_130: a982066e4dd20881453902aebcde75eaf072cb0f
+    head_before_session_134: 8f395a5d6da97cfa7214a6b25854bb4f1402beab
+    workflow_proven_head_session_134: c1d125227da85f05885631754b21d116860df8f8
+    final_closure_head_session_134: 4072920dc88a5e211a6b81b3839e863214c9dd9d
+    note_session_134: >
+      c1d1252 = Windows runner executed against this commit (workflow SUCCESS).
+      4072920 = docs/state updates only, no code changes since c1d1252.
+      Tailscale Funnel shut down at closure (session 135 repair).
     head_before_bl_136_session_130_note: >
       Session 130 state doc updates only; no new code commits. Worktree
       is dirty with 2 modified files (.opencode/opencode.json,
