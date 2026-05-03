@@ -20,6 +20,7 @@
 
 ## Recently Completed
 
+- [BL-138] `[accepted]` User Testing Operations & Feedback Loop (Session 145).
 - [BL-137] `[accepted]` User testing demo readiness (Session 144).
 - [BL-130] `[accepted]` Windows diagnostics collectors — real Windows runner proof (Session 134, repaired Session 135).
 - [BL-131] `[accepted]` Windows tool-manifest compatibility — proven on real Windows runner (Session 134).

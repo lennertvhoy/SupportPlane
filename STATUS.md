@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-03 17:30 CEST
+**Updated At:** 2026-05-03 18:15 CEST
 **Execution Mode:** operating
-**Project State:** session_144_bl137_user_testing_demo_readiness
+**Project State:** session_145_bl138_user_testing_operations
 **Public URL:** not configured
 
 ## Snapshot
@@ -26,6 +26,8 @@
 
 - API HEAD (cluster): `8015c94c996621ae3d5498ae88f2f41e2fcd2bcb`.
 - BL-137 accepted (Session 144): User testing demo readiness — one-command demo start, 10/10 smoke test pass, 5 browser screenshots, user testing docs created.
+- BL-138 accepted (Session 145): User testing operations — tester onboarding pack (7 docs), bug context capture script, feedback triage workflow, UI polish, 6 browser screenshots, 10 CLI artifacts, 10/10 smoke test.
+- Evidence BL-138: `output/playwright/session-145-user-testing-operations/` (18 files).
 - Evidence BL-137: `output/playwright/session-144-user-testing-demo-readiness/` (17 files).
 - Demo URL: `http://localhost:3300`, API: `http://localhost:4210`.
 - Token note: `local-endpoint-enrollment-token` is the source code default (visible in `apps/api/src/endpoint-devices/endpoint-devices.service.ts:37`). Not a production secret. Workflow now masks the token value via `::add-mask::` (Session 137 repair).

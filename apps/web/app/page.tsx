@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Activity, Cpu, AlertTriangle, Phone, MonitorCog, Wrench, ShieldAlert } from 'lucide-react';
+import { Activity, Cpu, AlertTriangle, Info, Phone, MonitorCog, Wrench, Settings, ShieldAlert } from 'lucide-react';
 import { SessionListPanel } from '@/components/SessionListPanel';
 import { TicketContextPanel } from '@/components/TicketContextPanel';
 import { AiContextPanel } from '@/components/AiContextPanel';
@@ -337,6 +337,10 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             <AlertTriangle size={10} />
             DEV / MOCK DATA
           </span>
+          <span className="inline-flex items-center gap-1 rounded border border-blue-700/40 bg-blue-900/30 px-2 py-0.5 text-[10px] font-medium text-blue-300">
+            <Info size={10} />
+            Sandbox Demo
+          </span>
           <span className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-400">
             <Cpu size={10} />
             API: localhost:4110
@@ -393,6 +397,13 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
           >
             <ShieldAlert size={10} />
             Approval Queue
+          </button>
+          <button
+            onClick={() => window.location.href = '/admin'}
+            className="inline-flex items-center gap-1 rounded border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent-light hover:bg-accent/20"
+          >
+            <Settings size={10} />
+            Admin
           </button>
         </div>
       </header>

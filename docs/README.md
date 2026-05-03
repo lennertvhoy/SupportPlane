@@ -58,6 +58,18 @@ Operational guides for local development, deployment, and maintenance.
 | `TESTER_FEEDBACK_TEMPLATE.md` | Tester feedback collection template |
 | `KNOWN_DEMO_LIMITATIONS.md` | Honest list of current demo limitations |
 
+## User Testing Docs
+
+| File | Purpose |
+|------|---------|
+| `user-testing/README.md` | Tester onboarding: what the demo is, login, flows, limitations |
+| `user-testing/TEST_SCRIPT.md` | 20-30 minute guided test script across 5 flows |
+| `user-testing/FEEDBACK_FORM.md` | Structured tester feedback form |
+| `user-testing/BUG_REPORT_TEMPLATE.md` | Bug report submission template |
+| `user-testing/TESTER_PERSONAS.md` | 5 tester personas with testing focus |
+| `user-testing/TRIAGE_WORKFLOW.md` | Feedback triage process, severity levels, tagging taxonomy |
+| `user-testing/FEEDBACK_LOG.md` | Feedback log tracking table |
+
 ## Security and Governance
 
 Security model, threat modeling, AI governance, and policy.

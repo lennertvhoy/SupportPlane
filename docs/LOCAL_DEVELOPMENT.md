@@ -2,7 +2,7 @@
 
 **Product:** SupportPlane  
 **Scope:** Local Podman/Docker-compatible development topology and local auth
-**Last updated:** 2026-05-02
+**Last updated:** 2026-05-03
 
 > **Note:** For the full sandbox cluster with real Zammad/Ollama/OpenBao integrations, see `docs/ENTERPRISE_DEMO_GUIDE.md`.
 
@@ -211,3 +211,13 @@ resistance, cross-tenant denial, and no secret leakage.
 - **Port conflicts:** If 5434, 4222, 8222, 9000, or 9001 are already in use, edit `infra/docker-compose/compose.yaml` and `.env` to use different ports, then update `DATABASE_URL` and `NATS_URL` accordingly.
 - **API or Web fail to start:** Ensure `npm install` was run at the repo root and that `npm run typecheck --workspaces --if-present` passes.
 - **Health script fails on PostgreSQL:** Install `postgresql` client tools or ensure `nc` is available for basic port checks.
+
+## User testing
+
+For the full K8s sandbox demo (real Zammad/GLPI connectors), see:
+- `docs/ENTERPRISE_DEMO_GUIDE.md` — Demo scenarios and quick start
+- `docs/user-testing/README.md` — Tester onboarding pack
+- `docs/user-testing/TEST_SCRIPT.md` — 20-30 min guided test script
+- `docs/KNOWN_DEMO_LIMITATIONS.md` — Honest limitations
+- `scripts/start_demo_mode.sh` — One-command demo start (K8s cluster required)
+- `scripts/capture_demo_bug_context.sh` — Bug context capture for reproduction

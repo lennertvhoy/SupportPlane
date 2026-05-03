@@ -2,6 +2,24 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-172: Session 145 — User Testing Operations & Feedback Loop (BL-138 ACCEPTED)
+
+- Evidence folder: `output/playwright/session-145-user-testing-operations/`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus CLI artifacts
+- Action: Completed BL-138 acceptance. Created tester onboarding pack (docs/user-testing/ with 7 docs), bug context capture script (scripts/capture_demo_bug_context.sh), feedback triage workflow (TRIAGE_WORKFLOW.md), minimal UI polish (Sandbox Demo badge, Admin quick-link), and evidence capture.
+- Proves:
+  - Tester onboarding pack: 7 docs covering onboarding, test script, feedback, bug reports, personas, triage workflow, feedback log
+  - bug context capture: 10/10 captures pass (API health, git HEAD, pod status, connector status, Zammad/GLPI context, pod logs with redaction, no-secret scan)
+  - Smoke test: 10/10 PASS, 0 FAIL (API health, Web, 5 connectors, Zammad/GLPI context, no-secret scan)
+  - UI polish: "Sandbox Demo" info badge and Admin quick-link added to header
+  - 6 browser screenshots: dashboard with Sandbox Demo badge, connector status, Zammad flow, GLPI flow, admin governance, admin connectors
+  - 10 CLI bug-context artifacts + 1 smoke test report + 1 evidence index = 18 files total, under 20-file cap
+  - No raw secrets in any evidence artifact
+  - Web image rebuilt and deployed to cluster
+  - All validation gates pass: lint, typecheck, 260 tests, state docs, docs hygiene, 4 bash scripts
+- Type: operations-and-browser-runtime-verification
+- as_of: 2026-05-03T18:15:00+02:00
+
 ## EV-2026-05-03-171: Session 144 — User Testing Demo Readiness (BL-137 ACCEPTED)
 
 - Evidence folder: `output/playwright/session-144-user-testing-demo-readiness/`

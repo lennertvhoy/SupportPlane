@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-03T16:00:00+02:00
+  updated_at: 2026-05-03T18:15:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -81,7 +81,10 @@ current_state:
     head_before_session_143: 8015c94c996621ae3d5498ae88f2f41e2fcd2bcb
     final_head_after_session_143: 6dac67fbf367b10a857f55050d45e17f530a4a45
     head_before_session_144: 6dac67fbf367b10a857f55050d45e17f530a4a45
-    worktree_status_at_state_update: clean
+    final_head_after_session_144: 8015c94c996621ae3d5498ae88f2f41e2fcd2bcb
+    head_before_session_145: cb99febbba35011fbadb4f3d16c5663a0378fede
+    final_head_after_session_145: recorded_in_final_handoff
+    worktree_status_at_state_update: dirty
 
   current_product_truth:
     lifecycle_stage: real_self_hosted_sandbox_acceptance_frozen
@@ -490,8 +493,8 @@ current_state:
 
   backlog:
     source: BACKLOG.md
-    highest_id: BL-137
-    accepted_current_slice: BL-137_session_144_user_testing_demo_readiness
+    highest_id: BL-138
+    accepted_current_slice: BL-138_session_145_user_testing_operations
     planned_real_e2e_items:
       - BL-119
       - BL-120

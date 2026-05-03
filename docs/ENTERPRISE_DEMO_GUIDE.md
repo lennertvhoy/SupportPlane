@@ -5,9 +5,9 @@ governed AI support cockpit across both standalone local and full sandbox
 cluster runtimes.
 
 **Current-truth scope:** This guide covers all features accepted through
-BL-136 (Session 132, 2026-05-03) and BL-069 (Session 142, 2026-05-03). Scenarios A (Zammad sandbox ticket read),
+BL-138 (Session 145, 2026-05-03). BL-137 (Session 144) added one-command demo start, smoke test, and user testing guide. BL-138 (Session 145) added tester onboarding pack, bug context capture, feedback triage workflow, and UI polish. Scenarios A (Zammad sandbox ticket read),
 B (Ollama AI draft), and C (Governance/Audit/RBAC with viewer 403 denial) are verified with fresh browser/computer-use evidence.
-GLPI connector is now accepted real sandbox (BL-069). Runtime HEAD matches commit HEAD (94c961). Scenario D (Windows endpoint) remains unverified.
+GLPI connector is now accepted real sandbox (BL-069). Runtime HEAD matches commit HEAD. Scenario D (Windows endpoint) remains unverified.
 All scenarios reference real code paths, never fabricated claims.
 
 **Non-claims:** This guide does not demonstrate production writeback,
@@ -15,7 +15,7 @@ production AI providers, production telephony, production secrets management,
 compliance certification, or real Windows endpoint execution. See
 [Non-Claims](#non-claims) below for the full list.
 
-**Last updated:** 2026-05-03 (Session 144, BL-137 accepted)
+**Last updated:** 2026-05-03 (Session 145, BL-138 accepted)
 
 ---
 
@@ -715,3 +715,19 @@ referenced in this guide:
 | `session-122-windows-endpoint-foundation/` | Windows platform contracts, UI badges, fixture parsers |
 | `session-123-real-connectors-golden-workflow/` | Connector status unification, knowledge retrieval, tool note drafts |
 | `session-111-112-113-sandbox-writeback-closure-canonical/` | Sandbox writeback: Zammad article, MinIO artifact, Mailpit notification |
+| `session-144-user-testing-demo-readiness/` | One-command demo start, smoke test, user testing guide, GLPI setup |
+| `session-145-user-testing-operations/` | Tester onboarding pack, bug context capture, feedback triage, UI polish |
+
+## User Testing
+
+For user testing the demo, see the tester onboarding pack at `docs/user-testing/README.md`.
+Key files:
+| File | Purpose |
+|------|---------|
+| `docs/user-testing/README.md` | Tester onboarding: what the demo is, login, flows, limitations |
+| `docs/user-testing/TEST_SCRIPT.md` | 20-30 minute guided test script across 5 flows |
+| `docs/user-testing/FEEDBACK_FORM.md` | Structured feedback collection form |
+| `docs/user-testing/BUG_REPORT_TEMPLATE.md` | Bug report submission template |
+| `docs/user-testing/TRIAGE_WORKFLOW.md` | Feedback triage severity levels, tagging taxonomy, process |
+| `docs/KNOWN_DEMO_LIMITATIONS.md` | Honest current limitations list |
+| `scripts/capture_demo_bug_context.sh` | Bug context capture for reproduction |

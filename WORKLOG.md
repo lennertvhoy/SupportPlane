@@ -2,6 +2,81 @@
 
 **Purpose:** Append-only history for completed work.
 
+## Session 145 — 2026-05-03 — BL-138 User Testing Operations & Feedback Loop (ACCEPTED)
+
+**Date:** 2026-05-03 18:15 CEST
+**Git HEAD:** recorded after commit
+**Branch:** main
+
+### What changed
+
+- **Tester onboarding pack** (`docs/user-testing/`): Created 7 docs:
+  - `README.md` — Tester-facing: what SupportPlane is, demo login, flows, known limitations
+  - `TEST_SCRIPT.md` — 20-30 min guided test: Flow A (cockpit orientation), Flow B (Zammad sandbox ticket #2), Flow C (GLPI sandbox ticket #1), Flow D (governance/audit/policy), Flow E (identify fake/confusing)
+  - `FEEDBACK_FORM.md` — Structured feedback: first impression, confusion points, trust assessment, 1-5 ratings
+  - `BUG_REPORT_TEMPLATE.md` — Bug template: steps to reproduce, severity, blocker status, component
+  - `TESTER_PERSONAS.md` — 5 personas: MSP owner, helpdesk operator, security reviewer, technical admin, skeptical buyer
+  - `TRIAGE_WORKFLOW.md` — Severity levels (P0-P4), 10 tagging labels, feedback-to-backlog process, testing round checklist, stop-testing rules
+  - `FEEDBACK_LOG.md` — Empty template with tracking table and round summary fields
+
+- **Bug context capture script** (`scripts/capture_demo_bug_context.sh`): Captures API health, git HEAD, pod status, connector status, Zammad/GLPI context, pod logs with secret redaction, and no-secret scan. 10/10 captures pass.
+
+- **Minimal UI polish** (`apps/web/app/page.tsx`): Added "Sandbox Demo" info badge (blue) and "Admin" quick-link button to main Support Cockpit header. Web image rebuilt and deployed.
+
+- **Docs index** (`docs/README.md`): Added User Testing Docs section with all 7 new docs.
+
+- **ENTERPRISE_DEMO_GUIDE.md** and **LOCAL_DEVELOPMENT.md**: Updated with user testing references.
+
+### Runtime Verification
+
+- K8s cluster running: all 28 pods Ready across 5 namespaces
+- API health: branch=main, head=8015c94c, storeMode=postgres, authMode=local
+- Web UI: HTTP 200 on localhost:3300
+- 10/10 smoke test pass (API health, Web HTTP, 5 connector checks, Zammad/GLPI context, no-secret scan)
+- Zammad context: "VPN connection issue for remote office - TICKET-101" (real sandbox read)
+- GLPI context: "VPN connection issue" (real sandbox read)
+- Connector status: Zammad configured/real, GLPI configured/real, osTicket fixture, MeshCentral/Fortinet unconfigured
+- No raw secrets in API responses, logs, or evidence
+
+### Browser Proof
+
+- 6 screenshots: dashboard with new Sandbox Demo badge, connector status panel, Zammad flow, GLPI flow, admin governance, admin connectors
+- 0 duplicates (MD5 verified)
+- All labels visible: Sandbox Demo, DEV/MOCK DATA, Zammad configured/real, GLPI configured/real, osTicket fixture, MeshCentral/Fortinet unconfigured
+
+### Verification
+
+- `npm run lint`: PASS (0 errors)
+- `npm run typecheck --workspaces --if-present`: PASS
+- `npm test --workspace=apps/api`: 210/210 pass, 3 skipped
+- `npm test --workspace=packages/connectors`: 50/50 pass
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- `bash -n scripts/start_demo_mode.sh`: OK
+- `bash -n scripts/verify_user_testing_demo.sh`: OK
+- `bash -n scripts/reset_demo_data.sh`: OK
+- `bash -n scripts/capture_demo_bug_context.sh`: OK
+- `bash scripts/verify_user_testing_demo.sh`: 10/10 PASS, 0 FAIL
+
+### Evidence
+
+- Session 145: `output/playwright/session-145-user-testing-operations/` (18 files, under 20 cap)
+- 6 browser screenshots + 10 bug-context CLI artifacts + 1 smoke test report + 1 evidence index = 18 files total
+
+### What remains mock/fixture/unconfigured
+
+- osTicket: fixture (blocked upstream)
+- MeshCentral: unconfigured
+- Fortinet: unconfigured
+- GLPI has no PVC — API settings and test ticket lost on pod restart
+- OpenBao inmem — credentials lost on restart
+
+### Next Recommended Action
+
+First user testing round: run `bash scripts/start_demo_mode.sh`, give testers `docs/user-testing/README.md` and `TEST_SCRIPT.md`, collect feedback via `FEEDBACK_FORM.md`, triage using `TRIAGE_WORKFLOW.md`.
+
+---
+
 ## Session 144 — 2026-05-03 — BL-137 User Testing Demo Readiness (ACCEPTED)
 
 **Date:** 2026-05-03 17:30 CEST
