@@ -50,12 +50,16 @@ jobs:
 
       - name: Preflight — verify inputs present (no secret echo)
         shell: pwsh
+        env:
+          WF_TENANT_ID: ${{ inputs.tenantId }}
+          WF_ENROLLMENT_TOKEN: ${{ inputs.enrollmentToken }}
+          WF_API_URL: ${{ inputs.apiUrl }}
         run: |
-          if (-not "${{ inputs.tenantId }}") { Write-Error "tenantId is required"; exit 1 }
-          if (-not "${{ inputs.enrollmentToken }}") { Write-Error "enrollmentToken is required"; exit 1 }
-          if (-not "${{ inputs.apiUrl }}") { Write-Error "apiUrl is required"; exit 1 }
-          Write-Host "::notice::All inputs present (token redacted by GitHub, never echoed)"
-          Write-Host "::notice::tenantId=${{ inputs.tenantId }} apiUrl=${{ inputs.apiUrl }}"
+          if (-not $env:WF_TENANT_ID) { Write-Error "tenantId is required"; exit 1 }
+          if (-not $env:WF_ENROLLMENT_TOKEN) { Write-Error "enrollmentToken is required"; exit 1 }
+          if (-not $env:WF_API_URL) { Write-Error "apiUrl is required"; exit 1 }
+          Write-Host "::notice::All inputs present (token is in env, never echoed)"
+          Write-Host "::notice::tenantId=$env:WF_TENANT_ID apiUrl=$env:WF_API_URL"
 
       - name: Install dependencies
         run: npm ci

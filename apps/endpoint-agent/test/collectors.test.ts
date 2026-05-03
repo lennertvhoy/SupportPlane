@@ -76,16 +76,28 @@ describe('platform-specific collectors', () => {
     assert.ok(Array.isArray(disk.volumes));
   });
 
-  it('win32 services collector reports unsupported on non-Windows hosts', async () => {
+  it('win32 services collector returns real data on Windows or unsupported on other platforms', async () => {
     const services = await win32.collectServices();
-    assert.strictEqual(services.unsupported, true);
-    assert.ok(services.note.includes('Windows'));
+    assert.strictEqual(services.readOnly, true);
+    if (process.platform === 'win32') {
+      assert.ok(Array.isArray(services.services), 'services should be an array on Windows');
+      assert.ok(!services.unsupported, 'services should not be unsupported on Windows');
+    } else {
+      assert.strictEqual(services.unsupported, true);
+      assert.ok(services.note.includes('Windows'));
+    }
   });
 
-  it('win32 software collector reports unsupported on non-Windows hosts', async () => {
+  it('win32 software collector returns real data on Windows or unsupported on other platforms', async () => {
     const software = await win32.collectSoftware();
-    assert.strictEqual(software.unsupported, true);
-    assert.ok(software.note.includes('Windows'));
+    assert.strictEqual(software.readOnly, true);
+    if (process.platform === 'win32') {
+      assert.ok(Array.isArray(software.software), 'software should be an array on Windows');
+      assert.ok(!software.unsupported, 'software should not be unsupported on Windows');
+    } else {
+      assert.strictEqual(software.unsupported, true);
+      assert.ok(software.note.includes('Windows'));
+    }
   });
 
   it('linux and darwin software collectors return honest unsupported responses', async () => {
