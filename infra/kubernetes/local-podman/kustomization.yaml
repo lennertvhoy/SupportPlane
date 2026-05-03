@@ -41,6 +41,12 @@ resources:
   - integrations/zammad/zammad-secret.yaml
   - integrations/zammad/zammad-statefulset.yaml
   - integrations/zammad/zammad-service.yaml
+  # GLPI sandbox (Session 140)
+  - integrations/glpi/glpi-secret.yaml
+  - integrations/glpi/glpi-configmap.yaml
+  - integrations/glpi/glpi-statefulset.yaml
+  - integrations/glpi/glpi-service.yaml
+  - integrations/glpi/glpi-mariadb-service.yaml
   # Asterisk sandbox (Asterisk-only; FreePBX deferred)
   - integrations/asterisk/asterisk-configmap.yaml
   - integrations/asterisk/asterisk-secret.yaml

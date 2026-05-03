@@ -37,7 +37,7 @@
 | System | Status | Evidence |
 |--------|--------|----------|
 | Zammad connector | REAL_SANDBOX_NOW | Real Zammad sandbox ticket (#2, 68002, Acme BVBA) read proven via FetchZammadHttpClient with server-side OpenBao credential resolution. Connector status: mode=configured, transport=real, credentialSource=vault. Requires K8s cluster to verify. |
-| GLPI connector | SANDBOX_CODE_READY | Real HTTP client (FetchGlpiHttpClient) implemented in Session 138. GLPI REST API with session token management. Adapter wired. Connector status reports configured/real when env vars set. No GLPI sandbox container deployed. |
+| GLPI connector | SANDBOX_CODE_READY | Real HTTP client (FetchGlpiHttpClient) + GLPI sandbox K8s service deployed (Session 140). Basic auth + session token transport. API pod connects and reads tickets. Connector status reports configured/real when env vars set. |
 | osTicket connector | MOCK_NOT_IMPLEMENTED | OsTicketConnectorAdapter returns fixture data only; no real HTTP client. Status shows fixture/unconfigured. |
 | MeshCentral connector | MOCK_NOT_IMPLEMENTED | MockMeshCentralClient only; no real HTTP client. Status reports unconfigured unless mockMode set. |
 | Fortinet connector | MOCK_NOT_IMPLEMENTED | MockFortinetClient only; no real HTTP client. Status reports unconfigured unless mockMode set. |

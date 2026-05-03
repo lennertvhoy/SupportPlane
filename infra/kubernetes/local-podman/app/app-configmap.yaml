@@ -15,6 +15,9 @@ data:
   # Zammad sandbox connector configuration (BL-107)
   ZAMMAD_CONNECTOR_MODE: "zammad"
   ZAMMAD_BASE_URL: "http://zammad.supportplane-integrations.svc.cluster.local:3000"
+  # GLPI sandbox connector configuration (BL-069 / Session 140)
+  GLPI_BASE_URL: "http://glpi.supportplane-integrations.svc.cluster.local:80"
+  GLPI_API_TOKEN: "sp-api:supportplane"
   OPENBAO_RESOLVER_ENABLED: "true"
   OPENBAO_ADDR: "http://openbao.supportplane-integrations.svc.cluster.local:8200"
   SUPPORTPLANE_QUEUE_BACKEND: "nats-jetstream"

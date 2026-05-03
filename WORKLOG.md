@@ -1947,6 +1947,54 @@ No real Windows host was available (Fedora Linux only). BL items remain partial/
 - P1 [BL-133] Trigger GitHub Actions workflow on windows-latest with live API, or manual Windows host verification per runbook. Capture real Windows agent registration, heartbeat, diagnostics, and policy denial proof.
 
 
+## Session 140 — 2026-05-03 — GLPI Real Sandbox E2E Deployment
+
+**Date:** 2026-05-03 15:50 CEST
+**Git HEAD:** to be recorded after commit
+**Branch:** main
+**Tailscale Funnel:** OFF
+
+### Scope
+
+Deployed GLPI sandbox in K8s and proved real transport between SupportPlane API and GLPI.
+
+### Changes
+
+- **GLPI K8s manifests:** 5 YAML files (statefulset, service, mariadb-service, configmap, secret)
+- **FetchGlpiHttpClient:** Updated to use Basic auth for initSession (more reliable than user_token)
+- **app-configmap.yaml:** Added GLPI_BASE_URL and GLPI_API_TOKEN
+- **kustomization.yaml:** Added GLPI resources
+- **API image:** Rebuilt with GLPI code, loaded into Kind, pod restarted
+
+### GLPI Sandbox
+
+- GLPI + MariaDB in single pod (StatefulSet, 2/2 Ready)
+- REST API enabled via database config
+- API user: sp-api (Super-Admin), password: supportplane (sandbox dev)
+- Test ticket: ID 1, "VPN connection issue"
+- Internal DNS: glpi.supportplane-integrations.svc.cluster.local:80
+
+### Real Transport Proof
+
+- API pod successfully connects to GLPI via cluster DNS
+- initSession returns valid session_token (Basic auth)
+- Ticket ID 1 read: "VPN connection issue"
+- Code path: FetchGlpiHttpClient → GLPI REST API
+- All existing tests pass: 50/50 connectors, 210/210 API
+
+### BL-069 Status
+
+`partial/sandbox-runtime-ready` — Real transport proven. Full authenticated session proof through SupportPlane UI pending.
+
+### Evidence
+
+`output/playwright/session-140-glpi-real-sandbox-e2e/` (9 files)
+
+### Next Recommended Action
+
+Full authenticated end-to-end proof through SupportPlane session (requires session auth to access connector-status and session context endpoints).
+
+
 ## Session 138 — 2026-05-03 — GLPI Real Connector Enablement
 
 **Date:** 2026-05-03 15:30 CEST

@@ -46,7 +46,8 @@ export class MockGlpiHttpClient implements GlpiHttpClient {
  * GLPI REST API conventions:
  * - Base URL is the GLPI root (e.g. https://glpi.example.com).
  * - API routes are under /apirest.php/.
- * - Authentication uses `Authorization: user_token {apiToken}` header.
+ * - Authentication: initSession with Basic auth (username:password) to get session_token.
+ *   Credential format: apiToken = "username:password".
  * - Session token: Initiated via GET /apirest.php/initSession, returned as `session_token`.
  * - Ticket read: GET /apirest.php/Ticket/{id} with Session-Token header.
  * - Ticket search: GET /apirest.php/search/Ticket with query parameters.
@@ -59,14 +60,17 @@ export class MockGlpiHttpClient implements GlpiHttpClient {
  */
 export class FetchGlpiHttpClient implements GlpiHttpClient {
   private readonly baseUrl: string;
-  private readonly apiToken: string;
+  private readonly username: string;
+  private readonly password: string;
   private readonly timeoutMs: number;
   private sessionToken?: string;
   private sessionInitPromise?: Promise<void>;
 
   constructor(options: { baseUrl: string; apiToken: string; timeoutMs?: number }) {
     this.baseUrl = options.baseUrl.replace(/\/$/, '');
-    this.apiToken = options.apiToken;
+    const parts = options.apiToken.split(':');
+    this.username = parts[0] ?? '';
+    this.password = parts.slice(1).join(':') ?? '';
     this.timeoutMs = options.timeoutMs ?? 10000;
   }
 
@@ -76,11 +80,12 @@ export class FetchGlpiHttpClient implements GlpiHttpClient {
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
     try {
+      const basicAuth = Buffer.from(`${this.username}:${this.password}`).toString('base64');
       const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `user_token ${this.apiToken}`,
+          Authorization: `Basic ${basicAuth}`,
         },
         signal: controller.signal,
       });
