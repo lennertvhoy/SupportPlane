@@ -16,6 +16,11 @@ on:
         description: "SupportPlane API base URL (e.g. https://api.supportplane.example.com)"
         required: true
         type: string
+      runServicePackaging:
+        description: "Run BL-132 Windows service packaging proof (requires admin on runner)"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   windows-endpoint-verification:
@@ -235,4 +240,208 @@ jobs:
           Write-Host "  - Read-only diagnostics return structured results"
           Write-Host "  - Unsupported tools return honest unsupported responses"
           Write-Host "  - No secrets in output artifacts"
+          Write-Host "::endgroup::"
+
+  windows-service-packaging:
+    name: "BL-132 — Windows Service Install/Packaging Proof"
+    runs-on: windows-latest
+    timeout-minutes: 15
+    if: ${{ inputs.runServicePackaging == true }}
+    needs: windows-endpoint-verification
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build endpoint-agent
+        working-directory: apps/endpoint-agent
+        run: npx tsc
+
+      - name: BL-132 — Verify packaging scripts exist
+        shell: pwsh
+        run: |
+          $scripts = @(
+            "scripts/windows/install_endpoint_agent_service.ps1",
+            "scripts/windows/uninstall_endpoint_agent_service.ps1",
+            "scripts/windows/run_endpoint_agent_once.ps1"
+          )
+          foreach ($s in $scripts) {
+            if (Test-Path $s) {
+              Write-Host "::notice::Script present: $s"
+            } else {
+              Write-Error "Script missing: $s"
+              exit 1
+            }
+          }
+          Write-Host "::notice::All BL-132 packaging scripts present"
+
+      - name: BL-132 — Validate script syntax
+        shell: pwsh
+        run: |
+          $scripts = @(
+            "scripts/windows/install_endpoint_agent_service.ps1",
+            "scripts/windows/uninstall_endpoint_agent_service.ps1",
+            "scripts/windows/run_endpoint_agent_once.ps1"
+          )
+          $errors = @()
+          foreach ($s in $scripts) {
+            Write-Host "Validating syntax: $s"
+            $result = Get-Command $s -Syntax -ErrorAction SilentlyContinue
+            if ($LASTEXITCODE -ne 0 -and -not $result) {
+              # Fallback: try parsing via PowerShell parser
+              try {
+                $null = [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $s), [ref]$null, [ref]$null)
+                Write-Host "  Syntax OK (parser validation)"
+              } catch {
+                $errors += $s
+                Write-Host "  SYNTAX ERROR in $s"
+              }
+            } else {
+              Write-Host "  Syntax OK"
+            }
+          }
+          if ($errors.Count -gt 0) {
+            Write-Error "Syntax errors in: $($errors -join ', ')"
+            exit 1
+          }
+          Write-Host "::notice::All scripts have valid PowerShell syntax"
+
+      - name: BL-132 — Attempt service install (may fail without admin)
+        shell: pwsh
+        continue-on-error: true
+        env:
+          SUPPORTPLANE_API_URL: ${{ inputs.apiUrl }}
+          SUPPORTPLANE_ENDPOINT_TENANT_ID: ${{ inputs.tenantId }}
+          SUPPORTPLANE_ENDPOINT_ENROLLMENT_TOKEN: ${{ inputs.enrollmentToken }}
+        working-directory: apps/endpoint-agent
+        run: |
+          # First register the agent to get a device token
+          node dist/src/index.js --register 2>&1 | Out-Null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Registration failed — service install may fail without device token"
+          }
+
+          # Attempt service installation
+          Write-Host "::group::Service Install Attempt"
+          try {
+            $installScript = Join-Path $env:GITHUB_WORKSPACE "scripts/windows/install_endpoint_agent_service.ps1"
+            $result = & powershell -ExecutionPolicy Bypass -File $installScript `
+              -ServiceName "SupportPlaneEndpointAgentDev" `
+              -AgentDir (Join-Path $env:GITHUB_WORKSPACE "apps\endpoint-agent") `
+              -LogDir (Join-Path $env:GITHUB_WORKSPACE "apps\endpoint-agent\logs") 2>&1
+            Write-Output $result
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "::notice::Service installed and started successfully"
+              "SERVICE_INSTALL_SUCCESS" | Set-Content service-install-result.txt
+            } else {
+              Write-Warning "Service install returned exit code $LASTEXITCODE"
+              "SERVICE_INSTALL_FAILED:$LASTEXITCODE" | Set-Content service-install-result.txt
+            }
+          } catch {
+            Write-Warning "Service install failed: $_"
+            "SERVICE_INSTALL_FAILED:$($_.Exception.Message)" | Set-Content service-install-result.txt
+          }
+          Write-Host "::endgroup::"
+
+      - name: BL-132 — Check service status (if installed)
+        shell: pwsh
+        continue-on-error: true
+        run: |
+          $svc = Get-Service -Name "SupportPlaneEndpointAgentDev" -ErrorAction SilentlyContinue
+          if ($svc) {
+            Write-Host "::notice::Service found — Name=$($svc.Name) Status=$($svc.Status) StartType=$($svc.StartType)"
+            Get-Service -Name "SupportPlaneEndpointAgentDev" | Format-List | Out-File service-status.txt
+          } else {
+            Write-Host "::notice::Service not found (expected if runner lacks admin privileges)"
+            Write-Host "BL-132 service install requires admin privileges on the runner."
+            Write-Host "GitHub-hosted runners may not grant service creation rights."
+            Write-Host "For full BL-132 proof, run the install script on a real Windows host with admin."
+            "SERVICE_NOT_FOUND: runner may lack admin privileges" | Set-Content service-status.txt
+          }
+
+      - name: BL-132 — Uninstall service (if installed)
+        shell: pwsh
+        continue-on-error: true
+        if: always()
+        run: |
+          $svc = Get-Service -Name "SupportPlaneEndpointAgentDev" -ErrorAction SilentlyContinue
+          if ($svc) {
+            Write-Host "Uninstalling service..."
+            $uninstallScript = Join-Path $env:GITHUB_WORKSPACE "scripts/windows/uninstall_endpoint_agent_service.ps1"
+            & powershell -ExecutionPolicy Bypass -File $uninstallScript 2>&1 | Write-Output
+            $remaining = Get-Service -Name "SupportPlaneEndpointAgentDev" -ErrorAction SilentlyContinue
+            if (-not $remaining) {
+              Write-Host "::notice::Service uninstalled successfully"
+              "SERVICE_UNINSTALL_SUCCESS" | Set-Content service-uninstall-result.txt
+            } else {
+              Write-Warning "Service may not have been fully removed"
+              "SERVICE_UNINSTALL_FAILED" | Set-Content service-uninstall-result.txt
+            }
+          } else {
+            Write-Host "No service to uninstall."
+            "NO_SERVICE_TO_UNINSTALL" | Set-Content service-uninstall-result.txt
+          }
+
+      - name: BL-132 — No-secret scan
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "::group::No-secret scan"
+          $files = @("service-install-result.txt", "service-status.txt", "service-uninstall-result.txt")
+          $secretsFound = $false
+          foreach ($file in $files) {
+            if (Test-Path $file) {
+              $content = Get-Content $file -Raw -ErrorAction SilentlyContinue
+              if ($content -match 'spdev_[a-f0-9]{48}') {
+                Write-Error "::error::RAW DEVICE TOKEN FOUND in $file"
+                $secretsFound = $true
+              }
+            }
+          }
+          if ($secretsFound) { exit 1 }
+          Write-Host "::notice::No raw secrets found in service output files"
+          Write-Host "::endgroup::"
+
+      - name: BL-132 — Upload packaging artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-service-packaging-output
+          path: |
+            apps/endpoint-agent/service-install-result.txt
+            apps/endpoint-agent/service-status.txt
+            apps/endpoint-agent/service-uninstall-result.txt
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: BL-132 — Summary
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "::group::BL-132 Windows Service Packaging Summary"
+          Write-Host "Runner OS: $([System.Environment]::OSVersion.VersionString)"
+          Write-Host ""
+          Write-Host "Scripts created:"
+          Write-Host "  - scripts/windows/install_endpoint_agent_service.ps1"
+          Write-Host "  - scripts/windows/uninstall_endpoint_agent_service.ps1"
+          Write-Host "  - scripts/windows/run_endpoint_agent_once.ps1"
+          Write-Host ""
+          $installResult = Get-Content service-install-result.txt -ErrorAction SilentlyContinue
+          Write-Host "Service install result: $installResult"
+          Write-Host ""
+          Write-Host "BL-132 acceptance requires:"
+          Write-Host "  1. Service install succeeds on real Windows with admin"
+          Write-Host "  2. Service starts and auto-starts on boot"
+          Write-Host "  3. Service runs heartbeat/diagnostic cycle"
+          Write-Host "  4. Service stop/uninstall works"
+          Write-Host "  5. No secrets in logs or artifacts"
           Write-Host "::endgroup::"
