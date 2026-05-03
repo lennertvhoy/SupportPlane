@@ -2,6 +2,33 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-170: Session 142 — GLPI SupportPlane E2E Acceptance (BL-069 ACCEPTED)
+
+- Evidence folder: `output/playwright/session-142-glpi-supportplane-e2e-acceptance/`
+- Source/System: K8s cluster API (port-forward 4212), CLI artifacts
+- Action: Completed BL-069 acceptance. Proved authenticated SupportPlane connector status showing GLPI configured/real. Proved GLPI-backed SupportPlane session context (ticket #1 "VPN connection issue" loaded via POST /support-sessions/:id/glpi/ticket-context). Fixed runtime identity (API /health now returns git HEAD). Extended egress policy to allowlist GLPI. Redacted all tokens from evidence.
+- Proves:
+  - Authenticated connector-status: GLPI mode=configured, transport=real, errorCode=OK
+  - GLPI-backed session context: provenance=ticket, sourceAdapter=GLPI, networkReal=true, secretExposed=false
+  - Runtime identity: branch=main, head=<full hash>
+  - No raw tokens or secrets in evidence
+  - 12 evidence files, under 20-file cap
+- Type: integration-and-api-verification
+- as_of: 2026-05-03T16:00:00+02:00
+
+## EV-2026-05-03-169: Session 141 — Session 140 Closure Repair
+
+- Evidence folder: `output/playwright/session-141-session140-closure-repair/`
+- Source/System: CLI artifacts, git proof
+- Action: Repaired Session 140 closure hygiene. Resolved git evidence mismatch (dirty 7dd4add vs clean b80e12f). Documented raw GLPI token exposure in Session 140 evidence. Captured post-commit git truth, runtime identity, state docs validation.
+- Proves:
+  - Final HEAD b80e12f with clean worktree
+  - API runtime identity now shows branch=main, head=<full hash>
+  - GLPI evidence redaction standard documented for future sessions
+  - 6 evidence files
+- Type: closure-repair
+- as_of: 2026-05-03T16:00:00+02:00
+
 ## EV-2026-05-03-168: Session 138 — GLPI Real Connector Enablement (PARTIAL/SANDBOX-CODE-READY)
 
 - Evidence folder: `output/playwright/session-138-real-connector-enablement/`

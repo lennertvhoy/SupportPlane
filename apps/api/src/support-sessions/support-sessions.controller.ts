@@ -109,6 +109,16 @@ export class SupportSessionsController {
     return this.service.loadTicketContext(identity, id, body.externalTicketId);
   }
 
+  @Post(':id/glpi/ticket-context')
+  async loadGlpiTicketContext(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { externalTicketId: string }
+  ) {
+    const identity = getCurrentIdentity(req);
+    return this.service.loadGlpiTicketContext(identity, id, body.externalTicketId);
+  }
+
   @Post(':id/zammad/internal-note-draft')
   createInternalNoteDraft(
     @Req() req: Request,

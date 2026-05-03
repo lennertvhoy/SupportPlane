@@ -107,13 +107,10 @@ export class GlpiConnectorAdapter implements TicketingAdapterClient {
       tenantId,
       adapterId: this.adapterId,
       externalTicketId,
-      subject: typeof data.subject === 'string' ? data.subject : `GLPI Ticket ${externalTicketId}`,
+      subject: typeof data.subject === 'string' ? data.subject : typeof data.name === 'string' ? data.name : `GLPI Ticket ${externalTicketId}`,
       status: normalizeGlpiState(
-        typeof data.status === 'string'
-          ? data.status
-          : typeof data.state === 'string'
-            ? data.state
-            : 'unknown'
+        data.status != null ? String(data.status) :
+        typeof data.state === 'string' ? data.state : 'unknown'
       ),
       priority: normalizeGlpiPriority(data.priority as string | number | Record<string, unknown>),
       customerEmail,

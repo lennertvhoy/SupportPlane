@@ -77,6 +77,7 @@ Connector-specific documentation for external system integrations.
 
 | File | Purpose |
 |------|---------|
+| `GLPI_CONNECTOR.md` | GLPI connector read path, sandbox deployment, and safety gates |
 | `ZAMMAD_CONNECTOR.md` | Zammad connector read/write path and sandbox labels |
 | `TELEPHONY_ADAPTERS.md` | Telephony adapter contracts and bridge boundary |
 | `CALL_CONSOLE.md` | Call Console UI and telephony integration |

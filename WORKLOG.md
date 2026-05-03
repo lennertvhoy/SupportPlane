@@ -2264,3 +2264,71 @@ Session 133 handoff claimed closure-grade but uploaded evidence contained closur
 
 - P1 [BL-133] Deploy SupportPlane API to a publicly reachable endpoint, provision enrollment token, then trigger the GitHub Actions workflow, OR execute the manual Windows verification runbook on a real Windows host.
 
+
+## Session 141/142 — 2026-05-03 — GLPI Closure Repair + BL-069 Acceptance
+
+**Date:** 2026-05-03 16:00 CEST
+**Git HEAD:** to be recorded after commit
+**Branch:** main
+
+### Part 0 — Session 140 Closure Repair
+
+Repaired closure hygiene:
+1. Session 140 git evidence showed dirty worktree at HEAD 7dd4add; true final HEAD is b80e12f
+2. Session 140 lacked authenticated connector-status proof (401); Session 142 provides it
+3. Session 140 API /health returned branch=null, head=null; fixed by rebuilding with GIT_HEAD build arg
+4. Session 140 evidence included raw GLPI sandbox session token and API credentials; Session 142 redacts all tokens
+
+Evidence: output/playwright/session-141-session140-closure-repair/ (6 files)
+
+### Part 1 — BL-069 Acceptance
+
+Proved GLPI real sandbox transport end-to-end through SupportPlane:
+
+1. **Runtime identity fixed:** API image rebuilt with `--build-arg GIT_HEAD=b80e12f... --build-arg GIT_BRANCH=main`. `/health` now returns branch=main, head=b80e12f...
+
+2. **Egress policy extended:** Added `glpi.supportplane-integrations.svc.cluster.local` to sandbox allowlist and `'glpi'` to sandboxAllowlisted connector types in packages/policy/src/index.ts
+
+3. **GLPI ticket-context endpoint created:** Added `POST /support-sessions/:id/glpi/ticket-context` to controller and `loadGlpiTicketContext` to service. Uses resolveAdapterRuntime with adapterType='glpi'. Creates session context packet with provenance=ticket, sourceAdapter=GLPI.
+
+4. **GLPI adapter fixes:** Fixed `subject` to check `data.name` (GLPI uses `name` not `subject`). Fixed `status` normalization to handle numeric values from GLPI API.
+
+5. **GLPI TicketingAdapter seeded:** Inserted `glpi-adapter-001` into database to satisfy FK constraint.
+
+6. **Authenticated connector-status:** GLPI shows mode=configured, transport=real, errorCode=OK. Zammad stays real. osTicket/MeshCentral/Fortinet honest fixture/unconfigured.
+
+7. **GLPI-backed session context proven:** SupportPlane session loads GLPI ticket #1 - subject="VPN connection issue", status="new", priority="high". Context packet: provenance=ticket, sourceAdapterId=glpi-adapter-001, sourceAdapter=GLPI, tenant=dev-tenant.
+
+8. **No secret exposure:** All evidence redacted. No raw session tokens or API credentials.
+
+9. **No uncontrolled writeback:** GLPI read-only adapter; writebackEnabled=false.
+
+### Verification
+
+- `npm run lint`: PASS (0 errors)
+- `npm run typecheck --workspaces --if-present`: PASS
+- `npm test --workspace=packages/connectors`: PASS (50/50)
+- `npm test --workspace=apps/api`: PASS (210/210, 3 skipped)
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- `kubectl get pods -A`: All Running (including GLPI 2/2)
+- API /health: branch=main, head=b80e12f..., storeMode=postgres, authMode=local
+- Authenticated connector-status: GLPI configured/real, Zammad configured/real
+- GLPI ticket context: subject="VPN connection issue", sourceAdapter=GLPI, networkReal=true, secretExposed=false
+
+### Evidence
+
+- Session 141: `output/playwright/session-141-session140-closure-repair/` (6 files)
+- Session 142: `output/playwright/session-142-glpi-supportplane-e2e-acceptance/` (12 files)
+
+### What remains mock/fixture/unconfigured
+
+- MeshCentral: unconfigured (no real instance)
+- Fortinet: unconfigured (no real instance)  
+- osTicket: fixture (no real instance, blocked by upstream)
+- No browser/computer-use tool available; CLI/API evidence only
+
+### Next Recommended Action
+
+P1 [BL-071/BL-072/BL-127] Connect remaining real connector instances
+

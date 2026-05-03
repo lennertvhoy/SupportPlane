@@ -5,9 +5,9 @@ governed AI support cockpit across both standalone local and full sandbox
 cluster runtimes.
 
 **Current-truth scope:** This guide covers all features accepted through
-BL-136 (Session 132, 2026-05-03). Scenarios A (Zammad sandbox ticket read), B (Ollama AI draft),
-and C (Governance/Audit/RBAC with viewer 403 denial) are verified with fresh browser/computer-use evidence.
-Runtime HEAD matches commit HEAD (94c961). Scenario D (Windows endpoint) remains unverified.
+BL-136 (Session 132, 2026-05-03) and BL-069 (Session 142, 2026-05-03). Scenarios A (Zammad sandbox ticket read),
+B (Ollama AI draft), and C (Governance/Audit/RBAC with viewer 403 denial) are verified with fresh browser/computer-use evidence.
+GLPI connector is now accepted real sandbox (BL-069). Runtime HEAD matches commit HEAD (94c961). Scenario D (Windows endpoint) remains unverified.
 All scenarios reference real code paths, never fabricated claims.
 
 **Non-claims:** This guide does not demonstrate production writeback,
@@ -15,7 +15,7 @@ production AI providers, production telephony, production secrets management,
 compliance certification, or real Windows endpoint execution. See
 [Non-Claims](#non-claims) below for the full list.
 
-**Last updated:** 2026-05-03 (Session 132)
+**Last updated:** 2026-05-03 (Session 142)
 
 ---
 
@@ -159,7 +159,7 @@ kubectl port-forward -n supportplane-app svc/supportplane-web 3300:3200
 
 | Mock | Reason |
 |------|--------|
-| Non-Zammad connectors | GLPI, osTicket, MeshCentral, Fortinet remain fixture/unconfigured. Honest labels in connector status panel. |
+| Non-Zammad connectors | GLPI: **accepted (BL-069)** — real sandbox read proven (Session 142). osTicket, MeshCentral, Fortinet remain fixture/unconfigured. Honest labels in connector status panel. |
 | Cloud AI providers | Intentionally blocked with `configured: false`. |
 | Production writeback | Blocked by delivery policy. Only sandbox Zammad internal notes allowed. |
 | Production telephony | No PSTN, SIP trunk, recording, or transcription. |
@@ -213,9 +213,7 @@ OpenBao-resolved API token. The connector HTTP client (`FetchZammadHttpClient`)
 makes real network calls. The credential path is: API → OpenBao server-side →
 Zammad sandbox. No credential touches the browser.
 
-**What's mocked:** Non-Zammad connectors (GLPI, osTicket, MeshCentral, Fortinet) remain
-fixture/unconfigured. The operator sees honest labels for every connector in the
-Connector Status panel.
+**What's mocked:** Non-Zammad connectors (osTicket, MeshCentral, Fortinet) remain fixture/unconfigured. GLPI is accepted real sandbox (BL-069). The operator sees honest labels for every connector in the Connector Status panel.
 
 **Known limitations:** The sandbox has exactly 1 seeded ticket (ID 2) and 1
 seeded customer (ID 5). Creating new tickets in Zammad sandbox requires
@@ -301,7 +299,7 @@ fetch), NATS JetStream durable worker bridge (stream publish, consumer ack),
 MinIO evidence artifact persistence (real S3 PutObject with SHA-256 checksum),
 Mailpit SMTP notification capture (real SMTP delivery).
 
-**What's mocked:** Non-Zammad connectors.
+**What's mocked:** Non-Zammad connectors (osTicket, MeshCentral, Fortinet). GLPI is now accepted real sandbox (BL-069).
 
 **Known limitations:**
 - Output requires human review before any action. The system never autonomously sends.
@@ -343,7 +341,7 @@ in either Path A or Path B.
    - **Retention:** Prompt retention mode (None/Metadata_only/Full), output retention mode. Auto-purge: Locked OFF.
 4. Click **Connectors** in the sidebar. Show the Connector Status panel:
    - Zammad: `real sandbox` transport, `healthy` status, `read_tickets` + `read_customers` + `write_notes` capabilities
-   - GLPI: `fixture` transport, `mock` mode, `read_assets` capability, "Fixture data" warning
+   - GLPI: `configured` transport, `real` mode, `read_tickets` + `read_customers` capabilities, "Sandbox" label
    - osTicket: `fixture` transport, `read_tickets` + `read_customers` capabilities
    - MeshCentral: `unconfigured` transport, `Not connected` status
    - Fortinet: `unconfigured` transport, `Not connected` status

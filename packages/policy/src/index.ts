@@ -64,6 +64,7 @@ export interface EgressPolicyDecision {
 
 const DEFAULT_SANDBOX_HOSTS = [
   'zammad.supportplane-integrations.svc.cluster.local',
+  'glpi.supportplane-integrations.svc.cluster.local',
   'localhost',
   '127.0.0.1',
 ];
@@ -84,7 +85,7 @@ export function evaluateEgressPolicy(input: EgressPolicyInput): EgressPolicyDeci
   const parsed = parseUrl(url);
   const host = parsed?.hostname ?? '';
   const sandboxAllowlisted =
-    input.connectorType === 'zammad' &&
+    (input.connectorType === 'zammad' || input.connectorType === 'glpi') &&
     parsed !== undefined &&
     ['http:', 'https:'].includes(parsed.protocol) &&
     allowedSandboxHosts.includes(host);

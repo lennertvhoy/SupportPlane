@@ -11,11 +11,11 @@
   - Next action: add a reproducible pgvector-enabled PostgreSQL path with vector column/search, or extend ingestion while preserving the current explicit lexical fallback reason.
   - Exit criteria: `POST /knowledge/retrieve` returns semantic/hybrid results with `pgvectorEnabled: true` from a proven pgvector database, or remains explicitly lexical with a current unavailable reason.
 
-- [BL-069/BL-071/BL-072/BL-127] **Connector real-instance enablement**
+- [BL-071/BL-072/BL-127] **Connector real-instance enablement**
   - Owner: future connector slice
-  - Progress: GLPI real HTTP client implemented (Session 138) — FetchGlpiHttpClient with GLPI REST API, adapter wired, connector status reports configured. No GLPI sandbox deployed.
-  - Next action: deploy GLPI sandbox container in K8s, or create manifests and seed data for local GLPI instance. Then prove real ticket/customer read through SupportPlane API.
-  - Exit criteria: at least one non-Zammad connector reads live data from a real sandbox instance with no secrets exposed and with honest transport/status labels.
+  - Progress: BL-069 (GLPI) accepted in Session 142. Remaining: MeshCentral (BL-071), Fortinet (BL-072), osTicket (BL-127).
+  - Next action: connect real MeshCentral, Fortinet, or osTicket instance; prove real data read through SupportPlane API.
+  - Exit criteria: all non-Zammad connectors with real instances proven end-to-end.
 
 - [BL-065] **Broader low-risk remediation coverage**
   - Owner: future remediation hardening slice

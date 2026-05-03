@@ -2,7 +2,7 @@
 
 **Purpose:** Comprehensive inventory of current system status: real vs mock vs sandbox vs partial. Updated every session with this slice.
 **Last updated:** 2026-05-03
-**Session:** 134 — Windows Runner CI Reachability
+**Session:** 142 — GLPI SupportPlane E2E Acceptance
 
 ## Legend
 
@@ -37,7 +37,7 @@
 | System | Status | Evidence |
 |--------|--------|----------|
 | Zammad connector | REAL_SANDBOX_NOW | Real Zammad sandbox ticket (#2, 68002, Acme BVBA) read proven via FetchZammadHttpClient with server-side OpenBao credential resolution. Connector status: mode=configured, transport=real, credentialSource=vault. Requires K8s cluster to verify. |
-| GLPI connector | SANDBOX_CODE_READY | Real HTTP client (FetchGlpiHttpClient) + GLPI sandbox K8s service deployed (Session 140). Basic auth + session token transport. API pod connects and reads tickets. Connector status reports configured/real when env vars set. |
+| GLPI connector | REAL_LOCAL_NOW | Real GLPI sandbox in K8s (StatefulSet, 2/2 Ready). Authenticated connector-status shows configured/real. GLPI-backed SupportPlane session context proven (ticket #1 "VPN connection issue"). Egress policy allowlisted. Evidence in session-142-glpi-supportplane-e2e-acceptance/. |
 | osTicket connector | MOCK_NOT_IMPLEMENTED | OsTicketConnectorAdapter returns fixture data only; no real HTTP client. Status shows fixture/unconfigured. |
 | MeshCentral connector | MOCK_NOT_IMPLEMENTED | MockMeshCentralClient only; no real HTTP client. Status reports unconfigured unless mockMode set. |
 | Fortinet connector | MOCK_NOT_IMPLEMENTED | MockFortinetClient only; no real HTTP client. Status reports unconfigured unless mockMode set. |
@@ -93,9 +93,9 @@
 
 | Category | Count | Systems |
 |----------|-------|---------|
-| REAL_LOCAL_NOW | 24 | PostgreSQL, API, Web, Worker/outbox, RBAC, Audit, Redaction, Policy, Connector status API, AI gateway, AI chat, Ticket summary, Draft gen, Model usage, Ollama calls, Admin dashboard, Audit explorer, GDPR panel, Evidence timeline, Policy editor, Model usage admin, Retention policy, Agent registration, Heartbeat, Device Console, Tool execution, K8s cluster, Windows endpoint |
+| REAL_LOCAL_NOW | 25 | PostgreSQL, API, Web, Worker/outbox, RBAC, Audit, Redaction, Policy, Connector status API, AI gateway, AI chat, Ticket summary, Draft gen, Model usage, Ollama calls, Admin dashboard, Audit explorer, GDPR panel, Evidence timeline, Policy editor, Model usage admin, Retention policy, Agent registration, Heartbeat, Device Console, Tool execution, K8s cluster, Windows endpoint, GLPI connector |
 | REAL_SANDBOX_NOW | 1 | Zammad connector |
-| SANDBOX_CODE_READY | 6 | NATS, OpenBao, MinIO, Mailpit, Keycloak, GLPI |
+| SANDBOX_CODE_READY | 5 | NATS, OpenBao, MinIO, Mailpit, Keycloak |
 | MOCK_BY_POLICY | 1 | Cloud AI providers (intentionally blocked; honest configured:false) |
 | MOCK_BY_GAP | 0 | — |
 | MOCK_NOT_IMPLEMENTED | 3 | osTicket, MeshCentral, Fortinet |
@@ -114,4 +114,4 @@
 
 5. **Safety mocks remain intentional:** Cloud AI providers blocked by policy. Production writeback, public replies, internet email blocked. These are safety features, not gaps.
 
-6. **Remaining gaps are honestly labeled:** osTicket/MeshCentral/Fortinet (no real HTTP clients), Evidence bundle PDF (font-dependent fallback), Windows service install (admin required). GLPI now has real HTTP client but no sandbox container deployed.
+6. **Remaining gaps are honestly labeled:** osTicket/MeshCentral/Fortinet (no real HTTP clients), Evidence bundle PDF (font-dependent fallback), Windows service install (admin required). GLPI now accepted (BL-069) — real sandbox with authenticated end-to-end session context proven.

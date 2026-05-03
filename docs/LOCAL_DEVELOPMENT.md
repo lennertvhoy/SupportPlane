@@ -163,6 +163,7 @@ podman compose -f infra/docker-compose/compose.yaml down -v
 - **AI provider:** Ollama local AI (gemma4:e4b) is available via BL-108/121 when running in cluster mode. The local MVP mode uses deterministic mock AI and model gating. Production cloud AI remains blocked.
 - **Ticketing integration:** Real Zammad sandbox read and sandbox writeback are accepted (BL-107, BL-111) when running in the local Kubernetes cluster. Local MVP mode uses `MockTicketingAdapter`.
 - **Zammad connector:** Real Zammad sandbox read and sandbox writeback are accepted (BL-107, BL-111) when running in the local Kubernetes cluster. Local MVP mode still uses `MockTicketingAdapter`. See `docs/ZAMMAD_CONNECTOR.md`, `docs/REAL_WRITEBACK_PATH_DESIGN.md`, and `docs/SELF_HOSTED_STACK.md`.
+- **GLPI connector:** Real GLPI sandbox read is accepted (BL-069, Session 142) when running in the local Kubernetes cluster. The connector reads real GLPI tickets via the REST API (Basic auth + session tokens). Read-only; writeback is not implemented. See `docs/GLPI_CONNECTOR.md`.
 - **Worker runtime:** The outbox worker processes background jobs via PostgreSQL-backed outbox with optional NATS JetStream bridge (BL-110 accepted).
 - **No production deployment claims:** This topology is for local development only.
 

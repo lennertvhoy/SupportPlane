@@ -467,6 +467,153 @@ export class SupportSessionsService {
     return { ticketReference: ticket, contextPacket: packet, session: updatedSession };
   }
 
+  async loadGlpiTicketContext(
+    identity: DevIdentity,
+    sessionId: string,
+    externalTicketId: string
+  ): Promise<{
+    ticketReference: unknown;
+    contextPacket: AIContextPacketShape;
+    session: SupportSessionShape;
+  }> {
+    requirePermission(identity, 'ticket_context:load');
+    const session = await this.getSession(identity, sessionId);
+    const glpiBaseUrl = process.env['GLPI_BASE_URL'];
+    const glpiApiToken = process.env['GLPI_API_TOKEN'];
+
+    if (!glpiBaseUrl || !glpiApiToken) {
+      throw new BadRequestException('GLPI is not configured. Set GLPI_BASE_URL and GLPI_API_TOKEN.');
+    }
+
+    const egressDecision = evaluateEgressPolicy({
+      tenantId: identity.tenantId,
+      connectorType: 'glpi',
+      operation: 'read',
+      url: glpiBaseUrl,
+    });
+
+    if (!egressDecision.allowed) {
+      throw new ForbiddenException({ message: egressDecision.reason, egressDecision });
+    }
+
+    const factory = getTicketingAdapterFactory('glpi');
+    if (!factory) {
+      throw new BadRequestException('GLPI adapter factory not registered.');
+    }
+
+    const adapterId = resolveCanonicalAdapterId('glpi') as TicketingAdapterId;
+
+    let adapter: TicketingAdapterClient;
+
+    try {
+      const runtimeResult = await resolveAdapterRuntime({
+        adapterType: 'glpi',
+        adapterId,
+        installation: {
+          id: 'glpi-dev-001',
+          enabled: true,
+          config: { baseUrl: glpiBaseUrl, apiToken: glpiApiToken, timeoutMs: 10000 },
+          capabilities: factory.capabilities,
+        },
+        credentials: { apiToken: glpiApiToken },
+        safety: {
+          egressPolicy: egressDecision,
+          writebackEnabled: false,
+          mockMode: false,
+          sandboxMode: true,
+        },
+      });
+      adapter = runtimeResult.adapter;
+    } catch (err) {
+      if (err instanceof AdapterRuntimeResolverError) {
+        throw new BadRequestException(`GLPI adapter runtime resolution failed: ${err.message}`);
+      }
+      throw err;
+    }
+
+    const ticket = await adapter.getTicket(
+      identity.tenantId as TenantId,
+      externalTicketId
+    );
+
+    const linkedSession: SupportSessionShape = {
+      ...session,
+      linkedTicketIds: Array.from(new Set([...session.linkedTicketIds, (ticket as { id: string }).id])),
+      callEventIds: session.callEventIds,
+      updatedAt: new Date().toISOString(),
+    };
+    await this.store.saveSession(linkedSession);
+    await this.store.saveTicketReference(linkedSession.id, ticket as TicketReferenceShape);
+
+    const packet: AIContextPacketShape = {
+      id: randomUUID() as AIContextPacketId,
+      tenantId: identity.tenantId as TenantId,
+      sessionId,
+      provenance: AIContextProvenance.enum.ticket,
+      sourceTicketIds: [(ticket as { id: string }).id],
+      sourceAdapterId: (adapter.getAdapterMetadata?.() as Record<string, unknown>)?.id as string ?? 'glpi-adapter-001',
+      payload: {
+        ticketSubject: (ticket as { subject: string }).subject,
+        ticketStatus: (ticket as { status: string }).status,
+        ticketPriority: (ticket as { priority: string }).priority,
+        customerEmail: (ticket as { customerEmail?: string }).customerEmail,
+        customerName: (ticket as { customerName?: string }).customerName,
+        connectorMode: 'glpi',
+        sourceAdapter: 'GLPI',
+        connectorInstallationProvenance: {
+          installationId: 'glpi-dev-001',
+          installationDisplayName: 'GLPI Sandbox',
+          adapterType: 'glpi',
+          capabilities: factory.capabilities,
+          credentialReferencesLinked: false,
+          linkedCredentialReferenceCount: 0,
+          realNetwork: true,
+          writebackEnabled: false,
+          noRealNetworkCall: false,
+          credentialResolver: {
+            resolver: 'env-local-sandbox',
+            resolverMode: 'sandbox',
+            status: 'resolved',
+            secretExposed: false,
+          },
+          egressDecision: egressDecision.decision,
+        },
+      },
+      redactionLog: [],
+      createdAt: new Date().toISOString(),
+    };
+    await this.store.saveContextPacket(packet);
+    const updatedSession: SupportSessionShape = {
+      ...linkedSession,
+      aiContextPacketIds: Array.from(
+        new Set([...linkedSession.aiContextPacketIds, packet.id])
+      ),
+      callEventIds: linkedSession.callEventIds,
+      updatedAt: new Date().toISOString(),
+    };
+    await this.store.saveSession(updatedSession);
+
+    const adapterMeta = adapter.getAdapterMetadata?.() as Record<string, unknown> ?? {};
+    await this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.ticket_linked,
+      'ticket_reference',
+      (ticket as { id: string }).id,
+      { externalTicketId, connectorMode: 'glpi', connectorType: (adapterMeta.adapterType as string) ?? 'glpi', connectorInstallationId: 'glpi-dev-001', provenance: 'glpi_sandbox' }
+    );
+    await this.appendAuditEvent(
+      identity,
+      sessionId,
+      AuditEventType.enum.ai_context_loaded,
+      'ai_context_packet',
+      packet.id,
+      { provenance: packet.provenance, connectorMode: 'glpi', connectorInstallationId: 'glpi-dev-001', sourceAdapter: 'GLPI' }
+    );
+
+    return { ticketReference: ticket, contextPacket: packet, session: updatedSession };
+  }
+
   private safeParseModelSelection(dtoModelSelection: unknown): import('@supportplane/ai').ModelSelection | undefined {
     if (!dtoModelSelection) return undefined;
     try {
