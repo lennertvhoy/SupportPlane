@@ -2,6 +2,25 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-171: Session 144 — User Testing Demo Readiness (BL-137 ACCEPTED)
+
+- Evidence folder: `output/playwright/session-144-user-testing-demo-readiness/`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus CLI artifacts
+- Action: Completed BL-137 acceptance. One-command demo start (start_demo_mode.sh). 10/10 smoke test pass. 5 browser screenshots. User testing docs created. GLPI sandbox setup script handles non-persistent state.
+- Proves:
+  - Demo stack starts with one command (start_demo_mode.sh)
+  - API health: status=ok, head=8015c94c, store=postgres
+  - Web HTTP 200 on localhost:3300
+  - 5 browser screenshots: dashboard, admin/connectors, Zammad context, GLPI context, admin governance
+  - 10/10 smoke test passes (API health, Web, 5 connector checks, Zammad context, GLPI context, no-secret scan)
+  - Zammad: configured/real, ticket #2 loads
+  - GLPI: configured/real, ticket #1 loads
+  - No raw secrets in evidence
+  - 17 evidence files, 0 duplicates, under 20-file cap
+  - User testing docs: USER_TESTING_GUIDE.md, TESTER_FEEDBACK_TEMPLATE.md, KNOWN_DEMO_LIMITATIONS.md
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-05-03T17:30:00+02:00
+
 ## EV-2026-05-03-170: Session 142 — GLPI SupportPlane E2E Acceptance (BL-069 ACCEPTED)
 
 - Evidence folder: `output/playwright/session-142-glpi-supportplane-e2e-acceptance/`

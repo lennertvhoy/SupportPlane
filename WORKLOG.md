@@ -2,7 +2,61 @@
 
 **Purpose:** Append-only history for completed work.
 
-Use this file for dated session notes, verification summaries, and references to evidence artifacts.
+## Session 144 — 2026-05-03 — BL-137 User Testing Demo Readiness (ACCEPTED)
+
+**Date:** 2026-05-03 17:30 CEST
+**Git HEAD:** to be recorded after commit
+**Branch:** main
+
+### What changed
+
+- **One-command demo start:** `scripts/start_demo_mode.sh` starts K8s cluster, verifies port-forwards (API:4210, Web:3300), seeds OpenBao Zammad credential, runs GLPI sandbox setup, verifies connector status, and prints demo URLs/credentials.
+- **GLPI sandbox setup:** `scripts/setup_glpi_sandbox.sh` handles non-persistent GLPI state — enables API, creates sp-api user, sets IP range, creates test ticket. Documented GLPI PVC limitation.
+- **Demo smoke test:** `scripts/verify_user_testing_demo.sh` — 10/10 checks pass (API health, Web HTTP 200, Zammad configured/real, GLPI configured/real, Zammad context, GLPI context, no-secret scan).
+- **User testing docs:** Created `docs/USER_TESTING_GUIDE.md` (15-min walkthrough for non-technical testers), `docs/TESTER_FEEDBACK_TEMPLATE.md` (structured feedback form), `docs/KNOWN_DEMO_LIMITATIONS.md` (honest limitation inventory).
+- **Docs index updated:** `docs/README.md` now includes all 3 new docs.
+- **Browser proof:** 5 screenshots captured via Playwright: dashboard, admin/connectors, Zammad context session, GLPI context session, admin governance panel. 0 duplicates (MD5 verified).
+- **ENTERPRISE_DEMO_GUIDE.md:** Updated to include Flow B (GLPI sandbox ticket), demo limitations, and BL-137 reference.
+
+### Runtime Verification
+
+- K8s cluster restarted: control plane + all sandbox pods Running
+- API/Web/Worker images rebuilt from HEAD 8015c94, loaded into Kind, deployments rolled out
+- API health: branch=main, head=8015c94c, storeMode=postgres, authMode=local
+- Web UI: HTTP 200 on localhost:3300
+- Zammad context: "VPN connection issue for remote office - TICKET-101" (real sandbox read via OpenBao credential)
+- GLPI context: "VPN connection issue" (real sandbox read via GLPI REST API initSession + Session-Token)
+- Connector status: Zammad configured/real, GLPI configured/real, osTicket fixture, MeshCentral/Fortinet unconfigured
+- No raw secrets in API responses, logs, or evidence
+
+### What remains mock/fixture/unconfigured
+
+- osTicket: fixture (blocked upstream)
+- MeshCentral: unconfigured
+- Fortinet: unconfigured
+- GLPI has no PVC — API settings and test ticket lost on pod restart (setup_glpi_sandbox.sh documented)
+- OpenBao inmem — credentials lost on restart (seed_openbao_zammad_secret.sh documented)
+
+### Verification
+
+- `npm run lint`: PASS (0 errors)
+- `npm run typecheck --workspaces --if-present`: PASS
+- `npm test --workspace=apps/api`: 210/210 pass, 3 skipped
+- `npm test --workspace=packages/connectors`: 50/50 pass
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- `bash scripts/verify_user_testing_demo.sh`: 10/10 PASS, 0 FAIL
+- MD5 dedup: 0 duplicates across 5 screenshots
+
+### Evidence
+
+- Session 144: `output/playwright/session-144-user-testing-demo-readiness/` (17 files)
+
+### Next Recommended Action
+
+P1 [BL-071] Deploy MeshCentral sandbox in K8s, implement FetchMeshCentralClient, prove authenticated connector-status and device context.
+
+---
 
 ## 2026-04-30 - BL-076: Policy Editor Foundation
 

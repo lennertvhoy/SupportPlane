@@ -1,38 +1,26 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-03 16:30 CEST
+**Updated At:** 2026-05-03 17:30 CEST
 
 ## Active Work
-
-- [BL-073/BL-074] **Knowledge retrieval hardening**
-  - Owner: future slice
-  - Next action: add a reproducible pgvector-enabled PostgreSQL path with vector column/search, or extend ingestion while preserving the current explicit lexical fallback reason.
-  - Exit criteria: `POST /knowledge/retrieve` returns semantic/hybrid results with `pgvectorEnabled: true` from a proven pgvector database, or remains explicitly lexical with a current unavailable reason.
 
 - [BL-071/BL-072] **Connector real-instance enablement**
   - Owner: future connector slice
   - Progress: BL-069 (GLPI) accepted in Session 142. BL-127 (osTicket) blocked — 3 hard blockers documented in docs/OSTICKET_TRIAGE.md. BL-071 (MeshCentral) selected as next real connector target.
-  - Next action: deploy MeshCentral sandbox in K8s, implement real FetchMeshCentralClient, prove authenticated connector-status and device context through SupportPlane API.
-  - Exit criteria: MeshCentral connector reads live device data from a real sandbox instance with no secrets exposed and with honest transport/status labels.
 
 - [BL-065] **Broader low-risk remediation coverage**
   - Owner: future remediation hardening slice
-  - Next action: add a second safe low-risk remediation or real Windows flush-DNS proof while keeping fixed templates, policy gating, approval gating, and captured results.
-  - Exit criteria: More than one low-risk remediation path is proven end-to-end, or Windows flush DNS is proven on a real Windows runner with browser/API evidence.
 
 - [BL-132] **Windows service/install packaging**
   - Owner: future Windows packaging slice
-  - Status: partial/service-scripts-ready. Service install/uninstall/run-once scripts created and syntactically validated on windows-latest. GitHub-hosted runner lacks admin privileges for sc.exe service creation. Credible packaging path exists — needs real Windows host with admin to complete.
-  - Next action: run scripts/windows/install_endpoint_agent_service.ps1 on a real Windows host with admin privileges to prove service install, start, auto-start, and uninstall.
-  - Exit criteria: service installs, starts, auto-starts on boot, runs heartbeat/diagnostic cycle, stops, uninstalls cleanly on real Windows host.
+  - Status: partial/service-scripts-ready.
 
 - [BL-135] **Per-doc content audit and full rewrite**
   - Owner: future slice
-  - Next action: perform line-by-line audit of every doc in docs/* against current BACKLOG.md truth; rewrite remaining stale/mock-era language to current sandbox truth; verify all cross-references; purge orphaned files. ~40 docs remain (historical reports excluded). Dependencies: BL-134 accepted.
-  - Exit criteria: all docs reference current truth, no stale language, no broken cross-references, all orphaned files purged.
 
 ## Recently Completed
 
+- [BL-137] `[accepted]` User testing demo readiness (Session 144).
 - [BL-130] `[accepted]` Windows diagnostics collectors — real Windows runner proof (Session 134, repaired Session 135).
 - [BL-131] `[accepted]` Windows tool-manifest compatibility — proven on real Windows runner (Session 134).
 - [BL-133] `[accepted]` Windows verification strategy — workflow passed on windows-latest (Session 134).

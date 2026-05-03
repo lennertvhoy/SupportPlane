@@ -54,6 +54,9 @@ Operational guides for local development, deployment, and maintenance.
 | `RUNBOOK_BACKUP_RESTORE.md` | PostgreSQL and object storage backup/restore |
 | `MVP_COMPLETION_AUDIT.md` | MVP completion audit record |
 | `OUTBOX_WORKER_OPERATIONS.md` | Background outbox worker retry and dead-letter operations |
+| `USER_TESTING_GUIDE.md` | User testing guide for non-technical testers |
+| `TESTER_FEEDBACK_TEMPLATE.md` | Tester feedback collection template |
+| `KNOWN_DEMO_LIMITATIONS.md` | Honest list of current demo limitations |
 
 ## Security and Governance
 

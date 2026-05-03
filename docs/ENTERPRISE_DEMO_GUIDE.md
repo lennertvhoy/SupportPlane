@@ -15,7 +15,27 @@ production AI providers, production telephony, production secrets management,
 compliance certification, or real Windows endpoint execution. See
 [Non-Claims](#non-claims) below for the full list.
 
-**Last updated:** 2026-05-03 (Session 142)
+**Last updated:** 2026-05-03 (Session 144, BL-137 accepted)
+
+---
+
+## Quick Demo Start (One Command)
+
+The fastest way to start the full demo stack:
+
+```bash
+bash scripts/start_demo_mode.sh
+```
+
+This verifies the K8s cluster, starts API (port 4210) and Web (port 3300)
+port-forwards, seeds OpenBao credentials, configures GLPI sandbox, and prints
+exact demo URLs. Then run:
+
+```bash
+bash scripts/verify_user_testing_demo.sh
+```
+
+To verify 10/10 demo readiness checks pass.
 
 ---
 
