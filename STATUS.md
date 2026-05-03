@@ -26,8 +26,8 @@
 
 - API HEAD (cluster): `94c961874070178442f819067d58d3665fcf3da3`.
 - Workflow-proven HEAD (BL-130/131/133): `c1d125227da85f05885631754b21d116860df8f8`.
-- BL-132 packaging HEAD: `475c5102193424262873cf08d0f4c02201c1c501`.
-- Final closure HEAD: to be recorded after commit.
-- Evidence: `output/playwright/session-134-windows-runner-ci-reachability/` (9 files, BL-130/131/133 proof), `output/playwright/session-135-session134-closure-safety-repair/` (6 files, repair), `output/playwright/session-136-windows-service-packaging-proof/` (in progress, BL-132 proof).
-- Tailscale Funnel: OFF. Shut down at closure (both sessions). Re-establish temporarily only if CI verification is needed again.
-- Windows workflow runs: https://github.com/lennertvhoy/SupportPlane/actions/runs/25278634388 (BL-130/131/133, SUCCESS), https://github.com/lennertvhoy/SupportPlane/actions/runs/25279858921 (BL-132 packaging, SUCCESS with documented admin limitation).
+- BL-132 packaging/workflow HEAD: `475c5102193424262873cf08d0f4c02201c1c501`.
+- Final docs/state HEAD: `2a03d1d395db3749d973f007f6b018f1a7ee914d`.
+- Evidence: `output/playwright/session-134-windows-runner-ci-reachability/` (9 files, BL-130/131/133 proof), `output/playwright/session-135-session134-closure-safety-repair/` (6 files, repair), `output/playwright/session-136-windows-service-packaging-proof/` (5 files, BL-132 proof).
+- Token note: `local-endpoint-enrollment-token` is the source code default (visible in `apps/api/src/endpoint-devices/endpoint-devices.service.ts:37`). Not a production secret. Workflow now masks the token value via `::add-mask::` (Session 137 repair).
+- Tailscale Funnel: OFF. Shut down at closure. Re-establish temporarily only if CI verification is needed again.

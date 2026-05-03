@@ -1950,7 +1950,8 @@ No real Windows host was available (Fedora Linux only). BL items remain partial/
 ## Session 135 — 2026-05-03 — Session 134 Closure Repair + BL-132 Windows Service Packaging
 
 **Date:** 2026-05-03 15:10 CEST
-**Git HEAD:** to be recorded after commit
+**Workflow-proven HEAD:** `475c5102193424262873cf08d0f4c02201c1c501` (BL-132 packaging code + workflow)
+**Final docs/state HEAD:** `2a03d1d395db3749d973f007f6b018f1a7ee914d` (state file updates only)
 **Branch:** main
 **Tailscale Funnel:** OFF (shut down at closure)
 

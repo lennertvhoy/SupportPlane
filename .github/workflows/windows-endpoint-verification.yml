@@ -9,7 +9,7 @@ on:
         type: string
         default: "dev-tenant"
       enrollmentToken:
-        description: "Enrollment token for the endpoint agent (set via GitHub secret, never echoed)"
+        description: "Enrollment token for the endpoint agent (masked in logs; use demo default for sandbox)"
         required: true
         type: string
       apiUrl:
@@ -46,6 +46,14 @@ jobs:
           Write-Host "::notice::Process platform: $(node -e "console.log(process.platform)")"
           node -e "if (process.platform !== 'win32') { console.error('FATAL: Not running on Windows'); process.exit(1); } else { console.log('OK: Running on Windows'); }"
 
+      - name: Preflight — mask enrollment token in logs
+        shell: pwsh
+        env:
+          WF_ENROLLMENT_TOKEN: ${{ inputs.enrollmentToken }}
+        run: |
+          Write-Host "::add-mask::$env:WF_ENROLLMENT_TOKEN"
+          Write-Host "::notice::Enrollment token masked — value will be redacted in subsequent log output"
+
       - name: Preflight — verify Node/npm versions
         shell: pwsh
         run: |
@@ -53,7 +61,7 @@ jobs:
           npm --version
           node -e "const v=process.version.slice(1).split('.'); if(parseInt(v[0])<22){console.error('Node.js 22+ required');process.exit(1)} else {console.log('OK: Node.js version >= 22')}"
 
-      - name: Preflight — verify inputs present (no secret echo)
+      - name: Preflight — verify inputs present (token masked in logs)
         shell: pwsh
         env:
           WF_TENANT_ID: ${{ inputs.tenantId }}
