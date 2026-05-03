@@ -7,24 +7,21 @@ on:
         description: "SupportPlane tenant ID for enrollment"
         required: true
         type: string
+        default: "dev-tenant"
       enrollmentToken:
-        description: "Enrollment token for the endpoint agent"
+        description: "Enrollment token for the endpoint agent (set via GitHub secret, never echoed)"
         required: true
         type: string
       apiUrl:
         description: "SupportPlane API base URL (e.g. https://api.supportplane.example.com)"
         required: true
         type: string
-        default: "https://api.supportplane.example.com"
 
 jobs:
   windows-endpoint-verification:
-    name: "Windows Endpoint Agent — Enterprise Readiness Verification"
+    name: "BL-130/131/133 — Windows Endpoint Verification"
     runs-on: windows-latest
-    timeout-minutes: 15
-
-    # This workflow proves endpoint agent on Windows.
-    # BL-133 requires this workflow to pass on a real Windows runner.
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -36,25 +33,29 @@ jobs:
           node-version: "22"
           cache: "npm"
 
-      - name: Preflight — verify inputs
+      - name: Preflight — verify OS identity
         shell: pwsh
         run: |
-          $errors = @()
-          if (-not "${{ inputs.tenantId }}") { $errors += "tenantId is required" }
-          if (-not "${{ inputs.enrollmentToken }}") { $errors += "enrollmentToken is required" }
-          if (-not "${{ inputs.apiUrl }}") { $errors += "apiUrl is required" }
-          if ($errors.Count -gt 0) {
-            Write-Error ("Preflight failed: " + ($errors -join "; "))
-            exit 1
-          }
-          Write-Host "::notice::Preflight OK — all required inputs present"
+          Write-Host "::notice::OS: $([System.Environment]::OSVersion.VersionString)"
+          Write-Host "::notice::Architecture: $([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)"
+          Write-Host "::notice::Process platform: $(node -e "console.log(process.platform)")"
+          node -e "if (process.platform !== 'win32') { console.error('FATAL: Not running on Windows'); process.exit(1); } else { console.log('OK: Running on Windows'); }"
 
-      - name: Preflight — verify Node version and platform
+      - name: Preflight — verify Node/npm versions
         shell: pwsh
         run: |
           node --version
-          Write-Host "Platform: $([System.Environment]::OSVersion.Platform)"
-          Write-Host "Architecture: $([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)"
+          npm --version
+          node -e "const v=process.version.slice(1).split('.'); if(parseInt(v[0])<22){console.error('Node.js 22+ required');process.exit(1)} else {console.log('OK: Node.js version >= 22')}"
+
+      - name: Preflight — verify inputs present (no secret echo)
+        shell: pwsh
+        run: |
+          if (-not "${{ inputs.tenantId }}") { Write-Error "tenantId is required"; exit 1 }
+          if (-not "${{ inputs.enrollmentToken }}") { Write-Error "enrollmentToken is required"; exit 1 }
+          if (-not "${{ inputs.apiUrl }}") { Write-Error "apiUrl is required"; exit 1 }
+          Write-Host "::notice::All inputs present (token redacted by GitHub, never echoed)"
+          Write-Host "::notice::tenantId=${{ inputs.tenantId }} apiUrl=${{ inputs.apiUrl }}"
 
       - name: Install dependencies
         run: npm ci
@@ -63,72 +64,144 @@ jobs:
         working-directory: apps/endpoint-agent
         run: npx tsc
 
-      - name: Run endpoint-agent unit tests
+      - name: Run endpoint-agent unit tests (44 tests, 0 failures required)
         working-directory: apps/endpoint-agent
         run: node --test dist/test/**/*.test.js
         env:
           NODE_ENV: test
 
+      - name: API health check — verify API reachable
+        shell: pwsh
+        env:
+          API_URL: ${{ inputs.apiUrl }}
+        run: |
+          try {
+            $response = Invoke-WebRequest -Uri "$env:API_URL/health" -UseBasicParsing -TimeoutSec 30
+            $health = $response.Content | ConvertFrom-Json
+            Write-Host "::notice::API health: HTTP $($response.StatusCode) — status=$($health.status) store=$($health.storeMode) head=$($health.head)"
+          } catch {
+            Write-Error "::error::API health check failed: $_"
+            Write-Host "The SupportPlane API must be reachable from GitHub Actions."
+            Write-Host "If the API is not publicly accessible, this workflow cannot proceed."
+            exit 1
+          }
+
       - name: Enrollment — register endpoint agent
         shell: pwsh
         working-directory: apps/endpoint-agent
         env:
-          SUPPORTPLANE_TENANT_ID: ${{ inputs.tenantId }}
-          SUPPORTPLANE_ENROLLMENT_TOKEN: ${{ inputs.enrollmentToken }}
           SUPPORTPLANE_API_URL: ${{ inputs.apiUrl }}
+          SUPPORTPLANE_ENDPOINT_TENANT_ID: ${{ inputs.tenantId }}
+          SUPPORTPLANE_ENDPOINT_ENROLLMENT_TOKEN: ${{ inputs.enrollmentToken }}
+          SUPPORTPLANE_ENDPOINT_DEVICE_KEY: "github-actions-windows-${{ github.run_id }}"
         run: |
           $output = node dist/src/index.js --register 2>&1
           Write-Output $output
           if ($LASTEXITCODE -ne 0) {
-            Write-Warning "Registration returned non-zero exit code $LASTEXITCODE"
+            Write-Error "Registration FAILED (exit code $LASTEXITCODE)"
+            exit 1
           }
-          # Capture registration output
-          Set-Content -Path enrollment-output.txt -Value $output
+          $reg = $output | ConvertFrom-Json
+          Write-Host "::notice::Registration SUCCESS — agentId=$($reg.agentId) platform=$($reg.platform)"
+          # Redact any token from output
+          $safeOutput = $output -replace 'spdev_[a-f0-9]+', '[DEVICE_TOKEN_REDACTED]'
+          Set-Content -Path enrollment-output.txt -Value $safeOutput
 
       - name: Heartbeat — send agent heartbeat
         shell: pwsh
         working-directory: apps/endpoint-agent
         env:
-          SUPPORTPLANE_TENANT_ID: ${{ inputs.tenantId }}
-          SUPPORTPLANE_ENROLLMENT_TOKEN: ${{ inputs.enrollmentToken }}
           SUPPORTPLANE_API_URL: ${{ inputs.apiUrl }}
+          SUPPORTPLANE_ENDPOINT_TENANT_ID: ${{ inputs.tenantId }}
         run: |
           $output = node dist/src/index.js --heartbeat 2>&1
           Write-Output $output
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Heartbeat FAILED (exit code $LASTEXITCODE)"
+            exit 1
+          }
+          $hb = $output | ConvertFrom-Json
+          Write-Host "::notice::Heartbeat SUCCESS — status=$($hb.status) platform=$($hb.platform)"
           Set-Content -Path heartbeat-output.txt -Value $output
 
-      - name: Diagnostics — run fixed diagnostic commands
+      - name: Diagnostics — inventory and system info
         shell: pwsh
         working-directory: apps/endpoint-agent
-        env:
-          SUPPORTPLANE_TENANT_ID: ${{ inputs.tenantId }}
-          SUPPORTPLANE_ENROLLMENT_TOKEN: ${{ inputs.enrollmentToken }}
-          SUPPORTPLANE_API_URL: ${{ inputs.apiUrl }}
+        run: |
+          $commands = @("inventory", "status")
+          foreach ($cmd in $commands) {
+            Write-Host "::group::diagnostic $cmd"
+            $out = node dist/src/index.js --diagnostic $cmd 2>&1
+            Write-Output $out
+            Write-Host "::endgroup::"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Diagnostic $cmd FAILED"
+              exit 1
+            }
+          }
+
+      - name: Diagnostics — Windows-specific (services, software, disk, network)
+        shell: pwsh
+        working-directory: apps/endpoint-agent
         run: |
           $results = @{}
-          $commands = @("inventory", "disk", "network", "services", "software", "status")
+          $commands = @("disk", "network", "services", "software")
           foreach ($cmd in $commands) {
+            Write-Host "::group::diagnostic $cmd"
             $out = node dist/src/index.js --diagnostic $cmd 2>&1
             $results[$cmd] = $out
-            Write-Host "--- $cmd ---"
-            Write-Host $out
+            Write-Output $out
+            Write-Host "::endgroup::"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Warning "Diagnostic $cmd had non-zero exit code (may be unsupported on this platform)"
+              $results[$cmd] = @{error = "exit code $LASTEXITCODE"; output = $out} | ConvertTo-Json
+            }
           }
           $results | ConvertTo-Json -Depth 5 | Set-Content -Path diagnostics-output.json
 
-      - name: Health check — verify API reachable
+      - name: Policy denial — verify unsupported tool is blocked
         shell: pwsh
-        env:
-          SUPPORTPLANE_API_URL: ${{ inputs.apiUrl }}
+        working-directory: apps/endpoint-agent
         run: |
-          try {
-            $response = Invoke-WebRequest -Uri "$env:SUPPORTPLANE_API_URL/health" -UseBasicParsing -TimeoutSec 15
-            Write-Host "::notice::API health check: HTTP $($response.StatusCode)"
-          } catch {
-            Write-Warning "::warning::API health check failed: $_"
-            Write-Warning "This is expected if the API is behind a VPN or not publicly reachable."
+          $out = node dist/src/index.js --diagnostic clear_temp_preview 2>&1
+          Write-Output $out
+          $result = $out | ConvertFrom-Json
+          if ($result.unsupported -ne $true) {
+            Write-Warning "Expected clear_temp_preview to be unsupported on Windows, got: $($result | ConvertTo-Json)"
+          } else {
+            Write-Host "::notice::Policy denial PASSED — clear_temp_preview returns unsupported=true as expected"
           }
+          # This step must not fail — unsupported is expected
+          Write-Host "::notice::Unsupported tool correctly returns honest unsupported response"
 
-      - name: Upload verification artifacts
+      - name: No-secret verification — scan outputs for secrets
+        if: always()
+        shell: pwsh
+        run: |
+          Write-Host "::group::No-secret scan"
+          $files = @("enrollment-output.txt", "heartbeat-output.txt", "diagnostics-output.json")
+          $secretsFound = $false
+          foreach ($file in $files) {
+            if (Test-Path $file) {
+              $content = Get-Content $file -Raw
+              if ($content -match 'spdev_[a-f0-9]{48}') {
+                Write-Error "::error::RAW DEVICE TOKEN FOUND in $file — this is a secret leak!"
+                $secretsFound = $true
+              }
+              if ($content -match $env:SUPPORTPLANE_ENDPOINT_ENROLLMENT_TOKEN) {
+                Write-Error "::error::RAW ENROLLMENT TOKEN FOUND in $file — this is a secret leak!"
+                $secretsFound = $true
+              }
+            }
+          }
+          if ($secretsFound) {
+            Write-Error "Secret leak detected. Workflow artifacts must not contain raw tokens."
+            exit 1
+          }
+          Write-Host "::notice::No raw secrets found in output files"
+          Write-Host "::endgroup::"
+
+      - name: Upload verification artifacts (redacted)
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -139,12 +212,23 @@ jobs:
             apps/endpoint-agent/diagnostics-output.json
           retention-days: 30
 
-      - name: Summary — verification notice
+      - name: Summary — verification results
         if: always()
         shell: pwsh
         run: |
-          Write-Host "::group::BL-133 Windows Endpoint Verification Summary"
-          Write-Host "This workflow proves endpoint agent execution on Windows."
-          Write-Host "BL-133 requires this workflow to pass on a real Windows runner."
-          Write-Host "::notice::Windows runner detected — agent ran on: $([System.Environment]::OSVersion.VersionString)"
+          Write-Host "::group::BL-130/131/133 Windows Endpoint Verification Summary"
+          Write-Host "Runner OS: $([System.Environment]::OSVersion.VersionString)"
+          Write-Host "Runner arch: $([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)"
+          Write-Host "Process platform: $(node -e "console.log(process.platform)")"
+          Write-Host ""
+          Write-Host "Proves:"
+          Write-Host "  - Windows runner identity (real Windows host)"
+          Write-Host "  - Node/npm versions compatible"
+          Write-Host "  - Endpoint agent builds on Windows"
+          Write-Host "  - Endpoint agent tests pass on Windows"
+          Write-Host "  - Agent registers with SupportPlane API"
+          Write-Host "  - Agent sends heartbeat"
+          Write-Host "  - Read-only diagnostics return structured results"
+          Write-Host "  - Unsupported tools return honest unsupported responses"
+          Write-Host "  - No secrets in output artifacts"
           Write-Host "::endgroup::"

@@ -108,7 +108,90 @@ export async function runOnce() {
   await claimAndRun(config);
 }
 
+function parseArgs(): { mode: 'daemon' | 'register' | 'heartbeat' | 'diagnostic'; diagnosticKind?: string } | null {
+  const args = process.argv.slice(2);
+  if (args.length === 0) return { mode: 'daemon' };
+  if (args.includes('--register')) return { mode: 'register' };
+  if (args.includes('--heartbeat')) return { mode: 'heartbeat' };
+  const diagIdx = args.indexOf('--diagnostic');
+  if (diagIdx >= 0 && diagIdx + 1 < args.length) {
+    return { mode: 'diagnostic', diagnosticKind: args[diagIdx + 1] };
+  }
+  if (args.includes('--help') || args.includes('-h')) {
+    console.error('Usage: node dist/src/index.js [--register | --heartbeat | --diagnostic <kind>]');
+    console.error('  --register          Register with SupportPlane API and receive device token');
+    console.error('  --heartbeat         Send heartbeat to SupportPlane API');
+    console.error('  --diagnostic <kind> Run a fixed diagnostic (inventory, disk, network, services, software, status)');
+    console.error('');
+    console.error('No flags: run as daemon (register, heartbeat, claim/run loop)');
+    console.error('');
+    console.error('Environment variables:');
+    console.error('  SUPPORTPLANE_API_URL                     API base URL');
+    console.error('  SUPPORTPLANE_ENDPOINT_TENANT_ID          Tenant ID for enrollment');
+    console.error('  SUPPORTPLANE_ENDPOINT_ENROLLMENT_TOKEN   Enrollment token');
+    console.error('  SUPPORTPLANE_ENDPOINT_DEVICE_KEY         Unique device key');
+    console.error('  SUPPORTPLANE_ENDPOINT_ONCE=1             Run once instead of looping');
+    return null;
+  }
+  return null;
+}
+
+async function cliRegister() {
+  const config = await loadConfig();
+  const result = await register(config);
+  console.log(JSON.stringify({
+    agentId: result.deviceKey,
+    platform: os.platform(),
+    hostname: os.hostname(),
+    registered: true,
+    note: 'Agent registered successfully. Device token saved locally.',
+  }));
+}
+
+async function cliHeartbeat() {
+  const config = await loadConfig();
+  if (!config.deviceToken) {
+    console.error('ERROR: Not registered. No device token found. Run --register first.');
+    process.exit(1);
+  }
+  await heartbeat(config);
+  console.log(JSON.stringify({
+    platform: os.platform(),
+    hostname: os.hostname(),
+    heartbeat: true,
+    status: 'online',
+  }));
+}
+
+async function cliDiagnostic(kind: string) {
+  const kindMap: Record<string, string> = {
+    inventory: 'collect_inventory',
+    disk: 'collect_disk',
+    network: 'collect_network',
+    services: 'collect_services',
+    software: 'collect_software',
+    status: 'ping_self',
+  };
+  const commandKind = kindMap[kind] ?? kind;
+  const result = await runFixedDiagnostic(commandKind);
+  console.log(JSON.stringify(result.payload));
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
+  const cli = parseArgs();
+  if (cli === null) process.exit(1);
+  if (cli.mode === 'register') {
+    await cliRegister();
+    process.exit(0);
+  }
+  if (cli.mode === 'heartbeat') {
+    await cliHeartbeat();
+    process.exit(0);
+  }
+  if (cli.mode === 'diagnostic' && cli.diagnosticKind) {
+    await cliDiagnostic(cli.diagnosticKind);
+    process.exit(0);
+  }
   const once = process.env['SUPPORTPLANE_ENDPOINT_ONCE'] === '1';
   await runOnce();
   if (!once) {
