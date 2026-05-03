@@ -1,12 +1,12 @@
 # Windows Endpoint Verification Runbook
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Updated:** 2026-05-03
-**BL-133:** Windows verification strategy — blocked until real Windows host
+**BL-133:** Windows verification strategy — ACCEPTED (Session 134)
 
 ## Purpose
 
-This runbook describes the exact steps to build, run, and verify the SupportPlane endpoint agent on a real Windows host. It serves as the acceptance procedure for BL-133.
+This runbook describes the exact steps to build, run, and verify the SupportPlane endpoint agent on a real Windows host. It serves as the acceptance procedure for BL-133, which was proven in Session 134 via GitHub Actions workflow on windows-latest.
 
 ## Prerequisites
 
@@ -287,7 +287,20 @@ gh workflow run windows-endpoint-verification.yml \
   -f apiUrl="https://api.supportplane.example.com"
 ```
 
-**Note:** As of Session 134 (2026-05-03), the workflow cannot be triggered because:
-- The SupportPlane API is only available locally (Kind/Podman cluster, not Internet-reachable).
-- No enrollment token is available outside the K8s secrets.
-- The `SUPPORTPLANE_ENROLLMENT_TOKEN` and `SUPPORTPLANE_API_URL` environment variables are not set.
+**Note:** The workflow was successfully triggered and passed in Session 134 (2026-05-03). 
+The SupportPlane API is reachable via Tailscale Funnel at `https://ff-fedora.tail2dc90.ts.net` (temporary, tied to the host running the tunnel).
+
+To re-trigger or reproduce:
+1. Ensure the K8s cluster is running: `kubectl get pods -A`
+2. Start port-forward: `kubectl port-forward -n supportplane-app svc/supportplane-api 4210:4110 &`
+3. Start Tailscale Funnel: `tailscale funnel 4210`
+4. Verify: `curl https://<your-node>.tail2dc90.ts.net/health`
+5. Set env vars and trigger:
+   ```bash
+   export SUPPORTPLANE_TENANT_ID="dev-tenant"
+   export SUPPORTPLANE_ENROLLMENT_TOKEN="local-endpoint-enrollment-token"
+   export SUPPORTPLANE_API_URL="https://<your-node>.tail2dc90.ts.net"
+   bash scripts/trigger_windows_verification.sh
+   ```
+
+To stop the public tunnel: `tailscale funnel --https=443 off`

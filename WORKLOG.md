@@ -1947,6 +1947,104 @@ No real Windows host was available (Fedora Linux only). BL items remain partial/
 - P1 [BL-133] Trigger GitHub Actions workflow on windows-latest with live API, or manual Windows host verification per runbook. Capture real Windows agent registration, heartbeat, diagnostics, and policy denial proof.
 
 
+## Session 134 — 2026-05-03 — Windows Runner CI Reachability (BL-130/131/133 ACCEPTED)
+
+**Date:** 2026-05-03 14:10 CEST
+**Git HEAD:** c1d125227da85f05885631754b21d116860df8f8
+**Branch:** main
+
+### Scope
+
+Moved BL-130/131/133 from harness-ready toward real Windows runner proof. Created safe CI-reachable verification path, triggered Windows workflow, all steps passed.
+
+### Key Achievements
+
+- **Tailscale Funnel:** Exposed K8s API (port-forward 4210) publicly via `tailscale funnel 4210`. URL: `https://ff-fedora.tail2dc90.ts.net`. ngrok was unavailable (account suspended). Funnel is temporary, tied to this host.
+- **Agent CLI support:** Added `--register`, `--heartbeat`, `--diagnostic <kind>` CLI arguments to endpoint agent (`apps/endpoint-agent/src/index.ts`). Previously the agent had no CLI parsing — only env-var-driven daemon mode.
+- **Enrollment token script:** Created `scripts/create_demo_endpoint_enrollment_token.sh` with redaction, apply-to-K8s option, and security notes.
+- **Workflow hardening:** Upgraded `.github/workflows/windows-endpoint-verification.yml` from 13 to 16 hardened steps:
+  - OS identity check, Node version check
+  - Fixed env var mapping (SUPPORTPLANE_ENDPOINT_* instead of SUPPORTPLANE_*)
+  - Token passed via env var (GitHub masks env vars; previously inline `${{ inputs }}` exposed raw token)
+  - API health check (mandatory, fail if unreachable)
+  - Separate diagnostic steps (inventory/status, then services/software/disk/network)
+  - Policy denial step (clear_temp_preview unsupported=true)
+  - No-secret scan (checks output files for raw device/enrollment tokens)
+  - Artifact upload with redacted logs
+- **Test fixes:** Fixed 2 tests (win32 services/software "unsupported on non-Windows") that failed on actual Windows because they expected `unsupported=true` but real Windows collectors return real data. Tests now check platform-aware behavior.
+- **Trigger script enhanced:** `scripts/trigger_windows_verification.sh` now supports `--dry-run`, `--monitor`, Tailscale Funnel reachability options, actionable blocker messages, and API health preflight.
+
+### Windows Workflow Result
+
+- **Run:** https://github.com/lennertvhoy/SupportPlane/actions/runs/25278634388
+- **Conclusion:** SUCCESS
+- **Runner OS:** Microsoft Windows NT 10.0.26100.0 (Win11 24H2), X64
+- **Process platform:** win32
+- **Tests:** 44/44 pass, 0 failures
+- **Steps proven:** OS identity, Node version, API health (HTTP 200), enrollment, heartbeat, diagnostics (inventory, status, disk, network, services, software), policy denial, no-secret scan
+- **Artifact:** windows-endpoint-verification-output (485 bytes)
+
+### BL Status Changes
+
+- **BL-130:** `partial/harness-ready` → `accepted` (diagnostics proven on real Windows runner)
+- **BL-131:** `partial/harness-ready` → `accepted` (tool-manifest compatibility proven)
+- **BL-132:** `partial/harness-ready` (unchanged — MSI/EXE packaging not proven)
+- **BL-133:** `partial/harness-ready` → `accepted` (verification strategy proven, workflow passed)
+
+### Changes (code)
+
+- `apps/endpoint-agent/src/index.ts` — CLI argument support (+80 lines)
+- `apps/endpoint-agent/test/collectors.test.ts` — platform-aware test assertions
+- `.github/workflows/windows-endpoint-verification.yml` — hardened 16-step workflow
+- `scripts/trigger_windows_verification.sh` — Tailscale Funnel support, dry-run, monitor
+- `scripts/create_demo_endpoint_enrollment_token.sh` — new enrollment token script
+
+### Changes (docs/state)
+
+- `BACKLOG.md` — BL-130/131/133 moved to accepted
+- `NEXT_ACTIONS.md` — Windows items resolved, BL-132 added, queue refreshed
+- `STATUS.md` — Session 134 state, public URL, BL status updates
+- `PROJECT_STATE.yaml` — heads, timestamps, active queue updated
+- `WORKLOG.md` — this entry
+- `docs/EVIDENCE_LOG.md` — Session 134 evidence entry
+- `docs/REALITY_MATRIX.md` — Windows endpoint reclassified
+- `docs/WINDOWS_ENDPOINT_SUPPORT.md` — CI verification section, triggerability status
+- `docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md` — triggerability updated
+- `docs/README.md` — enrollment token script added to index
+
+### Verification
+
+- `npm run lint`: PASS (0 errors)
+- `npm run typecheck --workspaces --if-present`: PASS (all workspaces)
+- `npm test --workspace=apps/endpoint-agent`: PASS (44/44, 0 fail)
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- `bash -n scripts/trigger_windows_verification.sh`: PASS
+- GitHub Actions workflow: SUCCESS (44/44 tests on windows-latest)
+- API `/health` via Tailscale Funnel: status=ok, storeMode=postgres
+- K8s cluster: 27/27 pods Running
+- Enrollment/registration verified via public API
+
+### Evidence
+
+- Folder: `output/playwright/session-134-windows-runner-ci-reachability/`
+- Files: 9 (under 20-file hard cap)
+- Key artifacts: API health, workflow full log (724 lines), workflow summary JSON, git status/log, Tailscale Funnel status, evidence index
+
+### Known Limitations
+
+- BL-132 (MSI/EXE packaging, Windows Service auto-start): NOT proven, remains partial/harness-ready.
+- Tailscale Funnel is temporary — tied to this host. Shut down with `tailscale funnel --https=443 off`.
+- One-time CI run proof only; not a persistent Windows deployment.
+- Enrollment token is hardcoded default (`local-endpoint-enrollment-token`).
+- No browser/computer-use tool available; CLI/GitHub evidence only.
+- Services/software diagnostic exact output data not extracted from workflow artifacts.
+
+### Next Recommended Action
+
+P1 [BL-132] Windows service/install packaging (MSI/EXE, auto-start), or P2 [BL-069/BL-071/BL-072/BL-127] connector real-instance enablement.
+
+
 ## Session 134 — 2026-05-03 — Session 133 Closure Repair
 
 **Date:** 2026-05-03 15:30 CEST

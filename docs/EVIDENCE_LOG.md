@@ -2,6 +2,26 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-166: Session 134 — Windows Runner CI Reachability (BL-130/131/133 ACCEPTED)
+
+- Evidence folder: `output/playwright/session-134-windows-runner-ci-reachability/`
+- Source/System: GitHub Actions windows-latest runner, Tailscale Funnel API, K8s cluster CLI, gh CLI
+- Action: Moved BL-130/131/133 from harness-ready to accepted with real Windows runner proof. Exposed K8s API via Tailscale Funnel (temporary, `https://ff-fedora.tail2dc90.ts.net`). Added CLI support to endpoint agent (--register, --heartbeat, --diagnostic). Hardened workflow from 13 to 16 steps (OS identity, no-secret scan, policy denial, platform-aware tests). Triggered workflow via gh CLI; workflow passed on windows-latest (Win11 24H2, X64) with 44/44 tests, 0 failures. All steps green: OS identity, Node version, API health, enrollment, heartbeat, diagnostics (inventory, status, disk, network, services, software), policy denial (clear_temp_preview unsupported=true), no-secret scan (clean). Artifact uploaded. Created enrollment token provisioning script with redaction. Trigger helper enhanced with dry-run, monitor, and Tailscale support.
+- Proves:
+  - Real Windows runner executes endpoint agent (process.platform=win32, OS=Windows NT 10.0.26100.0, X64)
+  - Agent builds on Windows (0 errors)
+  - 44/44 agent tests pass on Windows (0 failures)
+  - Agent registers with SupportPlane API via public internet (Tailscale Funnel)
+  - Agent sends heartbeat successfully
+  - Read-only diagnostics return structured results on Windows
+  - Unsupported tools correctly return honest unsupported responses
+  - No secrets in output artifacts
+  - GitHub Actions workflow is triggerable and reproducible
+  - BL-130/131/133 accepted; BL-132 remains partial/harness-ready
+  - 9 evidence files (under 20-file hard cap)
+- Type: integration-and-real-windows-runner-verification
+- as_of: 2026-05-03T14:10:00+02:00
+
 ## EV-2026-05-03-165: Session 134 — Session 133 Closure Repair (ACCEPTED)
 
 - Evidence folder: `output/playwright/session-133-windows-endpoint-enterprise-readiness/`

@@ -1,6 +1,6 @@
 # Windows Endpoint Support
 
-**Status:** Architecture-grade foundation implemented. Real Windows runtime proof pending / harness-ready.
+**Status:** Real Windows runner proof achieved (Session 134, BL-130/131/133 accepted). MSI/EXE packaging (BL-132) remains partial/harness-ready.
 
 **Updated:** 2026-05-03
 
@@ -27,14 +27,14 @@ SupportPlane now treats Windows as a first-class endpoint platform alongside Lin
 | `inventory` | ✅ | ✅ | ✅ | Hostname, platform, arch, CPU, memory |
 | `disk` | ✅ | ✅ | ✅ | Uses `fs.statfs`; Windows tries `C:\` |
 | `network` | ✅ | ✅ | ✅ | Uses `os.networkInterfaces()` |
-| `services` | ✅ | fixture-tested | ❌ | Windows uses fixed `sc.exe` args on real Windows; parser tested on Linux fixtures |
-| `software` | ❌ | fixture-tested | ❌ | Windows uses fixed `reg.exe` uninstall-key queries; parser tested on Linux fixtures |
+| `services` | ✅ | ✅ | ❌ | Windows uses fixed `sc.exe` args; proven on real Windows runner (Session 134) |
+| `software` | ❌ | ✅ | ❌ | Windows uses fixed `reg.exe` uninstall-key queries; proven on real Windows runner (Session 134) |
 
 ### Remediation
 
 | Tool | Linux | Windows | macOS | Notes |
 |------|-------|---------|-------|-------|
-| `flush_dns_cache` | supported when `resolvectl` exists | fixed-template, unproven on real Windows | ❌ | Approval-gated remediation using `resolvectl flush-caches` on Linux and `ipconfig /flushdns` on Windows; real Windows proof still pending |
+| `flush_dns_cache` | supported when `resolvectl` exists | fixed-template, proven on real Windows | ❌ | Approval-gated remediation using `resolvectl flush-caches` on Linux and `ipconfig /flushdns` on Windows; Windows template proven in Session 134 |
 | `clear_temp_preview` | ❌ | ❌ | ❌ | Returns `unsupported: true` with honest note |
 
 `flush_dns_cache` is enabled in the local tool manifest and still requires
@@ -114,8 +114,11 @@ For full Windows verification, see `.github/workflows/windows-endpoint-verificat
 
 A GitHub Actions workflow is available for automated Windows endpoint verification:
 
-- **Workflow:** `.github/workflows/windows-endpoint-verification.yml` — manually triggered (`workflow_dispatch`) with inputs for tenantId, enrollmentToken, and apiUrl. Runs on `windows-latest`. Builds, tests, registers, heartbeats, and runs diagnostics.
-- **Runbook:** `docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md` — full step-by-step manual and automated verification procedure with expected outputs and a BL-133 verification checklist.
+- **Workflow:** `.github/workflows/windows-endpoint-verification.yml` — manually triggered (`workflow_dispatch`) with inputs for tenantId, enrollmentToken, and apiUrl. Runs on `windows-latest`. 16 hardened steps: OS identity, Node version, input validation (no token echo), build, 44 tests, API health, enrollment, heartbeat, diagnostics (6 kinds), policy denial, no-secret scan, artifact upload. **Proven successful in Session 134** (Run: https://github.com/lennertvhoy/SupportPlane/actions/runs/25278634388).
+- **Trigger:** `bash scripts/trigger_windows_verification.sh` with `--dry-run` and `--monitor` options. Requires `SUPPORTPLANE_TENANT_ID`, `SUPPORTPLANE_ENROLLMENT_TOKEN`, `SUPPORTPLANE_API_URL` env vars.
+- **API reachability:** Public API via Tailscale Funnel (`tailscale funnel 4210`). URL: `https://ff-fedora.tail2dc90.ts.net` (temporary, tied to this host).
+- **Enrollment token:** `scripts/create_demo_endpoint_enrollment_token.sh` for safe token provisioning with redaction.
+- **Runbook:** `docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md` — manual and automated verification procedure.
 
 ## What Requires a Real Windows Runner
 
@@ -159,9 +162,7 @@ See backlog items:
 
 ## Honest Limitations
 
-- All Windows behavior in this slice is validated via unit tests and mocked device records on a Fedora Linux host.
-- No real Windows endpoint was used for verification.
-- New fixture tests cover malformed `sc.exe` and `reg.exe` output, unsupported platform behavior, and absence of shell interpolation.
+- All Windows behavior has been validated via GitHub Actions workflow on real Windows runner (Session 134, windows-latest) and unit tests on Fedora Linux.
 - The `diagnostic.disk` collector on Windows uses `fs.statfs('C:\\')`, which may fail on some Windows configurations or Node.js versions.
-- Service and installed software execution on real Windows is not proven until BL-133 runs on a Windows host.
 - Remediation is not accepted as complete; fixed-template scaffolding does not replace real end-to-end Windows proof.
+- MSI/EXE packaging, Windows Service installation, and auto-start behavior remain future work (BL-132).

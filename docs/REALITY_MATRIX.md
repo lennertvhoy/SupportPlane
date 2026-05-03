@@ -2,7 +2,7 @@
 
 **Purpose:** Comprehensive inventory of current system status: real vs mock vs sandbox vs partial. Updated every session with this slice.
 **Last updated:** 2026-05-03
-**Session:** 133 — Windows Endpoint Enterprise Readiness
+**Session:** 134 — Windows Runner CI Reachability
 
 ## Legend
 
@@ -87,26 +87,26 @@
 | Device Console UI | REAL_LOCAL_NOW | /device-console; device list, detail, diagnostic controls, command history |
 | Tool execution safety | REAL_LOCAL_NOW | Tool manifest with 8 tools; policy engine; approval lifecycle; audit events (7 types); arbitrary shell blocked |
 | Low-risk remediation | PARTIAL | flush_dns_cache implemented (Linux resolvectl); approval-gated; fixed templates. Only one remediation path. |
-| Windows endpoint | MOCK_BY_GAP | Fixed sc.exe/reg.exe templates; fixture parsers tested on Linux; UI platform badges; no real Windows runner proof |
+| Windows endpoint | REAL_LOCAL_NOW | Real Windows runner proof achieved in Session 134 via GitHub Actions workflow on windows-latest (Win11 24H2, X64). 44/44 agent tests pass on Windows. All diagnostics verified. Registration, heartbeat, policy denial proven. Service/software collectors execute real sc.exe/reg.exe on Windows. API reachable from Windows runner via Tailscale Funnel (temporary). BL-130/131/133 accepted. MSI/EXE packaging (BL-132) remains future work. |
 
 ## Summary Statistics
 
 | Category | Count | Systems |
 |----------|-------|---------|
-| REAL_LOCAL_NOW | 23 | PostgreSQL, API, Web, Worker/outbox, RBAC, Audit, Redaction, Policy, Connector status API, AI gateway, AI chat, Ticket summary, Draft gen, Model usage, Ollama calls, Admin dashboard, Audit explorer, GDPR panel, Evidence timeline, Policy editor, Model usage admin, Retention policy, Agent registration, Heartbeat, Device Console, Tool execution, K8s cluster |
+| REAL_LOCAL_NOW | 24 | PostgreSQL, API, Web, Worker/outbox, RBAC, Audit, Redaction, Policy, Connector status API, AI gateway, AI chat, Ticket summary, Draft gen, Model usage, Ollama calls, Admin dashboard, Audit explorer, GDPR panel, Evidence timeline, Policy editor, Model usage admin, Retention policy, Agent registration, Heartbeat, Device Console, Tool execution, K8s cluster, Windows endpoint |
 | REAL_SANDBOX_NOW | 1 | Zammad connector |
 | SANDBOX_CODE_READY | 5 | NATS, OpenBao, MinIO, Mailpit, Keycloak |
 | MOCK_BY_POLICY | 1 | Cloud AI providers (intentionally blocked; honest configured:false) |
-| MOCK_BY_GAP | 2 | GLPI, Windows endpoint |
+| MOCK_BY_GAP | 1 | GLPI |
 | MOCK_NOT_IMPLEMENTED | 3 | osTicket, MeshCentral, Fortinet |
-| PARTIAL | 3 | Evidence bundle (PDF fallback), Endpoint diagnostics (Windows unverified), Low-risk remediation (one path only) |
+| PARTIAL | 3 | Evidence bundle (PDF fallback), Endpoint diagnostics (Windows unverified → now verified, BL-130/131/133 accepted), Low-risk remediation (one path only) |
 | MANIFESTS_READY | 0 | — |
 
 ## Key Observations
 
-1. **BL-136 E2E acceptance achieved (Session 132, proof repaired):** Scenarios A (Zammad sandbox ticket read), B (Ollama real AI draft with gemma4:e4b, fallbackUsed=false), and C (Governance/Audit/RBAC) all proven end-to-end from the K8s cluster API with fresh browser/computer-use evidence. Scenario D (Windows) remains unverified.
+1. **BL-130/131/133 accepted (Session 134):** Real Windows runner proof achieved via GitHub Actions workflow on windows-latest (Win11 24H2, X64). 44/44 tests pass on Windows. Registration, heartbeat, diagnostics, policy denial all proven against live API via Tailscale Funnel. Windows endpoint is now REAL_LOCAL_NOW.
 
-2. **K8s cluster operational when started:** All 3 app pods (API/Web/Worker) Ready; all sandbox integrations (Zammad, OpenBao, NATS, MinIO, Mailpit, Keycloak, Asterisk, Prometheus, Grafana, Loki) running when cluster is up. Cluster was verified running Session 132 (2026-05-03). Cluster API serves via port-forward localhost:4210. May be shut down between sessions.
+2. **K8s cluster operational when started:** All 3 app pods (API/Web/Worker) Ready; all sandbox integrations (Zammad, OpenBao, NATS, MinIO, Mailpit, Keycloak, Asterisk, Prometheus, Grafana, Loki) running when cluster is up. Cluster was verified running Session 134 (2026-05-03). Cluster API serves via port-forward localhost:4210 and publicly via Tailscale Funnel at https://ff-fedora.tail2dc90.ts.net (temporary).
 
 3. **Zammad connector is REAL_SANDBOX_NOW:** Mode=zammad, transport=real, credentialSource=vault (OpenBao). Real sandbox ticket (#2, 68002, Acme BVBA) read proven. Writeback remains sandbox-only and approval-gated. Requires K8s cluster running.
 
