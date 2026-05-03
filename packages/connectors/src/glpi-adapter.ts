@@ -18,6 +18,7 @@ import type { TicketingAdapterClient } from './types.js';
 import {
   type GlpiHttpClient,
   MockGlpiHttpClient,
+  FetchGlpiHttpClient,
 } from './glpi-http-client.js';
 
 function normalizeGlpiState(state: string | number): TicketReferenceShape['status'] {
@@ -70,13 +71,8 @@ export class GlpiConnectorAdapter implements TicketingAdapterClient {
       );
     }
     this.config = parsed.data;
-    // Real GLPI HTTP client is not implemented. Reject honestly rather than silently falling back to mock.
-    return Promise.reject(
-      buildConnectorError(
-        ConnectorErrorCode.enum.CONFIG_MISSING,
-        'Real GLPI HTTP client not implemented'
-      )
-    );
+    this.httpClient = new FetchGlpiHttpClient(parsed.data);
+    return Promise.resolve();
   }
 
   async getTicket(tenantId: TenantId, externalTicketId: string): Promise<TicketReferenceShape> {

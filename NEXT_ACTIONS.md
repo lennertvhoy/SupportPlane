@@ -13,8 +13,9 @@
 
 - [BL-069/BL-071/BL-072/BL-127] **Connector real-instance enablement**
   - Owner: future connector slice
-  - Next action: connect at least one real GLPI, MeshCentral, Fortinet, or osTicket instance through credential references and fail-closed configuration.
-  - Exit criteria: at least one connector reads live data from a real instance with no secrets exposed and with honest transport/status labels.
+  - Progress: GLPI real HTTP client implemented (Session 138) — FetchGlpiHttpClient with GLPI REST API, adapter wired, connector status reports configured. No GLPI sandbox deployed.
+  - Next action: deploy GLPI sandbox container in K8s, or create manifests and seed data for local GLPI instance. Then prove real ticket/customer read through SupportPlane API.
+  - Exit criteria: at least one non-Zammad connector reads live data from a real sandbox instance with no secrets exposed and with honest transport/status labels.
 
 - [BL-065] **Broader low-risk remediation coverage**
   - Owner: future remediation hardening slice

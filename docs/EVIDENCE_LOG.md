@@ -2,6 +2,19 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-168: Session 138 — GLPI Real Connector Enablement (PARTIAL/SANDBOX-CODE-READY)
+
+- Evidence folder: `output/playwright/session-138-real-connector-enablement/`
+- Source/System: TypeScript tests, API unit tests, CLI artifacts
+- Action: Implemented FetchGlpiHttpClient — real HTTP transport using GLPI REST API with session token management. Wired into GlpiConnectorAdapter.connect(). Updated connectors.service.ts to remove unsupportedRealClient flag. All tests pass (50/50 connectors, 210/210 API, 44/44 endpoint-agent).
+- Proves:
+  - FetchGlpiHttpClient implements real GLPI REST API transport
+  - GLPI connector reports configured/real when env vars set
+  - No fixture fallback when real HTTP client available
+  - 6 evidence files
+- Type: code-implementation-with-test-verification
+- as_of: 2026-05-03T15:30:00+02:00
+
 ## EV-2026-05-03-167: Session 135 — BL-132 Windows Service Packaging Proof (PARTIAL/SERVICE-SCRIPTS-READY)
 
 - Evidence folder: `output/playwright/session-136-windows-service-packaging-proof/`

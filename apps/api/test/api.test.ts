@@ -598,7 +598,7 @@ describe('Zammad connector endpoints', () => {
       assert.strictEqual(glpi.mode, 'fixture');
       assert.strictEqual(glpi.credentialSource, 'none');
       assert.strictEqual(glpi.errorCode, 'OK');
-      assert.match(String(glpi.fixtureWarning), /fixture-backed/);
+      assert.match(String(glpi.fixtureWarning), /GLPI/);
 
       assert.strictEqual(meshcentral.mode, 'unconfigured');
       assert.strictEqual(meshcentral.credentialSource, 'none');
@@ -662,7 +662,7 @@ describe('Zammad connector endpoints', () => {
     }
   });
 
-  it('GET /connectors/status marks GLPI with real config as unsupported error', async () => {
+  it('GET /connectors/status marks GLPI with real config as configured (real HTTP client available)', async () => {
     const envKeys = ['GLPI_BASE_URL', 'GLPI_API_TOKEN'];
     const previous = new Map(envKeys.map((key) => [key, process.env[key]]));
     process.env.GLPI_BASE_URL = 'https://glpi.example.test';
@@ -677,11 +677,11 @@ describe('Zammad connector endpoints', () => {
 
       const glpi = (res.body.connectors as Array<Record<string, unknown>>).find((c) => c.id === 'glpi');
       assert.ok(glpi);
-      assert.strictEqual(glpi.mode, 'error');
+      assert.strictEqual(glpi.mode, 'configured');
       assert.strictEqual(glpi.credentialSource, 'env');
-      assert.strictEqual(glpi.errorCode, 'UNSUPPORTED');
+      assert.strictEqual(glpi.errorCode, 'OK');
       assert.strictEqual(glpi.fixtureWarning, undefined);
-      assert.match(String(glpi.lastError), /Fixture fallback is disabled/);
+      assert.strictEqual(glpi.transport, 'real');
     } finally {
       for (const [key, value] of previous) {
         if (value === undefined) {

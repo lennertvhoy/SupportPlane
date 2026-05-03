@@ -1947,6 +1947,53 @@ No real Windows host was available (Fedora Linux only). BL items remain partial/
 - P1 [BL-133] Trigger GitHub Actions workflow on windows-latest with live API, or manual Windows host verification per runbook. Capture real Windows agent registration, heartbeat, diagnostics, and policy denial proof.
 
 
+## Session 138 — 2026-05-03 — GLPI Real Connector Enablement
+
+**Date:** 2026-05-03 15:30 CEST
+**Git HEAD:** to be recorded after commit
+**Branch:** main
+**Tailscale Funnel:** OFF
+
+### Scope
+
+Moved GLPI connector from mock-by-gap to sandbox-code-ready. Implemented real HTTP client using GLPI REST API.
+
+### Changes
+
+- **FetchGlpiHttpClient** (`packages/connectors/src/glpi-http-client.ts`): Real HTTP transport with initSession, getTicket, getUser, searchTicket methods. Uses GLPI REST API with `Authorization: user_token` and `Session-Token` headers.
+- **glpi-adapter.ts**: `connect()` now creates FetchGlpiHttpClient instead of rejecting with "not implemented"
+- **connectors.service.ts**: GLPI `unsupportedRealClient` changed to `false`, fixtureWarning updated
+- **api.test.ts**: Updated GLPI status tests — now expects `configured`/`real` instead of `error`/`UNSUPPORTED`
+
+### BL-069 Status
+
+`partial/sandbox-code-ready` — Real HTTP client implemented and tested. GLPI connector reports `configured` with `transport: 'real'` when GLPI_BASE_URL and GLPI_API_TOKEN are set. No GLPI sandbox container deployed yet.
+
+### Verification
+
+- `npm run lint`: PASS (0 errors)
+- `npm run typecheck --workspaces --if-present`: PASS
+- `npm test --workspace=packages/connectors`: PASS (50/50)
+- `npm test --workspace=apps/api`: PASS (210/210, 0 fail)
+- `npm test --workspace=apps/endpoint-agent`: PASS (44/44)
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+
+### Evidence
+
+`output/playwright/session-138-real-connector-enablement/` (6 files)
+
+### Known Limitations
+
+- No GLPI sandbox container deployed (K8s manifests not yet created)
+- K8s API image not rebuilt — cluster serves old GLPI classification
+- No browser/computer-use tool available
+
+### Next Recommended Action
+
+Deploy GLPI sandbox container in K8s and prove real ticket/customer read through SupportPlane API.
+
+
 ## Session 135 — 2026-05-03 — Session 134 Closure Repair + BL-132 Windows Service Packaging
 
 **Date:** 2026-05-03 15:10 CEST

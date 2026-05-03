@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-03 15:10 CEST
+**Updated At:** 2026-05-03 15:30 CEST
 **Execution Mode:** operating
-**Project State:** session_135_bl132_windows_service_packaging
+**Project State:** session_138_glpi_real_connector_enablement
 **Public URL:** not configured
 
 ## Snapshot
@@ -11,7 +11,7 @@
 - **BL-061/062/063/064/066/067/068 and BL-086/087/090 and BL-104-117/121 accepted.** Tool Execution Safety, production readiness, real sandbox acceptance freeze.
 - **BL-130/131/133 `[accepted]` — Windows endpoint real runner proof.** Session 134: GitHub Actions workflow passed on windows-latest (44/44 tests, 0 fail). Registration, heartbeat, diagnostics (services/software via real sc.exe/reg.exe), policy denial, no-secret scan all proven via Tailscale Funnel API.
 - **BL-132 `[partial/service-scripts-ready]` — Windows service/packaging scripts.** Service install/uninstall/run-once PowerShell scripts created (sc.exe-based, no external deps). Syntactically validated on windows-latest. GitHub-hosted runner lacks admin privileges for service creation. Real Windows host with admin required for service lifecycle proof.
-- **BL-073/074 partial/hybrid-ready; BL-129 partial/local-mock.** Knowledge retrieval with lexical fallback. Windows endpoint superseded by BL-130/131/133.
+- **BL-069 `[partial/sandbox-code-ready]` — GLPI real HTTP client.** FetchGlpiHttpClient implemented (GLPI REST API + session tokens). Adapter wired. Status reports configured/real when env vars set. No GLPI sandbox deployed.
 - **BL-134 accepted.** Documentation governance infrastructure plus high-leverage drift fixes (9 docs). Per-doc audit deferred to BL-135.
 - **BL-136 accepted.** E2E demo readiness. Scenarios A (Zammad sandbox), B (Ollama AI), C (Governance/Audit/RBAC) proven. Scenario D (Windows) now proven in BL-130/131/133.
 
