@@ -2,6 +2,21 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-165: Session 134 — Session 133 Closure Repair (ACCEPTED)
+
+- Evidence folder: `output/playwright/session-133-windows-endpoint-enterprise-readiness/`
+- Source/System: CLI artifacts, git proof
+- Action: Repaired Session 133 closure contradictions. Replaced pre-commit git evidence (ahead 8, dirty) with post-commit proof (ahead 11, clean, HEAD efe12a4). Corrected evidence index Git HEAD reference from stale placeholder to actual final HEAD. Created trigger helper script (scripts/trigger_windows_verification.sh). Verified GitHub Actions workflow syntax (13 steps, YAML valid) but cannot trigger — no public API URL, no enrollment token.
+- Proves:
+  - Final HEAD efe12a4, clean worktree, ahead 11
+  - Evidence index and validation gate correctly reference post-commit state
+  - State docs and docs hygiene pass
+  - GitHub Actions workflow is syntactically valid, 13 steps, workflow_dispatch trigger
+  - Windows runner is NOT triggerable from this environment (local-only API, no enrollment token)
+  - BL-130/131/133 remain partial/harness-ready
+- Type: closure-repair
+- as_of: 2026-05-03T15:30:00+02:00
+
 ## EV-2026-05-03-164: Session 133 — Windows Endpoint Enterprise Readiness (HARNESS-READY)
 
 - Evidence folder: `output/playwright/session-133-windows-endpoint-enterprise-readiness/`

@@ -258,7 +258,36 @@ The workflow:
 
 ## Related Documents
 
-- `.github/workflows/windows-endpoint-verification.yml` — Automated verification workflow
+- `.github/workflows/windows-endpoint-verification.yml` — Automated verification workflow (13 steps, workflow_dispatch trigger)
+- `scripts/trigger_windows_verification.sh` — Helper script to trigger the GitHub Actions workflow with preflight checks
 - `docs/WINDOWS_ENDPOINT_SUPPORT.md` — Windows endpoint support overview
 - `scripts/package_windows_endpoint_agent.ps1` — Windows packaging scaffold
 - `scripts/bl130_bl131_bl132_windows_readiness.sh` — Linux-based readiness evidence script
+
+## CI/CD Verification (GitHub Actions)
+
+The GitHub Actions workflow at `.github/workflows/windows-endpoint-verification.yml`
+provides an automated verification path. To trigger it:
+
+```bash
+# Prerequisites: gh CLI authenticated, workflow pushed to GitHub, API reachable from internet
+export SUPPORTPLANE_TENANT_ID="dev-tenant"
+export SUPPORTPLANE_ENROLLMENT_TOKEN="<provisioned-enrollment-token>"
+export SUPPORTPLANE_API_URL="https://api.supportplane.example.com"
+bash scripts/trigger_windows_verification.sh
+```
+
+Or manually:
+
+```bash
+gh workflow run windows-endpoint-verification.yml \
+  --ref main \
+  -f tenantId="dev-tenant" \
+  -f enrollmentToken="<token>" \
+  -f apiUrl="https://api.supportplane.example.com"
+```
+
+**Note:** As of Session 134 (2026-05-03), the workflow cannot be triggered because:
+- The SupportPlane API is only available locally (Kind/Podman cluster, not Internet-reachable).
+- No enrollment token is available outside the K8s secrets.
+- The `SUPPORTPLANE_ENROLLMENT_TOKEN` and `SUPPORTPLANE_API_URL` environment variables are not set.

@@ -25,5 +25,6 @@
 ## Notes
 
 - API HEAD (cluster): `94c961874070178442f819067d58d3665fcf3da3` (Session 132 image rebuild).
-- Session 133 commit: `8b7729a88e68053b7dc8383252c6d89fadcee41f`.
-- Evidence: `output/playwright/session-133-windows-endpoint-enterprise-readiness/` (17 files).
+- Session 133 commit: `efe12a4e7c6a90aade1e2f4d837597d8e2cb0a26` (closure repair).
+- Evidence: `output/playwright/session-133-windows-endpoint-enterprise-readiness/` (17 files, post-commit proof corrected).
+- Windows workflow: NOT triggerable — no public API URL, no enrollment token.

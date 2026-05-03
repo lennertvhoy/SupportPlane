@@ -1947,3 +1947,51 @@ No real Windows host was available (Fedora Linux only). BL items remain partial/
 - P1 [BL-133] Trigger GitHub Actions workflow on windows-latest with live API, or manual Windows host verification per runbook. Capture real Windows agent registration, heartbeat, diagnostics, and policy denial proof.
 
 
+## Session 134 — 2026-05-03 — Session 133 Closure Repair
+
+**Date:** 2026-05-03 15:30 CEST
+**Git HEAD:** efe12a4e7c6a90aade1e2f4d837597d8e2cb0a26
+**Branch:** main (ahead 11)
+
+### Why Repair Was Needed
+
+Session 133 handoff claimed closure-grade but uploaded evidence contained closure contradictions:
+- `15-git-status-precommit.txt` showed dirty worktree and ahead 8, not final clean/ahead 11.
+- `17-evidence-index.md` said Git HEAD was "fbaad1a... (to be updated after commit)" instead of actual final HEAD.
+- Final commits ec71fca and 8b7729a existed but evidence predated them.
+
+### What Changed
+
+- Replaced `15-git-status-precommit.txt` (pre-commit, ahead 8) with `15-git-status-postcommit.txt` (post-commit, ahead 11, clean worktree, HEAD efe12a4).
+- Updated `17-evidence-index.md`: Git HEAD corrected to efe12a4, file reference for #15 corrected.
+- Updated `16-validation-gate.txt`: git status reference corrected.
+- Created `scripts/trigger_windows_verification.sh`: helper script to trigger the GitHub Actions workflow with proper preflight checks and honest blocking messages.
+
+### Windows Runner Status
+
+- GitHub Actions workflow (.github/workflows/windows-endpoint-verification.yml) validated: 13 steps, YAML syntax valid, workflow_dispatch trigger with tenantId/enrollmentToken/apiUrl inputs.
+- **CANNOT trigger**: SupportPlane API is local Kind/Podman only (not Internet-reachable from GitHub Actions). No enrollment token available outside K8s secrets.
+- Trigger helper script created with clear preflight checks and honest BLOCKED messaging.
+- BL-130/131/133 remain partial/harness-ready.
+
+### Verification
+
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- `git status --short --branch`: clean, ahead 11
+- Final HEAD: efe12a4e7c6a90aade1e2f4d837597d8e2cb0a26
+- Evidence folder: 17 files (unchanged count)
+
+### State File Updates
+
+- `STATUS.md`: session commit hash updated
+- `PROJECT_STATE.yaml`: heads and timestamp updated
+- `BACKLOG.md`: BL-133 triggerability status added
+- `NEXT_ACTIONS.md`: Windows items updated with blocker details
+- `WORKLOG.md`: this entry
+- `docs/EVIDENCE_LOG.md`: Session 134 entry
+
+### Next Recommended Action
+
+- P1 [BL-133] Deploy SupportPlane API to a publicly reachable endpoint, provision enrollment token, then trigger the GitHub Actions workflow, OR execute the manual Windows verification runbook on a real Windows host.
+

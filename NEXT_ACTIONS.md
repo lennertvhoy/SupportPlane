@@ -23,8 +23,8 @@
 
 - [BL-130/BL-131/BL-132/BL-133] **Windows first-class endpoint completion**
   - Owner: future Windows hardening slice
-  - Status: harness-ready (Session 133). GitHub Actions workflow created (.github/workflows/windows-endpoint-verification.yml) and manual verification runbook (docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md). 44 endpoint-agent tests pass including platform-aware dispatch, Windows flush DNS hardening, software win32-only enforcement, and arbitrary shell/command hardening. OpenBao reseed confirmed, MinIO evidence checksums verified, Zammad writeback safety gates re-verified.
-  - Next action: trigger the GitHub Actions workflow on `windows-latest` runner with live API, or run manual verification on a real Windows host per runbook. Capture registration, heartbeat, diagnostic, and policy-denial proof.
+  - Status: harness-ready (Session 133, closure repaired Session 134). GitHub Actions workflow (.github/workflows/windows-endpoint-verification.yml) validated — 13 steps, workflow_dispatch trigger, runs-on windows-latest. Trigger helper script at scripts/trigger_windows_verification.sh. Manual verification runbook (docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md) with 17-item checklist. BLOCKED from triggering: no Internet-reachable SupportPlane API URL (cluster is local Kind/Podman only), no enrollment token available outside K8s secrets.
+  - Next action: deploy SupportPlane API to a publicly reachable endpoint, create enrollment token, then trigger workflow via `bash scripts/trigger_windows_verification.sh` or `gh workflow run`, or run manual verification on a real Windows host per runbook.
   - Exit criteria: agent runs on actual Windows, registers, heartbeats, diagnostics and policy enforcement are proven, and unsupported remediation remains honestly labeled.
 
 - [BL-135] **Per-doc content audit and full rewrite**
