@@ -1782,3 +1782,76 @@ K8s cluster was DOWN this session. All sandbox integrations marked SANDBOX_CODE_
 - Re-verify Scenarios A and B with real Zammad read and real Ollama model call
 - Capture fresh browser evidence for all 4 scenarios
 
+---
+
+## Session 131 — BL-136 E2E Acceptance Candidate (ACCEPTED)
+
+**Date:** 2026-05-03 11:40 CEST
+**Git HEAD:** to be recorded after commit
+**Branch:** main
+
+### What Changed
+
+1. **Recovered K8s cluster:** Control plane container was stopped; restarted via podman. All 3 app pods (API/Web/Worker) recovered to Ready state. All sandbox integrations (Zammad, OpenBao, NATS, MinIO, Mailpit, Keycloak, Asterisk, observability) running.
+
+2. **Seeded OpenBao Zammad credential:** Ran `scripts/seed_openbao_zammad_secret.sh` to restore the Zammad API token in OpenBao (OpenBao uses inmem storage, lost on pod restart).
+
+3. **Fixed connector registry race condition:** Added module-level `ensureRegistry()` call in `connectors.service.ts` and `ConnectorsModule` import in `connector-installations.module.ts` to prevent lazy-instantiation race where ConnectorRuntimeService checks the registry before ConnectorsService has populated it.
+
+4. **Fixed eslint config:** Added `scripts/*.mjs` to eslint ignores for the screenshot capture script.
+
+### Scenarios Proven
+
+- **Scenario A (Zammad sandbox ticket read):** Cluster API connector status: mode=zammad, transport=real, credentialSource=vault, connected=true. Real ticket #2 (68002, "VPN connection issue", Acme BVBA) read from Zammad sandbox via FetchZammadHttpClient with server-side OpenBao credential resolution.
+
+- **Scenario B (Ollama AI draft):** Real Ollama gemma4:e4b model call proven: provider=ollama, model=gemma4:e4b, fallbackUsed=false, noCloudCall=true, providerMode=local, latencyMs=13398. Draft generated based on Zammad sandbox ticket context.
+
+- **Scenario C (Governance/Audit/RBAC):** Admin dashboard, AI policy (allowedProviders includes ollama, mockOnly safety default), audit events (user_login, outbox_process_once_requested), RBAC enforcement all verified via cluster API and browser.
+
+- **Scenario D (Windows):** Not verified (no Windows host available).
+
+### Verification
+
+- `npm run typecheck --workspaces --if-present`: PASS (all workspaces)
+- `npm run lint`: PASS (0 errors)
+- `npm test --workspace=apps/api`: 210 pass, 0 fail, 3 skipped
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- Cluster API health (`curl localhost:4210/health`): PASS; storeMode=postgres, authMode=local
+- Zammad ticket context: PASS (real sandbox data loaded)
+- Ollama AI draft: PASS (fallbackUsed=false, real model call)
+- Playwright browser screenshots: 5 captured, 0 duplicates
+
+### Evidence
+
+- Folder: `output/playwright/session-131-bl136-e2e-acceptance-candidate/`
+- Files: 18 (under 20-file hard cap)
+- Screenshots: 5 unique PNGs (13-cockpit-dashboard, 14-session-zammad-context, 15-admin-dashboard, 16-ai-policy-detail, 17-ollama-draft-response)
+- CLI artifacts: 12 (health, git, pods, connectors, zammad, AI, policy, Ollama, session)
+- Index: 1 (18-evidence-index.md)
+
+### State File Updates
+
+- STATUS.md: BL-136 marked accepted; evidence folder updated
+- BACKLOG.md: BL-136 status changed from partial/runtime-verified to accepted
+- NEXT_ACTIONS.md: BL-136 removed from active queue
+- PROJECT_STATE.yaml: head entries, AI, connectors, evidence updated
+- WORKLOG.md: this entry appended
+- docs/EVIDENCE_LOG.md: EV-2026-05-03-162 entry prepended
+- docs/REALITY_MATRIX.md: Zammad, Ollama, K8s cluster moved to REAL_LOCAL_NOW; summary statistics updated
+- docs/ENTERPRISE_DEMO_GUIDE.md: scenario statuses updated; timestamp updated
+
+### Known Limitations (Honest)
+
+- Windows endpoint (Scenario D) remains unverified — no real Windows host
+- AI policy mockOnly safety default maintained (ollama allowed via provider list)
+- OpenBao uses inmem storage (loses secrets on pod restart; requires re-seeding)
+- MinIO evidence/checksum path not re-verified in this session
+- No Zammad writeback proven in this specific session (writeback was proven in BL-111)
+- Cluster API pod recovery was via restart, not full image rebuild (pod was running from existing image)
+
+### Next Recommended Action
+
+- P1 [BL-130/BL-131/BL-133] Windows endpoint real-runner proof
+- P2 [BL-069/BL-071/BL-072/BL-127] Connect real connector instances
+

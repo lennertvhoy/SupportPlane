@@ -1,8 +1,8 @@
 # SupportPlane Reality Matrix
 
 **Purpose:** Comprehensive inventory of current system status: real vs mock vs sandbox vs partial. Updated every session with this slice.
-**Last updated:** 2026-05-02
-**Session:** 130 — Real E2E Runtime Demo Verification
+**Last updated:** 2026-05-03
+**Session:** 131 — BL-136 E2E Acceptance
 
 ## Legend
 
@@ -36,7 +36,7 @@
 
 | System | Status | Evidence |
 |--------|--------|----------|
-| Zammad connector | SANDBOX_CODE_READY | FetchZammadHttpClient for real HTTP; ZammadConnectorAdapter.connect() uses real client; OpenBao credential resolution server-side; writeInternalNote() is real and idempotent. Zammad sandbox is running (Session 130) and accessible via port-forward (localhost:8080). Local API connector shows "mock" transport because adapter not registered in local runtime (K8s API pod crash prevented cluster-native execution). Cluster path required for real sandbox transport. |
+| Zammad connector | REAL_LOCAL_NOW | K8s cluster API verifies Zammad as mode=zammad, transport=real, credentialSource=vault, connected=true. Real Zammad sandbox ticket (#2, 68002, Acme BVBA) read proven via FetchZammadHttpClient with server-side OpenBao credential resolution. Session 131 confirms cluster API path works end-to-end with browser/CLI evidence. |
 | GLPI connector | MOCK_BY_GAP | GlpiConnectorAdapter.connect() rejects with honest "Real GLPI HTTP client not implemented"; only MockGlpiHttpClient exists. Honest status labels in API/UI. |
 | osTicket connector | MOCK_NOT_IMPLEMENTED | OsTicketConnectorAdapter returns fixture data only; no real HTTP client. Status shows fixture/unconfigured. |
 | MeshCentral connector | MOCK_NOT_IMPLEMENTED | MockMeshCentralClient only; no real HTTP client. Status reports unconfigured unless mockMode set. |
@@ -47,12 +47,12 @@
 
 | System | Status | Evidence |
 |--------|--------|----------|
-| AI provider gateway | PARTIAL | OllamaAiProvider with FetchOllamaClient exists (real HTTP to /api/generate); LmStudioAiProvider exists; MockAiProvider is default. OLLAMA_BASE_URL not set in local runtime → only mock provider active |
+| AI provider gateway | REAL_LOCAL_NOW | OllamaAiProvider with FetchOllamaClient (real HTTP to /api/generate); LmStudioAiProvider exists; MockAiProvider is backup. Cluster API calls real Ollama gemma4:e4b via podman0 bridge (10.88.0.1:11434). Provider readiness: ollama configured/enabled/enabledByPolicy=true. |
 | AI chat | REAL_LOCAL_NOW | Chat session/message API endpoints exist with tenant AI policy gating and retention enforcement; mock provider used by default |
 | Ticket summary | REAL_LOCAL_NOW | POST /ticket-summary exists, persists TicketSummary, checks tenant AI policy |
 | Draft generation | REAL_LOCAL_NOW | 500 error repaired; safe model-selection parsing; policy-gated |
 | Model usage logging | REAL_LOCAL_NOW | ModelUsageLog table, query/summary APIs, admin UI panel |
-| Ollama real calls | SANDBOX_CODE_READY | Real model calls to gemma4:e4b proven in cluster sessions (BL-108/BL-121); fallbackUsed=false. Ollama is running and gemma4:e4b confirmed available (Session 130, localhost:11434). Policy enforces mockOnly=true for safety in local API runtime. Real model call requires cluster API (pod crash prevents). |
+| Ollama real calls | REAL_LOCAL_NOW | Real model calls to gemma4:e4b proven in Session 131: provider=ollama, model=gemma4:e4b, fallbackUsed=false, noCloudCall=true, providerMode=local, latencyMs=13398. Ollama on localhost:11434, cluster API reaches via podman0 bridge. AI policy: allowedProviders includes ollama; mockOnly=true maintains safety gating. |
 
 ## Governance & Admin
 
@@ -75,7 +75,7 @@
 | MinIO evidence persistence | SANDBOX_CODE_READY | Real S3 PutObject via AWS SDK; object key, checksum, content type. Uses cluster DNS minio.supportplane-data.svc.cluster.local. Cluster required. |
 | Mailpit notifications | SANDBOX_CODE_READY | Real nodemailer SMTP to mailpit.supportplane-integrations.svc.cluster.local:1025. Cluster required. |
 | Keycloak OIDC | SANDBOX_CODE_READY | Full browser OIDC redirect/callback/PKCE flow; realm role mapping; service account tokens with SHA-256 hashing. oidcReady=false (OIDC_ISSUER_URL not set). Cluster required. |
-| Kubernetes cluster | SANDBOX_CODE_READY | Cluster `supportplane-local` restarted in Session 130; all namespaces and services running. K8s API pod crash-loops from stale image (Prisma migration applied to DB but pod needs rebuild). API runs locally against cluster DB via port-forward. |
+| Kubernetes cluster | REAL_LOCAL_NOW | Cluster `supportplane-local` (Kind/Podman, node v1.31.4) healthy in Session 131. All 3 app pods (API/Web/Worker) Ready. All sandbox integrations (Zammad, OpenBao, NATS, MinIO, Mailpit) running. Cluster API serves via port-forward localhost:4210. |
 
 ## Endpoint Agent
 
@@ -93,25 +93,24 @@
 
 | Category | Count | Systems |
 |----------|-------|---------|
-| REAL_LOCAL_NOW | 17 | PostgreSQL, API, Web, Worker/outbox, RBAC, Audit, Redaction, Policy, Connector status API, AI chat, Ticket summary, Draft gen, Model usage, Admin dashboard, Audit explorer, GDPR panel, Evidence timeline, Policy editor, Model usage admin, Retention policy, Agent registration, Heartbeat, Device Console, Tool execution |
-| SANDBOX_CODE_READY | 6 | NATS, Zammad, Ollama, OpenBao, MinIO, Mailpit, Keycloak |
+| REAL_LOCAL_NOW | 22 | PostgreSQL, API, Web, Worker/outbox, RBAC, Audit, Redaction, Policy, Connector status API, AI chat, Ticket summary, Draft gen, Model usage, Admin dashboard, Audit explorer, GDPR panel, Evidence timeline, Policy editor, Model usage admin, Retention policy, Agent registration, Heartbeat, Device Console, Tool execution, Zammad connector, AI provider gateway, Ollama real calls, K8s cluster |
+| SANDBOX_CODE_READY | 4 | NATS, OpenBao, MinIO, Mailpit, Keycloak |
 | MOCK_BY_POLICY | 1 | Cloud AI providers (intentionally blocked; honest configured:false) |
 | MOCK_BY_GAP | 2 | GLPI, Windows endpoint |
 | MOCK_NOT_IMPLEMENTED | 3 | osTicket, MeshCentral, Fortinet |
-| PARTIAL | 3 | AI gateway (no Ollama configured locally), Evidence bundle (PDF fallback), Endpoint diagnostics (Windows unverified), Low-risk remediation (one path only) |
+| PARTIAL | 2 | Evidence bundle (PDF fallback), Endpoint diagnostics (Windows unverified), Low-risk remediation (one path only) |
 | MANIFESTS_READY | 0 | — |
-| SANDBOX_CODE_READY (not-verified-this-session) | 1 | K8s API pod (crash-looping; API verified locally against cluster DB) |
 
 ## Key Observations
 
-1. **Two-tier runtime:** The system has a "standalone local" mode (API + Web + PostgreSQL + NATS + MinIO via compose) and a "sandbox cluster" mode (K8s with full integrations). Both are currently running (Session 130).
+1. **BL-136 E2E acceptance achieved (Session 131):** Scenarios A (Zammad sandbox ticket read), B (Ollama real AI draft with gemma4:e4b, fallbackUsed=false), and C (Governance/Audit/RBAC) all proven end-to-end from the K8s cluster API with fresh browser/computer-use evidence. Scenario D (Windows) remains unverified.
 
-2. **Cluster is UP but K8s API pod crash-loops:** All SANDBOX_CODE_READY services (Zammad, Ollama, OpenBao, NATS, Mailpit, MinIO) are running in the cluster. The K8s API pod crashes from a stale image (Prisma 7 tool_manifest_records migration). Workaround: API runs locally against cluster DB via port-forward. Local API connector shows mock transport because Zammad adapter is not registered in local runtime.
+2. **K8s cluster fully operational:** All 3 app pods (API/Web/Worker) Ready; all sandbox integrations (Zammad, OpenBao, NATS, MinIO, Mailpit, Keycloak, Asterisk, Prometheus, Grafana, Loki) running. Cluster API serves via port-forward localhost:4210.
 
-3. **Most accepted BL items are real code, not mocks:** The 6 SANDBOX_CODE_READY systems all have real HTTP client/code paths — they were proven in previous cluster sessions. The current local runtime uses mock defaults because the cluster is not running.
+3. **Zammad connector is REAL_LOCAL_NOW:** Mode=zammad, transport=real, credentialSource=vault (OpenBao). Real sandbox ticket (#2, 68002, Acme BVBA) read proven. Writeback remains sandbox-only and approval-gated.
 
-4. **Safety mocks remain intentional:** Cloud AI providers (OpenAI, Azure, Anthropic) are MOCK_BY_POLICY — blocked intentionally with honest configured:false. Production writeback, public replies, internet email are blocked by delivery policy. These are not gaps.
+4. **Ollama is REAL_LOCAL_NOW:** gemma4:e4b real model calls from cluster API via podman0 bridge; fallbackUsed=false, noCloudCall=true, providerMode=local. AI policy allows ollama while maintaining mockOnly safety defaults.
 
-5. **Honest gap labeling:** GLPI, osTicket, MeshCentral, and Fortinet connectors have explicit honest error messages or fixture-only labels. No fake completeness.
+5. **Safety mocks remain intentional:** Cloud AI providers blocked by policy. Production writeback, public replies, internet email blocked. These are safety features, not gaps.
 
-6. **BL-116 (Real sandbox acceptance freeze) is accepted** against the cluster. All acceptance gates were met. The current session simply doesn't have the cluster running to re-demonstrate the full sandbox E2E flow.
+6. **Remaining gaps are honestly labeled:** Windows endpoint (no runner), GLPI/osTicket/MeshCentral/Fortinet (no real instances), Evidence bundle PDF (font-dependent fallback).

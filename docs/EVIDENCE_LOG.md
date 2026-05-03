@@ -2,6 +2,22 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-162: Session 131 — BL-136 E2E Acceptance Candidate (ACCEPTED)
+
+- Evidence folder: `output/playwright/session-131-bl136-e2e-acceptance-candidate/`
+- Source/System: Chromium via Playwright against cluster Web UI (`localhost:3201`) and cluster API (`localhost:4210`), plus CLI artifacts
+- Action: Recovered K8s cluster (control plane and all services). Fixed API pod restart. Seeded OpenBao with Zammad credential. Proved Scenarios A (Zammad sandbox ticket read — mode=zammad, transport=real, credentialSource=vault), B (Ollama AI draft — fallbackUsed=false, provider=ollama, model=gemma4:e4b, latencyMs=13398), and C (Governance/Audit/RBAC — admin dashboard, AI policy, audit events) end-to-end with fresh browser/computer-use evidence. Fixed connector registry race condition (module-level ensureRegistry) and eslint config.
+- Proves:
+  - K8s cluster API healthy with all 3 app pods Ready and all sandbox integrations running
+  - Zammad connector transport=real via cluster API, not mock
+  - Ollama gemma4:e4b real model call with fallbackUsed=false
+  - AI policy allows Ollama while maintaining mockOnly safety default
+  - Audit events generated for all demo actions
+  - 18 evidence files (5 browser screenshots + 12 CLI artifacts + 1 index), 0 duplicates
+  - Scenarios A, B, C proven end-to-end; Scenario D (Windows) remains unverified
+- Type: integration-and-browser-runtime-verification
+- as_of: 2026-05-03T11:40:00+02:00
+
 ## EV-2026-05-02-161: Session 130 — BL-136 Real E2E Runtime Demo Verification (PARTIAL/RUNTIME-VERIFIED)
 
 - Evidence folder: `output/playwright/session-130-bl136-runtime-e2e-verification/`

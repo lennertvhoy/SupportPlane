@@ -63,6 +63,8 @@ current_state:
       is dirty with 2 modified files (.opencode/opencode.json,
       infra/kubernetes/local-podman/app/app-configmap.yaml).
     final_head_after_bl_136_session_130: f0c6a9102b9f59293db22b28bf82376f18ecea9f
+    head_before_bl_136_session_131: e5b1dc5272642916a63027434790027b70bcdf8d
+    final_head_after_bl_136_session_131: recorded_in_final_handoff
     worktree_status_at_state_update: clean
 
   current_product_truth:
@@ -91,7 +93,7 @@ current_state:
       not_implemented: [OAuth, SAML, MFA_enforcement, password_reset, production_auth_hardening]
     connectors:
       current: real sandbox read + real sandbox writeback + expanded mock scaffolding (BL-111 accepted, BL-069/072 partial)
-      zammad: real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient
+      zammad: real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient (verified Session 131: transport=real, mode=zammad, credentialSource=vault, connected=true)
       writeback: sandbox-only internal notes; real network allowed for local Zammad sandbox only
       registry: zammad, osticket, glpi, meshcentral, fortinet, mock factories registered via AdapterRuntimeResolver
       canonical_ids: resolveCanonicalAdapterId() eliminates hardcoded IDs
@@ -115,9 +117,10 @@ current_state:
       fallback_truth: response includes pgvectorReason, embeddingProviderAvailable, semanticEligible, and fallbackReason
       known_gaps: [external_ingestion_pipeline, pgvector_extension_and_vector_column, production_embedding_provider]
     ai:
-      current: deterministic mock/local only with governance logging
+      current: real local ollama with governance logging and policy gating
       cloud_ai_calls: false
       ollama_integrated: true
+      ollama_verified_session_131: true (gemma4:e4b real call, fallbackUsed=false, latencyMs=13398)
       model: gemma4:e4b
       provider_mode: local
       fallback_used: false
@@ -471,7 +474,7 @@ current_state:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-136, BL-073, BL-074, BL-069, BL-071, BL-072, BL-127, BL-065, BL-130, BL-131, BL-132, BL-133, BL-135]
+     active_queue_items: [BL-073, BL-074, BL-069, BL-071, BL-072, BL-127, BL-065, BL-130, BL-131, BL-132, BL-133, BL-135]
 
   documentation:
     primary_user_guide: README.md
@@ -640,14 +643,14 @@ current_state:
       - docs/REALITY_MATRIX.md
       - docs/ENTERPRISE_DEMO_GUIDE.md
 
-  evidence:
+   evidence:
     ledger: docs/EVIDENCE_LOG.md
     acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-130-bl136-runtime-e2e-verification/
-    latest_screenshot_count: 4
+    latest_folder: output/playwright/session-131-bl136-e2e-acceptance-candidate/
+    latest_screenshot_count: 5
     latest_duplicate_count: 0
-    latest_cli_artifacts: 9
-    total_files_in_latest_folder: 13
+    latest_cli_artifacts: 12
+    total_files_in_latest_folder: 18
     cli_artifacts:
       - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md
       - output/playwright/session-107-bl106-evidence-reconciliation/screenshot-md5s.txt

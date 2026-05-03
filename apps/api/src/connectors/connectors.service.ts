@@ -69,6 +69,12 @@ function ensureRegistry() {
   registryInitialized = true;
 }
 
+// Call at module level to ensure registry is populated before any NestJS
+// provider is instantiated. This avoids a lazy-instantiation race where
+// ConnectorRuntimeService checks the registry before ConnectorsService
+// has been created. The idempotency guard prevents double registration.
+ensureRegistry();
+
 @Injectable()
 export class ConnectorsService {
   private readonly mode: ConnectorMode;
