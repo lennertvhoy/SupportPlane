@@ -1,0 +1,15 @@
+Session 133 Validation Gate Results
+===================================
+
+1. npm run lint: PASS (0 errors)
+2. npm run typecheck --workspaces --if-present: PASS (all workspaces)
+3. npm test --workspace=apps/endpoint-agent: PASS (44/44, 0 failures)
+4. npm test --workspace=apps/api: PASS (210/210, 0 failures, 3 skipped)
+5. python3 scripts/check_state_docs.py: PASS
+6. python3 scripts/check_docs_hygiene.py: PASS
+7. git status --short --branch: see 15-git-status-postcommit.txt (final: clean, ahead 10)
+8. API /health: head matches current git HEAD
+9. kubectl get pods -A: all pods Running (27 pods)
+10. OpenBao Zammad secret: resolved (credentialSource=vault, transport=real)
+11. MinIO evidence artifacts: present (50+ objects, checksum verified)
+12. Zammad writeback safety: sandbox-only, production blocked
