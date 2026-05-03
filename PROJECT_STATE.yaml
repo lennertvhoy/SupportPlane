@@ -83,8 +83,8 @@ current_state:
     head_before_session_144: 6dac67fbf367b10a857f55050d45e17f530a4a45
     final_head_after_session_144: 8015c94c996621ae3d5498ae88f2f41e2fcd2bcb
     head_before_session_145: cb99febbba35011fbadb4f3d16c5663a0378fede
-    final_head_after_session_145: recorded_in_final_handoff
-    worktree_status_at_state_update: dirty
+    final_head_after_session_145: 81320984c392281d375f6a5592ecea4ba97e3fe1
+    worktree_status_at_state_update: clean
 
   current_product_truth:
     lifecycle_stage: real_self_hosted_sandbox_acceptance_frozen
