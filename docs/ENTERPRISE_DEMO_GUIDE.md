@@ -107,9 +107,10 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:4110 npm run dev
 
 Requires Kind with Podman provider, `kubectl`, and the existing cluster
 tooling. All sandbox integrations are real code — previously accepted
-(BL-116 through BL-117) and the cluster was restarted in Session 130.
-Note: K8s API pod currently crash-loops from stale image; API can be
-run locally against cluster DB as a workaround.
+(BL-116 through BL-117). Cluster was last verified in Session 132
+(2026-05-03): all 3 app pods (API/Web/Worker) Ready, runtime HEAD 94c961
+matches commit HEAD. If the cluster has been shut down since, restart
+with the steps below.
 
 **Prerequisites:**
 
@@ -133,31 +134,11 @@ bash scripts/build_and_load_local_k8s_images.sh
 # 4. Wait for all pods to become Ready
 kubectl get pods -A --watch   # Ctrl+C when all Running/Ready
 
-# 5. Port-forward cluster DB for local API (Session 130 workaround for crash-looping API pod)
-kubectl port-forward -n supportplane-data postgres-0 5434:5432
-
-# 6. Run API locally against cluster DB (terminal 1)
-cd apps/api
-API_PORT=4110 \
-SUPPORTPLANE_STORE=postgres \
-SUPPORTPLANE_AUTH_MODE=local \
-DATABASE_URL="postgresql://supportplane:supportplane_dev@localhost:5434/supportplane?schema=public" \
-npm run dev
-
-# 7. Port-forward cluster Web (terminal 2)
-kubectl port-forward -n supportplane-app svc/supportplane-web 3201:3200
-
-# 8. Open http://localhost:3201
-```
-
-**Legacy cluster-native Path B (when K8s API pod is healthy):**
-
-```bash
-# Port-forward API and Web (two terminals)
+# 5. Port-forward API and Web (two terminals)
 kubectl port-forward -n supportplane-app svc/supportplane-api 4210:4110
 kubectl port-forward -n supportplane-app svc/supportplane-web 3300:3200
 
-# Open http://localhost:3300
+# 6. Open http://localhost:3300
 ```
 
 **What is real sandbox in Path B:**

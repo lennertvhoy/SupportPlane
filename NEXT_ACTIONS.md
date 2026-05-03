@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-03 11:40 CEST
+**Updated At:** 2026-05-03 15:00 CEST
 **Execution Mode:** operating
 **Max Items:** 10
 
@@ -23,8 +23,9 @@
 
 - [BL-130/BL-131/BL-132/BL-133] **Windows first-class endpoint completion**
   - Owner: future Windows hardening slice
-  - Next action: run the fixed service/software collectors and packaging scaffold on a real Windows host or Windows CI runner; capture registration, heartbeat, diagnostic, and policy-denial proof.
-  - Exit criteria: agent runs on actual Windows, registers, heartbeats, diagnostics and policy enforcement are proven, and unsupported remediation remains honestly labeled unless safely implemented.
+  - Status: harness-ready (Session 133). GitHub Actions workflow created (.github/workflows/windows-endpoint-verification.yml) and manual verification runbook (docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md). 44 endpoint-agent tests pass including platform-aware dispatch, Windows flush DNS hardening, software win32-only enforcement, and arbitrary shell/command hardening. OpenBao reseed confirmed, MinIO evidence checksums verified, Zammad writeback safety gates re-verified.
+  - Next action: trigger the GitHub Actions workflow on `windows-latest` runner with live API, or run manual verification on a real Windows host per runbook. Capture registration, heartbeat, diagnostic, and policy-denial proof.
+  - Exit criteria: agent runs on actual Windows, registers, heartbeats, diagnostics and policy enforcement are proven, and unsupported remediation remains honestly labeled.
 
 - [BL-135] **Per-doc content audit and full rewrite**
   - Owner: future slice

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-02T22:30:00+02:00
+  updated_at: 2026-05-03T14:00:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -66,7 +66,7 @@ current_state:
     head_before_bl_136_session_131: e5b1dc5272642916a63027434790027b70bcdf8d
     final_head_after_bl_136_session_131: 94c961874070178442f819067d58d3665fcf3da3
     head_before_bl_136_session_132: 94c961874070178442f819067d58d3665fcf3da3
-    final_head_after_bl_136_session_132: recorded_in_final_handoff
+    final_head_after_bl_136_session_132: fbaad1ac735f42010354456040902a2a54bddc8c
     worktree_status_at_state_update: clean
 
   current_product_truth:
@@ -95,7 +95,7 @@ current_state:
       not_implemented: [OAuth, SAML, MFA_enforcement, password_reset, production_auth_hardening]
     connectors:
       current: real sandbox read + real sandbox writeback + expanded mock scaffolding (BL-111 accepted, BL-069/072 partial)
-      zammad: real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient (verified Session 131: transport=real, mode=zammad, credentialSource=vault, connected=true)
+      zammad: "real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient (verified Session 131 — transport=real, mode=zammad, credentialSource=vault, connected=true)"
       writeback: sandbox-only internal notes; real network allowed for local Zammad sandbox only
       registry: zammad, osticket, glpi, meshcentral, fortinet, mock factories registered via AdapterRuntimeResolver
       canonical_ids: resolveCanonicalAdapterId() eliminates hardcoded IDs
@@ -471,14 +471,12 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-136
-    accepted_current_slice: BL-123_session_real_connectors_golden_workflow
+    accepted_current_slice: BL-136_session_132_proof_repair
     planned_real_e2e_items:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-     highest_id: BL-136
-     accepted_current_slice: BL-136_session_132_proof_repair
-     active_queue_items: [BL-073, BL-074, BL-069, BL-071, BL-072, BL-127, BL-065, BL-130, BL-131, BL-132, BL-133, BL-135]
+    active_queue_items: [BL-073, BL-074, BL-069, BL-071, BL-072, BL-127, BL-065, BL-130, BL-131, BL-132, BL-133, BL-135]
 
   documentation:
     primary_user_guide: README.md
@@ -646,28 +644,6 @@ current_state:
       - docs/EVIDENCE_LOG.md
       - docs/REALITY_MATRIX.md
       - docs/ENTERPRISE_DEMO_GUIDE.md
-
-   evidence:
-    ledger: docs/EVIDENCE_LOG.md
-    acceptance_freezes: docs/ACCEPTANCE_FREEZES.md
-    latest_folder: output/playwright/session-132-bl136-proof-repair/
-    latest_screenshot_count: 5
-    latest_duplicate_count: 0
-    latest_cli_artifacts: 14
-    total_files_in_latest_folder: 20
-    cli_artifacts:
-      - output/playwright/session-107-bl106-evidence-reconciliation/proof-state-mapping.md
-      - output/playwright/session-107-bl106-evidence-reconciliation/screenshot-md5s.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/cluster-baseline-proof.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/zammad-topology-proof.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/openbao-topology-proof.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/nats-jetstream-proof.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/mailpit-topology-proof.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/minio-topology-proof.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/ollama-placement-decision.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/supportplane-non-integration-proof.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/local-mvp-regression-proof.txt
-      - output/playwright/session-107-bl106-evidence-reconciliation/roadmap-summary.json
 
   environment:
     host:

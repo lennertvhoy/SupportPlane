@@ -107,6 +107,7 @@ Endpoint agent and Windows platform documentation.
 | File | Purpose |
 |------|---------|
 | `WINDOWS_ENDPOINT_SUPPORT.md` | Windows endpoint compatibility, collectors, and packaging |
+| `WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md` | Windows endpoint manual verification runbook and BL-133 checklist |
 
 ## Evidence Bundles
 

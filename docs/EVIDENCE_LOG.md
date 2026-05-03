@@ -2,6 +2,23 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-164: Session 133 — Windows Endpoint Enterprise Readiness (HARNESS-READY)
+
+- Evidence folder: `output/playwright/session-133-windows-endpoint-enterprise-readiness/`
+- Source/System: K8s cluster API (port-forward 4211), CLI artifacts, endpoint-agent tests, MinIO boto3, OpenBao curl
+- Action: Enterprise readiness slice after BL-136 acceptance. Hardened Windows endpoint: 44 agent tests (up from 28) across 4 new test suites (platform dispatch, flush DNS hardening, software win32 enforcement, shell hardening). Created GitHub Actions Windows verification workflow (.github/workflows/windows-endpoint-verification.yml, manual dispatch, 8 steps on windows-latest) and manual runbook (docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md, 17-item checklist). Verified sandbox durability: OpenBao reseed confirmed (Zammad secret v3, credentialSource=vault), MinIO evidence checksum verified (50+ objects, no raw secrets), Zammad writeback safety re-verified (productionWritebackReady=false, sandboxWritebackReady=true). Fixed 3 critical state doc contradictions and 7 docs updated.
+- Proves:
+  - Windows endpoint tests strengthened: 44/44 pass, 0 failures; manifest audit: 8 tools, 0 issues
+  - Windows CI harness created: GitHub Actions workflow + manual runbook + packaging scaffold → BL-133 harness-ready
+  - OpenBao durability: secret resolvable after reseed; MinIO evidence: artifacts present with valid checksums
+  - Zammad writeback: sandbox-only, production blocked, safety defaults intact
+  - 3 critical state doc contradictions fixed; PROJECT_STATE.yaml YAML parse errors repaired
+  - All validation gates pass: lint, typecheck, agent 44/44, API 210/210, state docs, docs hygiene
+  - 17 evidence files (under 20-file hard cap)
+  - No real Windows host — BL-130/131/133 remain partial/harness-ready, not accepted
+- Type: code-hardening-and-verification-harness
+- as_of: 2026-05-03T15:00:00+02:00
+
 ## EV-2026-05-03-163: Session 132 — BL-136 Proof Repair (ACCEPTED)
 
 - Evidence folder: `output/playwright/session-132-bl136-proof-repair/`

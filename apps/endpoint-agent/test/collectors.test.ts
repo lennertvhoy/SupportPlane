@@ -5,7 +5,10 @@ import * as linux from '../src/collectors/linux.js';
 import * as win32 from '../src/collectors/win32.js';
 import * as darwin from '../src/collectors/darwin.js';
 import { getWindowsReadonlyCommandTemplate, runWindowsReadonlyCommand, WINDOWS_READONLY_COMMANDS } from '../src/collectors/windows-command-runner.js';
+import { WINDOWS_FLUSH_DNS_TEMPLATE, LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE } from '../src/collectors/remediation.js';
 import { getAgentPlatform, normalizePlatform, platformDisplayLabel } from '../src/platform.js';
+import fs from 'node:fs';
+import path from 'node:path';
 
 describe('endpoint-agent read-only collectors', () => {
   it('collects inventory without mutation', async () => {
@@ -136,11 +139,13 @@ describe('platform-specific collectors', () => {
     assert.strictEqual(clear.unsupported, true);
   });
 
-  it('win32 clearTempPreview returns unsupported', async () => {
+  it('win32 clearTempPreview returns unsupported with correct enterprise readiness note', async () => {
     const result = await win32.clearTempPreview();
     assert.strictEqual(result.unsupported, true);
-    assert.ok(result.note.includes('Windows') || result.note.includes('not implemented'));
     assert.strictEqual(result.readOnly, true);
+    assert.strictEqual(result.ok, false);
+    assert.ok(result.note.includes('not implemented'), 'note must state not implemented');
+    assert.ok(result.note.includes('Windows'), 'note must reference Windows');
   });
 
   it('linux clearTempPreview returns unsupported', async () => {
@@ -281,5 +286,168 @@ HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\App
       installDate: undefined,
       uninstallKey: 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\App1',
     });
+  });
+});
+
+describe('platform-aware dispatch', () => {
+  it('runFixedDiagnostic dispatches collect_software to platform software collector', async () => {
+    const result = await runFixedDiagnostic('collect_software');
+    assert.strictEqual(result.kind, 'software');
+    assert.strictEqual(result.payload.readOnly, true);
+    if (process.platform !== 'win32') {
+      assert.strictEqual((result.payload as Record<string, unknown>).unsupported, true, 'software diagnostic only supported on win32');
+    }
+  });
+
+  it('runFixedDiagnostic dispatches collect_services to platform services collector', async () => {
+    const result = await runFixedDiagnostic('collect_services');
+    assert.strictEqual(result.kind, 'services');
+    assert.strictEqual(result.payload.readOnly, true);
+  });
+
+  it('runFixedDiagnostic dispatches collect_disk to platform disk collector', async () => {
+    const result = await runFixedDiagnostic('collect_disk');
+    assert.strictEqual(result.kind, 'disk');
+    assert.strictEqual(result.payload.readOnly, true);
+  });
+
+  it('runFixedDiagnostic dispatches flush_dns_cache through platform remediation', async () => {
+    const result = await runFixedDiagnostic('flush_dns_cache');
+    assert.strictEqual(result.kind, 'remediation');
+  });
+
+  it('runFixedDiagnostic dispatches clear_temp_preview through platform remediation', async () => {
+    const result = await runFixedDiagnostic('clear_temp_preview');
+    assert.strictEqual(result.kind, 'remediation');
+  });
+
+  it('runFixedDiagnostic rejects unknown command kinds', async () => {
+    await assert.rejects(() => runFixedDiagnostic('wmic process list'), /Unsupported fixed diagnostic command/);
+    await assert.rejects(() => runFixedDiagnostic('cmd /c dir'), /Unsupported fixed diagnostic command/);
+  });
+});
+
+describe('Windows flush DNS enterprise hardening', () => {
+  it('WINDOWS_FLUSH_DNS_TEMPLATE has no shell, powershell, or cmd fields', () => {
+    const tpl = WINDOWS_FLUSH_DNS_TEMPLATE as unknown as Record<string, unknown>;
+    assert.strictEqual(tpl.shell, undefined, 'shell field must not exist');
+    assert.strictEqual(tpl.powershell, undefined, 'powershell field must not exist');
+    assert.strictEqual(tpl.cmd, undefined, 'cmd field must not exist');
+    assert.strictEqual(tpl.executable_new, undefined, 'no secondary executable field');
+  });
+
+  it('WINDOWS_FLUSH_DNS_TEMPLATE args are free of shell metacharacters', () => {
+    for (const arg of WINDOWS_FLUSH_DNS_TEMPLATE.args) {
+      assert.ok(!/[;&|`$<>]/.test(arg), `flush dns arg "${arg}" contains shell metacharacter`);
+    }
+    assert.deepStrictEqual(WINDOWS_FLUSH_DNS_TEMPLATE.args, ['/flushdns']);
+    assert.strictEqual(WINDOWS_FLUSH_DNS_TEMPLATE.executable, 'ipconfig');
+  });
+
+  it('LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE args are free of shell metacharacters', () => {
+    for (const arg of LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE.args) {
+      assert.ok(!/[;&|`$<>]/.test(arg), `flush dns arg "${arg}" contains shell metacharacter`);
+    }
+    assert.deepStrictEqual(LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE.args, ['flush-caches']);
+    assert.strictEqual(LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE.executable, 'resolvectl');
+  });
+
+  it('Windows flushDnsCache denies shell metacharacters in command template by rejecting ampersands', async () => {
+    const calls: Array<{ file: string; args: string[] }> = [];
+    const flush = await win32.flushDnsCache(async (file, args) => {
+      calls.push({ file, args });
+      return { exitCode: 0, stdout: 'ok', stderr: '' };
+    });
+
+    assert.strictEqual(calls.length, 1);
+    const calledArgs = calls[0]!.args;
+    assert.ok(!calledArgs.some((a: string) => a.includes('&')), 'ampersand would be shell injection');
+    assert.ok(!calledArgs.some((a: string) => a.includes('|')), 'pipe would be shell injection');
+    assert.ok(!calledArgs.some((a: string) => a.includes(';')), 'semicolon would be shell injection');
+    assert.deepStrictEqual(calledArgs, ['/flushdns']);
+    assert.strictEqual(flush.commandTemplate.userInputUsed, false);
+  });
+});
+
+describe('diagnostic.software win32-only enforcement', () => {
+  it('collect_software via runFixedDiagnostic is unsupported on non-win32', async () => {
+    if (process.platform === 'win32') return;
+    const result = await runFixedDiagnostic('collect_software');
+    assert.strictEqual(result.kind, 'software');
+    const payload = result.payload as Record<string, unknown>;
+    assert.strictEqual(payload.unsupported, true);
+    assert.ok(typeof payload.note === 'string', 'software unsupported must have honest explanation');
+  });
+
+  it('win32.collectSoftware reports unsupported on non-Windows hosts with correct note', async () => {
+    if (process.platform === 'win32') return;
+    const software = await win32.collectSoftware();
+    assert.strictEqual(software.unsupported, true);
+    assert.strictEqual(software.readOnly, true);
+    assert.ok(software.note.includes('Windows'), 'must mention Windows');
+  });
+});
+
+describe('arbitrary shell/command hardening — no unsafe primitives in collector paths', () => {
+  it('no collector source file contains PowerShell, cmd.exe, shell:true, or unsanitized exec', () => {
+    const srcDir = path.resolve(process.cwd(), 'src', 'collectors');
+    let files: string[];
+    try {
+      files = fs.readdirSync(srcDir);
+    } catch {
+      return;
+    }
+
+    const unsafePatterns: Array<{ name: string; regex: RegExp; label: string }> = [
+      { name: 'powershell', regex: /powershell/i, label: 'PowerShell invocation' },
+      { name: 'cmd.exe', regex: /cmd\.exe/i, label: 'cmd.exe invocation' },
+      { name: 'shell:true', regex: /shell\s*:\s*true/i, label: 'shell:true option' },
+      { name: 'unqualified-exec', regex: /\bexec\s*\(/, label: 'exec() without File suffix' },
+      { name: 'execSync', regex: /\bexecSync\s*\b/, label: 'execSync invocation' },
+    ];
+
+    for (const file of files) {
+      if (!file.endsWith('.ts')) continue;
+      const content = fs.readFileSync(path.join(srcDir, file), 'utf8');
+      for (const { name, regex, label } of unsafePatterns) {
+        assert.ok(!regex.test(content), `${file}: ${label} (pattern: ${name})`);
+      }
+    }
+  });
+
+  it('all WINDOWS_READONLY_COMMANDS use only fixed sc.exe or reg.exe with no shell fields', () => {
+    for (const [name, template] of Object.entries(WINDOWS_READONLY_COMMANDS)) {
+      assert.ok(['sc.exe', 'reg.exe'].includes(template.executable),
+        `${name} executable must be sc.exe or reg.exe, got ${template.executable}`);
+      assert.strictEqual((template as Record<string, unknown>).shell, undefined,
+        `${name} must not have shell field`);
+      assert.strictEqual((template as Record<string, unknown>).command, undefined,
+        `${name} must not have command field`);
+    }
+  });
+
+  it('no collector module exports a function named like a shell or command primitive', () => {
+    const forbiddenSubstrings = ['shell', 'powershell', 'pwsh', 'cmdExe', 'commandPrompt'];
+    for (const [modName, mod] of Object.entries({ linux, win32, darwin })) {
+      for (const key of Object.keys(mod as Record<string, unknown>)) {
+        const lower = key.toLowerCase();
+        for (const sub of forbiddenSubstrings) {
+          assert.ok(!lower.includes(sub),
+            `${modName}.${key} must not export shell/command primitive`);
+        }
+      }
+    }
+  });
+
+  it('WINDOWS_FLUSH_DNS_TEMPLATE commandTemplate uses userInputUsed: false', async () => {
+    const flush = await win32.flushDnsCache(async (file, args) => {
+      if (args.some((a: string) => /[;&|`$<>]/.test(a))) {
+        throw new Error('shell metacharacter rejected');
+      }
+      return { exitCode: 0, stdout: 'Successfully flushed the DNS Resolver Cache.', stderr: '' };
+    });
+    assert.strictEqual(flush.commandTemplate.userInputUsed, false);
+    assert.strictEqual(flush.readOnly, false);
+    assert.strictEqual(flush.platform, 'win32');
   });
 });

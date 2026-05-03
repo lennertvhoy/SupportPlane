@@ -131,7 +131,7 @@ All items below were completed during BL-116 closure. Evidence in:
 
 - All gates above were proven during BL-103 through BL-116 closure sessions
   between 2026-04-29 and 2026-04-30.
-- **The cluster is not currently running** (as of 2026-05-02).
+- **The cluster was last verified running on 2026-05-03** during Session 132 (BL-136 proof repair). After session end, the cluster may have been shut down. Run `kubectl get pods -A` to verify current state.
 - To re-verify: start the cluster with `bash scripts/create_local_k8s_cluster.sh`,
   apply manifests with `kubectl apply -k infra/kubernetes/local-podman`, build
   and load images with `bash scripts/build_and_load_local_k8s_images.sh`, then

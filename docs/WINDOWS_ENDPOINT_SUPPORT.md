@@ -1,8 +1,8 @@
 # Windows Endpoint Support
 
-**Status:** Architecture-grade foundation implemented. Real Windows runtime proof pending.
+**Status:** Architecture-grade foundation implemented. Real Windows runtime proof pending / harness-ready.
 
-**Updated:** 2026-05-01
+**Updated:** 2026-05-03
 
 ## Current Status
 
@@ -100,6 +100,22 @@ A readiness evidence script aggregates endpoint-agent and contracts tests:
 ```bash
 bash scripts/bl130_bl131_bl132_windows_readiness.sh
 ```
+
+The agent test suite now includes enterprise hardening coverage:
+- `platform-aware dispatch` — verifies `runFixedDiagnostic` dispatches correctly for all command kinds
+- `Windows flush DNS enterprise hardening` — verifies flush DNS template has no shell/PowerShell/cmd fields and no shell metacharacters
+- `diagnostic.software win32-only enforcement` — verifies software diagnostic is only supported on win32
+- `arbitrary shell/command hardening` — source-scans all collector files for PowerShell, cmd.exe, shell:true, exec(), and execSync patterns
+
+For full Windows verification, see `.github/workflows/windows-endpoint-verification.yml` and
+`docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md`.
+
+## CI/CD Verification
+
+A GitHub Actions workflow is available for automated Windows endpoint verification:
+
+- **Workflow:** `.github/workflows/windows-endpoint-verification.yml` — manually triggered (`workflow_dispatch`) with inputs for tenantId, enrollmentToken, and apiUrl. Runs on `windows-latest`. Builds, tests, registers, heartbeats, and runs diagnostics.
+- **Runbook:** `docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md` — full step-by-step manual and automated verification procedure with expected outputs and a BL-133 verification checklist.
 
 ## What Requires a Real Windows Runner
 

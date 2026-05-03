@@ -2,7 +2,7 @@
 
 **Product:** SupportPlane
 **Execution Mode:** operating
-**Updated At:** 2026-05-02
+**Updated At:** 2026-05-03
 
 ## Purpose
 
@@ -182,10 +182,10 @@ Status markers:
 - [BL-119] `[planned]` Optional Tauri operator companion scaffold. Create desktop companion scaffold only after privacy/consent requirements are explicit. Dependencies: BL-116/BL-118 as applicable. Non-claims: no screen capture or OCR by scaffold alone. Evidence expected: explicit start/stop sharing state.
 - [BL-120] `[planned]` Optional consent-gated screen/OCR observation. Add OCR/screen text extraction only after consent, retention, redaction, and privacy design are accepted. Dependencies: BL-119 and separate privacy design. Non-claims: no ambient surveillance, raw pixel retention by default, or remote desktop observation. Evidence expected: consent-gated OCR fixture and redaction/no-secret proof.
 - [BL-129] `[partial/local-mock]` Windows endpoint agent compatibility foundation. Platform-aware contracts, policy enforcement, collector modules, and UI platform badges implemented. Windows-safe read-only collectors (status, inventory, disk, network) return structured results without arbitrary shell. Windows services/software now have fixed `sc.exe`/`reg.exe` command templates and Linux-tested fixture parsers; real Windows execution is not yet proven. Mocked Windows endpoint in seed data. Tests use mocked platform provider. Real Windows runner verification is not yet proven.
-- [BL-130] `[partial/linux-tested]` Windows diagnostics collectors completion. Windows service enumeration and installed software inventory have fixed command templates plus parser contracts tested on Linux fixtures, with non-Windows fallback returning honest `unsupported`. Real Windows runner proof is still required before acceptance.
-- [BL-131] `[partial/linux-tested]` Windows tool-manifest compatibility completion. Manifest now includes Windows services/software compatibility metadata and `collect_software` fixed command kind. API/contracts tests cover platform filtering and unsafe command-field rejection. Real Windows host compatibility remains unproven.
-- [BL-132] `[partial/docs-scaffold]` Windows service/install packaging plan. Added Windows packaging readiness script and service-wrapper scaffold documentation. MSI/EXE installer and real auto-start proof remain future work.
-- [BL-133] `[planned]` Windows verification strategy. Real Windows runner CI harness or manual verification runbook. Prove endpoint agent registration, heartbeat, diagnostics, and policy enforcement on actual Windows host.
+- [BL-130] `[partial/harness-ready]` Windows diagnostics collectors completion. Windows service enumeration and installed software inventory have fixed command templates plus parser contracts tested on Linux fixtures (44 agent tests, 0 failures), with non-Windows fallback returning honest `unsupported`. GitHub Actions Windows verification workflow created; manual verification runbook at docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md. Real Windows runner proof is still required before acceptance.
+- [BL-131] `[partial/harness-ready]` Windows tool-manifest compatibility completion. Manifest now includes Windows services/software compatibility metadata and `collect_software` fixed command kind. API/contracts tests cover platform filtering and unsafe command-field rejection. Tool manifest audit (Session 133): 8 tools, 0 issues, all flags honest. Real Windows host compatibility remains unproven.
+- [BL-132] `[partial/harness-ready]` Windows service/install packaging plan. Added Windows packaging readiness script (scripts/package_windows_endpoint_agent.ps1) and service-wrapper scaffold documentation. GitHub Actions workflow includes build-and-test step on windows-latest. MSI/EXE installer and real auto-start proof remain future work.
+- [BL-133] `[partial/harness-ready]` Windows verification strategy. GitHub Actions Windows verification workflow (.github/workflows/windows-endpoint-verification.yml) with manual dispatch, 8 steps including build, test, register, heartbeat, diagnostics, artifact upload. Manual verification runbook (docs/WINDOWS_ENDPOINT_VERIFICATION_RUNBOOK.md) with exact commands, expected outputs, and 17-item checklist. Requires real Windows runner execution (windows-latest or manual host) to complete acceptance.
 
 ## Project Hygiene
 

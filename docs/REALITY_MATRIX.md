@@ -2,7 +2,7 @@
 
 **Purpose:** Comprehensive inventory of current system status: real vs mock vs sandbox vs partial. Updated every session with this slice.
 **Last updated:** 2026-05-03
-**Session:** 132 — BL-136 Proof Repair
+**Session:** 133 — Windows Endpoint Enterprise Readiness
 
 ## Legend
 
@@ -36,7 +36,7 @@
 
 | System | Status | Evidence |
 |--------|--------|----------|
-| Zammad connector | REAL_LOCAL_NOW | K8s cluster API verifies Zammad as mode=zammad, transport=real, credentialSource=vault, connected=true. Real Zammad sandbox ticket (#2, 68002, Acme BVBA) read proven via FetchZammadHttpClient with server-side OpenBao credential resolution. Session 131 confirms cluster API path works end-to-end with browser/CLI evidence. |
+| Zammad connector | REAL_SANDBOX_NOW | Real Zammad sandbox ticket (#2, 68002, Acme BVBA) read proven via FetchZammadHttpClient with server-side OpenBao credential resolution. Connector status: mode=configured, transport=real, credentialSource=vault. Requires K8s cluster to verify. |
 | GLPI connector | MOCK_BY_GAP | GlpiConnectorAdapter.connect() rejects with honest "Real GLPI HTTP client not implemented"; only MockGlpiHttpClient exists. Honest status labels in API/UI. |
 | osTicket connector | MOCK_NOT_IMPLEMENTED | OsTicketConnectorAdapter returns fixture data only; no real HTTP client. Status shows fixture/unconfigured. |
 | MeshCentral connector | MOCK_NOT_IMPLEMENTED | MockMeshCentralClient only; no real HTTP client. Status reports unconfigured unless mockMode set. |
@@ -47,12 +47,12 @@
 
 | System | Status | Evidence |
 |--------|--------|----------|
-| AI provider gateway | REAL_LOCAL_NOW | OllamaAiProvider with FetchOllamaClient (real HTTP to /api/generate); LmStudioAiProvider exists; MockAiProvider is backup. Cluster API calls real Ollama gemma4:e4b via podman0 bridge (10.88.0.1:11434). Provider readiness: ollama configured/enabled/enabledByPolicy=true. |
+| AI provider gateway | REAL_LOCAL_NOW | OllamaAiProvider with FetchOllamaClient (real HTTP to /api/generate); LmStudioAiProvider exists; MockAiProvider is backup. Cluster API calls real Ollama gemma4:e4b via podman0 bridge (10.88.0.1:11435). Provider readiness: ollama configured/enabled/enabledByPolicy=true. |
 | AI chat | REAL_LOCAL_NOW | Chat session/message API endpoints exist with tenant AI policy gating and retention enforcement; mock provider used by default |
 | Ticket summary | REAL_LOCAL_NOW | POST /ticket-summary exists, persists TicketSummary, checks tenant AI policy |
 | Draft generation | REAL_LOCAL_NOW | 500 error repaired; safe model-selection parsing; policy-gated |
 | Model usage logging | REAL_LOCAL_NOW | ModelUsageLog table, query/summary APIs, admin UI panel |
-| Ollama real calls | REAL_LOCAL_NOW | Real model calls to gemma4:e4b proven in Session 131: provider=ollama, model=gemma4:e4b, fallbackUsed=false, noCloudCall=true, providerMode=local, latencyMs=13398. Ollama on localhost:11434, cluster API reaches via podman0 bridge. AI policy: allowedProviders includes ollama; mockOnly=true maintains safety gating. |
+| Ollama real calls | REAL_LOCAL_NOW | Real model calls to gemma4:e4b proven in Session 131: provider=ollama, model=gemma4:e4b, fallbackUsed=false, noCloudCall=true, providerMode=local, latencyMs=13398. Ollama on localhost:11435 (v0.22.0), cluster API reaches via podman0 bridge (10.88.0.1:11435). AI policy: allowedProviders includes ollama; mockOnly=true maintains safety gating. |
 
 ## Governance & Admin
 
@@ -93,23 +93,24 @@
 
 | Category | Count | Systems |
 |----------|-------|---------|
-| REAL_LOCAL_NOW | 22 | PostgreSQL, API, Web, Worker/outbox, RBAC, Audit, Redaction, Policy, Connector status API, AI chat, Ticket summary, Draft gen, Model usage, Admin dashboard, Audit explorer, GDPR panel, Evidence timeline, Policy editor, Model usage admin, Retention policy, Agent registration, Heartbeat, Device Console, Tool execution, Zammad connector, AI provider gateway, Ollama real calls, K8s cluster |
-| SANDBOX_CODE_READY | 4 | NATS, OpenBao, MinIO, Mailpit, Keycloak |
+| REAL_LOCAL_NOW | 23 | PostgreSQL, API, Web, Worker/outbox, RBAC, Audit, Redaction, Policy, Connector status API, AI gateway, AI chat, Ticket summary, Draft gen, Model usage, Ollama calls, Admin dashboard, Audit explorer, GDPR panel, Evidence timeline, Policy editor, Model usage admin, Retention policy, Agent registration, Heartbeat, Device Console, Tool execution, K8s cluster |
+| REAL_SANDBOX_NOW | 1 | Zammad connector |
+| SANDBOX_CODE_READY | 5 | NATS, OpenBao, MinIO, Mailpit, Keycloak |
 | MOCK_BY_POLICY | 1 | Cloud AI providers (intentionally blocked; honest configured:false) |
 | MOCK_BY_GAP | 2 | GLPI, Windows endpoint |
 | MOCK_NOT_IMPLEMENTED | 3 | osTicket, MeshCentral, Fortinet |
-| PARTIAL | 2 | Evidence bundle (PDF fallback), Endpoint diagnostics (Windows unverified), Low-risk remediation (one path only) |
+| PARTIAL | 3 | Evidence bundle (PDF fallback), Endpoint diagnostics (Windows unverified), Low-risk remediation (one path only) |
 | MANIFESTS_READY | 0 | — |
 
 ## Key Observations
 
 1. **BL-136 E2E acceptance achieved (Session 132, proof repaired):** Scenarios A (Zammad sandbox ticket read), B (Ollama real AI draft with gemma4:e4b, fallbackUsed=false), and C (Governance/Audit/RBAC) all proven end-to-end from the K8s cluster API with fresh browser/computer-use evidence. Scenario D (Windows) remains unverified.
 
-2. **K8s cluster fully operational:** All 3 app pods (API/Web/Worker) Ready; all sandbox integrations (Zammad, OpenBao, NATS, MinIO, Mailpit, Keycloak, Asterisk, Prometheus, Grafana, Loki) running. Cluster API serves via port-forward localhost:4210.
+2. **K8s cluster operational when started:** All 3 app pods (API/Web/Worker) Ready; all sandbox integrations (Zammad, OpenBao, NATS, MinIO, Mailpit, Keycloak, Asterisk, Prometheus, Grafana, Loki) running when cluster is up. Cluster was verified running Session 132 (2026-05-03). Cluster API serves via port-forward localhost:4210. May be shut down between sessions.
 
-3. **Zammad connector is REAL_LOCAL_NOW:** Mode=zammad, transport=real, credentialSource=vault (OpenBao). Real sandbox ticket (#2, 68002, Acme BVBA) read proven. Writeback remains sandbox-only and approval-gated.
+3. **Zammad connector is REAL_SANDBOX_NOW:** Mode=zammad, transport=real, credentialSource=vault (OpenBao). Real sandbox ticket (#2, 68002, Acme BVBA) read proven. Writeback remains sandbox-only and approval-gated. Requires K8s cluster running.
 
-4. **Ollama is REAL_LOCAL_NOW:** gemma4:e4b real model calls from cluster API via podman0 bridge; fallbackUsed=false, noCloudCall=true, providerMode=local. AI policy allows ollama while maintaining mockOnly safety defaults.
+4. **Ollama is REAL_LOCAL_NOW:** gemma4:e4b real model calls via podman0 bridge (10.88.0.1:11435); fallbackUsed=false, noCloudCall=true, providerMode=local. AI policy allows ollama while maintaining mockOnly safety defaults.
 
 5. **Safety mocks remain intentional:** Cloud AI providers blocked by policy. Production writeback, public replies, internet email blocked. These are safety features, not gaps.
 
