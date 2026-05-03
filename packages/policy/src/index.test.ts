@@ -11,7 +11,7 @@ describe('@supportplane/policy egress policy', () => {
       url: 'http://zammad.supportplane-integrations.svc.cluster.local:3000',
     });
     assert.equal(decision.allowed, true);
-    assert.equal(decision.decision, 'allowed_local_zammad_sandbox_read');
+    assert.equal(decision.decision, 'allowed_local_sandbox_read');
     assert.equal(decision.secretExposed, false);
   });
 
@@ -58,7 +58,7 @@ describe('@supportplane/policy egress policy', () => {
       writebackEnabled: true,
     });
     assert.equal(decision.allowed, true);
-    assert.equal(decision.decision, 'allowed_local_zammad_sandbox_writeback');
+    assert.equal(decision.decision, 'allowed_local_sandbox_writeback');
     assert.equal(decision.secretExposed, false);
   });
 

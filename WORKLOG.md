@@ -2332,3 +2332,54 @@ Proved GLPI real sandbox transport end-to-end through SupportPlane:
 
 P1 [BL-071/BL-072/BL-127] Connect remaining real connector instances
 
+
+## Session 143 — 2026-05-03 — BL-069 Closure Hygiene Repair + Next Connector Decision
+
+**Date:** 2026-05-03 16:30 CEST
+**Git HEAD:** to be recorded after commit
+**Branch:** main
+
+### Part 0 — BL-069 Closure Hygiene Repair
+
+1. **Egress decision label fix:** Changed `allowed_local_zammad_sandbox_read` → `allowed_local_sandbox_read` (generic). Updated `packages/contracts/src/sandbox-enablement.ts`, `packages/policy/src/index.ts`, `packages/policy/src/index.test.ts`. Policy tests: 7/7 PASS.
+
+2. **Git proof consistency:** Final HEAD is `6dac67f` (2 commits: e9057f7 code + 6dac67f docs finalization). Runtime HEAD matches after API image rebuild.
+
+3. **API image rebuilt** with GIT_HEAD=6dac67f, loaded into Kind, pod restarted. Runtime health confirms HEAD match.
+
+### Part 1 — Next Connector Decision
+
+**osTicket (BL-127): BLOCKED** — 3 hard blockers documented in `docs/OSTICKET_TRIAGE.md`:
+- B1: No read API (ticket creation only)
+- B2: No PostgreSQL support (MySQL/MariaDB only)
+- B3: No official container image
+
+`OsTicketAdapterFactory` remains as fixture-backed stub with honest labels.
+
+**MeshCentral (BL-071): SELECTED** as next real connector target. Current scaffolding:
+- `MeshCentralClient` interface (getDeviceByName, getDeviceById, listDevices)
+- `MockMeshCentralClient` fixture
+- `MeshCentralConnectorService` with health endpoint
+- Registered in connector registry with `read_devices` capability
+- Status currently shows unconfigured/config-missing
+
+Next steps: Deploy MeshCentral sandbox in K8s, implement `FetchMeshCentralClient`, prove authenticated connector status and device context.
+
+### Verification
+
+- `npm run lint`: PASS
+- `npm run typecheck --workspaces --if-present`: PASS
+- `npm test --workspace=apps/api`: PASS (210/210, 3 skipped)
+- `npm test --workspace=packages/policy`: PASS (7/7)
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- API /health: branch=main, head=6dac67fb
+- GLPI context: egressDecision=allowed_local_sandbox_read (fixed)
+
+### Evidence
+
+- Session 143: `output/playwright/session-143-bl069-closure-hygiene/` (7 files)
+
+### Next Recommended Action
+
+P1 [BL-071] Deploy MeshCentral sandbox in K8s, implement FetchMeshCentralClient, prove authenticated connector-status and device context.

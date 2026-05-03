@@ -43,8 +43,8 @@ export interface EgressPolicyInput {
 export interface EgressPolicyDecision {
   allowed: boolean;
   decision:
-    | 'allowed_local_zammad_sandbox_read'
-    | 'allowed_local_zammad_sandbox_writeback'
+    | 'allowed_local_sandbox_read'
+    | 'allowed_local_sandbox_writeback'
     | 'blocked_by_default_deny'
     | 'blocked_external_url'
     | 'blocked_production_like_url'
@@ -154,8 +154,8 @@ export function evaluateEgressPolicy(input: EgressPolicyInput): EgressPolicyDeci
     return {
       ...base,
       allowed: true,
-      decision: 'allowed_local_zammad_sandbox_writeback',
-      reason: 'Sandbox-only Zammad internal note writeback is allowed by the local sandbox allowlist.',
+      decision: 'allowed_local_sandbox_writeback',
+      reason: `Sandbox-only ${input.connectorType} internal note writeback is allowed by the local sandbox allowlist.`,
     };
   }
 
@@ -189,8 +189,8 @@ export function evaluateEgressPolicy(input: EgressPolicyInput): EgressPolicyDeci
   return {
     ...base,
     allowed: true,
-    decision: 'allowed_local_zammad_sandbox_read',
-    reason: 'Read-only Zammad sandbox egress is allowed by the local sandbox allowlist.',
+    decision: 'allowed_local_sandbox_read',
+    reason: `Read-only ${input.connectorType} sandbox egress is allowed by the local sandbox allowlist.`,
   };
 }
 

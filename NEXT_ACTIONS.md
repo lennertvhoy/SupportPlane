@@ -1,8 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-03 15:10 CEST
-**Execution Mode:** operating
-**Max Items:** 10
+**Updated At:** 2026-05-03 16:30 CEST
 
 ## Active Work
 
@@ -11,11 +9,11 @@
   - Next action: add a reproducible pgvector-enabled PostgreSQL path with vector column/search, or extend ingestion while preserving the current explicit lexical fallback reason.
   - Exit criteria: `POST /knowledge/retrieve` returns semantic/hybrid results with `pgvectorEnabled: true` from a proven pgvector database, or remains explicitly lexical with a current unavailable reason.
 
-- [BL-071/BL-072/BL-127] **Connector real-instance enablement**
+- [BL-071/BL-072] **Connector real-instance enablement**
   - Owner: future connector slice
-  - Progress: BL-069 (GLPI) accepted in Session 142. Remaining: MeshCentral (BL-071), Fortinet (BL-072), osTicket (BL-127).
-  - Next action: connect real MeshCentral, Fortinet, or osTicket instance; prove real data read through SupportPlane API.
-  - Exit criteria: all non-Zammad connectors with real instances proven end-to-end.
+  - Progress: BL-069 (GLPI) accepted in Session 142. BL-127 (osTicket) blocked — 3 hard blockers documented in docs/OSTICKET_TRIAGE.md. BL-071 (MeshCentral) selected as next real connector target.
+  - Next action: deploy MeshCentral sandbox in K8s, implement real FetchMeshCentralClient, prove authenticated connector-status and device context through SupportPlane API.
+  - Exit criteria: MeshCentral connector reads live device data from a real sandbox instance with no secrets exposed and with honest transport/status labels.
 
 - [BL-065] **Broader low-risk remediation coverage**
   - Owner: future remediation hardening slice

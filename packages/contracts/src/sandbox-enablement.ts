@@ -81,7 +81,7 @@ export type WorkerBackendMode = z.infer<typeof WorkerBackendMode>;
 export const EgressPolicyDecision = z.object({
   allowed: z.boolean(),
   decision: z.enum([
-    'allowed_local_zammad_sandbox_read',
+    'allowed_local_sandbox_read',
     'blocked_by_default_deny',
     'blocked_external_url',
     'blocked_production_like_url',
