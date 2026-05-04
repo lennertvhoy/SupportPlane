@@ -109,8 +109,8 @@ current_state:
       Session 151 truth repair — created session-151 evidence proving clean worktree
       at 6349510, fixed STATUS.md bullet count (8→7). HEAD advanced to 92f0ad1.
     head_before_session_152: 92f0ad1063bc12c8a1a3d6cb022dd409c5508e9b
-    final_head_after_session_152: to_be_recorded_after_commit
-    worktree_status_at_state_update: dirty_with_uncommitted_changes
+    final_head_after_session_152: 0db6634671f23df02ff724ecd508861b564b1875
+    worktree_status_at_state_update: clean
 
   current_product_truth:
     lifecycle_stage: real_self_hosted_sandbox_acceptance_frozen
