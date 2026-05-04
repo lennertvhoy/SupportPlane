@@ -52,6 +52,7 @@ export function AdminDashboardShell({
             onClick={() => router.push('/')}
             className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500"
             title="Back to cockpit"
+            aria-label="Back to cockpit"
           >
             <ArrowLeft size={16} />
           </button>
@@ -67,6 +68,7 @@ export function AdminDashboardShell({
             onClick={() => void logout()}
             className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500"
             title="Logout"
+            aria-label="Logout"
           >
             <LogOut size={16} />
           </button>
