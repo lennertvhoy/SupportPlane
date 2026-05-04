@@ -2,6 +2,83 @@
 
 **Purpose:** Append-only history for completed work.
 
+## Session 150 — 2026-05-04 — BL-140 First Real Tester Round Operations & Feedback Intake (ACCEPTED)
+
+**Date:** 2026-05-04 12:00 CEST
+**Git HEAD:** to be recorded after final commit
+**Branch:** main
+
+### What changed
+
+- **Tester send-packet:** Created `docs/user-testing/SEND_TO_TESTERS.md` — copy-pasteable invitation with access instructions, flows, limitations, contact/escalation, sandbox warning.
+- **Operator checklist:** Created `docs/user-testing/OPERATOR_CHECKLIST.md` — 11-step checklist: start/verify demo, reset data, run smoke test, confirm URLs, confirm Zammad/GLPI, assign persona, send packet, collect feedback, capture bug context, log results, triage after session.
+- **reset_demo_data.sh enhanced:** Added `--yes` flag for non-interactive reset mode (operator checklist automation). Dry-run mode already existed.
+- **Demo data reset:** Executed reset against cluster PostgreSQL. Database reset and reseeded. Session list reduced from 100+ to 7 entries.
+- **GLPI seed fix:** Root-caused GLPI context FK violation after reset. `prisma/seed.ts` was missing `glpi-adapter-001` ticketing adapter and `conn-inst-glpi-001` connector installation. Added both. GLPI context now loads correctly after reset.
+- **UI label fix:** Changed "Zammad mode" → "Sandbox mode" header badge in `apps/web/app/page.tsx` (line 364). Button was misleading since GLPI is also real.
+- **Preflight dry run:** Created `docs/user-testing/TEST_ROUND_001_PREFLIGHT_DRY_RUN.md` — post-reset operator/tester simulation, P0/P1/P2 findings, GO recommendation.
+- **Feedback log updated:** Added clarity/usefulness/trust/speed/polish score columns. Added FB-003 through FB-006 from preflight.
+- **Triage workflow verified:** Already covers UX confusion vs trust gap vs demo blocker distinction.
+
+### Runtime Verification
+
+- K8s cluster running: all 28 pods Ready
+- Demo data reset successful (database reseeded with GLPI adapter)
+- GLPI sandbox setup re-run (ticket #1 recreated)
+- Smoke test: 10/10 PASS, 0 FAIL
+- Web HTTP 200 on localhost:3300
+- API health: status=ok on localhost:4210
+- Zammad configured:real, GLPI configured:real
+- Session list: 7 sessions (clean, no clutter)
+- Bug context capture: PASS (exit 0)
+
+### Verification
+
+- `npm run lint`: PASS (0 errors)
+- `npm run typecheck --workspaces --if-present`: PASS
+- `npm test --workspace=apps/api`: 213 tests, 210 pass, 0 fail, 3 skipped
+- `npm test --workspace=packages/connectors`: 50 tests, 50 pass, 0 fail
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- `bash -n scripts/start_demo_mode.sh`: OK
+- `bash -n scripts/verify_user_testing_demo.sh`: OK
+- `bash -n scripts/reset_demo_data.sh`: OK
+- `bash -n scripts/capture_demo_bug_context.sh`: OK
+- `bash scripts/verify_user_testing_demo.sh`: 10/10 PASS, 0 FAIL
+- `bash scripts/capture_demo_bug_context.sh --bug-id ROUND-001-PREFLIGHT`: PASS
+
+### Evidence
+
+- Session 149: `output/playwright/session-149-bl139-final-truth-repair/` (5 files)
+- Session 150: `output/playwright/session-150-first-real-tester-round-ops/` (14 files)
+
+### What remains partial/mock/unconfigured
+
+- osTicket: fixture (blocked upstream)
+- MeshCentral: unconfigured
+- Fortinet: unconfigured
+- GLPI has no PVC — API settings and test ticket lost on pod restart
+- Web image not rebuilt for UI label fix (needs podman build + kind load)
+- No browser/computer-use proof available in this session
+
+### Next Recommended Action
+
+Send `SEND_TO_TESTERS.md` to the first real testers and log responses in `FEEDBACK_LOG.md`.
+
+## Session 149 — 2026-05-04 — BL-139 Final Truth Repair
+
+**Date:** 2026-05-04 11:45 CEST
+**Git HEAD:** fa29dc4
+**Branch:** main
+
+### What changed
+
+- Repaired truth discrepancy between uploaded Session 148 proof (HEAD `f3a3975` / ahead 8) and actual repo truth (HEAD `2ddb899` / ahead 12).
+- Verified all 4 commits after `f3a3975` exist: `f30fdc9`, `fa1c265`, `dd411c7`, `2ddb899`.
+- Corrected `PROJECT_STATE.yaml` `final_head_after_session_148` from `dd411c7` to `2ddb899`.
+- Updated session 148 evidence index with stale-evidence caveat.
+- Created session 149 evidence: git final truth, smoke test 10/10, state docs PASS, docs hygiene PASS, evidence index.
+
 ## Session 145 — 2026-05-03 — BL-138 User Testing Operations & Feedback Loop (ACCEPTED)
 
 **Date:** 2026-05-03 18:15 CEST

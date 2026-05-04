@@ -7,7 +7,8 @@ set -euo pipefail
 # This script destroys all runtime data and reseeds the database from committed
 # migrations and prisma/seed.ts. It is deterministic and local/dev-only.
 #
-# Defaults to dry-run. Use --confirm for an actual reset.
+# Defaults to dry-run. Use --confirm for an interactive reset.
+# Use --yes for a non-interactive reset (operator checklist / automation).
 # Backward compatibility: --force still works as a live-reset trigger.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -18,11 +19,13 @@ cd "$REPO_ROOT"
 DRY_RUN=true
 CONFIRM=false
 FORCE=false
+YES=false
 
 for arg in "$@"; do
   case "$arg" in
     --dry-run) DRY_RUN=true ;;
     --confirm) CONFIRM=true ;;
+    --yes) YES=true ; CONFIRM=true ;;
     --force) FORCE=true ;;
   esac
 done
@@ -65,7 +68,8 @@ if [[ "$DRY_RUN" == true && "$CONFIRM" == false && "$FORCE" == false && "$LEGACY
   echo "Nothing will be changed."
   echo ""
   echo "To proceed with a live reset, run one of:"
-  echo "  bash scripts/reset_demo_data.sh --confirm"
+  echo "  bash scripts/reset_demo_data.sh --confirm         (interactive, asks for confirmation)"
+  echo "  bash scripts/reset_demo_data.sh --yes             (non-interactive, for operator scripts)"
   echo "  SUPPORTPLANE_DEMO_RESET=allow bash scripts/reset_demo_data.sh"
   echo "  bash scripts/reset_demo_data.sh --force"
   echo ""
@@ -82,9 +86,13 @@ if [[ "$DRY_RUN" == false ]]; then
   echo "WARNING: This will DESTRUCTIVELY overwrite local sandbox data."
   echo "============================================================"
   echo ""
-  read -r -p "Type 'destroy-local-data' to proceed: " CONFIRMATION
-  if [[ "$CONFIRMATION" != "destroy-local-data" ]]; then
-    log_fatal "Reset cancelled by user."
+  if [[ "$YES" == true ]]; then
+    log_info "--yes flag set: skipping interactive confirmation."
+  else
+    read -r -p "Type 'destroy-local-data' to proceed: " CONFIRMATION
+    if [[ "$CONFIRMATION" != "destroy-local-data" ]]; then
+      log_fatal "Reset cancelled by user."
+    fi
   fi
 fi
 

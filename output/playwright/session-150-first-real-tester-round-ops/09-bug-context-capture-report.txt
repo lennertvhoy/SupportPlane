@@ -1,0 +1,62 @@
+=== SupportPlane Bug Context Capture ===
+
+        Bug ID:   ROUND-001-PREFLIGHT
+        Timestamp: 20260504T100319Z
+        Output:   /home/ff/Documents/Projects/SupportPlane/output/playwright/session-145-user-testing-operations/bug-contexts/ROUND-001-PREFLIGHT
+        API port: 4210
+        Web port: 3300
+
+        Capturing API health...
+[0;32m[OK][0m   API health: status=ok head=8015c94c9966 branch=main store=postgres
+        Capturing git HEAD and status...
+[0;32m[OK][0m   Git status captured
+        Capturing pod status...
+[0;32m[OK][0m   Pod status captured
+        Authenticating for connector status...
+        Logged in as admin@supportplane.local (tenant: dev-tenant)
+[0;32m[OK][0m   Connector status captured:
+  zammad: mode=configured transport=real connected=?
+  glpi: mode=configured transport=real connected=?
+  osticket: mode=fixture transport=fixture connected=?
+  meshcentral: mode=unconfigured transport=unconfigured connected=?
+  fortinet: mode=unconfigured transport=unconfigured connected=?
+        Capturing Zammad ticket context (ticket #2)...
+        Created session 5b72b56a-ac65-41bf-a2c6-a1d8dbca348c
+[0;32m[OK][0m   Zammad context: 'VPN connection issue for remote office - TICKET-101' (ticket #2)
+        Capturing GLPI ticket context (ticket #1)...
+        Created session bb5def3c-58ac-477b-8f9d-2bb90f1ad744
+[0;32m[OK][0m   GLPI context: 'VPN connection issue' (ticket #1)
+        Capturing pod logs for api (last 50 lines)...
+[0;32m[OK][0m   Pod logs captured: supportplane-api-78f6774dbd-zd92h (api)
+        Capturing pod logs for worker (last 50 lines)...
+[0;32m[OK][0m   Pod logs captured: supportplane-worker-54f4597745-wjs5n (worker)
+        Scanning captured JSON files for secret-like patterns...
+[0;32m[OK][0m   No-secret scan: clean
+        Writing capture report...
+[0;32m[OK][0m   Capture report written: output/playwright/session-145-user-testing-operations/bug-contexts/ROUND-001-PREFLIGHT/capture-report.txt
+
+========================================
+  Bug Context Capture — ROUND-001-PREFLIGHT
+========================================
+
+  Output: /home/ff/Documents/Projects/SupportPlane/output/playwright/session-145-user-testing-operations/bug-contexts/ROUND-001-PREFLIGHT
+
+  Captured: 10
+  Failures: 0
+  Skipped:  0
+
+[0;32m[OK][0m   Minimum viable capture: API health + connector status both succeeded.
+
+  Files:
+    api-health.json
+    capture-report.txt
+    connector-status.json
+    git-head.txt
+    glpi-context.json
+    no-secret-scan.txt
+    pod-logs-api.txt
+    pod-logs-worker.txt
+    pod-status.txt
+    zammad-context.json
+
+========================================

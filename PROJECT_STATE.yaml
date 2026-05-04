@@ -504,13 +504,13 @@ current_state:
 
   backlog:
     source: BACKLOG.md
-    highest_id: BL-139
-    accepted_current_slice: BL-139_session_147_first_user_testing_round
+    highest_id: BL-140
+    accepted_current_slice: BL-140_session_150_first_real_tester_round_ops_accepted
     planned_real_e2e_items:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-073, BL-074, BL-071, BL-072, BL-127, BL-065, BL-132, BL-135]
+    active_queue_items: [BL-073, BL-074, BL-071, BL-072, BL-127, BL-065, BL-132, BL-135, BL-140]
 
   documentation:
     primary_user_guide: README.md

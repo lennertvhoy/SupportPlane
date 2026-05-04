@@ -153,6 +153,34 @@ async function main() {
     update: {},
   });
 
+  await prisma.ticketingAdapter.upsert({
+    where: { id: 'glpi-adapter-001' },
+    create: {
+      id: 'glpi-adapter-001',
+      tenantId: 'dev-tenant',
+      name: 'GLPI Adapter',
+      adapterType: 'glpi',
+      capabilities: ['read_tickets', 'read_customers'],
+      status: 'active',
+      config: { mock: false },
+    },
+    update: {},
+  });
+
+  await prisma.ticketingAdapter.upsert({
+    where: { id: 'osticket-adapter-001' },
+    create: {
+      id: 'osticket-adapter-001',
+      tenantId: 'dev-tenant',
+      name: 'osTicket Adapter',
+      adapterType: 'osticket',
+      capabilities: ['read_tickets', 'read_customers'],
+      status: 'active',
+      config: { mock: true },
+    },
+    update: {},
+  });
+
   // Seed demo customer references
   const customers = [
     {
@@ -262,6 +290,33 @@ async function main() {
         sandboxAllowlistOnly: true,
         writebackEnabled: true,
         secretsResolvedServerSide: true,
+      },
+      timeoutMs: 10000,
+    },
+    {
+      id: 'conn-inst-glpi-001',
+      tenantId: 'dev-tenant',
+      name: 'Local GLPI Sandbox',
+      displayName: 'Local GLPI Sandbox',
+      description: 'Real sandbox GLPI read-only adapter. Reads tickets from local GLPI sandbox. No writeback.',
+      adapterType: 'glpi',
+      capabilities: ['read_tickets', 'read_customers'],
+      config: {
+        mockMode: false,
+        enabled: true,
+        baseUrl: 'http://glpi.supportplane-integrations.svc.cluster.local',
+        timeoutMs: 10000,
+      },
+      status: 'active',
+      mockMode: false,
+      enabled: true,
+      safetyFlags: {
+        validateBeforeWrite: true,
+        maxRetries: 3,
+        allowRealCalls: true,
+        sandboxAllowlistOnly: true,
+        writebackEnabled: false,
+        secretsResolvedServerSide: false,
       },
       timeoutMs: 10000,
     },

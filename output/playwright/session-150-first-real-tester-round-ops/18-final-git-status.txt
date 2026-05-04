@@ -1,0 +1,13 @@
+## main...origin/main [ahead 13]
+ M BACKLOG.md
+ M NEXT_ACTIONS.md
+ M PROJECT_STATE.yaml
+ M apps/web/app/page.tsx
+ M docs/user-testing/FEEDBACK_LOG.md
+ M prisma/seed.ts
+ M scripts/reset_demo_data.sh
+?? docs/user-testing/OPERATOR_CHECKLIST.md
+?? docs/user-testing/SEND_TO_TESTERS.md
+?? docs/user-testing/TEST_ROUND_001_PREFLIGHT_DRY_RUN.md
+---
+fa29dc44597ad838f6818a8234139e6bfc113094

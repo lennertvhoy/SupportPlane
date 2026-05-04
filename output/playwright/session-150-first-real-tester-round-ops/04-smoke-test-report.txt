@@ -1,0 +1,35 @@
+=== SupportPlane Demo Readiness Smoke Test ===
+Date: 2026-05-04T10:02:59Z
+API port: 4210
+Web port: 3300
+
+--- 1. API /health ---
+[0;32m[PASS][0m API health ok — head=8015c94c branch=main store=postgres
+
+--- 2. Web UI HTTP ---
+[0;32m[PASS][0m Web returns HTTP 200 on port 3300
+
+--- 3. Authenticated connector status ---
+[0;32m[PASS][0m Zammad: configured:real
+[0;32m[PASS][0m GLPI: configured:real
+[0;32m[PASS][0m osTicket: fixture (expected)
+[0;32m[PASS][0m MeshCentral: unconfigured (expected)
+[0;32m[PASS][0m Fortinet: unconfigured (expected)
+
+--- 4. Zammad context ---
+[0;32m[PASS][0m Zammad context: 'VPN connection issue for remote office - TICKET-101'
+
+--- 5. GLPI context ---
+[0;32m[PASS][0m GLPI context: 'VPN connection issue'
+
+--- 6. No-secret scan ---
+[0;32m[PASS][0m No raw secrets in connector status response
+
+========================================
+  Smoke Test Results
+========================================
+  PASS: 10
+  FAIL: 0
+
+  DEMO READY for user testing.
+========================================

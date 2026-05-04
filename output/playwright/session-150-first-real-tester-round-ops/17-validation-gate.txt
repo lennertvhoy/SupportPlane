@@ -1,0 +1,47 @@
+=== BL-140 Validation Gate ===
+Date: 2026-05-04T10:00:00+02:00
+
+--- npm run lint ---
+PASS (0 errors)
+
+--- npm run typecheck --workspaces --if-present ---
+PASS (all workspaces)
+
+--- npm test --workspace=apps/api ---
+213 tests, 210 pass, 0 fail, 3 skipped
+
+--- npm test --workspace=packages/connectors ---
+50 tests, 50 pass, 0 fail, 0 skipped
+
+--- python3 scripts/check_state_docs.py ---
+PASSED: All state documentation checks passed
+
+--- python3 scripts/check_docs_hygiene.py ---
+PASSED: All docs hygiene checks passed
+
+--- bash -n scripts/start_demo_mode.sh ---
+OK
+
+--- bash -n scripts/verify_user_testing_demo.sh ---
+OK
+
+--- bash -n scripts/reset_demo_data.sh ---
+OK
+
+--- bash -n scripts/capture_demo_bug_context.sh ---
+OK
+
+--- bash scripts/verify_user_testing_demo.sh ---
+10/10 PASS, 0 FAIL
+
+--- bash scripts/capture_demo_bug_context.sh --bug-id ROUND-001-PREFLIGHT ---
+PASS (exit 0)
+
+--- Web HTTP check ---
+HTTP 200 on localhost:3300
+
+--- API /health ---
+status=ok, store=postgres, auth=local
+
+--- Authenticated connector-status ---
+Zammad: configured, GLPI: configured, osTicket: fixture, MeshCentral: unconfigured, Fortinet: unconfigured

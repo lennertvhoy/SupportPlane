@@ -72,6 +72,9 @@ Operational guides for local development, deployment, and maintenance.
 | `user-testing/FIRST_TEST_ROUND.md` | First test round packet with demo URL, flows, limitations, and submission instructions |
 | `user-testing/TEST_ROUND_001_PLAN.md` | Test round 001 plan with date, testers, personas, success criteria, and stop-testing rules |
 | `user-testing/TEST_ROUND_001_INTERNAL_DRY_RUN.md` | Internal dry run findings for round 001 |
+| `user-testing/SEND_TO_TESTERS.md` | Copy-pasteable tester invitation packet with access instructions, flows, and known limitations |
+| `user-testing/OPERATOR_CHECKLIST.md` | Demo operator step-by-step checklist: start, reset, smoke test, assign persona, collect feedback, triage |
+| `user-testing/TEST_ROUND_001_PREFLIGHT_DRY_RUN.md` | Preflight dry run after reset — verified GO for real testers, GLPI seed fix applied |
 
 ## Security and Governance
 

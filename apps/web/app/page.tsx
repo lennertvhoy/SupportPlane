@@ -361,7 +361,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
                   ? 'border-amber-700/40 bg-amber-900/30 text-amber-300'
                   : 'border-emerald-700/40 bg-emerald-900/30 text-emerald-300'
               }`}>
-                {connectorStatus.mode === 'mock' ? 'Mock' : 'Zammad'} mode
+                {connectorStatus.mode === 'mock' ? 'Mock' : 'Sandbox'} mode
               </span>
               <span className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-400">
                 <ShieldAlert size={10} />

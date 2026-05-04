@@ -2,6 +2,24 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-04-176: Session 150 — First Real Tester Round Operations & Feedback Intake (BL-140 ACCEPTED)
+
+- Evidence folder: `output/playwright/session-150-first-real-tester-round-ops/`
+- Source/System: CLI artifacts, API JSON, git proof
+- Action: Completed BL-140 acceptance. Froze tester send-packet (SEND_TO_TESTERS.md), created operator checklist, enhanced reset_demo_data.sh with --yes, repaired GLPI adapter missing from seed, fixed "Zammad mode" header label, ran preflight dry run, captured 14 evidence files.
+- Proves:
+  - Tester send-packet frozen and easy to send
+  - Operator checklist complete (11 steps)
+  - Demo reset works with --yes flag, session list clean (7 entries)
+  - Smoke test 10/10 PASS after reset
+  - GLPI context loads after reset (seed fix applied)
+  - Bug context capture verified
+  - No raw secrets in evidence
+  - All validation gates pass: lint, typecheck, 260 tests, state docs, docs hygiene
+  - 14 evidence files, under 20 cap
+- Type: operations-and-cli-verification
+- as_of: 2026-05-04T12:00:00+02:00
+
 ## EV-2026-05-04-175: Session 149 — BL-139 Final Truth Repair (CLEAN)
 
 - Evidence folder: `output/playwright/session-149-bl139-final-truth-repair/`

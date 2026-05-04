@@ -1,0 +1,18 @@
+fa29dc4 docs(state): session-149 BL-139 final truth repair — correct stale git evidence in session-148, fix PROJECT_STATE.yaml final_head to 2ddb899
+2ddb899 docs(state): correct final session-148 commit hash after repair
+dd411c7 fix(state): restore old placeholder values in PROJECT_STATE.yaml after sed overreach
+fa1c265 docs(state): record final session-148 commit hash
+f30fdc9 fix(bl139): closure proof repair — session-148 clean git proof, tester packet tune-up
+## main...origin/main [ahead 13]
+ M BACKLOG.md
+ M NEXT_ACTIONS.md
+ M PROJECT_STATE.yaml
+ M apps/web/app/page.tsx
+ M docs/user-testing/FEEDBACK_LOG.md
+ M prisma/seed.ts
+ M scripts/reset_demo_data.sh
+?? docs/user-testing/OPERATOR_CHECKLIST.md
+?? docs/user-testing/SEND_TO_TESTERS.md
+?? docs/user-testing/TEST_ROUND_001_PREFLIGHT_DRY_RUN.md
+---
+fa29dc44597ad838f6818a8234139e6bfc113094

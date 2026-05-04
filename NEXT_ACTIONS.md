@@ -20,7 +20,8 @@
 
 ## Recently Completed
 
-- [BL-139] `[accepted]` First user testing round & triage (Session 147).
+- [BL-140] `[accepted]` First Real Tester Round Operations & Feedback Intake (Session 150).
+- [BL-139] `[accepted]` First user testing round & triage (Session 147, 148/149 truth repair).
 - [BL-138] `[accepted]` User Testing Operations & Feedback Loop (Session 145).
 - [BL-137] `[accepted]` User testing demo readiness (Session 144).
 - [BL-130] `[accepted]` Windows diagnostics collectors — real Windows runner proof (Session 134, repaired Session 135).

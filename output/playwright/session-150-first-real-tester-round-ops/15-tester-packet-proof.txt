@@ -1,0 +1,10 @@
+Tester send-packet exists: docs/user-testing/SEND_TO_TESTERS.md
+Operator checklist exists: docs/user-testing/OPERATOR_CHECKLIST.md
+Test script exists: docs/user-testing/TEST_SCRIPT.md
+Feedback form exists: docs/user-testing/FEEDBACK_FORM.md
+Bug template exists: docs/user-testing/BUG_REPORT_TEMPLATE.md
+Personas exist: docs/user-testing/TESTER_PERSONAS.md
+Triage workflow exists: docs/user-testing/TRIAGE_WORKFLOW.md
+Feedback log exists: docs/user-testing/FEEDBACK_LOG.md
+Reset script enhanced: scripts/reset_demo_data.sh (added --yes)
+Smoke test: 10/10 PASS

@@ -1,0 +1,1 @@
+{"service":"supportplane-api","version":"0.1.0","status":"ok","branch":"main","head":"8015c94c996621ae3d5498ae88f2f41e2fcd2bcb","timestamp":"2026-05-04T10:03:00.807Z","runtime":"NestJS","storeMode":"postgres","authMode":"local","oidcReady":true,"mfaHookAvailable":true,"note":"Mock-first ticket-aware API slice (BL-003) — runtime identity verified"}

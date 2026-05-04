@@ -1,0 +1,31 @@
+=== SupportPlane Demo Data Reset ===
+
+WARNING: This script will DESTROY all data in the local PostgreSQL database
+and reseed it from committed migrations and prisma/seed.ts.
+
+Current mode: DRY-RUN
+Nothing will be changed.
+
+To proceed with a live reset, run one of:
+  bash scripts/reset_demo_data.sh --confirm         (interactive, asks for confirmation)
+  bash scripts/reset_demo_data.sh --yes             (non-interactive, for operator scripts)
+  SUPPORTPLANE_DEMO_RESET=allow bash scripts/reset_demo_data.sh
+  bash scripts/reset_demo_data.sh --force
+
+[DRY-RUN] DATABASE_URL is not set; live reset would be refused before touching data.
+[DRY-RUN] Would run: npx prisma migrate reset --force
+[DRY-RUN] Would run: npx prisma db seed
+[DRY-RUN] Would verify Zammad connector installation exists in database.
+[DRY-RUN] Would verify delivery policy references exist in database.
+[DRY-RUN] Would verify OpenBao secret 'openbao-local-dev' in namespace 'supportplane-integrations'.
+[DRY-RUN] Would verify MinIO deployment exists in namespace 'supportplane-data'.
+[DRY-RUN] Would check that bucket 'supportplane-evidence' is accessible.
+[DRY-RUN] Would check Mailpit reachability at localhost:8025
+[DRY-RUN] Would check Asterisk AMI port at localhost:5038
+[DRY-RUN] Would check Ollama reachability at http://10.88.0.1:11435/api/tags
+[DRY-RUN] Would verify model 'gemma4:e4b' is available.
+
+=== Demo Reset Summary ===
+Mode: DRY-RUN — no changes were made.
+To perform a live reset, run: bash scripts/reset_demo_data.sh --confirm
+Done.
