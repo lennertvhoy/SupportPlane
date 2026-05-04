@@ -3910,6 +3910,63 @@ describe('Endpoint agent diagnostics API', () => {
   });
 });
 
+describe('Model usage API', () => {
+  let app: INestApplication;
+  let server: ReturnType<INestApplication['getHttpServer']>;
+
+  before(async () => {
+    app = await NestFactory.create(AppModule);
+    await app.init();
+    server = app.getHttpServer();
+  });
+
+  after(async () => {
+    if (app) await app.close();
+  });
+
+  it('GET /model-usage returns 200 for admin with empty state', async () => {
+    const res = await supertest(server)
+      .get('/model-usage')
+      .set('x-tenant-id', 'tenant-model-usage')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+    assert.ok(Array.isArray(res.body.logs));
+    assert.strictEqual(typeof res.body.total, 'number');
+  });
+
+  it('GET /model-usage returns 200 for viewer with empty state', async () => {
+    const res = await supertest(server)
+      .get('/model-usage')
+      .set('x-tenant-id', 'tenant-model-usage')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(200);
+    assert.ok(Array.isArray(res.body.logs));
+    assert.strictEqual(typeof res.body.total, 'number');
+  });
+
+  it('GET /model-usage returns 400 for invalid query params', async () => {
+    const res = await supertest(server)
+      .get('/model-usage?limit=not_a_number')
+      .set('x-tenant-id', 'tenant-model-usage')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(400);
+    assert.ok(res.body.message.includes('Invalid query parameters'));
+  });
+
+  it('GET /model-usage/summary returns 200 for admin', async () => {
+    const res = await supertest(server)
+      .get('/model-usage/summary')
+      .set('x-tenant-id', 'tenant-model-usage')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+    assert.strictEqual(typeof res.body.totalCalls, 'number');
+  });
+});
+
 describe('Tool execution and platform policy API', () => {
   let app: INestApplication;
   let server: ReturnType<INestApplication['getHttpServer']>;
@@ -3961,6 +4018,37 @@ describe('Tool execution and platform policy API', () => {
     const softwareTool = res.body.tools.find((t: { toolKey: string }) => t.toolKey === 'diagnostic.software');
     assert.ok(softwareTool);
     assert.deepStrictEqual(softwareTool.supportedPlatforms, ['win32']);
+  });
+
+  it('GET /admin/tools denies viewer role', async () => {
+    const res = await supertest(server)
+      .get('/admin/tools')
+      .set('x-tenant-id', 'tenant-tool-rbac')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(403);
+    assert.ok(res.body.message.includes('tool:read'));
+  });
+
+  it('GET /admin/tools allows admin role', async () => {
+    const res = await supertest(server)
+      .get('/admin/tools')
+      .set('x-tenant-id', 'tenant-tool-rbac')
+      .set('x-user-id', 'admin-1')
+      .set('x-user-role', 'admin')
+      .expect(200);
+    assert.ok(Array.isArray(res.body.tools));
+    assert.ok(res.body.tools.length > 0);
+  });
+
+  it('GET /admin/tools/:id denies viewer role', async () => {
+    const res = await supertest(server)
+      .get('/admin/tools/nonexistent-id')
+      .set('x-tenant-id', 'tenant-tool-rbac')
+      .set('x-user-id', 'viewer-1')
+      .set('x-user-role', 'viewer')
+      .expect(403);
+    assert.ok(res.body.message.includes('tool:read'));
   });
 
   it('allows Windows-supported read-only tool on Windows device', async () => {

@@ -50,6 +50,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'telephony:webhook',
     'knowledge:read',
     'knowledge:write',
+    'tool:read',
   ],
   viewer: [
     'support_session:read',
@@ -115,6 +116,7 @@ export const ROLE_PERMISSIONS: Record<string, string[]> = {
     'telephony:webhook',
     'knowledge:read',
     'knowledge:write',
+    'tool:read',
   ],
 };
 

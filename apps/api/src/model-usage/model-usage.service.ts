@@ -25,11 +25,19 @@ function json<T extends Record<string, unknown>>(value: T): Prisma.InputJsonValu
 @Injectable()
 export class ModelUsageService {
   private prismaClient?: PrismaClient;
+  private prismaInitError?: string;
 
   private get prisma(): PrismaClient | undefined {
     if (!process.env['DATABASE_URL']) return undefined;
-    this.prismaClient ??= createPrismaClient();
-    return this.prismaClient;
+    if (this.prismaInitError) return undefined;
+    if (this.prismaClient) return this.prismaClient;
+    try {
+      this.prismaClient = createPrismaClient();
+      return this.prismaClient;
+    } catch (err) {
+      this.prismaInitError = err instanceof Error ? err.message : String(err);
+      return undefined;
+    }
   }
 
   async logUsage(entry: ModelUsageLogEntry): Promise<void> {

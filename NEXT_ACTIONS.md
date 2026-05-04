@@ -1,8 +1,23 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-04 17:35 CEST
+**Updated At:** 2026-05-04 18:00 CEST
 
 ## Active Work
+
+- [BL-148] **Runtime Identity Truth Repair & Cluster Redeploy (P0)**
+  - Owner: runtime/platform engineer
+  - Status: planned. Rebuild API/Web/Worker images from current HEAD, reload to Kind cluster, verify `/health` matches `git rev-parse HEAD`.
+  - Exit criteria: cluster HEAD equals repo HEAD; no stale images serving tested routes.
+
+- [BL-149] **Model-Usage Crash Fix & Admin Dashboard Repair (P0)**
+  - Owner: backend/API engineer
+  - Status: planned. Fix `GET /model-usage` returning 500. Debug ModelUsageService Prisma client initialization vs shared Prisma module. Add regression tests.
+  - Exit criteria: admin Model Usage panel loads without crash; viewer gets controlled response; tests cover regression.
+
+- [BL-150] **Tool Registry RBAC & Tenant Scoping Hardening (P1)**
+  - Owner: security engineer
+  - Status: planned. Add server-side auth guard, permission check, tenant scoping to `ToolRegistryController`. Prevent command template leakage.
+  - Exit criteria: viewer gets 403; alt-tenant isolation enforced; negative tests prove denial; UI handles denied state cleanly.
 
 - [BL-144] **Full Application Control Inventory & Interaction Regression Harness**
   - Owner: future UX quality slice
@@ -32,6 +47,14 @@
 
 - [BL-135] **Per-doc content audit and full rewrite**
   - Owner: future slice
+
+- [BL-151] **Web Resilience & Accessibility Foundation (minimal)**
+  - Owner: future frontend engineer
+  - Status: planned. Add root Next.js error boundary only. Full accessibility pass deferred.
+
+- [BL-152] **Belgium/EU Assurance Audit**
+  - Owner: compliance/security auditor delegate
+  - Status: planned. Code quality, AppSec, GDPR, AI Act, NIS2/CyberFundamentals, accessibility, supply chain, operational readiness audit.
 
 ## Recently Completed
 

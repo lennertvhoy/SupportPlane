@@ -1,6 +1,6 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-04 17:35 CEST
+**Updated At:** 2026-05-04 18:00 CEST
 **Execution Mode:** operating
 **Project State:** session_095_bl143_first_open_ux_enterprise_readiness_accepted
 **Public URL:** not configured
@@ -14,6 +14,7 @@
 - **BL-127 `[blocked]` — osTicket.** 3 hard blockers: no read API, no PostgreSQL, no official container image. Fixture stub retained.
 - **BL-071 `[partial/planned-real-sandbox]` — MeshCentral.** Selected as next real connector target after BL-069.
 - **BL-144/145/146/147 `[planned]`.** Full control inventory, enterprise IA simplification, production-readiness language audit, design-system consistency pass.
+- **BL-148/149/150 `[planned]` — Project Improvement Audit Immediate Actions.** Runtime identity truth repair & cluster redeploy (P0), model-usage crash fix (P0), tool registry RBAC hardening (P1). Deferred BL-151 (root error boundary) and BL-152 (Belgium/EU assurance audit) as secondary/future slices.
 
 ## Active Blockers
 

@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-04T13:55:00+02:00
+  updated_at: 2026-05-04T18:00:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -539,14 +539,14 @@ current_state:
 
   backlog:
     source: BACKLOG.md
-    highest_id: BL-147
+    highest_id: BL-152
     accepted_current_slice: BL-143_session_095_bl143_first_open_ux_enterprise_readiness_accepted
     partial_current_slice: none
     planned_real_e2e_items:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-143, BL-073, BL-074, BL-071, BL-072, BL-127, BL-065, BL-132, BL-135]
+    active_queue_items: [BL-148, BL-149, BL-150, BL-151, BL-152, BL-144, BL-145, BL-146, BL-147, BL-071, BL-072, BL-127, BL-065, BL-132, BL-135]
 
   documentation:
     primary_user_guide: README.md

@@ -204,6 +204,17 @@ Status markers:
 - [BL-146] `[planned]` Production-Readiness Language Audit & Boundary Hardening.
 - [BL-147] `[planned]` Design-System Consistency Pass.
 
+## Project Improvement Audit — Immediate Actions
+
+- [BL-148] `[planned]` Runtime Identity Truth Repair & Cluster Redeploy. Rebuild API/Web/Worker images from current HEAD, reload to Kind cluster, verify `/health` matches `git rev-parse HEAD`. Acceptance: cluster HEAD equals repo HEAD; no stale images serving tested routes. Evidence: fresh screenshot of `/health` + rollout proof.
+- [BL-149] `[planned]` Model-Usage Crash Fix & Admin Dashboard Repair. Fix `GET /model-usage` returning 500. Debug service/controller/Prisma client initialization vs shared Prisma module. Add tests for admin/viewer access, empty state, invalid params. Acceptance: admin Model Usage panel loads without crash; viewer gets controlled response; tests cover regression.
+- [BL-150] `[planned]` Tool Registry RBAC & Tenant Scoping Hardening. Add server-side auth guard, permission check, tenant scoping to `ToolRegistryController`. Prevent command template leakage to unauthorized users. Acceptance: viewer gets 403; alt-tenant isolation enforced; negative tests prove denial; UI handles denied state cleanly.
+- [BL-151] `[planned]` Web Resilience & Accessibility Foundation (minimal). Add root Next.js error boundary only. Do not perform full accessibility pass unless primary scope is closure-grade. Acceptance: app does not white-screen on thrown render error; screenshot proof if practical.
+
+## Belgium/EU Assurance Audit
+
+- [BL-152] `[planned]` Belgium/EU Assurance Audit — Code Quality, Security, Privacy/GDPR, AI Act, NIS2/CyberFundamentals, Accessibility, Supply Chain, Operational Readiness. Perform engineering evidence audit preparing for DPO/security auditor/legal counsel/enterprise buyer review. Scope: static code audit, AppSec review (OWASP), GDPR data inventory + DPIA precheck, EU AI Act classification + governance dossier, Belgium NIS2/CyberFundamentals readiness map, accessibility audit (WCAG/EN 301 549-style), supply chain/licensing audit, operational readiness audit. Create compliance evidence dossier. Output: `docs/reviews/BELGIUM_EU_ASSURANCE_AUDIT_<date>.md` and `docs/compliance/*` artifacts. Non-claims: not a certification, not legal advice, not production-ready claim.
+
 ## WATCHLIST
 
 - AI tool execution must stay policy-gated and auditable.

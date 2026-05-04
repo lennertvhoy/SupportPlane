@@ -29,8 +29,8 @@ export const ModelUsageQuery = z.object({
   status: z.enum(['succeeded', 'failed', 'blocked_by_policy', 'fallback_mock']).optional(),
   dateFrom: z.string().datetime().optional(),
   dateTo: z.string().datetime().optional(),
-  limit: z.number().int().min(1).max(1000).default(100),
-  offset: z.number().int().min(0).default(0),
+  limit: z.coerce.number().int().min(1).max(1000).default(100),
+  offset: z.coerce.number().int().min(0).default(0),
 });
 export type ModelUsageQuery = z.infer<typeof ModelUsageQuery>;
 
