@@ -30,7 +30,7 @@
 - BL-139 accepted (Session 147/148): First user testing round.
 - BL-140 accepted (Session 150/151): First real tester round ops.
 - BL-141/142 accepted (Session 153/156): Tester readiness closure.
-- Evidence BL-143: `output/playwright/session-095-bl143-first-open-ux-enterprise-readiness/` (17 files).
+- Evidence BL-143: `output/playwright/session-157-bl143-first-open-ux-enterprise-readiness/` (17 files).
 - Evidence BL-141 + BL-142 (canonical): `output/playwright/session-156-final-tester-readiness-closure/` (20 files).
 - Demo URL: `http://localhost:3300`, API: `http://localhost:4210`.
 - Tailscale Funnel: OFF.

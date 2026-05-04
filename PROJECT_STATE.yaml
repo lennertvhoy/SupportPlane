@@ -126,7 +126,7 @@ current_state:
       main page reorganization with primary/secondary panel split, Tools dropdown,
       ConnectorStatusPanel info tooltips, AuthGate sandbox warning. Web image rebuilt
       and deployed. 8 browser screenshots + 3 CLI artifacts in
-      output/playwright/session-095-bl143-first-open-ux-enterprise-readiness/.
+      output/playwright/session-157-bl143-first-open-ux-enterprise-readiness/.
       Ticket ID defaults fixed (TICKET-101→2 for Zammad, GLPI→1). Fresh screenshots
       captured after fix. 17 evidence files total. BL-143 accepted.
       Deferred: BL-144/145/146/147.

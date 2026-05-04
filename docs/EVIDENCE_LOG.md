@@ -4,7 +4,7 @@
 
 ## EV-2026-05-04-181: Session 095 — BL-143 First-Open UX Control Audit & Enterprise Readiness Pass (ACCEPTED)
 
-- Evidence folder: `output/playwright/session-095-bl143-first-open-ux-enterprise-readiness/`
+- Evidence folder: `output/playwright/session-157-bl143-first-open-ux-enterprise-readiness/`
 - Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and API (`localhost:4210`), plus CLI artifacts
 - Action: Completed BL-143 acceptance. Enhanced first-open UX with InfoTooltip/BoundaryLabel components, DemoGuidePanel with persistent Show/Hide and product explanation, SandboxBoundaryPanel with real-sandbox/mock-fixture/unconfigured/read-only/approval-gated/policy-blocked/audit-evidence labels, main page reorganized with primary/secondary panel split and collapsible advanced section, header Tools dropdown, ConnectorStatusPanel info tooltips, AuthGate sandbox warning. Fixed ticket ID defaults (TICKET-101→2 for Zammad, GLPI→1) so real sandbox ticket loading works without 500 error on first try. Web image rebuilt/deployed.
 - Proves:

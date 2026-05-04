@@ -40,6 +40,14 @@ These rules apply in all modes:
   if a canonical or final proof set supersedes an earlier partial folder,
   delete the old folder and update all doc references. do not leave multiple
   folders for the same backlog item
+- **evidence folder must be the last folder alphabetically (mandatory):**
+  the evidence folder for the current session MUST always be the alphabetically
+  last `session-NNN` folder inside `output/playwright/`. this means if you are
+  resuming an interrupted session, you MUST create a NEW folder with the next
+  highest sequential number and move the evidence there — never leave it buried
+  in an old folder. delete superseded folders. the last folder in the directory
+  must always be the one that contains the current session's evidence so it is
+  trivial to find by anyone inspecting the filesystem.
 - **single-session single-folder rule (mandatory):** if a single coding session
   handles multiple backlog items (e.g. BL-141 repair + BL-142 creation), all
   evidence for that session must go into ONE combined folder — do NOT create
