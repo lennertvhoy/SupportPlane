@@ -118,6 +118,15 @@ current_state:
       post-test debrief, feedback-to-backlog triage rules, preflight (13/13 GO)
       and close automation scripts. Prior folders session-152 and session-154
       were consolidated into this single folder (19 files total).
+    head_before_session_095: 61d52b018188c8fd0ef20c032a9adb7384f70622
+    final_head_after_session_095: to_be_recorded_after_commit
+    note_session_095: >
+      Session 095: BL-143 First-Open UX Control Audit & Enterprise Readiness Pass.
+      InfoTooltip, BoundaryLabel, SandboxBoundaryPanel, DemoGuidePanel improvements,
+      main page reorganization with primary/secondary panel split, Tools dropdown,
+      ConnectorStatusPanel info tooltips, AuthGate sandbox warning. Web image rebuilt
+      and deployed. 8 browser screenshots + 3 CLI artifacts in
+      output/playwright/session-095-bl143-first-open-ux-enterprise-readiness/.
     worktree_status_at_state_update: clean
 
   current_product_truth:
@@ -527,13 +536,14 @@ current_state:
 
   backlog:
     source: BACKLOG.md
-    highest_id: BL-142
+    highest_id: BL-147
     accepted_current_slice: BL-142_session_153_bl141_bl142_consolidated
+    partial_current_slice: BL-143_session_095_bl143_first_open_ux_enterprise_readiness_partial
     planned_real_e2e_items:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-073, BL-074, BL-071, BL-072, BL-127, BL-065, BL-132, BL-135]
+    active_queue_items: [BL-143, BL-073, BL-074, BL-071, BL-072, BL-127, BL-065, BL-132, BL-135]
 
   documentation:
     primary_user_guide: README.md

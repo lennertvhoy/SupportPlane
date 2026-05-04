@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'SupportPlane — Support Cockpit',
-  description: 'Governed AI support cockpit for IT teams and MSPs',
+  title: 'SupportPlane — Governed AI Support Cockpit',
+  description: 'Multi-tenant, self-hostable AI support cockpit for governed IT support sessions. Policy-first, audit-oriented, sandbox-ready.',
 };
 
 export default function RootLayout({

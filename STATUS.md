@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-04 15:30 CEST
+**Updated At:** 2026-05-04 16:50 CEST
 **Execution Mode:** operating
-**Project State:** session_156_final_tester_readiness_closure
+**Project State:** session_095_bl143_first_open_ux_enterprise_readiness_partial
 **Public URL:** not configured
 
 ## Snapshot
@@ -11,7 +11,8 @@
 - **BL-061/062/063/064/066/067/068 and BL-086/087/090 and BL-104-117/121 accepted.** Tool Execution Safety, production readiness, real sandbox acceptance freeze.
 - **BL-130/131/133 `[accepted]` — Windows endpoint real runner proof.** Session 134: GitHub Actions workflow passed on windows-latest (44/44 tests, 0 fail). Registration, heartbeat, diagnostics (services/software via real sc.exe/reg.exe), policy denial, no-secret scan all proven via Tailscale Funnel API.
 - **BL-069 `[accepted]` — GLPI real sandbox.** Egress decision label fixed (generic `allowed_local_sandbox_read`). Authenticated connector-status proves GLPI configured/real.
-- **BL-141/142 `[accepted]` — Tester readiness closure-grade.** Session 156: runtime identity exact match (API HEAD == repo HEAD b22fa18), Zammad ticket #2 + GLPI ticket #1 both loaded with real sandbox reads and browser proof, 6 distinct browser screenshots, preflight 15 PASS GO, GLPI ticket loader added to Web UI, 20 evidence files. Sessions 153/155 superseded. Ready for first real tester.
+- **BL-141/142 `[accepted]` — Tester readiness closure-grade.** Session 156: runtime identity exact match, Zammad ticket #2 + GLPI ticket #1 both loaded with real sandbox reads and browser proof, 6 distinct browser screenshots, preflight 15 PASS GO, GLPI ticket loader added to Web UI, 20 evidence files. Sessions 153/155 superseded. Ready for first real tester.
+- **BL-143 `[partial]` — First-Open UX Control Audit & Enterprise Readiness Pass.** Session 095: InfoTooltip/BoundaryLabel components, improved DemoGuidePanel with persistent Show/Hide, SandboxBoundaryPanel, main page reorganized with primary/secondary split, header Tools dropdown, ConnectorStatusPanel info tooltips, AuthGate sandbox warning. 8 browser screenshots + 3 CLI artifacts. Web image rebuilt/deployed. TypeScript/lint/tests pass.
 - **BL-127 `[blocked]` — osTicket.** 3 hard blockers: no read API, no PostgreSQL, no official container image. Fixture stub retained.
 - **BL-071 `[partial/planned-real-sandbox]` — MeshCentral.** Selected as next real connector target after BL-069.
 
@@ -24,15 +25,13 @@
 
 ## Notes
 
-- API HEAD (cluster): `d3cf69da01173990945b42418f621a61f38d7eb9` (Session 155 rebuilt API image with GIT_HEAD arg — matches repo HEAD).
-- BL-137 accepted (Session 144): User testing demo readiness — one-command demo start, 10/10 smoke test pass, 5 browser screenshots, user testing docs created.
-- BL-138 accepted (Session 145): User testing operations — tester onboarding pack (7 docs), bug context capture script, feedback triage workflow, UI polish, 6 browser screenshots, 10 CLI artifacts, 10/10 smoke test.
-- BL-139 accepted (Session 147/148): First user testing round — tester packet, round plan, internal dry run, P1 API port fix, 4 browser screenshots, 13 evidence files, 10/10 smoke test. Session-148 closure proof repair (5 files, clean worktree proof).
-- Evidence BL-139: `output/playwright/session-147-first-user-testing-round/` (13 files) + `output/playwright/session-148-bl139-closure-proof/` (5 files) + `output/playwright/session-149-bl139-final-truth-repair/` (5 files).
-- Evidence BL-140: `output/playwright/session-150-first-real-tester-round-ops/` (14 files) + `output/playwright/session-151-bl140-final-truth-repair/` (5 files).
-- Evidence BL-141 + BL-142 (canonical): `output/playwright/session-156-final-tester-readiness-closure/` (20 files). Sessions 153/155 superseded.
-- Evidence BL-138: `output/playwright/session-145-user-testing-operations/` (18 files).
-- Evidence BL-137: `output/playwright/session-144-user-testing-demo-readiness/` (17 files).
+- API HEAD (cluster): `61d52b018188c8fd0ef20c032a9adb7384f70622` (Session 095 web image rebuilt/deployed).
+- BL-137 accepted (Session 144): User testing demo readiness.
+- BL-138 accepted (Session 145): User testing operations.
+- BL-139 accepted (Session 147/148): First user testing round.
+- BL-140 accepted (Session 150/151): First real tester round ops.
+- BL-141/142 accepted (Session 153/156): Tester readiness closure.
+- Evidence BL-143: `output/playwright/session-095-bl143-first-open-ux-enterprise-readiness/` (11 files).
+- Evidence BL-141 + BL-142 (canonical): `output/playwright/session-156-final-tester-readiness-closure/` (20 files).
 - Demo URL: `http://localhost:3300`, API: `http://localhost:4210`.
-- Token note: `local-endpoint-enrollment-token` is the source code default (visible in `apps/api/src/endpoint-devices/endpoint-devices.service.ts:37`). Not a production secret. Workflow now masks the token value via `::add-mask::` (Session 137 repair).
-- Tailscale Funnel: OFF. Shut down at closure. Re-establish temporarily only if CI verification is needed again.
+- Tailscale Funnel: OFF.

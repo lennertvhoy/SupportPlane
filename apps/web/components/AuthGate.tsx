@@ -84,9 +84,12 @@ export function AuthGate({
           <div className="mb-4 flex items-center gap-2">
             <ShieldCheck className="h-5 w-5 text-accent" />
             <div>
-              <h1 className="text-sm font-semibold text-cockpit-100">SupportPlane login</h1>
-              <p className="text-xs text-cockpit-500">Local sandbox auth, not production SSO.</p>
+              <h1 className="text-sm font-semibold text-cockpit-100">SupportPlane</h1>
+              <p className="text-xs text-cockpit-500">Governed AI support cockpit — local sandbox demo</p>
             </div>
+          </div>
+          <div className="mb-4 rounded border border-amber-700/30 bg-amber-950/20 px-3 py-2 text-[11px] text-amber-300">
+            This is a local development sandbox. No production data. No cloud AI. No compliance claims.
           </div>
 
           {oidcEnabled && (

@@ -1,7 +1,20 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Activity, Cpu, AlertTriangle, Info, Phone, MonitorCog, Wrench, Settings, ShieldAlert } from 'lucide-react';
+import {
+  Activity,
+  Cpu,
+  AlertTriangle,
+  Info,
+  Phone,
+  MonitorCog,
+  Wrench,
+  Settings,
+  ShieldAlert,
+  ChevronDown,
+  LayoutGrid,
+  Sparkles,
+} from 'lucide-react';
 import { SessionListPanel } from '@/components/SessionListPanel';
 import { TicketContextPanel } from '@/components/TicketContextPanel';
 import { AiContextPanel } from '@/components/AiContextPanel';
@@ -12,6 +25,7 @@ import { ConnectorStatusPanel } from '@/components/ConnectorStatusPanel';
 import { EvidenceBundlePanel } from '@/components/EvidenceBundlePanel';
 import { CallSimulatorPanel } from '@/components/CallSimulatorPanel';
 import { DemoGuidePanel } from '@/components/DemoGuidePanel';
+import { SandboxBoundaryPanel } from '@/components/SandboxBoundaryPanel';
 import { GreetingSuggestionPanel } from '@/components/GreetingSuggestionPanel';
 import { CustomerReferencePanel } from '@/components/CustomerReferencePanel';
 import { TicketSummaryPanel } from '@/components/TicketSummaryPanel';
@@ -24,7 +38,66 @@ import { AdminPolicyPanel } from '@/components/AdminPolicyPanel';
 import { ObservabilityPanel } from '@/components/ObservabilityPanel';
 import { SecurityReadinessPanel } from '@/components/SecurityReadinessPanel';
 import { AuthGate, IdentityPill } from '@/components/AuthGate';
-import { api, type SupportSession, type TicketReference, type AIContextPacket, type AuditEvent, type CallEvent, type DraftSuggestionResponse, type InternalNoteWritebackResult, type ConnectorStatus, type EvidenceBundleExportResponse, type GreetingSuggestionResponse, type AuthIdentity, ApiClientError } from '@/lib/api';
+import { InfoTooltip } from '@/components/InfoTooltip';
+import {
+  api,
+  type SupportSession,
+  type TicketReference,
+  type AIContextPacket,
+  type AuditEvent,
+  type CallEvent,
+  type DraftSuggestionResponse,
+  type InternalNoteWritebackResult,
+  type ConnectorStatus,
+  type EvidenceBundleExportResponse,
+  type GreetingSuggestionResponse,
+  type AuthIdentity,
+  ApiClientError,
+} from '@/lib/api';
+
+function ToolsDropdown() {
+  const [open, setOpen] = useState(false);
+  const items = [
+    { label: 'Call Console', href: '/call-console', icon: <Phone size={12} />, note: 'Simulated call events' },
+    { label: 'Device Console', href: '/device-console', icon: <MonitorCog size={12} />, note: 'Endpoint diagnostics' },
+    { label: 'Tool Registry', href: '/tool-registry', icon: <Wrench size={12} />, note: 'Fixed tool manifests' },
+    { label: 'Approval Queue', href: '/approval-queue', icon: <ShieldAlert size={12} />, note: 'Pending approvals' },
+  ];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((s) => !s)}
+        className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
+      >
+        <LayoutGrid size={10} />
+        Tools
+        <ChevronDown size={10} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 z-50 mt-1 w-56 rounded border border-cockpit-600 bg-cockpit-900 shadow-lg">
+            {items.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-2 px-3 py-2 text-[11px] text-cockpit-200 hover:bg-cockpit-800"
+                onClick={() => setOpen(false)}
+              >
+                <span className="text-cockpit-400">{item.icon}</span>
+                <div>
+                  <div className="font-medium">{item.label}</div>
+                  <div className="text-[10px] text-cockpit-500">{item.note}</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: () => Promise<void> }) {
   const [sessions, setSessions] = useState<SupportSession[]>([]);
@@ -57,6 +130,8 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
   const [packetsError, setPacketsError] = useState<string | null>(null);
   const [draftError, setDraftError] = useState<string | null>(null);
   const [greetingError, setGreetingError] = useState<string | null>(null);
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const fetchSessions = useCallback(async () => {
     setSessionsLoading(true);
@@ -95,7 +170,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
       const s = await api.getConnectorStatus();
       setConnectorStatus(s);
     } catch {
-      // Non-fatal: connector status is decorative
+      setConnectorStatus(undefined);
     }
   }, []);
 
@@ -104,7 +179,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
       const insts = await api.listConnectorInstallations();
       setConnectorInstallations(insts);
     } catch {
-      // Non-fatal
+      setConnectorInstallations([]);
     }
   }, []);
 
@@ -113,7 +188,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
       const calls = await api.listRecentCalls();
       setRecentCalls(calls);
     } catch {
-      // Non-fatal: call list is decorative
+      setRecentCalls([]);
     }
   }, []);
 
@@ -122,7 +197,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
       const data = await api.getHealth();
       setHealthInfo({ storeMode: data.storeMode, authMode: data.authMode });
     } catch {
-      // Non-fatal
+      setHealthInfo(undefined);
     }
   }, []);
 
@@ -353,7 +428,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
           </div>
           <div>
             <h1 className="text-sm font-bold text-cockpit-100">SupportPlane</h1>
-            <p className="text-[10px] text-cockpit-500">Support Cockpit</p>
+            <p className="text-[10px] text-cockpit-500">Governed AI support cockpit</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -365,17 +440,14 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             <Info size={10} />
             Sandbox Demo
           </span>
-          <span className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-400">
-            <Cpu size={10} />
-            API: {typeof window !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE_URL ? process.env.NEXT_PUBLIC_API_BASE_URL.replace('http://', '') : 'localhost:4110'}
-          </span>
           {healthInfo && (
             <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
               healthInfo.authMode === 'oidc'
                 ? 'border-accent/40 bg-accent/10 text-accent-light'
                 : 'border-cockpit-600 bg-cockpit-900 text-cockpit-400'
             }`}>
-              Auth: {healthInfo.authMode} · Store: {healthInfo.storeMode}
+              <Cpu size={10} />
+              {healthInfo.authMode} · {healthInfo.storeMode}
             </span>
           )}
           {connectorStatus && (
@@ -394,34 +466,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             </>
           )}
           <IdentityPill identity={identity} logout={logout} />
-          <button
-            onClick={() => window.location.href = '/call-console'}
-            className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
-          >
-            <Phone size={10} />
-            Call Console
-          </button>
-          <button
-            onClick={() => window.location.href = '/device-console'}
-            className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
-          >
-            <MonitorCog size={10} />
-            Device Console
-          </button>
-          <button
-            onClick={() => window.location.href = '/tool-registry'}
-            className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
-          >
-            <Wrench size={10} />
-            Tool Registry
-          </button>
-          <button
-            onClick={() => window.location.href = '/approval-queue'}
-            className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
-          >
-            <ShieldAlert size={10} />
-            Approval Queue
-          </button>
+          <ToolsDropdown />
           <button
             onClick={() => window.location.href = '/admin'}
             className="inline-flex items-center gap-1 rounded border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent-light hover:bg-accent/20"
@@ -469,27 +514,15 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             </div>
           )}
 
-          {/* Panels grid */}
+          {/* Always-visible guidance */}
+          <div className="mb-4">
+            <DemoGuidePanel />
+          </div>
+
+          {/* Primary panels */}
           <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
-            <CallSimulatorPanel
-              sessions={sessions}
-              selectedSession={selectedSession}
-              onSelectSession={handleSelectSession}
-              auditEvents={auditEvents}
-            />
-            {!selectedSession && <DemoGuidePanel />}
+            <SandboxBoundaryPanel />
             <ConnectorStatusPanel />
-            <ConnectorPanel identity={identity} />
-            <CustomerReferencePanel />
-            <EvidenceBundlePanel
-              sessionId={selectedSession?.id}
-              bundle={evidenceBundle}
-              markdown={evidenceBundleMarkdown}
-              loading={evidenceBundleLoading}
-              error={evidenceBundleError}
-              onGenerate={handleGenerateEvidenceBundle}
-            />
-            <TicketSummaryPanel identity={identity} selectedTicket={ticket} />
             <TicketContextPanel
               session={selectedSession}
               ticket={ticket}
@@ -526,17 +559,18 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               writebackResult={writebackResult}
               writebackLoading={writebackLoading}
             />
-            <GreetingSuggestionPanel
-              session={selectedSession}
-              suggestion={greetingSuggestion}
-              loading={greetingLoading}
-              error={greetingError}
-              onGenerate={handleGenerateGreeting}
+            <EvidenceBundlePanel
+              sessionId={selectedSession?.id}
+              bundle={evidenceBundle}
+              markdown={evidenceBundleMarkdown}
+              loading={evidenceBundleLoading}
+              error={evidenceBundleError}
+              onGenerate={handleGenerateEvidenceBundle}
             />
-            <SupportNoteDraftPanel
+            <AuditTrailPanel
               session={selectedSession}
-              identity={identity}
-              externalTicketId={ticket?.externalTicketId}
+              events={auditEvents}
+              loading={auditLoading}
             />
             <ActionOutboxPanel
               session={selectedSession}
@@ -545,20 +579,57 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               draftBody={draftSuggestion?.draft}
               onChanged={selectedSession ? () => fetchSessionDetails(selectedSession) : undefined}
             />
-            <OutboxMonitorPanel
-              identity={identity}
-              onChanged={selectedSession ? () => fetchSessionDetails(selectedSession) : undefined}
-            />
-            <ObservabilityPanel identity={identity} />
-            <SecurityReadinessPanel identity={identity} />
-            <DeliveryPolicyPanel identity={identity} />
-            <AdminPolicyPanel identity={identity} />
-            <AuditTrailPanel
+            <SupportNoteDraftPanel
               session={selectedSession}
-              events={auditEvents}
-              loading={auditLoading}
+              identity={identity}
+              externalTicketId={ticket?.externalTicketId}
             />
           </div>
+
+          {/* Advanced / secondary panels toggle */}
+          <div className="mt-6 mb-2 flex items-center gap-2">
+            <button
+              onClick={() => setShowAdvanced((s) => !s)}
+              className="inline-flex items-center gap-1.5 rounded border border-cockpit-600 bg-cockpit-900 px-3 py-1.5 text-xs font-medium text-cockpit-300 hover:bg-cockpit-800"
+            >
+              <Sparkles size={12} />
+              {showAdvanced ? 'Hide advanced panels' : 'Show advanced panels'}
+            </button>
+            <InfoTooltip>
+              <div className="text-[11px] leading-relaxed">
+                Advanced panels include call simulation, detailed connector settings, customer directory, ticket summaries, greeting suggestions, outbox monitoring, observability, security readiness, delivery policy, and admin policy views. These are useful for deep demos but not required for the first-time path.
+              </div>
+            </InfoTooltip>
+          </div>
+
+          {showAdvanced && (
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+              <CallSimulatorPanel
+                sessions={sessions}
+                selectedSession={selectedSession}
+                onSelectSession={handleSelectSession}
+                auditEvents={auditEvents}
+              />
+              <ConnectorPanel identity={identity} />
+              <CustomerReferencePanel />
+              <TicketSummaryPanel identity={identity} selectedTicket={ticket} />
+              <GreetingSuggestionPanel
+                session={selectedSession}
+                suggestion={greetingSuggestion}
+                loading={greetingLoading}
+                error={greetingError}
+                onGenerate={handleGenerateGreeting}
+              />
+              <OutboxMonitorPanel
+                identity={identity}
+                onChanged={selectedSession ? () => fetchSessionDetails(selectedSession) : undefined}
+              />
+              <ObservabilityPanel identity={identity} />
+              <SecurityReadinessPanel identity={identity} />
+              <DeliveryPolicyPanel identity={identity} />
+              <AdminPolicyPanel identity={identity} />
+            </div>
+          )}
         </main>
       </div>
     </div>
