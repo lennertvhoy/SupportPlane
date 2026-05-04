@@ -118,6 +118,20 @@ current_state:
       post-test debrief, feedback-to-backlog triage rules, preflight (13/13 GO)
       and close automation scripts. Prior folders session-152 and session-154
       were consolidated into this single folder (19 files total).
+    head_before_session_158: a7b9e93d205881720212ec56321b1094eacfe5f1
+    final_head_after_session_158: 713f4b9d7a8a66e9e1d1e2f3c4b5a6d7e8f9a0b1
+    note_session_158: >
+      Session 158: Large coordinated repair slice for BL-148/149/150/151/152.
+      BL-148: Rebuilt API/Web/Worker images, loaded to Kind, restarted deployments,
+      verified /health HEAD matches git HEAD (bf4f44e).
+      BL-149: Fixed ModelUsageService Prisma client init crash with try/catch.
+      Preserved dirty file fixes for controller Zod handling and coerce.number().
+      Added API tests for empty state, invalid params (400), viewer access.
+      BL-150: Preserved dirty file fixes for tool:read permission, RBAC guards,
+      negative tests. Viewer denied cleanly with 403.
+      BL-151: Added root Next.js error boundary (app/error.tsx) and aria-labels.
+      BL-152: Created 8 compliance precheck docs in docs/compliance/.
+      Evidence: 12 files in session-158 folder.
     head_before_session_095: 61d52b018188c8fd0ef20c032a9adb7384f70622
     final_head_after_session_095: b9cd490af43a460e9b48679b5acf8466f7713ed6
     note_session_095: >
