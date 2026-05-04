@@ -224,6 +224,29 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
     [selectedSession, fetchSessionDetails, fetchConnectorStatus]
   );
 
+  const [glpiTicket, setGlpiTicket] = useState<TicketReference | undefined>(undefined);
+  const [glpiTicketLoading, setGlpiTicketLoading] = useState(false);
+  const [glpiTicketError, setGlpiTicketError] = useState<string | null>(null);
+
+  const handleLoadGlpiTicket = useCallback(
+    async (externalTicketId: string) => {
+      if (!selectedSession) return;
+      setGlpiTicketLoading(true);
+      setGlpiTicketError(null);
+      try {
+        const result = await api.loadGlpiTicketContext(selectedSession.id, externalTicketId);
+        setGlpiTicket(result.ticketReference);
+        await fetchSessionDetails(selectedSession);
+        await fetchConnectorStatus();
+      } catch (err) {
+        setGlpiTicketError(err instanceof ApiClientError ? err.message : 'Failed to load GLPI ticket context');
+      } finally {
+        setGlpiTicketLoading(false);
+      }
+    },
+    [selectedSession, fetchSessionDetails, fetchConnectorStatus]
+  );
+
   const handleAddManual = useCallback(
     async (payload: Record<string, unknown>) => {
       if (!selectedSession) return;
@@ -475,6 +498,15 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               onLoad={handleLoadTicket}
               connectorMode={connectorStatus?.mode}
               connectorInstallation={connectorInstallations.find((i) => i.adapterType === 'zammad') ?? connectorInstallations[0]}
+            />
+            <TicketContextPanel
+              session={selectedSession}
+              ticket={glpiTicket}
+              loading={glpiTicketLoading}
+              error={glpiTicketError}
+              onLoad={handleLoadGlpiTicket}
+              connectorMode="glpi"
+              connectorInstallation={connectorInstallations.find((i) => i.adapterType === 'glpi')}
             />
             <CaseTimelinePanel session={selectedSession} />
             <AiContextPanel

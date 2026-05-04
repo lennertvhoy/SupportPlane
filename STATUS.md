@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-04 15:00 CEST
+**Updated At:** 2026-05-04 15:30 CEST
 **Execution Mode:** operating
-**Project State:** session_155_tester_readiness_truth_repair
+**Project State:** session_156_final_tester_readiness_closure
 **Public URL:** not configured
 
 ## Snapshot
@@ -11,7 +11,7 @@
 - **BL-061/062/063/064/066/067/068 and BL-086/087/090 and BL-104-117/121 accepted.** Tool Execution Safety, production readiness, real sandbox acceptance freeze.
 - **BL-130/131/133 `[accepted]` — Windows endpoint real runner proof.** Session 134: GitHub Actions workflow passed on windows-latest (44/44 tests, 0 fail). Registration, heartbeat, diagnostics (services/software via real sc.exe/reg.exe), policy denial, no-secret scan all proven via Tailscale Funnel API.
 - **BL-069 `[accepted]` — GLPI real sandbox.** Egress decision label fixed (generic `allowed_local_sandbox_read`). Authenticated connector-status proves GLPI configured/real.
-- **BL-137/138/139/140/141/142 `[accepted]` — User testing pipeline + demo UX polish + first tester round ops.** Sessions 144-155. BL-141/142 tester-readiness truth repaired in Session 155: runtime identity fixed (API HEAD matches repo), Zammad ticket #2 loaded with real sandbox read, GLPI ticket #1 loaded, preflight honestly checks ticket flows and HEAD match (16/16 PASS GO), 3 fresh browser screenshots proving loaded flows, 17 evidence files. Session 153 evidence superseded. Ready for real testers.
+- **BL-141/142 `[accepted]` — Tester readiness closure-grade.** Session 156: runtime identity exact match (API HEAD == repo HEAD b22fa18), Zammad ticket #2 + GLPI ticket #1 both loaded with real sandbox reads and browser proof, 6 distinct browser screenshots, preflight 15 PASS GO, GLPI ticket loader added to Web UI, 20 evidence files. Sessions 153/155 superseded. Ready for first real tester.
 - **BL-127 `[blocked]` — osTicket.** 3 hard blockers: no read API, no PostgreSQL, no official container image. Fixture stub retained.
 - **BL-071 `[partial/planned-real-sandbox]` — MeshCentral.** Selected as next real connector target after BL-069.
 
@@ -30,7 +30,7 @@
 - BL-139 accepted (Session 147/148): First user testing round — tester packet, round plan, internal dry run, P1 API port fix, 4 browser screenshots, 13 evidence files, 10/10 smoke test. Session-148 closure proof repair (5 files, clean worktree proof).
 - Evidence BL-139: `output/playwright/session-147-first-user-testing-round/` (13 files) + `output/playwright/session-148-bl139-closure-proof/` (5 files) + `output/playwright/session-149-bl139-final-truth-repair/` (5 files).
 - Evidence BL-140: `output/playwright/session-150-first-real-tester-round-ops/` (14 files) + `output/playwright/session-151-bl140-final-truth-repair/` (5 files).
-- Evidence BL-141 + BL-142 (canonical): `output/playwright/session-155-tester-readiness-truth-repair/` (17 files). Session 153 evidence superseded.
+- Evidence BL-141 + BL-142 (canonical): `output/playwright/session-156-final-tester-readiness-closure/` (20 files). Sessions 153/155 superseded.
 - Evidence BL-138: `output/playwright/session-145-user-testing-operations/` (18 files).
 - Evidence BL-137: `output/playwright/session-144-user-testing-demo-readiness/` (17 files).
 - Demo URL: `http://localhost:3300`, API: `http://localhost:4210`.

@@ -20,7 +20,7 @@ export function TicketContextPanel({
   loading: boolean;
   error: string | null;
   onLoad: (externalTicketId: string) => void;
-  connectorMode?: 'mock' | 'zammad';
+  connectorMode?: 'mock' | 'zammad' | 'glpi';
   connectorInstallation?: ConnectorInstallation;
 }) {
   const [ticketId, setTicketId] = useState('TICKET-101');
@@ -65,14 +65,14 @@ export function TicketContextPanel({
               <div className="flex items-center gap-2">
                 <Ticket size={14} className="text-accent" />
                 <span className="text-xs font-medium text-cockpit-300">
-                  {connectorMode === 'zammad' ? 'Zammad Sandbox' : 'Mock Connector Data'}
+                  {connectorMode === 'zammad' ? 'Zammad Sandbox' : connectorMode === 'glpi' ? 'GLPI Sandbox' : 'Mock Connector Data'}
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <Badge variant={connectorMode === 'zammad' ? 'success' : 'warning'}>
-                  {connectorMode === 'zammad' ? 'Zammad sandbox' : 'Mock'}
+                <Badge variant={connectorMode === 'zammad' || connectorMode === 'glpi' ? 'success' : 'warning'}>
+                  {connectorMode === 'zammad' ? 'Zammad sandbox' : connectorMode === 'glpi' ? 'GLPI sandbox' : 'Mock'}
                 </Badge>
-                {connectorMode === 'zammad' && (
+                {(connectorMode === 'zammad' || connectorMode === 'glpi') && (
                   <Badge variant="muted">Read-only</Badge>
                 )}
               </div>
@@ -107,7 +107,7 @@ export function TicketContextPanel({
 
               <div className="flex items-center justify-between rounded bg-cockpit-800/60 px-2 py-1.5 text-xs text-cockpit-500">
                 <span>Adapter: {ticket.adapterId}</span>
-                {connectorMode === 'zammad' && (
+                {(connectorMode === 'zammad' || connectorMode === 'glpi') && (
                   <span className="inline-flex items-center gap-1 text-amber-400">
                     <Shield size={10} />
                     Sandbox · No writeback · No production data
@@ -120,6 +120,16 @@ export function TicketContextPanel({
                   <span>Read operation allowed by sandbox allowlist</span>
                   <span>OpenBao sandbox resolver</span>
                   <span>Secrets resolved server-side</span>
+                  <span>No cloud AI</span>
+                  <span>Writeback blocked</span>
+                </div>
+              )}
+              {connectorMode === 'glpi' && (
+                <div className="grid grid-cols-2 gap-2 rounded border border-emerald-700/30 bg-emerald-950/20 px-2 py-1.5 text-[10px] text-emerald-200">
+                  <span>Real sandbox</span>
+                  <span>Read operation via GLPI REST API</span>
+                  <span>Session token auth</span>
+                  <span>Credentials server-side only</span>
                   <span>No cloud AI</span>
                   <span>Writeback blocked</span>
                 </div>

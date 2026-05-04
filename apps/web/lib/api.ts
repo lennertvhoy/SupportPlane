@@ -1542,6 +1542,20 @@ export const api = {
       body: JSON.stringify({ externalTicketId }),
     }, identity),
 
+  loadGlpiTicketContext: (
+    sessionId: string,
+    externalTicketId: string,
+    identity?: DevIdentity
+  ) =>
+    apiFetch<{
+      ticketReference: TicketReference;
+      contextPacket: AIContextPacket;
+      session: SupportSession;
+    }>(`/support-sessions/${sessionId}/glpi/ticket-context`, {
+      method: 'POST',
+      body: JSON.stringify({ externalTicketId }),
+    }, identity),
+
   createInternalNoteDraft: (
     sessionId: string,
     body: { externalTicketId: string; body: string; subject?: string },
