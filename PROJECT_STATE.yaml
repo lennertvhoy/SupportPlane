@@ -86,7 +86,7 @@ current_state:
     head_before_session_145: cb99febbba35011fbadb4f3d16c5663a0378fede
     final_head_after_session_145: 81320984c392281d375f6a5592ecea4ba97e3fe1
     head_before_session_147: b41b21a1c335fc008d5116195cc45d01b9d37430
-    final_head_after_session_147: recorded_in_final_handoff
+    final_head_after_session_147: 8ece58ba455b023e266decece55909655acbb491
     worktree_status_at_state_update: clean
 
   current_product_truth:
