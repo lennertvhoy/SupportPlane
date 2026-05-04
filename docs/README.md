@@ -97,6 +97,21 @@ Security model, threat modeling, AI governance, and policy.
 | `security/SECURITY_REGRESSION_MATRIX.md` | Security regression test matrix |
 | `security/THREAT_MODEL.md` | Detailed threat model with threat categories |
 
+## Compliance and Assurance
+
+Belgium/EU readiness prechecks and compliance evidence. These are **readiness/precheck documents**, not certifications or legal opinions.
+
+| File | Purpose |
+|------|---------|
+| `compliance/ASSURANCE_EVIDENCE_INDEX.md` | Master index of compliance evidence areas, existing proof, and gaps |
+| `compliance/GDPR_DATA_INVENTORY.md` | Personal data categories, sources, retention, export, delete, redaction notes |
+| `compliance/DPIA_PRECHECK.md` | Likely DPIA triggers and risk-level assessment |
+| `compliance/AI_ACT_CLASSIFICATION_PRECHECK.md` | AI feature inventory and candidate EU AI Act risk classification |
+| `compliance/BELGIUM_NIS2_CYFUN_READINESS.md` | NIS2 / CyberFundamentals control mapping with honest gaps |
+| `compliance/ACCESSIBILITY_AUDIT.md` | Initial accessibility pass: known issues, improvements, backlog |
+| `compliance/SUPPLY_CHAIN_AUDIT.md` | Dependency/SBOM status, license gap, container hardening recommendations |
+| `compliance/OPERATIONAL_READINESS_AUDIT.md` | Backup/restore, incident response gap, health checks, runbook status |
+
 ## Integration Docs
 
 Connector-specific documentation for external system integrations.

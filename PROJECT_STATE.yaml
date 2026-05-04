@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-04T18:00:00+02:00
+  updated_at: 2026-05-04T20:00:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -714,6 +714,21 @@ current_state:
       - docs/EVIDENCE_LOG.md
       - docs/REALITY_MATRIX.md
       - docs/ENTERPRISE_DEMO_GUIDE.md
+    created_in_bl_152:
+      - docs/compliance/ASSURANCE_EVIDENCE_INDEX.md
+      - docs/compliance/GDPR_DATA_INVENTORY.md
+      - docs/compliance/DPIA_PRECHECK.md
+      - docs/compliance/AI_ACT_CLASSIFICATION_PRECHECK.md
+      - docs/compliance/BELGIUM_NIS2_CYFUN_READINESS.md
+      - docs/compliance/ACCESSIBILITY_AUDIT.md
+      - docs/compliance/SUPPLY_CHAIN_AUDIT.md
+      - docs/compliance/OPERATIONAL_READINESS_AUDIT.md
+    updated_in_bl_152:
+      - BACKLOG.md
+      - NEXT_ACTIONS.md
+      - STATUS.md
+      - PROJECT_STATE.yaml
+      - docs/README.md
 
   environment:
     host:

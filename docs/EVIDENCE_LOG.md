@@ -2,6 +2,25 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-04-182: BL-152 — Belgium/EU Assurance Audit Readiness Dossier Created
+
+- Evidence folder: `docs/compliance/` (8 markdown files)
+- Source/System: Static documentation based on observed project state, existing evidence, and BACKLOG.md / PROJECT_STATE.yaml / EVIDENCE_LOG.md truth.
+- Action: Created 8 compliance readiness/precheck documents under `docs/compliance/`: ASSURANCE_EVIDENCE_INDEX.md, GDPR_DATA_INVENTORY.md, DPIA_PRECHECK.md, AI_ACT_CLASSIFICATION_PRECHECK.md, BELGIUM_NIS2_CYFUN_READINESS.md, ACCESSIBILITY_AUDIT.md, SUPPLY_CHAIN_AUDIT.md, OPERATIONAL_READINESS_AUDIT.md. Updated docs/README.md index. Updated BACKLOG.md, NEXT_ACTIONS.md, STATUS.md, PROJECT_STATE.yaml to reflect BL-152 partial completion.
+- Proves:
+  - Master evidence index maps 9 compliance areas to existing evidence and honest gaps.
+  - GDPR data inventory covers 9 personal data categories with source, purpose, retention, export, delete, and redaction notes.
+  - DPIA precheck identifies 5 likely trigger areas with risk levels (low/medium/high) and mitigation gaps.
+  - AI Act precheck classifies 5 AI features as limited/minimal risk; no prohibited practices or high-risk Annex III scope identified.
+  - NIS2/CyberFundamentals map covers Identify/Protect/Detect/Respond/Recover with honest gap analysis.
+  - Accessibility audit lists 8 known issues and maps to WCAG 2.1 principles.
+  - Supply chain audit documents dependency/SBOM/license/container gaps.
+  - Operational readiness audit documents backup/restore runbook status, incident response gap, monitoring/logging state.
+  - All documents explicitly state "readiness/precheck" and include concrete backlog recommendations.
+  - No compliance, certification, or legal advice claims made.
+- Type: documentation-and-evidence
+- as_of: 2026-05-04T20:00:00+02:00
+
 ## EV-2026-05-04-181: Session 095 — BL-143 First-Open UX Control Audit & Enterprise Readiness Pass (ACCEPTED)
 
 - Evidence folder: `output/playwright/session-157-bl143-first-open-ux-enterprise-readiness/`
@@ -3085,3 +3104,20 @@
   - `12-admin-gdpr-dry-run.png` — GDPR dry-run panel.
   - `13-admin-retention-policy.png` — retention policy settings.
   - `14-api-health-head.png` — browser screenshot of /health endpoint.
+
+## EV-2026-05-04-183: Session 158 — BL-148/149/150/151/152 Large Runtime/Security/Assurance Slice (ACCEPTED)
+
+- Evidence folder: `output/playwright/session-158-bl148-149-150-151-152-large-runtime-security-assurance-slice/`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus CLI artifacts
+- Action: Completed BL-148/149/150/151 acceptance and BL-152 partial readiness dossier. Rebuilt cluster images, restarted deployments, verified runtime identity exact match.
+- Proves:
+  - BL-148: API `/health` HEAD `bf4f44ec07eb6c7fba6762cba352dfbf06858a36` exactly matches `git rev-parse HEAD`
+  - BL-149: Admin Model Usage panel loads without crash; empty state shows "No model usage logs yet"; invalid params return 400 with "Invalid query parameters"; viewer gets 200 with empty logs (has audit:read)
+  - BL-150: Admin Tool Registry shows 8 tools with permissions/platforms/categories; viewer gets "Forbidden: tool:read requires a higher role" with 0 tools
+  - BL-151: Root Next.js error boundary exists (app/error.tsx); aria-labels added to icon-only buttons in AdminDashboardShell
+  - BL-152: 8 compliance precheck docs created in `docs/compliance/`
+  - Cluster pods: API/Web/Worker all Running/Ready
+  - Lint: PASS (0 errors); Typecheck: PASS (all workspaces); API tests: 217 pass, 0 fail, 3 skipped
+  - 12 evidence files total (5 screenshots + 7 CLI artifacts), under 20 cap
+- Type: browser-runtime-and-cli-verification
+- as_of: 2026-05-04T20:15:00+02:00
