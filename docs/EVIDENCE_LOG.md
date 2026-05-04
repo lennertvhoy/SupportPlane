@@ -2,6 +2,29 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-04-181: Session 095 — BL-143 First-Open UX Control Audit & Enterprise Readiness Pass (ACCEPTED)
+
+- Evidence folder: `output/playwright/session-095-bl143-first-open-ux-enterprise-readiness/`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and API (`localhost:4210`), plus CLI artifacts
+- Action: Completed BL-143 acceptance. Enhanced first-open UX with InfoTooltip/BoundaryLabel components, DemoGuidePanel with persistent Show/Hide and product explanation, SandboxBoundaryPanel with real-sandbox/mock-fixture/unconfigured/read-only/approval-gated/policy-blocked/audit-evidence labels, main page reorganized with primary/secondary panel split and collapsible advanced section, header Tools dropdown, ConnectorStatusPanel info tooltips, AuthGate sandbox warning. Fixed ticket ID defaults (TICKET-101→2 for Zammad, GLPI→1) so real sandbox ticket loading works without 500 error on first try. Web image rebuilt/deployed.
+- Proves:
+  - First-open login page shows sandbox warning and clear product description
+  - Start Here / Demo Guide is prominent with product explanation, connector states, and recommended path
+  - Demo Boundaries & Safety panel shows connector states (real sandbox/mock fixture/unconfigured) and governance states (read-only/approval required/blocked by policy/audit trail) with working info tooltips
+  - Connector Status panel shows all 5 connectors with detailed descriptions and real sandbox vs fixture vs unconfigured labels
+  - Header cleaned: DEV/MOCK DATA, Sandbox Demo, local·postgres, Sandbox mode, All writeback blocked, Tools dropdown
+  - "Show/Hide advanced panels" toggle works (Call Simulator, Connector, Delivery Policy, Observability, Security Readiness panels)
+  - Zammad ticket context loads with default ID "2" (no 500 error) — real sandbox ticket #2 "VPN connection issue"
+  - GLPI ticket context default set to "1"
+  - DraftNotePanel writeback ticket ID default set to "2"
+  - Console clean (0 errors) on touched flows
+  - No raw secrets in UI or evidence
+  - 17 evidence files (11 browser screenshots + 6 CLI/text artifacts), under 20 cap
+  - All validation gates pass: lint (0 errors), typecheck (10 workspaces), tests (all pass), state docs, docs hygiene
+- Deferred to BL-144/145/146/147: full control inventory across all secondary panels, IA simplification, production-readiness language audit, design-system consistency pass
+- Type: browser-runtime-and-cli-verification
+- as_of: 2026-05-04T17:35:00+02:00
+
 ## EV-2026-05-04-180: Session 153 — BL-141 Closure Repair + BL-142 First Live Tester Round Ops (ACCEPTED)
 
 - Evidence folder: `output/playwright/session-153-bl141-bl142-closure/`

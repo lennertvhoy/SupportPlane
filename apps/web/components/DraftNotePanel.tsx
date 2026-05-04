@@ -28,7 +28,7 @@ export function DraftNotePanel({
   const [draft, setDraft] = useState('');
   const [reviewed, setReviewed] = useState(false);
   const [operatorInstructions, setOperatorInstructions] = useState('');
-  const [externalTicketId, setExternalTicketId] = useState('TICKET-101');
+  const [externalTicketId, setExternalTicketId] = useState('2');
 
   async function handleGenerate() {
     const response = await onGenerate(operatorInstructions || undefined);
@@ -184,7 +184,7 @@ export function DraftNotePanel({
             <input
               value={externalTicketId}
               onChange={(e) => setExternalTicketId(e.target.value)}
-              placeholder="TICKET-101"
+              placeholder="2"
               className="w-full rounded border border-cockpit-600 bg-white px-3 py-2 text-xs text-black placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
             />
             <div className="mt-2 flex items-center justify-between">

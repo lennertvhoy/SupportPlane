@@ -88,7 +88,7 @@ export function DemoGuidePanel() {
         <ol className="list-decimal list-inside space-y-0.5">
           <li>Review the <strong>Demo Boundaries & Safety</strong> panel below</li>
           <li>Check <strong>Connector Status</strong> to see what is real vs. fixture vs. unconfigured</li>
-          <li>Create a <strong>Session</strong> in the sidebar and load Zammad ticket <strong>TICKET-101</strong></li>
+          <li>Create a <strong>Session</strong> in the sidebar and load Zammad ticket <strong>#2</strong></li>
           <li>Load GLPI ticket context via the GLPI flow</li>
           <li>Explore <strong>Admin</strong> → governance, policies, audit trail</li>
         </ol>

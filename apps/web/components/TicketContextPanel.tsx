@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, Ticket, User, Mail, Tag, Globe, Plug, Shield, Lock } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
@@ -23,7 +23,13 @@ export function TicketContextPanel({
   connectorMode?: 'mock' | 'zammad' | 'glpi';
   connectorInstallation?: ConnectorInstallation;
 }) {
-  const [ticketId, setTicketId] = useState('TICKET-101');
+  const defaultTicketId = connectorMode === 'glpi' ? '1' : connectorMode === 'zammad' ? '2' : 'TICKET-101';
+  const [ticketId, setTicketId] = useState(defaultTicketId);
+
+  useEffect(() => {
+    const next = connectorMode === 'glpi' ? '1' : connectorMode === 'zammad' ? '2' : 'TICKET-101';
+    setTicketId(next);
+  }, [connectorMode]);
 
   return (
     <Panel title="Ticket Context">
