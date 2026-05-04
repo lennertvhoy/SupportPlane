@@ -67,10 +67,12 @@ Each tester should be assigned exactly one persona from the table above before s
 
 Stop the round immediately and fix the issue before continuing to the next tester if:
 
-1. **Any P0 demo-blocker found** — System crashes, unreachable, or shows wrong data to testers.
-2. **Any honesty gap found** — A label or status message contradicts actual behavior (e.g., "real" when it's mock, "connected" when it's not).
-3. **Any raw secret, token, or password exposed** — In UI, API response, browser dev tools, or evidence.
-4. **3+ P1 issues in the same flow** — Indicates the flow is fundamentally broken.
+1. **Demo data reset fails** — `bash scripts/reset_demo_data.sh` exits non-zero. The demo is not in a clean state for a new tester.
+2. **Smoke test does not pass 10/10** — `bash scripts/verify_user_testing_demo.sh` reports any FAIL. Testers will hit broken flows.
+3. **Any P0 demo-blocker found** — System crashes, unreachable, or shows wrong data to testers.
+4. **Any honesty gap found** — A label or status message contradicts actual behavior (e.g., "real" when it's mock, "connected" when it's not).
+5. **Any raw secret, token, or password exposed** — In UI, API response, browser dev tools, or evidence.
+6. **3+ P1 issues in the same flow** — Indicates the flow is fundamentally broken.
 
 See **[TRIAGE_WORKFLOW.md](./TRIAGE_WORKFLOW.md)** Section 6 for full stop-testing rules.
 

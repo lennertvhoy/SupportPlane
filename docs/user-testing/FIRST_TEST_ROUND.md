@@ -4,11 +4,14 @@
 
 ---
 
-## Demo URL
+## Demo URLs
 
-**http://localhost:3300**
+| Service | URL |
+|---------|-----|
+| **Web UI** | `http://localhost:3300` |
+| **API** | `http://localhost:4210` |
 
-> The demo operator must start the stack before you can access it. The operator command is `bash scripts/start_demo_mode.sh`. If the page doesn't load, ask the operator to run the smoke test: `bash scripts/verify_user_testing_demo.sh`.
+> The demo operator must start the stack before you can access it: `bash scripts/start_demo_mode.sh`. **Before each tester, the operator must also run:** `bash scripts/reset_demo_data.sh` (clears stale sessions from prior testing). If the page doesn't load, ask the operator to run the smoke test: `bash scripts/verify_user_testing_demo.sh`.
 
 ---
 

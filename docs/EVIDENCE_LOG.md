@@ -2,6 +2,20 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-04-174: Session 148 — BL-139 Closure Proof Repair (CLEAN)
+
+- Evidence folder: `output/playwright/session-148-bl139-closure-proof/`
+- Source/System: CLI artifacts, git proof
+- Action: Repaired session-147 evidence caveat. Session-147 `08-git-status.txt` showed pre-commit dirty worktree (modified page.tsx + 3 untracked docs). Final commits 8ece58b and f3a3975 exist and worktree is clean. Created session-148 with 5 clean proof artifacts: git final truth, smoke test 10/10, state docs PASS, docs hygiene PASS, evidence index.
+- Proves:
+  - Worktree clean at final HEAD f3a3975
+  - Smoke test 10/10 PASS, 0 FAIL
+  - All state/docs hygiene checks pass
+  - Tester packet tuned up: API URL added, reset/smoke stop-testing criteria added, feedback log columns expanded
+  - 5 evidence files, under 8 cap
+- Type: closure-proof-repair
+- as_of: 2026-05-04T11:00:00+02:00
+
 ## EV-2026-05-03-173: Session 147 — First User Testing Round & Triage (BL-139 ACCEPTED)
 
 - Evidence folder: `output/playwright/session-147-first-user-testing-round/`

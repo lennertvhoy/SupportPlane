@@ -2587,3 +2587,35 @@ Send tester packet to first real testers. Before each tester:
 1. Run `bash scripts/reset_demo_data.sh`
 2. Run `bash scripts/verify_user_testing_demo.sh`
 3. Hand them `docs/user-testing/FIRST_TEST_ROUND.md`
+
+---
+
+## Session 148 — BL-139 Closure Proof Repair (COMPLETED 2026-05-04)
+
+### Date
+2026-05-04 11:40 CEST
+
+### Scope
+Tiny closure repair. Session-147 evidence `08-git-status.txt` showed pre-commit dirty worktree. Add clean final proof.
+
+### What Changed
+- Created `output/playwright/session-148-bl139-closure-proof/` (5 files, under 8 cap) with clean git proof, smoke test, state docs check, docs hygiene check.
+- Updated session-147 `12-evidence-index.md` to note pre-commit caveat on `08-git-status.txt`.
+- Tuned up `FIRST_TEST_ROUND.md`: added API URL, explicit reset requirement before testing.
+- Tuned up `TEST_ROUND_001_PLAN.md`: added stop-testing criteria for failed reset and failed smoke test.
+- Tuned up `FEEDBACK_LOG.md`: expanded columns to include Tester, Persona, Status fields.
+- Updated EVIDENCE_LOG.md with EV-2026-05-04-174 entry.
+- Updated STATUS.md, PROJECT_STATE.yaml, WORKLOG.md.
+
+### Verification
+- `bash scripts/verify_user_testing_demo.sh`: 10/10 PASS, 0 FAIL
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- Worktree clean at final commit.
+
+### Evidence
+- Session 148: `output/playwright/session-148-bl139-closure-proof/` (5 files)
+- 5 files: git-final-truth, smoke-test-report, state-docs-check, docs-hygiene-check, evidence-index
+
+### Next Recommended Action
+Send the tester packet. Real testers can start immediately. Final clean proof exists.
