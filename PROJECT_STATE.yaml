@@ -36,7 +36,7 @@ current_state:
     git_repository: true
     branch: main
     head_before_bl_102: 8b4f0311878bf648fb9d945dcc816f7b0ec27bb3
-    final_head_after_bl_102: f30fdc9f02fc7919686d800943d4442509572cfc
+    final_head_after_bl_102: recorded_in_final_handoff
     head_before_bl_103: 919f7a944191295d0ff3283b659a35cb700b06e1
     final_head_after_bl_103: ce23d2d338fb94bff5086d6114e4210435c88eca
     head_before_bl_104_bl_105: ce23d2d338fb94bff5086d6114e4210435c88eca
@@ -56,7 +56,7 @@ current_state:
     head_before_session_125: b08980ab2e15f0f568c6c366c84ec1d5f466797f
     final_head_after_session_125: 746c4a37a9fb0c8bb4f445d7842d770a7af605fc
     head_before_bl_055_060_118: ee11447f8928d778178f0144b1a0a0c623468c95
-    final_head_after_bl_055_060_118: f30fdc9f02fc7919686d800943d4442509572cfc
+    final_head_after_bl_055_060_118: recorded_in_final_handoff
     head_before_bl_136: 24abf6a
     final_head_after_bl_136: 18881e4
     head_before_session_134: 8f395a5d6da97cfa7214a6b25854bb4f1402beab
@@ -88,7 +88,7 @@ current_state:
     head_before_session_147: b41b21a1c335fc008d5116195cc45d01b9d37430
     final_head_after_session_147: 8ece58ba455b023e266decece55909655acbb491
     head_before_session_148: f3a397568f1c4cbe07b7793722af361abe5f12fd
-    final_head_after_session_148: f30fdc9f02fc7919686d800943d4442509572cfc
+    final_head_after_session_148: fa1c2652c2c473b9d07144d7ede9166808dd8ff0
     worktree_status_at_state_update: clean
 
   current_product_truth:
@@ -338,7 +338,7 @@ current_state:
       - observability stack
     evidence_folder: output/playwright/session-103-bl102-k8s-selfhosted-roadmap-final/
     screenshot_count: 17
-    final_commit_hash: f30fdc9f02fc7919686d800943d4442509572cfc
+    final_commit_hash: recorded_in_final_handoff
 
   kubernetes_podman_target:
     target_cluster_name: supportplane-local
@@ -370,7 +370,7 @@ current_state:
           - localhost/supportplane-worker:local-k8s
         direct_kind_load_docker_image: did_not_find_rootless_podman_image
       evidence_folder: output/playwright/session-104-bl103-local-k8s-podman-foundation-final/
-      final_commit_hash: f30fdc9f02fc7919686d800943d4442509572cfc
+      final_commit_hash: recorded_in_final_handoff
       verified_commands:
         - bash scripts/check_local_k8s_prereqs.sh
         - bash scripts/create_local_k8s_cluster.sh
