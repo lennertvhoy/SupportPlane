@@ -2,6 +2,38 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-04-178: Session 152 — Demo UX Polish & Observation Readiness (BL-141 ACCEPTED)
+
+- Evidence folder: `output/playwright/session-152-demo-ux-polish-observation-readiness/`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and API (`localhost:4210`), plus CLI artifacts
+- Action: Completed BL-141 acceptance. Added in-app demo guide panel, session search/filter, connector status descriptions, ticket summary empty-state clarity, favicon, observation notes template. 6 browser screenshots with 0 duplicates. 14 evidence files total, under 20 cap.
+- Proves:
+  - Demo Guide panel visible on cockpit page with sandbox status and test path
+  - Session search/filter functional with text search + 6 quick filters
+  - Connector status panel shows per-connector descriptions (real sandbox vs fixture vs unconfigured)
+  - Zammad ticket #2 loads correctly
+  - Admin connectors page shows GLPI configured
+  - Admin governance reachable
+  - All validation gates pass: lint, typecheck, 260 tests, state docs, docs hygiene, 10/10 smoke, 3 bash scripts
+  - No raw secrets in evidence
+  - 6 browser screenshots, 0 MD5 duplicates
+- Type: browser-runtime-and-cli-verification
+- as_of: 2026-05-04T12:30:00+02:00
+
+## EV-2026-05-04-177: Session 151 — BL-140 Final Truth Repair (CLEAN)
+
+- Evidence folder: `output/playwright/session-151-bl140-final-truth-repair/`
+- Source/System: CLI artifacts, git proof
+- Action: Repaired truth contradiction between Session 150 evidence (dirty at fa29dc4) and actual final state (clean at 6349510). Fixed STATUS.md snapshot bullet count. Captured 5 evidence files. Commit 92f0ad1.
+- Proves:
+  - Final HEAD 6349510 exists, worktree clean
+  - Smoke test 10/10 PASS, 0 FAIL
+  - State docs PASS, docs hygiene PASS
+  - 5 evidence files, under 8 cap
+  - Session 150 evidence was pre-commit snapshot, not final truth
+- Type: closure-truth-repair
+- as_of: 2026-05-04T12:15:00+02:00
+
 ## EV-2026-05-04-176: Session 150 — First Real Tester Round Operations & Feedback Intake (BL-140 ACCEPTED)
 
 - Evidence folder: `output/playwright/session-150-first-real-tester-round-ops/`

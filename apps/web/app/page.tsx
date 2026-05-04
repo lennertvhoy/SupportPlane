@@ -11,6 +11,7 @@ import { ConnectorPanel } from '@/components/ConnectorPanel';
 import { ConnectorStatusPanel } from '@/components/ConnectorStatusPanel';
 import { EvidenceBundlePanel } from '@/components/EvidenceBundlePanel';
 import { CallSimulatorPanel } from '@/components/CallSimulatorPanel';
+import { DemoGuidePanel } from '@/components/DemoGuidePanel';
 import { GreetingSuggestionPanel } from '@/components/GreetingSuggestionPanel';
 import { CustomerReferencePanel } from '@/components/CustomerReferencePanel';
 import { TicketSummaryPanel } from '@/components/TicketSummaryPanel';
@@ -453,6 +454,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               onSelectSession={handleSelectSession}
               auditEvents={auditEvents}
             />
+            {!selectedSession && <DemoGuidePanel />}
             <ConnectorStatusPanel />
             <ConnectorPanel identity={identity} />
             <CustomerReferencePanel />

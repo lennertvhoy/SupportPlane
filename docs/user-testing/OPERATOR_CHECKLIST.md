@@ -99,6 +99,7 @@ Do NOT walk through flows with the tester. We want to see where they get stuck o
 
 - Do not guide the tester through flows.
 - Note where they pause, ask questions, or get confused.
+- Use **[OBSERVATION_NOTES_TEMPLATE.md](./OBSERVATION_NOTES_TEMPLATE.md)** to structure your observations.
 - After the session, collect:
   - Completed [FEEDBACK_FORM.md](./FEEDBACK_FORM.md)
   - Any [BUG_REPORT_TEMPLATE.md](./BUG_REPORT_TEMPLATE.md) submissions

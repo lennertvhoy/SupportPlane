@@ -12,6 +12,17 @@ const statusConfig: Record<string, { icon: React.ReactNode; color: string; label
   error: { icon: <XCircle className="w-4 h-4" />, color: 'text-red-400 bg-red-900/30 border-red-700', label: 'Error' },
 };
 
+const connectorDescription = (id: string): string | null => {
+  const descriptions: Record<string, string> = {
+    'zammad': 'Real sandbox — live Zammad instance with OpenBao credential resolution.',
+    'glpi': 'Real sandbox — live GLPI instance with REST API session token auth.',
+    'osticket': 'Fixture only — osTicket is blocked upstream (no read API, MySQL-only, no container image).',
+    'meshcentral': 'Not configured — MeshCentral scaffolding exists but no real instance deployed.',
+    'fortinet': 'Not configured — Fortinet scaffolding exists but no real instance connected.',
+  };
+  return descriptions[id.toLowerCase()] ?? null;
+};
+
 const transportLabel = (t: string) => {
   switch (t) {
     case 'real': return 'Real HTTP';
@@ -78,6 +89,9 @@ export function ConnectorStatusPanel() {
                 <span>Last check: {conn.lastCheck.status}</span>
                 <span>Error code: {conn.errorCode}</span>
               </div>
+              {connectorDescription(conn.id) && (
+                <div className="mt-1 text-[10px] text-cockpit-400 italic">{connectorDescription(conn.id)}</div>
+              )}
               {conn.fixtureWarning && <div className="mt-1 text-xs opacity-80 italic">{conn.fixtureWarning}</div>}
               {conn.lastError && <div className="mt-1 text-xs opacity-80 italic">{conn.lastError}</div>}
             </div>

@@ -2,6 +2,84 @@
 
 **Purpose:** Append-only history for completed work.
 
+## Session 152 — 2026-05-04 — BL-141 Demo UX Polish & Observation Readiness (ACCEPTED)
+
+**Date:** 2026-05-04 12:30 CEST
+**Git HEAD:** to be recorded after final commit
+**Branch:** main
+
+### What changed
+
+- **Demo guide panel:** Created `apps/web/components/DemoGuidePanel.tsx` — dismissible info panel showing sandbox status, connector overview, writeback blocked notice, and recommended test path. Appears on cockpit page when no session selected.
+- **Session search/filter:** Added text search by title and 6 quick-filter buttons (Smoke, Bug, Round, Evidence, Zammad, GLPI) to `apps/web/components/SessionListPanel.tsx`. Uses `useMemo` for efficient client-side filtering.
+- **Connector status descriptions:** Added per-connector tooltip descriptions in `apps/web/components/ConnectorStatusPanel.tsx` — Zammad/GLPI as "Real sandbox", osTicket as "Fixture only", MeshCentral/Fortinet as "Not configured".
+- **Ticket summary empty state:** Improved blank-panel copy in `apps/web/components/TicketSummaryPanel.tsx` — explains why panel is empty and how to load ticket data.
+- **Favicon:** Added `apps/web/app/icon.svg` — simple SVG icon to fix favicon.ico 404.
+- **Observation notes template:** Created `docs/user-testing/OBSERVATION_NOTES_TEMPLATE.md` — structured template with metadata, hesitation log, quotes, bugs, trust gaps, evidence reference.
+- **Feedback log updated:** Added columns for observed hesitation, tester quote, bug context captured, evidence folder. Marked FB-004/FB-005/FB-006 as resolved via BL-141.
+
+### Runtime Verification
+
+- Smoke test: 10/10 PASS, 0 FAIL
+- API health: status=ok, store=postgres
+- Web HTTP 200 on localhost:3300
+- Zammad configured:real, GLPI configured:real
+- Connector status descriptions visible in connector-status JSON
+
+### Browser Proof (6 screenshots, 0 duplicates)
+
+1. `01-demo-home-start-here.png` — Cockpit with Demo Guide panel
+2. `02-session-search.png` — Session sidebar with search/filter
+3. `03-connector-status.png` — Connector status with descriptions
+4. `04-zammad-flow.png` — Zammad ticket loaded
+5. `05-admin-connectors-glpi.png` — Admin connectors page showing GLPI
+6. `06-admin-governance.png` — Admin governance panel
+
+### Verification
+
+- `npm run lint`: PASS (0 errors)
+- `npm run typecheck --workspaces --if-present`: PASS
+- `npm test --workspace=apps/api`: 210 pass, 0 fail, 3 skipped
+- `npm test --workspace=packages/connectors`: 50 pass, 0 fail
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- `bash -n scripts/start_demo_mode.sh`: OK
+- `bash -n scripts/reset_demo_data.sh`: OK
+- `bash -n scripts/capture_demo_bug_context.sh`: OK
+- `bash scripts/verify_user_testing_demo.sh`: 10/10 PASS, 0 FAIL
+
+### Evidence
+
+- Session 152: `output/playwright/session-152-demo-ux-polish-observation-readiness/` (14 files)
+
+### What remains partial/mock/unconfigured
+
+- osTicket: fixture (blocked upstream)
+- MeshCentral: unconfigured
+- Fortinet: unconfigured
+- GLPI context returns 500 (needs reset for seed fix to apply)
+- Web image not rebuilt for cluster (changes require podman build + kind load)
+
+### Next Recommended Action
+
+Send tester packet to first real testers using `SEND_TO_TESTERS.md` and observe using `OBSERVATION_NOTES_TEMPLATE.md`.
+
+## Session 151 — 2026-05-04 — BL-140 Final Truth Repair (CLEAN)
+
+**Date:** 2026-05-04 12:15 CEST
+**Git HEAD:** 92f0ad1063bc12c8a1a3d6cb022dd409c5508e9b
+**Branch:** main
+
+### What changed
+
+- Repaired truth contradiction: Session 150 evidence `18-final-git-status.txt` showed dirty worktree at `fa29dc4` (pre-commit snapshot). Actual final commit `6349510` was created after evidence capture. Worktree is clean at `6349510`.
+- Fixed STATUS.md snapshot bullet count from 8 to 7 (merged BL-137/138/139/140 lines).
+- Created session 151 evidence: git final truth, smoke test 10/10, state docs PASS, docs hygiene PASS, evidence index.
+
+### Evidence
+
+- Session 151: `output/playwright/session-151-bl140-final-truth-repair/` (5 files)
+
 ## Session 150 — 2026-05-04 — BL-140 First Real Tester Round Operations & Feedback Intake (ACCEPTED)
 
 **Date:** 2026-05-04 12:00 CEST

@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { Plus, MessageSquare, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, MessageSquare, Loader2, AlertCircle, Search, Filter, X } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
 import type { SupportSession } from '@/lib/api';
+
+const QUICK_FILTERS = ['Smoke', 'Bug', 'Round', 'Evidence', 'Zammad', 'GLPI'] as const;
 
 export function SessionListPanel({
   sessions,
@@ -26,6 +28,21 @@ export function SessionListPanel({
   const [newTitle, setNewTitle] = useState('');
   const [newDesc, setNewDesc] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+
+  const filteredSessions = useMemo(() => {
+    let result = sessions;
+    if (searchText.trim()) {
+      const q = searchText.toLowerCase();
+      result = result.filter((s) => s.title.toLowerCase().includes(q));
+    }
+    if (activeFilter) {
+      const f = activeFilter.toLowerCase();
+      result = result.filter((s) => s.title.toLowerCase().includes(f));
+    }
+    return result;
+  }, [sessions, searchText, activeFilter]);
 
   return (
     <Panel
@@ -86,6 +103,43 @@ export function SessionListPanel({
         </div>
       )}
 
+      {/* Search and quick filters */}
+      {sessions.length > 0 && (
+        <div className="mb-3 space-y-2">
+          <div className="flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1">
+            <Search size={12} className="text-cockpit-500 shrink-0" />
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Search sessions..."
+              className="flex-1 bg-transparent text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:outline-none"
+            />
+            {searchText && (
+              <button onClick={() => setSearchText('')} className="text-cockpit-500 hover:text-cockpit-300">
+                <X size={12} />
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {QUICK_FILTERS.map((f) => (
+              <button
+                key={f}
+                onClick={() => setActiveFilter(activeFilter === f ? null : f)}
+                className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
+                  activeFilter === f
+                    ? 'bg-accent text-white'
+                    : 'bg-cockpit-800 text-cockpit-400 hover:bg-cockpit-700 hover:text-cockpit-200'
+                }`}
+              >
+                <Filter size={8} />
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {error && (
         <div className="mb-2 flex items-center gap-2 rounded border border-danger/30 bg-danger/10 px-3 py-2 text-xs text-danger">
           <AlertCircle size={14} />
@@ -105,9 +159,18 @@ export function SessionListPanel({
           <br />
           Create one to get started.
         </div>
+      ) : filteredSessions.length === 0 ? (
+        <div className="py-6 text-center text-sm text-cockpit-500">
+          <Search size={24} className="mx-auto mb-2 opacity-50" />
+          No sessions match your search or filter.
+          <br />
+          <button onClick={() => { setSearchText(''); setActiveFilter(null); }} className="text-accent hover:underline text-xs mt-1">
+            Clear search
+          </button>
+        </div>
       ) : (
         <ul className="space-y-1">
-          {sessions.map((s) => (
+          {filteredSessions.map((s) => (
             <li key={s.id}>
               <button
                 onClick={() => onSelect(s)}

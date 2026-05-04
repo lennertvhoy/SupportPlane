@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-04T11:50:00+02:00
+  updated_at: 2026-05-04T12:30:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -10,6 +10,8 @@ metadata:
     BACKLOG.md, docs/EVIDENCE_LOG.md, and docs/ACCEPTANCE_FREEZES.md.
     Tailscale Funnel shut down at Session 135 closure repair.
     Session 149: BL-139 final truth repair — corrected stale session-148 git evidence (f3a3975/ahead8) to actual final (2ddb899/ahead12).
+    Session 151: BL-140 final truth repair — corrected stale session-150 git evidence (fa29dc4/dirty) to actual final (6349510/clean).
+    Session 152: BL-141 demo UX polish — demo guide, session search, connector descriptions, favicon, observation notes.
 
 workflow:
   repo_mode: operating
@@ -95,7 +97,20 @@ current_state:
       Session 149 truth repair only — no new code commits. Evidence was captured
       from running demo at HEAD 2ddb899. State docs corrected to match actual final
       HEAD (was dd411c7, now 2ddb899). Session 148 evidence noted as stale.
-    worktree_status_at_state_update: clean
+    head_before_session_150: 2ddb899f2796411515b01949df799c734acb1e61
+    final_head_after_session_150: 63495106206ec1136ff568b99072aecfa0f7e4b7
+    note_session_150: >
+      Session 150 created commit 6349510 with BL-140 changes. Session-150 evidence
+      18-final-git-status.txt was captured before commit (shows dirty at fa29dc4).
+      Actual final state: clean at 6349510. Repaired in session 151.
+    head_before_session_151: 63495106206ec1136ff568b99072aecfa0f7e4b7
+    final_head_after_session_151: 92f0ad1063bc12c8a1a3d6cb022dd409c5508e9b
+    note_session_151: >
+      Session 151 truth repair — created session-151 evidence proving clean worktree
+      at 6349510, fixed STATUS.md bullet count (8→7). HEAD advanced to 92f0ad1.
+    head_before_session_152: 92f0ad1063bc12c8a1a3d6cb022dd409c5508e9b
+    final_head_after_session_152: to_be_recorded_after_commit
+    worktree_status_at_state_update: dirty_with_uncommitted_changes
 
   current_product_truth:
     lifecycle_stage: real_self_hosted_sandbox_acceptance_frozen
@@ -504,13 +519,13 @@ current_state:
 
   backlog:
     source: BACKLOG.md
-    highest_id: BL-140
-    accepted_current_slice: BL-140_session_150_first_real_tester_round_ops_accepted
+    highest_id: BL-141
+    accepted_current_slice: BL-141_session_152_demo_ux_polish_observation_readiness
     planned_real_e2e_items:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-073, BL-074, BL-071, BL-072, BL-127, BL-065, BL-132, BL-135, BL-140]
+    active_queue_items: [BL-073, BL-074, BL-071, BL-072, BL-127, BL-065, BL-132, BL-135]
 
   documentation:
     primary_user_guide: README.md

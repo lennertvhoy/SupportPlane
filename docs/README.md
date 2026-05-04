@@ -75,6 +75,7 @@ Operational guides for local development, deployment, and maintenance.
 | `user-testing/SEND_TO_TESTERS.md` | Copy-pasteable tester invitation packet with access instructions, flows, and known limitations |
 | `user-testing/OPERATOR_CHECKLIST.md` | Demo operator step-by-step checklist: start, reset, smoke test, assign persona, collect feedback, triage |
 | `user-testing/TEST_ROUND_001_PREFLIGHT_DRY_RUN.md` | Preflight dry run after reset — verified GO for real testers, GLPI seed fix applied |
+| `user-testing/OBSERVATION_NOTES_TEMPLATE.md` | Structured template for operator observation during tester sessions |
 
 ## Security and Governance
 

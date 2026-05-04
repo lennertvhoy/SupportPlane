@@ -27,8 +27,8 @@ Hi! Thanks for testing SupportPlane. Here's what you need:
 
 ### What to Test
 
-1. **First impressions & cockpit layout** — 5 min
-2. **Zammad real sandbox ticket** — 5 min (load ticket #2)
+1. **First impressions & cockpit layout** — 5 min. Look for the blue "Demo Guide — Start Here" panel with connector overview.
+2. **Zammad real sandbox ticket** — 5 min (load ticket #2, TICKET-101)
 3. **GLPI real sandbox ticket** — 5 min (load ticket #1)
 4. **Governance, policy & audit** — 5–8 min
 5. **What feels wrong?** — 5 min (most important!)

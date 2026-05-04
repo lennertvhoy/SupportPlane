@@ -18,8 +18,10 @@
 3. Click **Sign In**
 
 **Look for:**
+- The blue **"Demo Guide — Start Here"** panel with sandbox connector overview and recommended test path
 - The header bar at the top
 - The **"DEV / MOCK DATA"** badge (orange/yellow) — this means you're in a sandbox, not production
+- The **"Sandbox Demo"** badge (blue) — confirms demo mode
 - Your identity pill showing your email, role (Admin), and tenant (dev-tenant)
 - Store mode label: **"Store: postgres"** — real database, not in-memory
 
