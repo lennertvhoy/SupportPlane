@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-04T20:00:00+02:00
+  updated_at: 2026-05-04T19:55:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -131,7 +131,18 @@ current_state:
       negative tests. Viewer denied cleanly with 403.
       BL-151: Added root Next.js error boundary (app/error.tsx) and aria-labels.
       BL-152: Created 8 compliance precheck docs in docs/compliance/.
-      Evidence: 12 files in session-158 folder.
+      Evidence: session-159 supersedes session-158 (18 files, canonical).
+    head_before_session_159: c6cccb8320957208fd9cb42d6870c91c3975f65c
+    final_head_after_session_159: recorded_in_final_handoff
+    note_session_159: >
+      Session 159: Resumed session 158 closure. Corrected stale
+      PROJECT_STATE.yaml final_head_after_session_158 placeholder hash
+      (713f4b9... → c6cccb8). Verified runtime identity, model-usage,
+      tool-registry RBAC, and error boundary via fresh browser proofs.
+      Ran full validation gates (lint, typecheck, 220 tests). Updated
+      all state docs and EVIDENCE_LOG. Deleted superseded session-158
+      folder. Evidence: output/playwright/session-159-bl148-149-150-151-152-
+      runtime-security-assurance/ (18 files, canonical for BL-148/149/150/151/152).
     head_before_session_095: 61d52b018188c8fd0ef20c032a9adb7384f70622
     final_head_after_session_095: b9cd490af43a460e9b48679b5acf8466f7713ed6
     note_session_095: >

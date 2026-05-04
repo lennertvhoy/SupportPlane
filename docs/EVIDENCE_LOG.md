@@ -3105,19 +3105,21 @@
   - `13-admin-retention-policy.png` — retention policy settings.
   - `14-api-health-head.png` — browser screenshot of /health endpoint.
 
-## EV-2026-05-04-183: Session 158 — BL-148/149/150/151/152 Large Runtime/Security/Assurance Slice (ACCEPTED)
+## EV-2026-05-04-183: Session 159 — BL-148/149/150/151/152 Runtime/Security/Assurance Slice (ACCEPTED — SUPERSEDES SESSION-158)
 
-- Evidence folder: `output/playwright/session-158-bl148-149-150-151-152-large-runtime-security-assurance-slice/`
+- Evidence folder: `output/playwright/session-159-bl148-149-150-151-152-runtime-security-assurance/` (canonical, supersedes session-158 which was deleted)
 - Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus CLI artifacts
-- Action: Completed BL-148/149/150/151 acceptance and BL-152 partial readiness dossier. Rebuilt cluster images, restarted deployments, verified runtime identity exact match.
+- Action: Resumed prior session 158. Verified existing code changes. Corrected stale PROJECT_STATE.yaml placeholder hash (713f4b9... → c6cccb8). Captured fresh browser evidence. Ran full validation gates. Deleted superseded session-158 folder.
 - Proves:
-  - BL-148: API `/health` HEAD `bf4f44ec07eb6c7fba6762cba352dfbf06858a36` exactly matches `git rev-parse HEAD`
-  - BL-149: Admin Model Usage panel loads without crash; empty state shows "No model usage logs yet"; invalid params return 400 with "Invalid query parameters"; viewer gets 200 with empty logs (has audit:read)
-  - BL-150: Admin Tool Registry shows 8 tools with permissions/platforms/categories; viewer gets "Forbidden: tool:read requires a higher role" with 0 tools
+  - BL-148: API `/health` HEAD `c6cccb8320957208fd9cb42d6870c91c3975f65c` exactly matches `git rev-parse HEAD` (session 159: `6b3f4cd`)
+  - BL-149: Admin Model Usage panel loads without crash; empty state shows "No model usage logs yet"; invalid params return 400 with "Invalid query parameters"; viewer sees empty state (has audit:read)
+  - BL-150: Admin Tool Registry returns 8 tools with permissions/platforms/categories (API); viewer gets "Forbidden: tool:read requires a higher role" (403)
   - BL-151: Root Next.js error boundary exists (app/error.tsx); aria-labels added to icon-only buttons in AdminDashboardShell
   - BL-152: 8 compliance precheck docs created in `docs/compliance/`
-  - Cluster pods: API/Web/Worker all Running/Ready
-  - Lint: PASS (0 errors); Typecheck: PASS (all workspaces); API tests: 217 pass, 0 fail, 3 skipped
-  - 12 evidence files total (5 screenshots + 7 CLI artifacts), under 20 cap
+  - Cluster pods: All Running/Ready (API, Web, Worker, 24 total pods)
+  - Lint: PASS (0 errors); Typecheck: PASS (all workspaces); API tests: 220 total, 217 pass, 0 fail, 3 skipped
+  - 18 evidence files (5 screenshots + 13 CLI artifacts), under 20 cap
+  - MD5: 0 duplicate screenshots
+  - State docs updated: STATUS.md, NEXT_ACTIONS.md, PROJECT_STATE.yaml, BACKLOG.md, EVIDENCE_LOG.md
 - Type: browser-runtime-and-cli-verification
-- as_of: 2026-05-04T20:15:00+02:00
+- as_of: 2026-05-04T19:55:00+02:00
