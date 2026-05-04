@@ -2512,3 +2512,78 @@ Next steps: Deploy MeshCentral sandbox in K8s, implement `FetchMeshCentralClient
 ### Next Recommended Action
 
 P1 [BL-071] Deploy MeshCentral sandbox in K8s, implement FetchMeshCentralClient, prove authenticated connector-status and device context.
+
+---
+
+## Session 147 — BL-139 First User Testing Round & Triage (COMPLETED 2026-05-04)
+
+### Date
+Started 2026-05-03 18:40 CEST — interrupted before commit. Completed 2026-05-04 11:00 CEST.
+
+### Scope
+First real user-testing readiness/triage round. No new product scope unless P0/P1 demo blocker.
+
+### Part 0 — BL-138 Closure Proof Repair
+- Verified commits 81320984c392281d375f6a5592ecea4ba97e3fe1 and b41b21a1c335fc008d5116195cc45d01b9d37430 both exist as git commit objects.
+- Worktree is clean at b41b21a (ahead 6).
+- Created `output/playwright/session-146-bl138-closure-proof/` (7 files) with clean git proof.
+- Session-145 bug-context git-head.txt at cb99feb was pre-final dirty state, now superseded by clean commits.
+
+### Part 1 — Tester Packet Creation
+- Created `docs/user-testing/FIRST_TEST_ROUND.md` — tester packet with demo URL, login credentials, flow descriptions, known limitations, feedback instructions, persona assignments.
+- Created `docs/user-testing/TEST_ROUND_001_PLAN.md` — round plan with tester list placeholder, target personas, flows to validate, success criteria, stop-testing criteria, triage meeting checklist.
+
+### Part 2 — Internal Dry Run
+- Logged into demo at `http://localhost:3300` as admin.
+- Followed test script flows in browser.
+- Identified key findings:
+  - **P1**: Header API label shows `localhost:4110` but cluster API is on `4210`.
+  - **P0**: Session list has 100+ stale entries from prior testing sessions. First-time testers would be overwhelmed.
+  - Honesty badges (DEV/MOCK DATA, Sandbox Demo, All writeback blocked) are clear.
+  - Admin navigation and policy editor render correctly.
+  - Connector status panel visible with 5 connectors, honest labels.
+- Created `docs/user-testing/TEST_ROUND_001_INTERNAL_DRY_RUN.md`.
+
+### Part 3 — P0/P1 Fixes
+- **P1 fixed**: `apps/web/app/page.tsx:346` — changed hardcoded `API: localhost:4110` to dynamic `API: {NEXT_PUBLIC_API_BASE_URL.replace('http://', '') || 'localhost:4110'}`. K8s config already has `NEXT_PUBLIC_API_BASE_URL=http://localhost:4210`.
+- **P0 documented**: Pre-testing requirement to run `reset_demo_data.sh` before any tester session. Documented in dry run report and first test round packet.
+
+### Completion Session (2026-05-04)
+- Fixed STATUS.md snapshot bullet count (8→6, max is 7 per AGENTS.md hygiene rule).
+- Updated docs/README.md to index 3 new user-testing docs.
+- Fixed PROJECT_STATE.yaml duplicate `worktree_status_at_state_update` key.
+- Rebuilt web Docker image with P1 port label fix, loaded into Kind, restarted web deployment.
+- Re-established web port-forward (3300) after web pod restart killed the previous one.
+
+### Verification
+- `npm run lint`: PASS (0 errors)
+- `npm run typecheck --workspaces --if-present`: PASS (all workspaces)
+- `npm test --workspace=apps/api`: 210 pass, 0 fail, 3 skipped
+- `npm test --workspace=packages/connectors`: 50 pass, 0 fail
+- `python3 scripts/check_state_docs.py`: PASS
+- `python3 scripts/check_docs_hygiene.py`: PASS
+- `bash scripts/verify_user_testing_demo.sh`: 10/10 PASS, 0 FAIL
+- `bash -n scripts/start_demo_mode.sh`: OK
+- `bash -n scripts/reset_demo_data.sh`: OK
+- `bash -n scripts/capture_demo_bug_context.sh`: OK
+- Web HTTP: localhost:3300 returns 200
+- API /health: status=ok, head=8015c94c, store=postgres, auth=local
+- Authenticated connector-status: Zammad configured:real, GLPI configured:real
+
+### Evidence
+- Session 146 (closure proof): `output/playwright/session-146-bl138-closure-proof/` (7 files)
+- Session 147 (first testing round): `output/playwright/session-147-first-user-testing-round/` (13 files, 4 screenshots)
+
+### State Updates
+- BACKLOG.md: BL-139 added as accepted
+- NEXT_ACTIONS.md: BL-139 added to recently completed
+- STATUS.md: Updated to BL-139 accepted
+- PROJECT_STATE.yaml: Updated highest_id to BL-139, metadata
+- docs/EVIDENCE_LOG.md: Entry added for Session 147
+- docs/user-testing/FEEDBACK_LOG.md: Updated summary statistics for Round 1
+
+### Next Recommended Action
+Send tester packet to first real testers. Before each tester:
+1. Run `bash scripts/reset_demo_data.sh`
+2. Run `bash scripts/verify_user_testing_demo.sh`
+3. Hand them `docs/user-testing/FIRST_TEST_ROUND.md`

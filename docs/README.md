@@ -69,6 +69,9 @@ Operational guides for local development, deployment, and maintenance.
 | `user-testing/TESTER_PERSONAS.md` | 5 tester personas with testing focus |
 | `user-testing/TRIAGE_WORKFLOW.md` | Feedback triage process, severity levels, tagging taxonomy |
 | `user-testing/FEEDBACK_LOG.md` | Feedback log tracking table |
+| `user-testing/FIRST_TEST_ROUND.md` | First test round packet with demo URL, flows, limitations, and submission instructions |
+| `user-testing/TEST_ROUND_001_PLAN.md` | Test round 001 plan with date, testers, personas, success criteria, and stop-testing rules |
+| `user-testing/TEST_ROUND_001_INTERNAL_DRY_RUN.md` | Internal dry run findings for round 001 |
 
 ## Security and Governance
 

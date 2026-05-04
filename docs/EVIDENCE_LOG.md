@@ -2,6 +2,27 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-03-173: Session 147 — First User Testing Round & Triage (BL-139 ACCEPTED)
+
+- Evidence folder: `output/playwright/session-147-first-user-testing-round/`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and cluster API (`localhost:4210`), plus CLI artifacts
+- Action: Completed BL-139 acceptance. Created first tester packet (FIRST_TEST_ROUND.md), testing round plan (TEST_ROUND_001_PLAN.md), and internal dry run report (TEST_ROUND_001_INTERNAL_DRY_RUN.md). Fixed P1 blocker: header API port label corrected from hardcoded `localhost:4110` to NEXT_PUBLIC_API_BASE_URL env var. Documented P0 blocker: session list must be reset before testing (100+ stale sessions). Session-146 closure proof repair (7 files) confirms BL-138 commits exist with clean worktree.
+- Proves:
+  - Tester packet created with exact demo URL, duration, flows, limitations, and submission instructions
+  - Testing round plan with tester list placeholder, target personas, success criteria, and stop-testing rules
+  - Internal dry run completed following test script as first-time user
+  - P1 API port label mismatch fixed (header now reads NEXT_PUBLIC_API_BASE_URL: `localhost:4210` in cluster)
+  - P0 session clutter documented — `reset_demo_data.sh` required before each tester
+  - Smoke test: 10/10 PASS, 0 FAIL (Zammad configured:real, GLPI configured:real)
+  - 4 browser screenshots: demo home, connector status, admin governance, login page
+  - 13 evidence files total, under 20-file cap
+  - 392/395 tests pass (3 skipped in API, unchanged)
+  - All validation gates pass: lint, typecheck, state docs, docs hygiene, smoke test, script syntax
+  - No raw secrets in any evidence artifact
+  - Worktree clean at commit time
+- Type: operations-and-browser-runtime-verification
+- as_of: 2026-05-03T18:40:00+02:00
+
 ## EV-2026-05-03-172: Session 145 — User Testing Operations & Feedback Loop (BL-138 ACCEPTED)
 
 - Evidence folder: `output/playwright/session-145-user-testing-operations/`

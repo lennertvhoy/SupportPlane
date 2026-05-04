@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-03 18:15 CEST
+**Updated At:** 2026-05-04 11:00 CEST
 **Execution Mode:** operating
-**Project State:** session_145_bl138_user_testing_operations
+**Project State:** session_147_bl139_user_testing_round
 **Public URL:** not configured
 
 ## Snapshot
@@ -11,7 +11,7 @@
 - **BL-061/062/063/064/066/067/068 and BL-086/087/090 and BL-104-117/121 accepted.** Tool Execution Safety, production readiness, real sandbox acceptance freeze.
 - **BL-130/131/133 `[accepted]` — Windows endpoint real runner proof.** Session 134: GitHub Actions workflow passed on windows-latest (44/44 tests, 0 fail). Registration, heartbeat, diagnostics (services/software via real sc.exe/reg.exe), policy denial, no-secret scan all proven via Tailscale Funnel API.
 - **BL-069 `[accepted]` — GLPI real sandbox.** Egress decision label fixed (generic `allowed_local_sandbox_read`). Authenticated connector-status proves GLPI configured/real. GLPI-backed SupportPlane session context proven.
-- **BL-137 `[accepted]` — User testing demo readiness.** Session 144. One-command demo (start_demo_mode.sh), 10/10 smoke test pass, 5 browser screenshots, user testing docs.
+- **BL-137/138/139 `[accepted]` — User testing pipeline.** Sessions 144-147. One-command demo, 10/10 smoke, tester onboarding pack (7 docs), bug context capture, UI polish, 6+4 browser screenshots. First tester packet, round plan, internal dry run. P1 API port label fixed. P0 session clutter documented.
 - **BL-127 `[blocked]` — osTicket.** 3 hard blockers: no read API, no PostgreSQL, no official container image. Fixture stub retained.
 - **BL-071 `[partial/planned-real-sandbox]` — MeshCentral.** Selected as next real connector target after BL-069. Scaffolding exists.
 
@@ -27,6 +27,8 @@
 - API HEAD (cluster): `8015c94c996621ae3d5498ae88f2f41e2fcd2bcb`.
 - BL-137 accepted (Session 144): User testing demo readiness — one-command demo start, 10/10 smoke test pass, 5 browser screenshots, user testing docs created.
 - BL-138 accepted (Session 145): User testing operations — tester onboarding pack (7 docs), bug context capture script, feedback triage workflow, UI polish, 6 browser screenshots, 10 CLI artifacts, 10/10 smoke test.
+- BL-139 accepted (Session 147): First user testing round — tester packet, round plan, internal dry run, P1 API port fix, 4 browser screenshots, 13 evidence files, 10/10 smoke test.
+- Evidence BL-139: `output/playwright/session-147-first-user-testing-round/` (13 files).
 - Evidence BL-138: `output/playwright/session-145-user-testing-operations/` (18 files).
 - Evidence BL-137: `output/playwright/session-144-user-testing-demo-readiness/` (17 files).
 - Demo URL: `http://localhost:3300`, API: `http://localhost:4210`.

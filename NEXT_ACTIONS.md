@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-03 17:30 CEST
+**Updated At:** 2026-05-03 18:40 CEST
 
 ## Active Work
 
@@ -20,6 +20,7 @@
 
 ## Recently Completed
 
+- [BL-139] `[accepted]` First user testing round & triage (Session 147).
 - [BL-138] `[accepted]` User Testing Operations & Feedback Loop (Session 145).
 - [BL-137] `[accepted]` User testing demo readiness (Session 144).
 - [BL-130] `[accepted]` Windows diagnostics collectors — real Windows runner proof (Session 134, repaired Session 135).

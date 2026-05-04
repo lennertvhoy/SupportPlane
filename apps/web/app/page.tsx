@@ -343,7 +343,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
           </span>
           <span className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-400">
             <Cpu size={10} />
-            API: localhost:4110
+            API: {typeof window !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE_URL ? process.env.NEXT_PUBLIC_API_BASE_URL.replace('http://', '') : 'localhost:4110'}
           </span>
           {healthInfo && (
             <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
