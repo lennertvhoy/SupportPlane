@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-04 14:05 CEST
+**Updated At:** 2026-05-04 15:00 CEST
 **Execution Mode:** operating
-**Project State:** session_153_bl141_bl142_closed_and_consolidated
+**Project State:** session_155_tester_readiness_truth_repair
 **Public URL:** not configured
 
 ## Snapshot
@@ -11,7 +11,7 @@
 - **BL-061/062/063/064/066/067/068 and BL-086/087/090 and BL-104-117/121 accepted.** Tool Execution Safety, production readiness, real sandbox acceptance freeze.
 - **BL-130/131/133 `[accepted]` — Windows endpoint real runner proof.** Session 134: GitHub Actions workflow passed on windows-latest (44/44 tests, 0 fail). Registration, heartbeat, diagnostics (services/software via real sc.exe/reg.exe), policy denial, no-secret scan all proven via Tailscale Funnel API.
 - **BL-069 `[accepted]` — GLPI real sandbox.** Egress decision label fixed (generic `allowed_local_sandbox_read`). Authenticated connector-status proves GLPI configured/real.
-- **BL-137/138/139/140/141/142 `[accepted]` — User testing pipeline + demo UX polish + first tester round ops.** Sessions 144-151, 153. One-command demo, 10/10 smoke, tester onboarding pack, bug capture, UI polish, session search/filter, demo guide panel, connector descriptions, favicon. BL-141 closure repaired + BL-142 accepted in Session 153 (single consolidated folder: 19 evidence files, 6 browser screenshots, GLPI 500→200 fixed, Web rebuilt, outreach docs, preflight/close scripts, triage rules). Ready for real testers.
+- **BL-137/138/139/140/141/142 `[accepted]` — User testing pipeline + demo UX polish + first tester round ops.** Sessions 144-155. BL-141/142 tester-readiness truth repaired in Session 155: runtime identity fixed (API HEAD matches repo), Zammad ticket #2 loaded with real sandbox read, GLPI ticket #1 loaded, preflight honestly checks ticket flows and HEAD match (16/16 PASS GO), 3 fresh browser screenshots proving loaded flows, 17 evidence files. Session 153 evidence superseded. Ready for real testers.
 - **BL-127 `[blocked]` — osTicket.** 3 hard blockers: no read API, no PostgreSQL, no official container image. Fixture stub retained.
 - **BL-071 `[partial/planned-real-sandbox]` — MeshCentral.** Selected as next real connector target after BL-069.
 
@@ -24,13 +24,13 @@
 
 ## Notes
 
-- API HEAD (cluster): `408f5727e158e0121f66c876bcb75971b0160978` (Session 153 rebuilt and deployed API image).
+- API HEAD (cluster): `d3cf69da01173990945b42418f621a61f38d7eb9` (Session 155 rebuilt API image with GIT_HEAD arg — matches repo HEAD).
 - BL-137 accepted (Session 144): User testing demo readiness — one-command demo start, 10/10 smoke test pass, 5 browser screenshots, user testing docs created.
 - BL-138 accepted (Session 145): User testing operations — tester onboarding pack (7 docs), bug context capture script, feedback triage workflow, UI polish, 6 browser screenshots, 10 CLI artifacts, 10/10 smoke test.
 - BL-139 accepted (Session 147/148): First user testing round — tester packet, round plan, internal dry run, P1 API port fix, 4 browser screenshots, 13 evidence files, 10/10 smoke test. Session-148 closure proof repair (5 files, clean worktree proof).
 - Evidence BL-139: `output/playwright/session-147-first-user-testing-round/` (13 files) + `output/playwright/session-148-bl139-closure-proof/` (5 files) + `output/playwright/session-149-bl139-final-truth-repair/` (5 files).
 - Evidence BL-140: `output/playwright/session-150-first-real-tester-round-ops/` (14 files) + `output/playwright/session-151-bl140-final-truth-repair/` (5 files).
-- Evidence BL-141 + BL-142 (canonical): `output/playwright/session-153-bl141-bl142-closure/` (19 files, consolidated).
+- Evidence BL-141 + BL-142 (canonical): `output/playwright/session-155-tester-readiness-truth-repair/` (17 files). Session 153 evidence superseded.
 - Evidence BL-138: `output/playwright/session-145-user-testing-operations/` (18 files).
 - Evidence BL-137: `output/playwright/session-144-user-testing-demo-readiness/` (17 files).
 - Demo URL: `http://localhost:3300`, API: `http://localhost:4210`.
