@@ -2,18 +2,31 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
-## EV-2026-05-04-174: Session 148 — BL-139 Closure Proof Repair (CLEAN)
+## EV-2026-05-04-175: Session 149 — BL-139 Final Truth Repair (CLEAN)
+
+- Evidence folder: `output/playwright/session-149-bl139-final-truth-repair/`
+- Source/System: CLI artifacts, git proof
+- Action: Repaired truth discrepancy between uploaded Session 148 proof (HEAD `f3a3975` / ahead 8) and current repo truth (HEAD `2ddb899` / ahead 12). Session 148 evidence was captured before 4 subsequent commits (`f30fdc9`, `fa1c265`, `dd411c7`, `2ddb899`) were created. All 4 commits verified to exist. PROJECT_STATE.yaml `final_head_after_session_148` corrected from `dd411c7` to `2ddb899`. Session 148 evidence index updated with stale-evidence caveat.
+- Proves:
+  - Final HEAD `2ddb899f2796411515b01949df799c734acb1e61`, ahead 12, clean worktree
+  - Smoke test 10/10 PASS, 0 FAIL
+  - All state/docs hygiene checks pass
+  - 5 evidence files, under 8 cap
+- Type: closure-truth-repair
+- as_of: 2026-05-04T11:45:00+02:00
+
+## EV-2026-05-04-174: Session 148 — BL-139 Closure Proof Repair (SUPERSEDED GIT TRUTH)
 
 - Evidence folder: `output/playwright/session-148-bl139-closure-proof/`
 - Source/System: CLI artifacts, git proof
-- Action: Repaired session-147 evidence caveat. Session-147 `08-git-status.txt` showed pre-commit dirty worktree (modified page.tsx + 3 untracked docs). Final commits 8ece58b and f3a3975 exist and worktree is clean. Created session-148 with 5 clean proof artifacts: git final truth, smoke test 10/10, state docs PASS, docs hygiene PASS, evidence index.
+- Action: Repaired session-147 evidence caveat. Session-147 `08-git-status.txt` showed pre-commit dirty worktree. Final commits 8ece58b and f3a3975 exist and worktree was clean at that point. Subsequent commits (`f30fdc9` through `2ddb899`) landed after evidence capture — git truth in this folder is stale. Final truth at `2ddb899` proven in session-149.
 - Proves:
-  - Worktree clean at final HEAD f3a3975
+  - Worktree was clean at HEAD f3a3975 at time of capture
   - Smoke test 10/10 PASS, 0 FAIL
   - All state/docs hygiene checks pass
   - Tester packet tuned up: API URL added, reset/smoke stop-testing criteria added, feedback log columns expanded
   - 5 evidence files, under 8 cap
-- Type: closure-proof-repair
+- Type: closure-proof-repair (git truth superseded by session-149)
 - as_of: 2026-05-04T11:00:00+02:00
 
 ## EV-2026-05-03-173: Session 147 — First User Testing Round & Triage (BL-139 ACCEPTED)
