@@ -40,6 +40,13 @@ These rules apply in all modes:
   if a canonical or final proof set supersedes an earlier partial folder,
   delete the old folder and update all doc references. do not leave multiple
   folders for the same backlog item
+- **single-session single-folder rule (mandatory):** if a single coding session
+  handles multiple backlog items (e.g. BL-141 repair + BL-142 creation), all
+  evidence for that session must go into ONE combined folder — do NOT create
+  separate evidence folders per backlog item within the same session. name the
+  combined folder as usual with the next sequential session number and all
+  covered BL-IDs (e.g. `session-153-bl141-bl142-description/`). this keeps
+  total evidence count manageable for review and handoff paste operations
 - **backlog currency rule:** every closure session must reconcile `BACKLOG.md`,
   `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `WORKLOG.md`,
   `docs/EVIDENCE_LOG.md`, and `docs/ACCEPTANCE_FREEZES.md` before claiming
