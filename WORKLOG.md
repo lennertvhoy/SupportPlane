@@ -2,11 +2,13 @@
 
 **Purpose:** Append-only history for completed work.
 
-## Session 154 — 2026-05-04 — BL-142 First Live Tester Round Execution & Feedback-to-Backlog Triage (ACCEPTED)
+## Session 154 — 2026-05-04 — BL-142 First Live Tester Round Execution & Feedback-to-Backlog Triage (ACCEPTED, CONSOLIDATED INTO SESSION-153)
 
 **Date:** 2026-05-04 13:55 CEST
-**Git HEAD:** to be recorded after final commit
+**Git HEAD:** 701d377a97bf8d63d5645f8b6f07dacf1f7dbf9a
 **Branch:** main
+
+**Post-session consolidation (2026-05-04 14:05):** Session-152 (superseded) deleted. Session-154 evidence merged into session-153. Single canonical evidence folder at `output/playwright/session-153-bl141-bl142-closure/` (19 files, ≤20 cap) covers both BL-141 closure repair and BL-142 first live tester round ops.
 
 ### What changed
 
@@ -29,8 +31,8 @@
 
 ### Evidence
 
-- Session 153 (BL-141 repair): `output/playwright/session-153-bl141-closure-repair/` (16 files)
-- Session 154 (BL-142): `output/playwright/session-154-first-live-tester-round-ops/` (12 files)
+- Session 153 (canonical, combined): `output/playwright/session-153-bl141-bl142-closure/` (19 files)
+- Consolidated from: Session 152 (BL-141, deleted), Session 153 (BL-141 repair), Session 154 (BL-142, deleted)
 
 ### What remains partial
 
@@ -42,11 +44,13 @@
 
 Send OUTREACH_MESSAGE.md to the first real tester, assign a persona, and log feedback in FEEDBACK_LOG.md.
 
-## Session 153 — 2026-05-04 — BL-141 Closure-Grade Repair (COMPLETED)
+## Session 153 — 2026-05-04 — BL-141 Closure-Grade Repair + BL-142 First Live Tester Round Ops (CONSOLIDATED CANONICAL)
 
-**Date:** 2026-05-04 13:35 CEST
-**Git HEAD:** 6247f458368fbc61af938dcc0e8b4e8ceb6b0d50
+**Date:** 2026-05-04 14:05 CEST
+**Git HEAD:** 701d377a97bf8d63d5645f8b6f07dacf1f7dbf9a
 **Branch:** main
+
+**Evidence folder:** `output/playwright/session-153-bl141-bl142-closure/` (19 files, single canonical folder for both BL-141 and BL-142).
 
 ### What changed
 
@@ -67,7 +71,7 @@ Send OUTREACH_MESSAGE.md to the first real tester, assign a persona, and log fee
 
 ### Evidence
 
-- Session 153: `output/playwright/session-153-bl141-closure-repair/` (16 files)
+- Session 153 (canonical, combined): `output/playwright/session-153-bl141-bl142-closure/` (19 files)
 
 ### What remains partial
 
@@ -79,7 +83,7 @@ Send OUTREACH_MESSAGE.md to the first real tester, assign a persona, and log fee
 
 Proceed with BL-142 first live tester round operations (outreach docs, preflight/close scripts).
 
-## Session 152 — 2026-05-04 — BL-141 Demo UX Polish & Observation Readiness (ACCEPTED)
+## Session 152 — 2026-05-04 — BL-141 Demo UX Polish & Observation Readiness (SUPERSEDED — consolidated into session-153)
 
 **Date:** 2026-05-04 12:30 CEST
 **Git HEAD:** to be recorded after final commit
@@ -127,7 +131,7 @@ Proceed with BL-142 first live tester round operations (outreach docs, preflight
 
 ### Evidence
 
-- Session 152: `output/playwright/session-152-demo-ux-polish-observation-readiness/` (14 files)
+- Session 152 (SUPERSEDED — consolidated into session-153, folder deleted)
 
 ### What remains partial/mock/unconfigured
 
