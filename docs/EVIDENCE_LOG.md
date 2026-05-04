@@ -2,6 +2,43 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-04-180: Session 154 — First Live Tester Round Operations (BL-142 ACCEPTED)
+
+- Evidence folder: `output/playwright/session-154-first-live-tester-round-ops/`
+- Source/System: CLI artifacts, API JSON, preflight automation
+- Action: Completed BL-142 acceptance. Created TEST_ROUND_001_CONTROL.md, OUTREACH_MESSAGE.md, POST_TEST_DEBRIEF.md, FEEDBACK_TO_BACKLOG_RULES.md. Updated FEEDBACK_LOG.md with required columns. Created preflight_tester_session.sh (13/13 PASS, GO) and close_tester_session.sh.
+- Proves:
+  - Outreach packet complete: 13 docs/scripts ready for first real tester
+  - Preflight GO: 13 PASS, 0 FAIL (Web HTTP, API health, smoke 10/10, connectors, no-secret, packet verification, clean sessions)
+  - Feedback log has all required columns (tester_id, invited_at, completed_at, persona, overall_go_no_go, top_quote, p0/p1/p2 counts, backlog_items_created, next_followup)
+  - Feedback-to-backlog rules: P0-P3 classification, 10-tag taxonomy, triage workflow
+  - Post-test debrief template with surprise/trust/distrust/quote/severity sections
+  - Tester round control with 5 slots, persona assignment, stop-testing rules
+  - All validation gates pass: lint, typecheck, 260 tests, state docs, docs hygiene, smoke 10/10, 5 bash scripts
+  - No raw secrets in evidence
+  - 12 evidence files, under 20 cap
+- Type: operations-and-cli-verification
+- as_of: 2026-05-04T13:55:00+02:00
+
+## EV-2026-05-04-179: Session 153 — BL-141 Closure-Grade Repair (CLEAN)
+
+- Evidence folder: `output/playwright/session-153-bl141-closure-repair/`
+- Source/System: Chromium via Playwright against cluster Web (`localhost:3300`) and API (`localhost:4210`), plus CLI artifacts
+- Action: Repaired BL-141 to closure-grade. Previous session-152 evidence was pre-final (git stale, GLPI context 500, Web image not rebuilt). Session 153: reset demo data, fixed GLPI seed, rebuilt/deployed all images, captured 6 fresh browser screenshots with 0 duplicates, documented no-secret scan as field-name-only.
+- Proves:
+  - Clean worktree at HEAD 6247f45 (ahead 18)
+  - GLPI context: 200, ticket #1 "VPN connection issue" (was 500)
+  - API HEAD: 408f5727 (deployed image) — was 8015c94c (old)
+  - Web image rebuilt and deployed: Demo Guide, session search, connector descriptions, favicon all visible in browser
+  - Demo data reset successful: 3 sessions (clean)
+  - Smoke test 10/10 PASS, 0 FAIL
+  - 6 browser screenshots, 0 MD5 duplicates
+  - All validation gates pass: lint, typecheck, 260 tests, state docs, docs hygiene
+  - No raw secrets in evidence (field name patterns only)
+  - 16 evidence files, under 20 cap
+- Type: browser-runtime-and-cli-verification
+- as_of: 2026-05-04T13:35:00+02:00
+
 ## EV-2026-05-04-178: Session 152 — Demo UX Polish & Observation Readiness (BL-141 ACCEPTED)
 
 - Evidence folder: `output/playwright/session-152-demo-ux-polish-observation-readiness/`

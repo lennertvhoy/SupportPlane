@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-04T12:30:00+02:00
+  updated_at: 2026-05-04T13:55:00+02:00
   updated_by: agent
   version: "statedd-template-v3"
   note: >
@@ -12,6 +12,8 @@ metadata:
     Session 149: BL-139 final truth repair — corrected stale session-148 git evidence (f3a3975/ahead8) to actual final (2ddb899/ahead12).
     Session 151: BL-140 final truth repair — corrected stale session-150 git evidence (fa29dc4/dirty) to actual final (6349510/clean).
     Session 152: BL-141 demo UX polish — demo guide, session search, connector descriptions, favicon, observation notes.
+    Session 153: BL-141 closure repair — GLPI context fixed, Web image rebuilt/deployed, clean worktree at 6247f45.
+    Session 154: BL-142 first live tester round ops — outreach docs, preflight/close scripts, feedback-to-backlog rules.
 
 workflow:
   repo_mode: operating
@@ -110,6 +112,13 @@ current_state:
       at 6349510, fixed STATUS.md bullet count (8→7). HEAD advanced to 92f0ad1.
     head_before_session_152: 92f0ad1063bc12c8a1a3d6cb022dd409c5508e9b
     final_head_after_session_152: 0db6634671f23df02ff724ecd508861b564b1875
+    head_before_session_153: 408f5727e158e0121f66c876bcb75971b0160978
+    final_head_after_session_153: 6247f458368fbc61af938dcc0e8b4e8ceb6b0d50
+    head_before_session_154: 6247f458368fbc61af938dcc0e8b4e8ceb6b0d50
+    note_session_153_154: >
+      Session 153 repaired BL-141 (GLPI 500, Web rebuild, fresh screenshots). 
+      Session 154 created BL-142 (outreach docs, preflight/close scripts, triage rules).
+      Final HEAD after both: 6247f45 (or whatever the final commit hash is after state doc commit).
     worktree_status_at_state_update: clean
 
   current_product_truth:
@@ -519,8 +528,8 @@ current_state:
 
   backlog:
     source: BACKLOG.md
-    highest_id: BL-141
-    accepted_current_slice: BL-141_session_152_demo_ux_polish_observation_readiness
+    highest_id: BL-142
+    accepted_current_slice: BL-142_session_154_first_live_tester_round_ops
     planned_real_e2e_items:
       - BL-119
       - BL-120

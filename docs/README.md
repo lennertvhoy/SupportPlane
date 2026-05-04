@@ -76,6 +76,10 @@ Operational guides for local development, deployment, and maintenance.
 | `user-testing/OPERATOR_CHECKLIST.md` | Demo operator step-by-step checklist: start, reset, smoke test, assign persona, collect feedback, triage |
 | `user-testing/TEST_ROUND_001_PREFLIGHT_DRY_RUN.md` | Preflight dry run after reset — verified GO for real testers, GLPI seed fix applied |
 | `user-testing/OBSERVATION_NOTES_TEMPLATE.md` | Structured template for operator observation during tester sessions |
+| `user-testing/TEST_ROUND_001_CONTROL.md` | Test round 001 control sheet: tester slots, persona assignments, pre/post checklists |
+| `user-testing/OUTREACH_MESSAGE.md` | Copy-pasteable tester invitation message with intro, credentials, sandbox warning |
+| `user-testing/POST_TEST_DEBRIEF.md` | Post-test debrief template: surprise, trust, distrust, improvements, quotes |
+| `user-testing/FEEDBACK_TO_BACKLOG_RULES.md` | P0-P3 severity classification, tagging taxonomy, triage workflow per tester |
 
 ## Security and Governance
 

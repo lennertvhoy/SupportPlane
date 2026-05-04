@@ -2,7 +2,7 @@
 
 **Product:** SupportPlane
 **Execution Mode:** operating
-**Updated At:** 2026-05-03
+**Updated At:** 2026-05-04
 
 ## Purpose
 
@@ -197,6 +197,7 @@ Status markers:
 - [BL-139] `[accepted]` First user testing round & triage. Session 147: Created first tester packet (FIRST_TEST_ROUND.md), testing round plan (TEST_ROUND_001_PLAN.md), and internal dry run report (TEST_ROUND_001_INTERNAL_DRY_RUN.md). P1 blocker fixed: header API port label corrected from hardcoded `localhost:4110` to NEXT_PUBLIC_API_BASE_URL env var (shows `localhost:4210` in cluster). P0 blocker documented: session list must be reset before testing (100+ stale sessions from prior dev cycles). Session-146 closure proof repair (7 files) confirms commits 8132098 and b41b21a exist with clean worktree. Smoke test 10/10 PASS (Zammad configured:real, GLPI configured:real, osTicket fixture, MeshCentral/Fortinet unconfigured). 4 browser screenshots captured. 13 evidence files in `output/playwright/session-147-first-user-testing-round/`. Non-claims: no new connectors, no production readiness, actual tester feedback not yet collected.
 - [BL-140] `[accepted]` First Real Tester Round Operations & Feedback Intake. Session 150: Final tester packet frozen (SEND_TO_TESTERS.md), operator checklist created (OPERATOR_CHECKLIST.md), demo reset enhanced with `--yes` mode, smoke test 10/10 after reset, GLPI seed missing adapter fix applied, feedback log and triage workflow updated, bug context capture verified, preflight dry run gives GO for real testers, header "Zammad mode" label fixed to "Sandbox mode". Evidence in output/playwright/session-150-first-real-tester-round-ops/ (14 files). Non-claims: no browser/computer-use proof available in this session; web image not rebuilt for UI label change (needs podman build + kind load). Session 151 truth repair: corrected stale git evidence (session-150 showed dirty at fa29dc4, actual final HEAD 6349510 with clean worktree). Evidence in output/playwright/session-151-bl140-final-truth-repair/ (5 files).
 - [BL-141] `[accepted]` Tester-Facing Demo UX Polish & Observation Readiness. Session 152. In-app demo guide panel (Start Here), session search/filter, blank-panel clarity fix, connector status descriptions, favicon added, tester observation notes template created, browser proof captured. Evidence in output/playwright/session-152-demo-ux-polish-observation-readiness/. Non-claims: no connector scope expansion, no production readiness, no backend refactors.
+- [BL-142] `[accepted]` First Live Tester Round Execution & Feedback-to-Backlog Triage. Session 153/154. BL-141 closure repaired (GLPI context fixed, Web image rebuilt/deployed, clean git proof, 6 fresh browser screenshots, 16 evidence files). BL-142 created: TEST_ROUND_001_CONTROL.md, OUTREACH_MESSAGE.md, POST_TEST_DEBRIEF.md, FEEDBACK_TO_BACKLOG_RULES.md, preflight/close scripts. Preflight GO (13/13 PASS). Feedback log updated with required columns. Evidence in output/playwright/session-153-bl141-closure-repair/ (16 files) and output/playwright/session-154-first-live-tester-round-ops/ (12 files). Non-claims: no real tester feedback collected yet (round OPEN, awaiting first tester). Zammad test ticket needs recreation. Demo local-only.
 
 ## WATCHLIST
 

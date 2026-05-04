@@ -1,8 +1,12 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-04 12:30 CEST
+**Updated At:** 2026-05-04 13:55 CEST
 
 ## Active Work
+
+- [BL-142] **First Live Tester Round Execution & Feedback Triage**
+  - Owner: round owner (TBD)
+  - Next Action: Assign tester personas, send OUTREACH_MESSAGE.md, schedule first tester session.
 
 - [BL-071/BL-072] **Connector real-instance enablement**
   - Owner: future connector slice
@@ -20,7 +24,7 @@
 
 ## Recently Completed
 
-- [BL-141] `[accepted]` Tester-facing demo UX polish & observation readiness (Session 152).
+- [BL-141] `[accepted]` Tester-facing demo UX polish & observation readiness (Session 152). Closure repaired in Session 153 — GLPI context fixed (was 500), Web image rebuilt/deployed, 6 fresh browser screenshots, 16 evidence files, clean worktree proof.
 - [BL-140] `[accepted]` First Real Tester Round Operations & Feedback Intake (Session 150, 151 repair).
 - [BL-139] `[accepted]` First user testing round & triage (Session 147, 148/149 truth repair).
 - [BL-138] `[accepted]` User Testing Operations & Feedback Loop (Session 145).

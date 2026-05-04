@@ -2,6 +2,83 @@
 
 **Purpose:** Append-only history for completed work.
 
+## Session 154 — 2026-05-04 — BL-142 First Live Tester Round Execution & Feedback-to-Backlog Triage (ACCEPTED)
+
+**Date:** 2026-05-04 13:55 CEST
+**Git HEAD:** to be recorded after final commit
+**Branch:** main
+
+### What changed
+
+- **TEST_ROUND_001_CONTROL.md:** Created round control sheet with 5 tester slots, persona assignments, pre/post session checklists, success criteria, stop-testing rules.
+- **OUTREACH_MESSAGE.md:** Created copy-pasteable tester invitation message with intro, demo URL, credentials, duration, sandbox warning.
+- **POST_TEST_DEBRIEF.md:** Created structured debrief template with surprise/trust/distrust sections, top 3 improvements, must-haves, quote capture, severity assessment.
+- **FEEDBACK_TO_BACKLOG_RULES.md:** Created P0-P3 severity classification rules, 10-tag taxonomy, step-by-step triage workflow per tester.
+- **FEEDBACK_LOG.md:** Updated with required columns (tester_id, invited_at, completed_at, persona, overall_go_no_go, top_quote, p0_count, p1_count, p2_count, backlog_items_created, next_followup).
+- **preflight_tester_session.sh:** Created preflight automation — public tunnel check, Web/API health, smoke test, connector status, no-secret scan, tester packet verification, session list check, GO/NO-GO result.
+- **close_tester_session.sh:** Created close automation — bug context capture, FEEDBACK_LOG reminder, P0/P1 triage reminder, no-secret scan, TEST_ROUND_001_CONTROL update reminder, next-tester readiness check.
+
+### Runtime Verification
+
+- Preflight: 13/13 PASS, 0 FAIL — GO for first real tester
+- Smoke test: 10/10 PASS, 0 FAIL
+- Web HTTP 200 (localhost:3300)
+- API health: ok (localhost:4210)
+- Connector status: Zammad configured/real, GLPI configured/real
+- GLPI context: 200, "VPN connection issue"
+
+### Evidence
+
+- Session 153 (BL-141 repair): `output/playwright/session-153-bl141-closure-repair/` (16 files)
+- Session 154 (BL-142): `output/playwright/session-154-first-live-tester-round-ops/` (12 files)
+
+### What remains partial
+
+- No real tester feedback collected yet (round OPEN)
+- Zammad test ticket TICKET-101 needs recreation
+- Tester slots are TBD — operator must assign personas
+
+### Next Recommended Action
+
+Send OUTREACH_MESSAGE.md to the first real tester, assign a persona, and log feedback in FEEDBACK_LOG.md.
+
+## Session 153 — 2026-05-04 — BL-141 Closure-Grade Repair (COMPLETED)
+
+**Date:** 2026-05-04 13:35 CEST
+**Git HEAD:** 6247f458368fbc61af938dcc0e8b4e8ceb6b0d50
+**Branch:** main
+
+### What changed
+
+- **Git truth:** Clean worktree at HEAD 408f572 → new commit 6247f45 (screenshot script).
+- **GLPI context fixed:** Root cause was seed not applied. Ran `reset_demo_data.sh --yes` with correct DATABASE_URL (localhost:5434). Manual `prisma db seed` ensured glpi-adapter-001 in database. GLPI ticket #1 now returns 200 with "VPN connection issue".
+- **Web/API images rebuilt and deployed:** All three images (API, Web, Worker) rebuilt via `build_and_load_local_k8s_images.sh`. Deployments restarted. API HEAD now shows 408f5727 (was old 8015c94c / cb99feb).
+- **Browser screenshots:** 6 fresh screenshots captured via Playwright against deployed runtime (localhost:3300). 0 MD5 duplicates. Screenshots show Demo Guide panel, session search, connector status with descriptions, Zammad flow, GLPI flow, Admin governance.
+- **no-secret scan explained:** Documented that all api_token/API_TOKEN matches are field name references only. No raw secret values exposed.
+
+### Runtime Verification
+
+- Smoke test: 10/10 PASS, 0 FAIL
+- API health: status=ok, head=408f5727, store=postgres
+- Web HTTP 200 on localhost:3300
+- Connector status: Zammad configured/real, GLPI configured/real
+- GLPI context: 200, "VPN connection issue"
+- Browser proof: 6 screenshots, 0 duplicates
+
+### Evidence
+
+- Session 153: `output/playwright/session-153-bl141-closure-repair/` (16 files)
+
+### What remains partial
+
+- Zammad test ticket TICKET-101 needs recreation in Zammad sandbox
+- osTicket: fixture only (blocked upstream)
+- MeshCentral/Fortinet: unconfigured
+
+### Next Recommended Action
+
+Proceed with BL-142 first live tester round operations (outreach docs, preflight/close scripts).
+
 ## Session 152 — 2026-05-04 — BL-141 Demo UX Polish & Observation Readiness (ACCEPTED)
 
 **Date:** 2026-05-04 12:30 CEST
