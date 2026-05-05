@@ -158,6 +158,17 @@ Endpoint agent and Windows platform documentation.
 | `EVIDENCE_BUNDLES.md` | Evidence bundle format, content model, and export |
 | `evidence/` | Evidence artifact storage directory |
 
+## Reviews and Audits
+
+Structured audit and review artifacts for governance, quality, and backlog
+tracking. These are living documents when they guide active work; historical
+when superseded.
+
+| File | Purpose |
+|------|---------|
+| `reviews/PROJECT_IMPROVEMENT_AUDIT_2026-05-04.md` | Comprehensive project improvement audit (runtime identity, model-usage, tool-registry, UX, test quality) |
+| `reviews/AUTOMATION_DESIGN_ASSURANCE_BACKLOG_REVIEW_2026-05-05.md` | Automation, design, and assurance backlog review (CI/CD, tests, security, accessibility, logo, house style) |
+
 ## Historical Reports
 
 These files document specific backlog item closures and are retained for

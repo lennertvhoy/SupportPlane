@@ -202,7 +202,11 @@ Status markers:
 - [BL-144] `[planned]` Full Application Control Inventory & Interaction Regression Harness.
 - [BL-145] `[planned]` Enterprise Demo IA / Navigation Simplification.
 - [BL-146] `[planned]` Production-Readiness Language Audit & Boundary Hardening.
-- [BL-147] `[planned]` Design-System Consistency Pass.
+- [BL-147] `[planned]` Design-System Consistency Pass & Brand Identity Foundation.
+  - Scope: Unify spacing, typography, badge styles, card layouts, loading/error states. Add logo, wordmark, favicon set, and brand identity consistency. Migrate shared UI primitives (`Button`, `Input`, `Card`, `Badge`, `EmptyState`, `Skeleton`) into `packages/ui`. Establish typography system via `next/font` with strict type scale. Replace all `text-[10px]` / `text-[11px]` arbitrary classes. Add evidence export branding (logo in PDF, brand-colored headers). Add empty-state illustration pattern.
+  - Acceptance: `packages/ui` exports ≥5 real components with tests. Zero arbitrary font-size classes remain. Login page, header, and PDF exports share the same logo/wordmark. Favicon passes RealFaviconGenerator validation. `npm run typecheck` and `npm run lint` pass after migration. Browser screenshots of login, header, and PDF first page.
+  - Non-goals: Full light mode, broad visual redesign without product proof, production PWA features.
+  - Risk notes: Migration to `packages/ui` may cause temporary import churn; do in a dedicated slice.
 
 ## Project Improvement Audit — Immediate Actions
 
@@ -213,7 +217,75 @@ Status markers:
 
 ## Belgium/EU Assurance Audit
 
-- [BL-152] `[partial/readiness-dossier-created]` Belgium/EU Assurance Audit — Readiness dossier created: 8 compliance precheck documents in `docs/compliance/` covering evidence index, GDPR data inventory, DPIA triggers, AI Act classification, NIS2/CyberFundamentals mapping, accessibility audit, supply chain audit, and operational readiness audit. All docs explicitly state "readiness/precheck" with no compliance/certification claims. Concrete gaps identified and mapped to existing evidence. Remaining: formal DPO review, pen test, SBOM generation, incident response runbook, accessibility hardening, container image scanning. Non-claims: not a certification, not legal advice, not production-ready claim.
+- [BL-152] `[partial/readiness-dossier-created]` Belgium/EU Assurance Audit — Readiness dossier created: 8 compliance precheck documents in `docs/compliance/` covering evidence index, GDPR data inventory, DPIA triggers, AI Act classification, NIS2/CyberFundamentals mapping, accessibility audit, supply chain audit, and operational readiness audit. All docs explicitly state "readiness/precheck" with no compliance/certification claims. Concrete gaps identified and mapped to existing evidence.
+  - Remaining concrete gates: (1) incident response runbook, (2) TLS/mTLS design and evidence, (3) SBOM generation and license audit, (4) container hardening spec and scan evidence, (5) backup restore end-to-end test on clean cluster, (6) GDPR deletion/purge worker behind admin RBAC, (7) CI security scanning pipeline (Dependabot, npm audit, secret scanning, SAST), (8) production auth hardening design (MFA, password policy, account lockout).
+  - Non-claims: not a certification, not legal advice, not production-ready claim.
+
+## Automation, Design & Assurance Track
+
+- [BL-153] `[planned]` Automated Quality Gate & CI/CD Hardening Foundation.
+  - Problem: CI only validates template/docs scaffolding. No build, lint, typecheck, test, or security gates run in CI.
+  - Why it matters: Broken builds, type errors, lint failures, and failing tests can be merged undetected.
+  - Scope: Expand `.github/workflows/validate.yml` (or create `ci.yml`) to run `npm run build`, `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm test`, `npm run validate`, and `npm audit --audit-level=moderate` on every PR/push. Use ephemeral PostgreSQL service container for API tests. Make the workflow a required status check for merge.
+  - Non-goals: Container builds in PR CI (too slow), K8s deployment tests.
+  - Acceptance: PR with intentional lint error is blocked. PR with intentional test failure is blocked. `npm audit` findings surfaced. CI runtime < 10 minutes.
+  - Evidence: Screenshot of PR checks panel showing all green. Screenshot of intentional-failure PR being blocked.
+  - Risk notes: 3 skipped AI chat tests may show skip counts. Worker/UI/audit "No tests yet" shows 0 tests; acceptable if backlog exists.
+  - Suggested validation commands: `npm run lint`, `npm run typecheck`, `npm test`, `npm run validate`, `npm audit`.
+
+- [BL-154] `[planned]` Test Trustworthiness & Anti-Fake-Completeness Strategy.
+  - Problem: Worker, UI, and audit packages have zero tests. Browser E2E does not exist. Mock-heavy testing means real database/AI/NATS paths are unexercised. Negative tests missing for several security boundaries.
+  - Why it matters: Untested worker delivery, untested UI components, and missing negative tests create silent regression risks.
+  - Scope: (1) Worker tests: `processOnce`, retry logic, dead-letter handling, NATS consume/ack. (2) UI tests: ≥3 render/snapshot tests for shared primitives in `packages/ui`. (3) Audit tests: `computeIntegrityHash` behavior, redaction helpers. (4) Negative tests: AI chat invalid roles/model, evidence bundle tenant mismatch, call control invalid actions, worker retry exhaustion. (5) Mock/real boundary: Document which tests use mocks and why. Add `mockDevOnly` assertions. (6) Skipped tests: Document reason and owner.
+  - Non-goals: Replace all mocks with real integrations. Full Playwright E2E (that is BL-159).
+  - Acceptance: `apps/worker` ≥5 meaningful tests. `packages/ui` ≥3 render tests. `packages/audit` ≥3 unit tests. All skipped tests have `// SKIP REASON:` comments. No new test merely blesses broken behavior.
+  - Evidence: `npm test` output showing new pass counts. Test file listings per workspace.
+  - Risk notes: Mock-heavy approach is intentional for speed; document boundaries honestly.
+
+- [BL-155] `[planned]` DevSecOps Automated Audit Foundation.
+  - Problem: No SAST, DAST, dependency scanning, secrets detection, container scanning, or SBOM generation in CI. Kubernetes manifests lack validation. Supply chain is unmonitored.
+  - Why it matters: Security regressions and supply-chain attacks will not be caught until manual review. NIS2 and EU Cyber Resilience Act readiness require evidence.
+  - Scope: (1) Dependency vulnerability scanning: `npm audit` in CI; triage pre-existing vulns. (2) Secrets detection: `gitleaks` or `trufflehog` in CI, or GitHub secret scanning. (3) SAST: Semgrep or CodeQL with findings tracked. (4) Container scanning: Trivy/Grype after `podman build`. (5) SBOM: CycloneDX/SPDX via `npm sbom` or `cyclonedx-npm`; commit per release. (6) License scan: `license-checker` or FOSSA. (7) K8s manifest validation: `kube-linter`, `checkov`, or `kubectl apply --dry-run=server`.
+  - Non-goals: Claim all findings fixed immediately. Production-grade DAST.
+  - Acceptance: CI runs ≥3 new security checks. First scan results committed even if findings exist (honesty rule). SBOM generation script runs successfully. K8s manifest validation script reports issues.
+  - Evidence: CI workflow YAML showing security steps. Scan result artifacts (JSON/txt). SBOM file committed.
+  - Risk notes: False positives from SAST must be triaged, not ignored. Container scanning may be slow — consider nightly.
+
+- [BL-156] `[planned]` Accessibility, Colour Contrast & Visual Confidence Pass.
+  - Problem: Primary button contrast fails WCAG AA (3.68:1). ~7 aria labels total. No automated accessibility testing. Focus visibility inconsistent. Disabled states rely on opacity only. No reduced-motion support.
+  - Why it matters: Enterprise buyers audit for accessibility. Screen reader and keyboard users cannot effectively use the application. WCAG non-compliance is a legal risk in EU public-sector sales.
+  - Scope: (1) Color/contrast: darken `accent` or lighten button text to ≥ 4.5:1; audit `text-cockpit-500` usages. (2) ARIA: `aria-describedby` + `aria-invalid` on forms; `aria-live` for async content; `aria-expanded` + focus trap on `ToolsDropdown`; `aria-pressed` on toggles; `aria-hidden` on decorative icons. (3) Keyboard/focus: visible focus rings on all interactive elements; skip-to-content link. (4) Disabled states: opacity + color shift, not opacity alone. (5) Loading/empty states: `SkeletonPanel` / `SkeletonRow` components. (6) Motion: `prefers-reduced-motion` and `prefers-contrast` support. (7) Testing: `@axe-core/playwright` scan per primary route; keyboard navigation tests.
+  - Non-goals: Full UI redesign, light mode, full WCAG 2.1 AA certification claim.
+  - Acceptance: Primary buttons pass 4.5:1 contrast. `aria-label` count ≥ 20. Focus rings visible on all interactive elements. `@axe-core/playwright` runs with 0 critical violations. `docs/compliance/ACCESSIBILITY_AUDIT.md` updated.
+  - Evidence: Browser screenshots before/after of login page, dashboard, admin panel. axe-core report artifact. Contrast calculation screenshots or tool output.
+  - Risk notes: Some contrast fixes may require broader color token changes. Focus rings may clash with existing design; adjust offsets.
+
+- [BL-157] `[planned]` Browser E2E Smoke Gate.
+  - Problem: No automated browser tests exist. All user-facing behavior is verified via manual screenshot scripts.
+  - Why it matters: Manual screenshots are slow and skip accessibility/keyboard/interaction validation. First-tester-facing bugs will not be caught by unit tests.
+  - Scope: Create formal Playwright E2E suite with `playwright.config.ts`. Smoke tests for: (1) Login → Dashboard load, (2) Create session → Load ticket context (Zammad), (3) Admin dashboard navigation, (4) Tool registry denied/allowed (viewer vs admin), (5) Device console load. Include `@axe-core/playwright` scan in each test. Run E2E in CI (against local dev server or ephemeral cluster).
+  - Non-goals: Cover every panel and edge case. Replace manual screenshot scripts entirely.
+  - Acceptance: `npx playwright test` runs locally and passes. ≥5 smoke tests covering the 5 paths. CI runs E2E on PR or nightly. axe-core scans report 0 critical violations.
+  - Evidence: Playwright report artifact. Screenshot of passing CI E2E step.
+  - Risk notes: E2E requires running API + DB; may be flaky without proper fixtures. Seed data must be deterministic.
+
+- [BL-158] `[planned]` Release Evidence Hygiene & Runtime Identity Gate.
+  - Problem: Runtime identity checks are manual. Evidence folders can become stale. Screenshot budget (max 20) is not automatically enforced.
+  - Why it matters: Every closure session requires runtime identity proof, clean worktree, and evidence folder compliance. Automating these checks reduces human error and closure-repair cycles.
+  - Scope: (1) `scripts/check_runtime_identity.sh`: compares API `/health` HEAD to `git rev-parse HEAD`; fails with explicit message; accepts docs-only exception flag. (2) `scripts/check_evidence_hygiene.sh`: verifies evidence folder is alphabetically last; counts files ≤ 20; detects duplicate screenshots (md5sum); checks for `.html` wrappers on JSON artifacts. (3) Document both in `docs/RELEASE_RUNBOOK.md`.
+  - Non-goals: Enforce runtime identity in CI if cluster is not running. Auto-delete stale evidence.
+  - Acceptance: `scripts/check_runtime_identity.sh` runs and reports match/mismatch. `scripts/check_evidence_hygiene.sh` runs and reports violations. Both documented in release runbook.
+  - Evidence: CLI output of both scripts.
+  - Risk notes: Docs-only exception must be explicitly logged to avoid false negatives.
+
+- [BL-159] `[planned]` Supply Chain / SBOM / License Gate.
+  - Problem: No SBOM exists. No license inventory. Dependency vulnerabilities are not continuously monitored.
+  - Why it matters: NIS2 and EU Cyber Resilience Act require supply-chain transparency. Customers and auditors will ask for SBOMs and license attestations.
+  - Scope: (1) Generate SBOM (`npm sbom --format=cyclonedx` or `cyclonedx-npm`). (2) Commit SBOM to `docs/compliance/sbom/` per release. (3) Run license scan (`license-checker --json` or `fossa`). (4) Identify copyleft/incompatible licenses and document exceptions. (5) Add `npm audit --audit-level=moderate` to CI. (6) Enable Dependabot for automated security update PRs.
+  - Non-goals: Fix all vulnerabilities in this slice. Sign artifacts with Sigstore/cosign yet.
+  - Acceptance: SBOM generation script runs successfully. License scan output committed. `npm audit` runs in CI and surfaces findings. Dependabot enabled (or documented why not). `docs/compliance/SUPPLY_CHAIN_AUDIT.md` updated with automated evidence.
+  - Evidence: SBOM JSON artifact. License scan output. CI screenshot showing audit step.
+  - Risk notes: Some dependencies may have incompatible licenses; document rather than hide.
 
 ## WATCHLIST
 
@@ -223,3 +295,5 @@ Status markers:
 - Do not let screen capture become ambient surveillance; explicit active-window sharing is the default.
 - Do not add arbitrary shell execution in v1.
 - Keep `NEXT_ACTIONS.md` active-only even though this backlog is intentionally broad.
+- Do not let CI/CD hardening (BL-153) block feature work for more than one slice; parallelize where possible.
+- Accessibility (BL-156) and design-system (BL-147) are tightly coupled; consider merging into a single UX quality slice if resources allow.

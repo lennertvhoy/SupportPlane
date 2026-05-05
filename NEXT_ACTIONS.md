@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-04 20:15 CEST
+**Updated At:** 2026-05-05 09:20 CEST
 
 ## Active Work
 
@@ -16,9 +16,9 @@
   - Owner: future language audit slice
   - Status: planned. Review all copy for consistency, remove overclaims, harden boundary language.
 
-- [BL-147] **Design-System Consistency Pass**
+- [BL-147] **Design-System Consistency Pass & Brand Identity Foundation**
   - Owner: future design slice
-  - Status: planned. Unify spacing, typography, badge styles, card layouts, loading/error states.
+  - Status: planned. Unify spacing, typography, badge styles, card layouts, loading/error states. Add logo, wordmark, favicon set, shared UI primitives in `packages/ui`, typography system, empty-state illustrations.
 
 - [BL-071/BL-072] **Connector real-instance enablement**
   - Owner: future connector slice
@@ -35,7 +35,23 @@
 
 - [BL-152] **Belgium/EU Assurance Audit — Hardening Remaining**
   - Owner: compliance/security auditor delegate
-  - Status: partial/readiness-dossier-created. 8 precheck docs created in `docs/compliance/`. Remaining: formal DPO review, pen test, SBOM generation, incident response runbook, accessibility hardening, container image scanning.
+  - Status: partial/readiness-dossier-created. 8 precheck docs created. Remaining: incident response runbook, TLS/mTLS design, SBOM, container hardening, backup restore E2E test, GDPR purge worker, CI security scanning, production auth hardening design.
+
+- [BL-153] **Automated Quality Gate & CI/CD Hardening Foundation**
+  - Owner: DevSecOps / automation engineer
+  - Status: planned. Expand CI to run build, lint, typecheck, format:check, test, validate, and `npm audit` on every PR. Make required status check.
+
+- [BL-154] **Test Trustworthiness & Anti-Fake-Completeness Strategy**
+  - Owner: QA / test architect
+  - Status: planned. Add worker tests, UI render tests, audit unit tests, negative tests for security boundaries, mock/real boundary documentation, skip reason comments.
+
+- [BL-155] **DevSecOps Automated Audit Foundation**
+  - Owner: security engineer
+  - Status: planned. Add dependency audit, secrets detection, SAST, container scanning, SBOM generation, license scan, and K8s manifest validation to CI or nightly.
+
+- [BL-156] **Accessibility, Colour Contrast & Visual Confidence Pass**
+  - Owner: accessibility / frontend engineer
+  - Status: planned. Fix primary button contrast, expand ARIA coverage, add focus rings, standardize disabled states, add skeleton loading, support reduced-motion, add `@axe-core/playwright` tests.
 
 ## Recently Completed
 
