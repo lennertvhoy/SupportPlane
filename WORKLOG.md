@@ -3020,3 +3020,71 @@ Tiny closure repair. Session-147 evidence `08-git-status.txt` showed pre-commit 
 ### Next Recommended Action
 
 Send the tester packet. Real testers can start immediately. Final clean proof exists.
+
+---
+
+## Session 164 — BL-157 Browser E2E Smoke Gate
+
+**Date:** 2026-05-05
+**Head before:** cc4588a7ed776e271ac415757de0fed64ec2678e
+**Final head:** e23466a2d7d36c1f48037166d16430526f78f488
+
+### What Changed
+
+- `playwright.config.ts`: Playwright E2E config with local deterministic setup
+  (testDir: tests/e2e, baseURL: http://localhost:3201, chromium only, webServer
+  runs setup script on port 3201 with reuseExistingServer).
+- `tests/e2e/helpers.ts`: Shared login/logout helpers using semantic selectors
+  (getByLabel, getByRole). Console error monitor with allowed patterns for
+  expected 401/403 resource errors.
+- `tests/e2e/auth.spec.ts`: 3 tests — login page render, operator login,
+  admin login with admin link visible.
+- `tests/e2e/admin.spec.ts`: 2 tests — admin navigates to model usage without
+  crash, governance cards visible.
+- `tests/e2e/approval-queue.spec.ts`: 1 test — approval queue loads without crash.
+- `tests/e2e/device-console.spec.ts`: 2 tests — seeded demo devices visible,
+  policy boundary text visible.
+- `tests/e2e/session-ticket.spec.ts`: 1 test — create session via "+ New" button,
+  select it, verify no crash.
+- `tests/e2e/tool-registry-rbac.spec.ts`: 2 tests — admin sees tools,
+  viewer gets forbidden state with 403 console error filtered.
+- `scripts/e2e-setup-and-run.sh`: One-shot setup — creates isolated DB,
+  runs Prisma migrate deploy, seeds data, builds workspaces, starts API
+  (port 4111) and Web (port 3201), waits for health, runs `npx playwright test`.
+- `scripts/e2e-create-test-db.js`: Node script to create `supportplane_e2e`
+  database if it doesn't exist.
+- `.github/workflows/e2e.yml`: CI workflow with PostgreSQL service container,
+  `npm ci`, `npx playwright install --with-deps`, `npm run e2e:ci`.
+- `package.json`: Added `e2e`, `e2e:ci`, `e2e:install`, `e2e:headed` scripts.
+- Installed `@playwright/test` and `@axe-core/playwright` at root.
+
+### Session 163 Integrity Preflight (conducted at start of Session 164)
+
+- Found discrepancy: Session 163 evidence index claimed final HEAD `2b3dc49`,
+  but actual final HEAD was `5520cc7` (docs-only state commit after code work).
+- Repaired `PROJECT_STATE.yaml` `final_head_after_session_163` to `5520cc7`.
+- Updated `docs/EVIDENCE_LOG.md` EV-2026-05-05-185 entry with corrected HEAD.
+- Added AGENTS.md evidence rule clarification about docs-only commits.
+
+### Verification
+
+- `npm run e2e`: 11 passed (10.4s) — local E2E full run green
+- `npm run format:check`: PASS
+- `npm run lint`: 0 errors, 79 warnings (unchanged)
+- `npm run typecheck`: PASS (10 workspaces)
+- `npm run validate`: PASS (contracts + Prisma schema)
+- `npm run build`: PASS
+
+### Evidence
+
+- `output/playwright/session-164-browser-e2e-smoke-gate/` (10 files)
+- Files: 01-session-163-integrity-preflight.txt, 02-playwright-report-all-green.png,
+  03-login-page.png, 04-operator-dashboard.png, 05-admin-dashboard.png,
+  06-device-console.png, 07-approval-queue.png, 08-tool-registry-admin.png,
+  09-model-usage.png, 10-tool-registry-viewer-denied.png
+
+### Next Recommended Action
+
+Run `.github/workflows/e2e.yml` on GitHub Actions to prove remote CI pass.
+If green, BL-157 can be marked fully proven. Deferred to BL-156:
+`@axe-core/playwright` accessibility scans.

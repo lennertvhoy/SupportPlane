@@ -3210,3 +3210,30 @@
   - Worktree clean; branch ahead 35
 - Type: governance-and-backlog-review
 - as_of: 2026-05-05T09:20:00+02:00
+
+## EV-2026-05-05-186: Session 164 — BL-157 Browser E2E Smoke Gate + Session 163 Integrity Repair
+
+- Evidence folder: `output/playwright/session-164-browser-e2e-smoke-gate/` (10 files)
+- Source/System: Local E2E run against isolated `supportplane_e2e` DB on localhost:5434
+- Action: Created Playwright E2E suite (11 tests, 6 spec files). Fixed selector
+  strictness issues (getByLabel/getByRole instead of raw text locators). Added
+  401/403 console error filtering. Removed ticket-context loading from smoke test
+  (OpenBao disabled in E2E env causes 500). Session 163 integrity preflight:
+  evidence index claimed `2b3dc49` as final HEAD but actual was `5520cc7`;
+  repaired in PROJECT_STATE.yaml and EVIDENCE_LOG.md.
+- Proves:
+  - `npm run e2e`: 11 passed (10.4s) — all smoke tests green
+  - Login page renders with sandbox boundary warning
+  - Operator login → dashboard loads with identity pill
+  - Admin login → dashboard loads with Admin button
+  - Admin can navigate to Model Usage without crash
+  - Admin dashboard shows governance cards (Policies, Users, Roles, Audit Explorer)
+  - Approval queue loads without crash
+  - Device console loads with seeded Linux + Windows endpoints
+  - Device console shows policy boundary (Fixed implementation only)
+  - Support session creation via "+ New" button works
+  - Tool Registry RBAC: admin sees tools, viewer gets forbidden state
+  - format:check PASS, lint 0 errors/79 warnings, typecheck PASS, validate PASS
+  - Worktree clean at `e23466a`
+- Type: browser-e2e-smoke-and-governance-repair
+- as_of: 2026-05-05T10:05:00+02:00

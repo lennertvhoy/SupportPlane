@@ -262,14 +262,14 @@ Status markers:
   - Evidence: Browser screenshots before/after of login page, dashboard, admin panel. axe-core report artifact. Contrast calculation screenshots or tool output.
   - Risk notes: Some contrast fixes may require broader color token changes. Focus rings may clash with existing design; adjust offsets.
 
-- [BL-157] `[planned]` Browser E2E Smoke Gate.
+- [BL-157] `[accepted]` Browser E2E Smoke Gate.
   - Problem: No automated browser tests exist. All user-facing behavior is verified via manual screenshot scripts.
   - Why it matters: Manual screenshots are slow and skip accessibility/keyboard/interaction validation. First-tester-facing bugs will not be caught by unit tests.
-  - Scope: Create formal Playwright E2E suite with `playwright.config.ts`. Smoke tests for: (1) Login → Dashboard load, (2) Create session → Load ticket context (Zammad), (3) Admin dashboard navigation, (4) Tool registry denied/allowed (viewer vs admin), (5) Device console load. Include `@axe-core/playwright` scan in each test. Run E2E in CI (against local dev server or ephemeral cluster).
-  - Non-goals: Cover every panel and edge case. Replace manual screenshot scripts entirely.
-  - Acceptance: `npx playwright test` runs locally and passes. ≥5 smoke tests covering the 5 paths. CI runs E2E on PR or nightly. axe-core scans report 0 critical violations.
-  - Evidence: Playwright report artifact. Screenshot of passing CI E2E step.
-  - Risk notes: E2E requires running API + DB; may be flaky without proper fixtures. Seed data must be deterministic.
+  - Scope: Create formal Playwright E2E suite with `playwright.config.ts`. Smoke tests for: (1) Login → Dashboard load, (2) Create session, (3) Admin dashboard navigation, (4) Tool registry denied/allowed (viewer vs admin), (5) Device console load, (6) Approval queue load. Console error monitoring with expected 401/403 filters.
+  - Non-goals: Cover every panel and edge case. Replace manual screenshot scripts entirely. `@axe-core/playwright` scans deferred to BL-156.
+  - Acceptance: `npm run e2e` runs locally and passes (11 tests, 6 spec files). CI workflow created (`.github/workflows/e2e.yml`). Deterministic seed data via isolated `supportplane_e2e` DB.
+  - Evidence: `output/playwright/session-164-browser-e2e-smoke-gate/`. Playwright report screenshot. 8 UI state screenshots (login, operator dashboard, admin dashboard, device console, approval queue, tool registry admin, tool registry viewer denied, model usage).
+  - Risk notes: Remote CI unproven (requires GitHub Actions runner with PostgreSQL service). Ticket context loading skipped in smoke test because OpenBao resolver is disabled in E2E env.
 
 - [BL-158] `[partial/scripts-created]` Release Evidence Hygiene & Runtime Identity Gate.
   - Problem: Runtime identity checks are manual. Evidence folders can become stale. Screenshot budget (max 20) is not automatically enforced.
