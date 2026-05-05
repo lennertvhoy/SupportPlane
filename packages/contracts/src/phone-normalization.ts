@@ -13,9 +13,7 @@ import {
  *
  * Returns a clear validation result. Does not crash on invalid input.
  */
-export function normalizePhoneNumber(
-  raw: string
-): PhoneNumberNormalizationResultShape {
+export function normalizePhoneNumber(raw: string): PhoneNumberNormalizationResultShape {
   const trimmed = raw.trim();
   if (!trimmed) {
     return {

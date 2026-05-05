@@ -23,7 +23,15 @@ import {
 } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
-import { api, type ConnectorStatus, type ConnectorTestResult, type ConnectorInstallation, type ConnectorCredentialReference, type AuthIdentity, ApiClientError } from '@/lib/api';
+import {
+  api,
+  type ConnectorStatus,
+  type ConnectorTestResult,
+  type ConnectorInstallation,
+  type ConnectorCredentialReference,
+  type AuthIdentity,
+  ApiClientError,
+} from '@/lib/api';
 
 export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
   const [status, setStatus] = useState<ConnectorStatus | undefined>(undefined);
@@ -32,21 +40,37 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
   const [loading, setLoading] = useState(false);
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [installationResults, setInstallationResults] = useState<Record<string, { type: string; result: unknown }>>({});
+  const [installationResults, setInstallationResults] = useState<
+    Record<string, { type: string; result: unknown }>
+  >({});
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Record<string, Partial<ConnectorInstallation>>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [credentialReferences, setCredentialReferences] = useState<ConnectorCredentialReference[]>([]);
+  const [credentialReferences, setCredentialReferences] = useState<ConnectorCredentialReference[]>(
+    [],
+  );
   const [linkingId, setLinkingId] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
-  const [configValidationResults, setConfigValidationResults] = useState<Record<string, { type: string; result: unknown }>>({});
-  const [runtimeReadinessResults, setRuntimeReadinessResults] = useState<Record<string, { type: string; result: unknown }>>({});
+  const [configValidationResults, setConfigValidationResults] = useState<
+    Record<string, { type: string; result: unknown }>
+  >({});
+  const [runtimeReadinessResults, setRuntimeReadinessResults] = useState<
+    Record<string, { type: string; result: unknown }>
+  >({});
 
-  const canTest = identity?.permissions.includes('*') || identity?.permissions.includes('connector_installation:test');
-  const canEdit = identity?.permissions.includes('*') || identity?.permissions.includes('connector_installation:write');
-  const canManageCredentials = identity?.permissions.includes('*') || identity?.permissions.includes('credential_reference:write');
-  const canViewCredentials = identity?.permissions.includes('*') || identity?.permissions.includes('credential_reference:read');
+  const canTest =
+    identity?.permissions.includes('*') ||
+    identity?.permissions.includes('connector_installation:test');
+  const canEdit =
+    identity?.permissions.includes('*') ||
+    identity?.permissions.includes('connector_installation:write');
+  const canManageCredentials =
+    identity?.permissions.includes('*') ||
+    identity?.permissions.includes('credential_reference:write');
+  const canViewCredentials =
+    identity?.permissions.includes('*') ||
+    identity?.permissions.includes('credential_reference:read');
 
   async function fetchStatus() {
     setLoading(true);
@@ -85,12 +109,21 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
       setError('Viewer role cannot validate connectors');
       return;
     }
-    setInstallationResults((prev) => ({ ...prev, [id]: { type: 'validating', result: undefined } }));
+    setInstallationResults((prev) => ({
+      ...prev,
+      [id]: { type: 'validating', result: undefined },
+    }));
     try {
       const r = await api.validateConnectorInstallation(id);
       setInstallationResults((prev) => ({ ...prev, [id]: { type: 'validate', result: r } }));
     } catch (err) {
-      setInstallationResults((prev) => ({ ...prev, [id]: { type: 'validate', result: { error: err instanceof ApiClientError ? err.message : 'Validation failed' } } }));
+      setInstallationResults((prev) => ({
+        ...prev,
+        [id]: {
+          type: 'validate',
+          result: { error: err instanceof ApiClientError ? err.message : 'Validation failed' },
+        },
+      }));
     }
   }
 
@@ -104,7 +137,13 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
       const r = await api.testConnectorInstallation(id);
       setInstallationResults((prev) => ({ ...prev, [id]: { type: 'test', result: r } }));
     } catch (err) {
-      setInstallationResults((prev) => ({ ...prev, [id]: { type: 'test', result: { error: err instanceof ApiClientError ? err.message : 'Test failed' } } }));
+      setInstallationResults((prev) => ({
+        ...prev,
+        [id]: {
+          type: 'test',
+          result: { error: err instanceof ApiClientError ? err.message : 'Test failed' },
+        },
+      }));
     }
   }
 
@@ -148,7 +187,11 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
     }));
   }
 
-  function setField(id: string, field: keyof ConnectorInstallation, value: string | number | string[] | Record<string, unknown> | undefined) {
+  function setField(
+    id: string,
+    field: keyof ConnectorInstallation,
+    value: string | number | string[] | Record<string, unknown> | undefined,
+  ) {
     setEditing((prev) => ({
       ...prev,
       [id]: { ...(prev[id] ?? {}), [field]: value },
@@ -164,7 +207,9 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
     setLinkError(null);
     try {
       const result = await api.linkCredentialReference(installationId, credentialReferenceId);
-      setInstallations((prev) => prev.map((i) => (i.id === result.installation.id ? result.installation : i)));
+      setInstallations((prev) =>
+        prev.map((i) => (i.id === result.installation.id ? result.installation : i)),
+      );
     } catch (err) {
       setLinkError(err instanceof ApiClientError ? err.message : 'Failed to link credential');
     } finally {
@@ -181,7 +226,9 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
     setLinkError(null);
     try {
       const result = await api.unlinkCredentialReference(installationId, credentialReferenceId);
-      setInstallations((prev) => prev.map((i) => (i.id === result.installation.id ? result.installation : i)));
+      setInstallations((prev) =>
+        prev.map((i) => (i.id === result.installation.id ? result.installation : i)),
+      );
     } catch (err) {
       setLinkError(err instanceof ApiClientError ? err.message : 'Failed to unlink credential');
     } finally {
@@ -194,13 +241,27 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
       setError('Viewer role cannot validate connector config');
       return;
     }
-    setConfigValidationResults((prev) => ({ ...prev, [id]: { type: 'validating', result: undefined } }));
+    setConfigValidationResults((prev) => ({
+      ...prev,
+      [id]: { type: 'validating', result: undefined },
+    }));
     try {
       const config = installations.find((i) => i.id === id)?.config ?? {};
       const r = await api.validateConnectorConfig(id, config);
-      setConfigValidationResults((prev) => ({ ...prev, [id]: { type: 'validate-config', result: r } }));
+      setConfigValidationResults((prev) => ({
+        ...prev,
+        [id]: { type: 'validate-config', result: r },
+      }));
     } catch (err) {
-      setConfigValidationResults((prev) => ({ ...prev, [id]: { type: 'validate-config', result: { error: err instanceof ApiClientError ? err.message : 'Config validation failed' } } }));
+      setConfigValidationResults((prev) => ({
+        ...prev,
+        [id]: {
+          type: 'validate-config',
+          result: {
+            error: err instanceof ApiClientError ? err.message : 'Config validation failed',
+          },
+        },
+      }));
     }
   }
 
@@ -209,12 +270,26 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
       setError('Viewer role cannot check runtime readiness');
       return;
     }
-    setRuntimeReadinessResults((prev) => ({ ...prev, [id]: { type: 'checking', result: undefined } }));
+    setRuntimeReadinessResults((prev) => ({
+      ...prev,
+      [id]: { type: 'checking', result: undefined },
+    }));
     try {
       const r = await api.checkConnectorRuntimeReadiness(id);
-      setRuntimeReadinessResults((prev) => ({ ...prev, [id]: { type: 'runtime-readiness', result: r } }));
+      setRuntimeReadinessResults((prev) => ({
+        ...prev,
+        [id]: { type: 'runtime-readiness', result: r },
+      }));
     } catch (err) {
-      setRuntimeReadinessResults((prev) => ({ ...prev, [id]: { type: 'runtime-readiness', result: { error: err instanceof ApiClientError ? err.message : 'Runtime readiness check failed' } } }));
+      setRuntimeReadinessResults((prev) => ({
+        ...prev,
+        [id]: {
+          type: 'runtime-readiness',
+          result: {
+            error: err instanceof ApiClientError ? err.message : 'Runtime readiness check failed',
+          },
+        },
+      }));
     }
   }
 
@@ -286,7 +361,8 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
             )}
             {!isMock && (
               <div className="rounded border border-emerald-700/30 bg-emerald-950/20 px-2 py-1.5 text-[10px] text-emerald-200">
-                Egress policy: sandbox allowlist only. Allowed destination: local Zammad sandbox. OpenBao sandbox resolver; secrets resolved server-side. Writeback blocked.
+                Egress policy: sandbox allowlist only. Allowed destination: local Zammad sandbox.
+                OpenBao sandbox resolver; secrets resolved server-side. Writeback blocked.
               </div>
             )}
 
@@ -321,9 +397,7 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                 {testResult.latencyMs !== undefined && (
                   <div className="mt-1 text-cockpit-500">Latency: {testResult.latencyMs}ms</div>
                 )}
-                {testResult.error && (
-                  <div className="mt-1 text-danger">{testResult.error}</div>
-                )}
+                {testResult.error && <div className="mt-1 text-danger">{testResult.error}</div>}
                 {typeof testResult.metadata?.note === 'string' && (
                   <div className="mt-1 text-cockpit-500">{testResult.metadata.note}</div>
                 )}
@@ -340,7 +414,9 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
           </div>
 
           {installations.length === 0 && !loading && (
-            <div className="text-[10px] text-cockpit-500">No connector installations configured.</div>
+            <div className="text-[10px] text-cockpit-500">
+              No connector installations configured.
+            </div>
           )}
 
           <div className="space-y-2">
@@ -359,15 +435,17 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                     <span className="text-xs font-medium text-cockpit-100">{display}</span>
                     <div className="flex items-center gap-1.5">
                       {!inst.enabled && (
-                        <Badge variant="warning" className="text-[10px]">Disabled</Badge>
+                        <Badge variant="warning" className="text-[10px]">
+                          Disabled
+                        </Badge>
                       )}
                       <Badge
                         variant={
                           inst.status === 'active'
                             ? 'success'
                             : inst.status === 'error'
-                            ? 'danger'
-                            : 'warning'
+                              ? 'danger'
+                              : 'warning'
                         }
                         className="text-[10px]"
                       >
@@ -415,7 +493,11 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                       disabled={!canTest || installationResults[inst.id]?.type === 'validating'}
                       className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
                     >
-                      {installationResults[inst.id]?.type === 'validating' ? <Loader2 size={10} className="animate-spin" /> : <Wrench size={10} />}
+                      {installationResults[inst.id]?.type === 'validating' ? (
+                        <Loader2 size={10} className="animate-spin" />
+                      ) : (
+                        <Wrench size={10} />
+                      )}
                       Validate
                     </button>
                     <button
@@ -423,7 +505,11 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                       disabled={!canTest || installationResults[inst.id]?.type === 'testing'}
                       className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
                     >
-                      {installationResults[inst.id]?.type === 'testing' ? <Loader2 size={10} className="animate-spin" /> : <TestTube size={10} />}
+                      {installationResults[inst.id]?.type === 'testing' ? (
+                        <Loader2 size={10} className="animate-spin" />
+                      ) : (
+                        <TestTube size={10} />
+                      )}
                       Test
                     </button>
                     <button
@@ -431,7 +517,11 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                       disabled={!canTest || configValidationResults[inst.id]?.type === 'validating'}
                       className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
                     >
-                      {configValidationResults[inst.id]?.type === 'validating' ? <Loader2 size={10} className="animate-spin" /> : <FileCode size={10} />}
+                      {configValidationResults[inst.id]?.type === 'validating' ? (
+                        <Loader2 size={10} className="animate-spin" />
+                      ) : (
+                        <FileCode size={10} />
+                      )}
                       Config
                     </button>
                     <button
@@ -439,7 +529,11 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                       disabled={!canTest || runtimeReadinessResults[inst.id]?.type === 'checking'}
                       className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-800 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-700 disabled:opacity-50"
                     >
-                      {runtimeReadinessResults[inst.id]?.type === 'checking' ? <Loader2 size={10} className="animate-spin" /> : <Activity size={10} />}
+                      {runtimeReadinessResults[inst.id]?.type === 'checking' ? (
+                        <Loader2 size={10} className="animate-spin" />
+                      ) : (
+                        <Activity size={10} />
+                      )}
                       Readiness
                     </button>
                   </div>
@@ -458,21 +552,31 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                     const res = configValidationResults[inst.id]?.result;
                     if (!res) return null;
                     const result = res as Record<string, unknown>;
-                    const hasError = result.error || (result.result && (result.result as Record<string, unknown>).valid === false);
+                    const hasError =
+                      result.error ||
+                      (result.result && (result.result as Record<string, unknown>).valid === false);
                     return (
-                      <div className={`mt-1 rounded border p-1.5 text-[10px] ${hasError ? 'border-amber-700/40 bg-amber-950/20 text-amber-200' : 'border-cockpit-700 bg-cockpit-900/50 text-cockpit-300'}`}>
+                      <div
+                        className={`mt-1 rounded border p-1.5 text-[10px] ${hasError ? 'border-amber-700/40 bg-amber-950/20 text-amber-200' : 'border-cockpit-700 bg-cockpit-900/50 text-cockpit-300'}`}
+                      >
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Config validation</span>
                           {hasError ? (
-                            <Badge variant="warning" className="text-[9px]">Issues found</Badge>
+                            <Badge variant="warning" className="text-[9px]">
+                              Issues found
+                            </Badge>
                           ) : (
-                            <Badge variant="success" className="text-[9px]">Valid</Badge>
+                            <Badge variant="success" className="text-[9px]">
+                              Valid
+                            </Badge>
                           )}
                         </div>
                         {result.error ? (
                           <div className="text-danger">{String(result.error)}</div>
                         ) : (
-                          <div className="mt-1 whitespace-pre-wrap">{JSON.stringify(result.result ?? result, null, 2)}</div>
+                          <div className="mt-1 whitespace-pre-wrap">
+                            {JSON.stringify(result.result ?? result, null, 2)}
+                          </div>
                         )}
                       </div>
                     );
@@ -487,8 +591,17 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                       <div className="mt-1 rounded border border-cockpit-700 bg-cockpit-900/50 p-1.5 text-[10px] text-cockpit-300">
                         <div className="flex items-center justify-between">
                           <span className="font-medium">Runtime readiness</span>
-                          <Badge variant={(readiness?.mockReady || readiness?.realReady) ? 'success' : 'warning'} className="text-[9px]">
-                            {readiness?.realReady ? 'Real ready' : readiness?.mockReady ? 'Mock ready' : 'Not ready'}
+                          <Badge
+                            variant={
+                              readiness?.mockReady || readiness?.realReady ? 'success' : 'warning'
+                            }
+                            className="text-[9px]"
+                          >
+                            {readiness?.realReady
+                              ? 'Real ready'
+                              : readiness?.mockReady
+                                ? 'Mock ready'
+                                : 'Not ready'}
                           </Badge>
                         </div>
                         {result.error ? (
@@ -496,10 +609,21 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                         ) : (
                           <div className="mt-1 space-y-0.5">
                             <div>realNetwork: {String(readiness?.realNetwork ?? false)}</div>
-                            <div>writebackEnabled: {String(readiness?.writebackEnabled ?? false)}</div>
-                            <div>externalWriteAttempted: {String(readiness?.externalWriteAttempted ?? false)}</div>
-                            <div>linkedCredentials: {String(readiness?.linkedCredentialReferenceCount ?? 0)}</div>
-                            <div>Secrets resolved server-side: {String(Number(readiness?.linkedCredentialReferenceCount ?? 0) > 0)}</div>
+                            <div>
+                              writebackEnabled: {String(readiness?.writebackEnabled ?? false)}
+                            </div>
+                            <div>
+                              externalWriteAttempted:{' '}
+                              {String(readiness?.externalWriteAttempted ?? false)}
+                            </div>
+                            <div>
+                              linkedCredentials:{' '}
+                              {String(readiness?.linkedCredentialReferenceCount ?? 0)}
+                            </div>
+                            <div>
+                              Secrets resolved server-side:{' '}
+                              {String(Number(readiness?.linkedCredentialReferenceCount ?? 0) > 0)}
+                            </div>
                             {(() => {
                               const warnings = readiness?.warnings;
                               if (!Array.isArray(warnings)) return null;
@@ -520,7 +644,9 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                   {isExpanded && (
                     <div className="mt-2 space-y-2 rounded border border-cockpit-700 bg-cockpit-800/30 p-2">
                       <div className="flex items-center justify-between">
-                        <div className="text-[10px] font-semibold text-cockpit-300">Installation Settings</div>
+                        <div className="text-[10px] font-semibold text-cockpit-300">
+                          Installation Settings
+                        </div>
                         {inst.adapterType === 'osticket' ? (
                           <span className="inline-flex items-center gap-1 rounded bg-amber-900/30 px-1.5 py-0.5 text-[9px] text-amber-300">
                             <Lock size={8} /> Fixture-only — not a real service
@@ -542,8 +668,14 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                         <input
                           type="text"
                           disabled={!canEdit || isSaving}
-                          value={edit.displayName !== undefined ? (edit.displayName ?? '') : (inst.displayName ?? '')}
-                          onChange={(e) => setField(inst.id, 'displayName', e.target.value || undefined)}
+                          value={
+                            edit.displayName !== undefined
+                              ? (edit.displayName ?? '')
+                              : (inst.displayName ?? '')
+                          }
+                          onChange={(e) =>
+                            setField(inst.id, 'displayName', e.target.value || undefined)
+                          }
                           className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 disabled:opacity-50"
                         />
                       </div>
@@ -553,8 +685,14 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                         <label className="text-[10px] text-cockpit-400">Description</label>
                         <textarea
                           disabled={!canEdit || isSaving}
-                          value={edit.description !== undefined ? (edit.description ?? '') : (inst.description ?? '')}
-                          onChange={(e) => setField(inst.id, 'description', e.target.value || undefined)}
+                          value={
+                            edit.description !== undefined
+                              ? (edit.description ?? '')
+                              : (inst.description ?? '')
+                          }
+                          onChange={(e) =>
+                            setField(inst.id, 'description', e.target.value || undefined)
+                          }
                           rows={2}
                           className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 disabled:opacity-50"
                         />
@@ -580,14 +718,26 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                         <span className="text-[10px] text-cockpit-400">Enabled</span>
                         <button
                           disabled={!canEdit || isSaving}
-                          onClick={() => toggleField(inst.id, 'enabled', !(edit.enabled !== undefined ? edit.enabled : inst.enabled))}
+                          onClick={() =>
+                            toggleField(
+                              inst.id,
+                              'enabled',
+                              !(edit.enabled !== undefined ? edit.enabled : inst.enabled),
+                            )
+                          }
                           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                            (edit.enabled !== undefined ? edit.enabled : inst.enabled) ? 'bg-emerald-600' : 'bg-cockpit-600'
+                            (edit.enabled !== undefined ? edit.enabled : inst.enabled)
+                              ? 'bg-emerald-600'
+                              : 'bg-cockpit-600'
                           } ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                            (edit.enabled !== undefined ? edit.enabled : inst.enabled) ? 'translate-x-5' : 'translate-x-1'
-                          }`} />
+                          <span
+                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                              (edit.enabled !== undefined ? edit.enabled : inst.enabled)
+                                ? 'translate-x-5'
+                                : 'translate-x-1'
+                            }`}
+                          />
                         </button>
                       </div>
 
@@ -612,16 +762,25 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                           disabled={!canEdit || isSaving}
                           onClick={() => {
                             const currentFlags = edit.safetyFlags ?? inst.safetyFlags;
-                            const nextFlags = { ...currentFlags, validateBeforeWrite: !currentFlags.validateBeforeWrite };
+                            const nextFlags = {
+                              ...currentFlags,
+                              validateBeforeWrite: !currentFlags.validateBeforeWrite,
+                            };
                             setField(inst.id, 'safetyFlags', nextFlags);
                           }}
                           className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
-                            (edit.safetyFlags ?? inst.safetyFlags).validateBeforeWrite ? 'bg-emerald-600' : 'bg-cockpit-600'
+                            (edit.safetyFlags ?? inst.safetyFlags).validateBeforeWrite
+                              ? 'bg-emerald-600'
+                              : 'bg-cockpit-600'
                           } ${!canEdit ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
-                            (edit.safetyFlags ?? inst.safetyFlags).validateBeforeWrite ? 'translate-x-5' : 'translate-x-1'
-                          }`} />
+                          <span
+                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                              (edit.safetyFlags ?? inst.safetyFlags).validateBeforeWrite
+                                ? 'translate-x-5'
+                                : 'translate-x-1'
+                            }`}
+                          />
                         </button>
                       </div>
 
@@ -633,8 +792,18 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                           disabled={!canEdit || isSaving}
                           min={1000}
                           max={60000}
-                          value={edit.timeoutMs !== undefined ? (edit.timeoutMs ?? '') : (inst.timeoutMs ?? '')}
-                          onChange={(e) => setField(inst.id, 'timeoutMs', e.target.value ? Number(e.target.value) : undefined)}
+                          value={
+                            edit.timeoutMs !== undefined
+                              ? (edit.timeoutMs ?? '')
+                              : (inst.timeoutMs ?? '')
+                          }
+                          onChange={(e) =>
+                            setField(
+                              inst.id,
+                              'timeoutMs',
+                              e.target.value ? Number(e.target.value) : undefined,
+                            )
+                          }
                           className="w-20 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 text-center disabled:opacity-50"
                         />
                       </div>
@@ -644,7 +813,10 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                         <span className="text-[10px] text-cockpit-400">Capabilities</span>
                         <div className="flex flex-wrap gap-1">
                           {inst.capabilities.map((cap) => (
-                            <span key={cap} className="rounded bg-cockpit-700 px-1.5 py-0.5 text-[10px] text-cockpit-200">
+                            <span
+                              key={cap}
+                              className="rounded bg-cockpit-700 px-1.5 py-0.5 text-[10px] text-cockpit-200"
+                            >
                               {cap}
                             </span>
                           ))}
@@ -654,7 +826,9 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                       {/* Credential references */}
                       <div className="space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] text-cockpit-400">Credential References</span>
+                          <span className="text-[10px] text-cockpit-400">
+                            Credential References
+                          </span>
                           <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-500">
                             <Lock size={10} />
                             Secret values hidden
@@ -662,7 +836,9 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                         </div>
 
                         {inst.secretReferenceIds.length === 0 ? (
-                          <div className="text-[10px] text-cockpit-500 italic">No credential references linked.</div>
+                          <div className="text-[10px] text-cockpit-500 italic">
+                            No credential references linked.
+                          </div>
                         ) : (
                           <div className="flex flex-wrap gap-1">
                             {inst.secretReferenceIds.map((credId) => {
@@ -684,7 +860,13 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                                     </button>
                                   )}
                                   <Badge
-                                    variant={cred?.status === 'active' ? 'success' : cred?.status === 'error' ? 'danger' : 'warning'}
+                                    variant={
+                                      cred?.status === 'active'
+                                        ? 'success'
+                                        : cred?.status === 'error'
+                                          ? 'danger'
+                                          : 'warning'
+                                    }
                                     className="text-[9px] ml-0.5"
                                   >
                                     {cred?.status ?? 'unknown'}
@@ -709,9 +891,15 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                               className="flex-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 disabled:opacity-50"
                               defaultValue=""
                             >
-                              <option value="" disabled>Link a credential reference...</option>
+                              <option value="" disabled>
+                                Link a credential reference...
+                              </option>
                               {credentialReferences
-                                .filter((c) => c.connectorType === inst.adapterType || c.connectorType === 'mock')
+                                .filter(
+                                  (c) =>
+                                    c.connectorType === inst.adapterType ||
+                                    c.connectorType === 'mock',
+                                )
                                 .filter((c) => !inst.secretReferenceIds.includes(c.id))
                                 .map((c) => (
                                   <option key={c.id} value={c.id}>
@@ -719,13 +907,13 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                                   </option>
                                 ))}
                             </select>
-                            {linkingId === inst.id && <Loader2 size={12} className="animate-spin text-cockpit-400" />}
+                            {linkingId === inst.id && (
+                              <Loader2 size={12} className="animate-spin text-cockpit-400" />
+                            )}
                           </div>
                         )}
 
-                        {linkError && (
-                          <div className="text-[10px] text-danger">{linkError}</div>
-                        )}
+                        {linkError && <div className="text-[10px] text-danger">{linkError}</div>}
                       </div>
 
                       {saveError && isExpanded && (

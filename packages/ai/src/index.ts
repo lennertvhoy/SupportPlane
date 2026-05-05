@@ -123,10 +123,12 @@ export type GenerateSummaryResponse = z.infer<typeof GenerateSummaryResponse>;
 export const GenerateChatRequest = z.object({
   tenantId: z.string().min(1),
   actorId: z.string().min(1),
-  messages: z.array(z.object({
-    role: ChatRole,
-    content: z.string(),
-  })),
+  messages: z.array(
+    z.object({
+      role: ChatRole,
+      content: z.string(),
+    }),
+  ),
   modelSelection: ModelSelection.optional(),
 });
 export type GenerateChatRequest = z.infer<typeof GenerateChatRequest>;
@@ -152,9 +154,7 @@ export interface AiProvider {
 export class ModelGateway {
   constructor(private readonly providers: readonly AiProvider[]) {}
 
-  async generateDraft(
-    input: GenerateDraftRequest
-  ): Promise<GenerateDraftResponse> {
+  async generateDraft(input: GenerateDraftRequest): Promise<GenerateDraftResponse> {
     const request = GenerateDraftRequest.parse(input);
     const selection = ModelSelection.parse(request.modelSelection ?? {});
     const provider = this.providers.find((p) => p.id === selection.provider);
@@ -167,9 +167,7 @@ export class ModelGateway {
     });
   }
 
-  async generateGreeting(
-    input: GreetingSuggestionRequest
-  ): Promise<GreetingSuggestionResponse> {
+  async generateGreeting(input: GreetingSuggestionRequest): Promise<GreetingSuggestionResponse> {
     const request = GreetingSuggestionRequest.parse(input);
     const selection = ModelSelection.parse(request.modelSelection ?? {});
     const provider = this.providers.find((p) => p.id === selection.provider);
@@ -182,9 +180,7 @@ export class ModelGateway {
     });
   }
 
-  async generateSummary(
-    input: GenerateSummaryRequest
-  ): Promise<GenerateSummaryResponse> {
+  async generateSummary(input: GenerateSummaryRequest): Promise<GenerateSummaryResponse> {
     const request = GenerateSummaryRequest.parse(input);
     const selection = ModelSelection.parse(request.modelSelection ?? {});
     const provider = this.providers.find((p) => p.id === selection.provider);
@@ -197,9 +193,7 @@ export class ModelGateway {
     });
   }
 
-  async generateChat(
-    input: GenerateChatRequest
-  ): Promise<GenerateChatResponse> {
+  async generateChat(input: GenerateChatRequest): Promise<GenerateChatResponse> {
     const request = GenerateChatRequest.parse(input);
     const selection = ModelSelection.parse(request.modelSelection ?? {});
     const provider = this.providers.find((p) => p.id === selection.provider);
@@ -225,12 +219,11 @@ export class MockAiProvider implements AiProvider {
   private readonly greetingPrompt: PromptTemplate = {
     id: 'greeting-suggestion',
     version: 'mock-v1',
-    purpose: 'Suggest a safe, reviewable greeting for a support agent based on caller and ticket context.',
+    purpose:
+      'Suggest a safe, reviewable greeting for a support agent based on caller and ticket context.',
   };
 
-  async generateDraft(
-    input: GenerateDraftRequest
-  ): Promise<GenerateDraftResponse> {
+  async generateDraft(input: GenerateDraftRequest): Promise<GenerateDraftResponse> {
     const request = GenerateDraftRequest.parse(input);
     const selection = ModelSelection.parse(request.modelSelection ?? {});
     const contextHash = computeContextHash({
@@ -246,7 +239,7 @@ export class MockAiProvider implements AiProvider {
         request.session,
         request.ticketReferences,
         request.contextPackets,
-        request.operatorInstructions
+        request.operatorInstructions,
       ),
       provider: this.id,
       model: selection.model,
@@ -281,9 +274,7 @@ export class MockAiProvider implements AiProvider {
     });
   }
 
-  async generateGreeting(
-    input: GreetingSuggestionRequest
-  ): Promise<GreetingSuggestionResponse> {
+  async generateGreeting(input: GreetingSuggestionRequest): Promise<GreetingSuggestionResponse> {
     const request = GreetingSuggestionRequest.parse(input);
     const selection = ModelSelection.parse(request.modelSelection ?? {});
     const contextHash = computeContextHash({
@@ -348,7 +339,12 @@ export class MockAiProvider implements AiProvider {
         cloudCallMade: false,
         localProviderCallMade: false,
         fallbackUsed: false,
-        policyChecks: ['mock_provider_only', 'review_required', 'auto_send_disabled', 'voice_disabled'],
+        policyChecks: [
+          'mock_provider_only',
+          'review_required',
+          'auto_send_disabled',
+          'voice_disabled',
+        ],
         reviewRequired: true,
         autoSend: false,
         voiceEnabled: false,
@@ -363,9 +359,7 @@ export class MockAiProvider implements AiProvider {
     purpose: 'Generate a structured summary from ticket context.',
   };
 
-  async generateSummary(
-    input: GenerateSummaryRequest
-  ): Promise<GenerateSummaryResponse> {
+  async generateSummary(input: GenerateSummaryRequest): Promise<GenerateSummaryResponse> {
     const request = GenerateSummaryRequest.parse(input);
     const selection = ModelSelection.parse(request.modelSelection ?? {});
     const contextHash = computeContextHash({
@@ -377,7 +371,10 @@ export class MockAiProvider implements AiProvider {
     const primaryTicket = request.ticketReferences[0];
     return GenerateSummaryResponse.parse({
       summary: `[MOCK AI SUMMARY] Session "${request.session.title}" ${primaryTicket ? `linked to ticket ${primaryTicket.externalTicketId} (${primaryTicket.subject})` : 'with no linked tickets'}.`,
-      keyPoints: ['Mock key point: context reviewed deterministically', 'Mock key point: no real AI model was called'],
+      keyPoints: [
+        'Mock key point: context reviewed deterministically',
+        'Mock key point: no real AI model was called',
+      ],
       sentiment: 'neutral',
       provider: this.id,
       model: selection.model,
@@ -408,9 +405,7 @@ export class MockAiProvider implements AiProvider {
     });
   }
 
-  async generateChat(
-    input: GenerateChatRequest
-  ): Promise<GenerateChatResponse> {
+  async generateChat(input: GenerateChatRequest): Promise<GenerateChatResponse> {
     const request = GenerateChatRequest.parse(input);
     const selection = ModelSelection.parse(request.modelSelection ?? {});
     const lastMessage = request.messages[request.messages.length - 1]?.content ?? '';
@@ -445,7 +440,12 @@ export class MockAiProvider implements AiProvider {
 }
 
 export interface OllamaClient {
-  generate(input: { baseUrl: string; model: string; prompt: string; timeoutMs: number }): Promise<string>;
+  generate(input: {
+    baseUrl: string;
+    model: string;
+    prompt: string;
+    timeoutMs: number;
+  }): Promise<string>;
 }
 
 export interface OllamaAiProviderOptions {
@@ -519,7 +519,12 @@ export class OllamaAiProvider implements AiProvider {
           cloudCallMade: false,
           localProviderCallMade: true,
           fallbackUsed: false,
-          policyChecks: ['ollama_local_provider', 'redaction_before_provider_call', 'review_required', 'writeback_disabled'],
+          policyChecks: [
+            'ollama_local_provider',
+            'redaction_before_provider_call',
+            'review_required',
+            'writeback_disabled',
+          ],
           reviewRequired: true,
           writebackAllowed: false,
           autonomousSend: false,
@@ -533,7 +538,15 @@ export class OllamaAiProvider implements AiProvider {
         throw error;
       }
       return GenerateDraftResponse.parse({
-        draft: labelOllamaDraft(buildMockDraft(request.session, request.ticketReferences, request.contextPackets, request.operatorInstructions), true),
+        draft: labelOllamaDraft(
+          buildMockDraft(
+            request.session,
+            request.ticketReferences,
+            request.contextPackets,
+            request.operatorInstructions,
+          ),
+          true,
+        ),
         provider: this.id,
         model: selectedModel,
         prompt: this.prompt,
@@ -553,7 +566,12 @@ export class OllamaAiProvider implements AiProvider {
           cloudCallMade: false,
           localProviderCallMade: false,
           fallbackUsed: true,
-          policyChecks: ['ollama_unavailable_deterministic_fallback', 'redaction_before_provider_call', 'review_required', 'writeback_disabled'],
+          policyChecks: [
+            'ollama_unavailable_deterministic_fallback',
+            'redaction_before_provider_call',
+            'review_required',
+            'writeback_disabled',
+          ],
           reviewRequired: true,
           writebackAllowed: false,
           autonomousSend: false,
@@ -622,7 +640,11 @@ export class OllamaAiProvider implements AiProvider {
           cloudCallMade: false,
           localProviderCallMade: true,
           fallbackUsed: false,
-          policyChecks: ['ollama_local_provider', 'redaction_before_provider_call', 'review_required'],
+          policyChecks: [
+            'ollama_local_provider',
+            'redaction_before_provider_call',
+            'review_required',
+          ],
           reviewRequired: true,
           writebackAllowed: false,
           autonomousSend: false,
@@ -636,7 +658,10 @@ export class OllamaAiProvider implements AiProvider {
         throw error;
       }
       return GenerateSummaryResponse.parse({
-        summary: labelOllamaSummary(`[OLLAMA FALLBACK] Ticket summary unavailable. Fallback summary for session "${request.session.title}".`, true),
+        summary: labelOllamaSummary(
+          `[OLLAMA FALLBACK] Ticket summary unavailable. Fallback summary for session "${request.session.title}".`,
+          true,
+        ),
         keyPoints: ['Ollama was unavailable', 'Deterministic fallback used'],
         sentiment: 'unknown',
         provider: this.id,
@@ -658,7 +683,11 @@ export class OllamaAiProvider implements AiProvider {
           cloudCallMade: false,
           localProviderCallMade: false,
           fallbackUsed: true,
-          policyChecks: ['ollama_unavailable_deterministic_fallback', 'redaction_before_provider_call', 'review_required'],
+          policyChecks: [
+            'ollama_unavailable_deterministic_fallback',
+            'redaction_before_provider_call',
+            'review_required',
+          ],
           reviewRequired: true,
           writebackAllowed: false,
           autonomousSend: false,
@@ -718,7 +747,10 @@ export class OllamaAiProvider implements AiProvider {
         throw error;
       }
       return GenerateChatResponse.parse({
-        content: labelOllamaChat(`[OLLAMA FALLBACK] Local Ollama is unavailable.\n\nYour message: "${lastMessage}"`, true),
+        content: labelOllamaChat(
+          `[OLLAMA FALLBACK] Local Ollama is unavailable.\n\nYour message: "${lastMessage}"`,
+          true,
+        ),
         provider: this.id,
         model: selectedModel,
         usage: {
@@ -750,7 +782,12 @@ export class OllamaAiProvider implements AiProvider {
 }
 
 class FetchOllamaClient implements OllamaClient {
-  async generate(input: { baseUrl: string; model: string; prompt: string; timeoutMs: number }): Promise<string> {
+  async generate(input: {
+    baseUrl: string;
+    model: string;
+    prompt: string;
+    timeoutMs: number;
+  }): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), input.timeoutMs);
     try {
@@ -779,7 +816,12 @@ class FetchOllamaClient implements OllamaClient {
 }
 
 export interface LmStudioClient {
-  generate(input: { baseUrl: string; model: string; prompt: string; timeoutMs: number }): Promise<string>;
+  generate(input: {
+    baseUrl: string;
+    model: string;
+    prompt: string;
+    timeoutMs: number;
+  }): Promise<string>;
 }
 
 export interface LmStudioAiProviderOptions {
@@ -791,7 +833,12 @@ export interface LmStudioAiProviderOptions {
 }
 
 class FetchLmStudioClient implements LmStudioClient {
-  async generate(input: { baseUrl: string; model: string; prompt: string; timeoutMs: number }): Promise<string> {
+  async generate(input: {
+    baseUrl: string;
+    model: string;
+    prompt: string;
+    timeoutMs: number;
+  }): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), input.timeoutMs);
     try {
@@ -801,7 +848,10 @@ class FetchLmStudioClient implements LmStudioClient {
         body: JSON.stringify({
           model: input.model,
           messages: [
-            { role: 'system', content: 'You are SupportPlane local AI. Draft concise internal support notes only.' },
+            {
+              role: 'system',
+              content: 'You are SupportPlane local AI. Draft concise internal support notes only.',
+            },
             { role: 'user', content: input.prompt },
           ],
           stream: false,
@@ -811,7 +861,9 @@ class FetchLmStudioClient implements LmStudioClient {
       if (!response.ok) {
         throw new Error(`LM Studio HTTP ${response.status}`);
       }
-      const data = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+      const data = (await response.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
       const content = data.choices?.[0]?.message?.content?.trim();
       if (!content) {
         throw new Error('LM Studio returned an empty response');
@@ -828,7 +880,8 @@ export class LmStudioAiProvider implements AiProvider {
   private readonly prompt: PromptTemplate = {
     id: 'support-note-draft',
     version: 'lmstudio-local-v1',
-    purpose: 'Draft a reviewable internal support note from redacted local SupportPlane context via LM Studio.',
+    purpose:
+      'Draft a reviewable internal support note from redacted local SupportPlane context via LM Studio.',
   };
   private readonly baseUrl: string;
   private readonly model: string;
@@ -886,7 +939,12 @@ export class LmStudioAiProvider implements AiProvider {
           cloudCallMade: false,
           localProviderCallMade: true,
           fallbackUsed: false,
-          policyChecks: ['lmstudio_local_provider', 'redaction_before_provider_call', 'review_required', 'writeback_disabled'],
+          policyChecks: [
+            'lmstudio_local_provider',
+            'redaction_before_provider_call',
+            'review_required',
+            'writeback_disabled',
+          ],
           reviewRequired: true,
           writebackAllowed: false,
           autonomousSend: false,
@@ -900,7 +958,15 @@ export class LmStudioAiProvider implements AiProvider {
         throw error;
       }
       return GenerateDraftResponse.parse({
-        draft: labelLmStudioDraft(buildMockDraft(request.session, request.ticketReferences, request.contextPackets, request.operatorInstructions), true),
+        draft: labelLmStudioDraft(
+          buildMockDraft(
+            request.session,
+            request.ticketReferences,
+            request.contextPackets,
+            request.operatorInstructions,
+          ),
+          true,
+        ),
         provider: this.id,
         model: selectedModel,
         prompt: this.prompt,
@@ -920,7 +986,12 @@ export class LmStudioAiProvider implements AiProvider {
           cloudCallMade: false,
           localProviderCallMade: false,
           fallbackUsed: true,
-          policyChecks: ['lmstudio_unavailable_deterministic_fallback', 'redaction_before_provider_call', 'review_required', 'writeback_disabled'],
+          policyChecks: [
+            'lmstudio_unavailable_deterministic_fallback',
+            'redaction_before_provider_call',
+            'review_required',
+            'writeback_disabled',
+          ],
           reviewRequired: true,
           writebackAllowed: false,
           autonomousSend: false,
@@ -942,7 +1013,8 @@ export class LmStudioAiProvider implements AiProvider {
   private readonly summaryPrompt: PromptTemplate = {
     id: 'ticket-summary',
     version: 'lmstudio-local-v1',
-    purpose: 'Generate a structured summary from redacted local SupportPlane ticket context via LM Studio.',
+    purpose:
+      'Generate a structured summary from redacted local SupportPlane ticket context via LM Studio.',
   };
 
   async generateSummary(input: GenerateSummaryRequest): Promise<GenerateSummaryResponse> {
@@ -989,7 +1061,11 @@ export class LmStudioAiProvider implements AiProvider {
           cloudCallMade: false,
           localProviderCallMade: true,
           fallbackUsed: false,
-          policyChecks: ['lmstudio_local_provider', 'redaction_before_provider_call', 'review_required'],
+          policyChecks: [
+            'lmstudio_local_provider',
+            'redaction_before_provider_call',
+            'review_required',
+          ],
           reviewRequired: true,
           writebackAllowed: false,
           autonomousSend: false,
@@ -1003,7 +1079,10 @@ export class LmStudioAiProvider implements AiProvider {
         throw error;
       }
       return GenerateSummaryResponse.parse({
-        summary: labelLmStudioSummary(`[LM STUDIO FALLBACK] Ticket summary unavailable. Fallback summary for session "${request.session.title}".`, true),
+        summary: labelLmStudioSummary(
+          `[LM STUDIO FALLBACK] Ticket summary unavailable. Fallback summary for session "${request.session.title}".`,
+          true,
+        ),
         keyPoints: ['LM Studio was unavailable', 'Deterministic fallback used'],
         sentiment: 'unknown',
         provider: this.id,
@@ -1025,7 +1104,11 @@ export class LmStudioAiProvider implements AiProvider {
           cloudCallMade: false,
           localProviderCallMade: false,
           fallbackUsed: true,
-          policyChecks: ['lmstudio_unavailable_deterministic_fallback', 'redaction_before_provider_call', 'review_required'],
+          policyChecks: [
+            'lmstudio_unavailable_deterministic_fallback',
+            'redaction_before_provider_call',
+            'review_required',
+          ],
           reviewRequired: true,
           writebackAllowed: false,
           autonomousSend: false,
@@ -1085,7 +1168,10 @@ export class LmStudioAiProvider implements AiProvider {
         throw error;
       }
       return GenerateChatResponse.parse({
-        content: labelLmStudioChat(`[LM STUDIO FALLBACK] Local LM Studio is unavailable.\n\nYour message: "${lastMessage}"`, true),
+        content: labelLmStudioChat(
+          `[LM STUDIO FALLBACK] Local LM Studio is unavailable.\n\nYour message: "${lastMessage}"`,
+          true,
+        ),
         provider: this.id,
         model: selectedModel,
         usage: {
@@ -1142,7 +1228,9 @@ function populateDefaultAiProviders(): void {
     metadata: { runtime: 'mock', providerMode: 'mock', noCloudCall: true, fallbackEnabled: false },
   });
 
-  const providerEnv: string = process.env['SUPPORTPLANE_AI_PROVIDER'] ?? (process.env['OLLAMA_ENABLED'] === 'true' ? 'ollama' : 'mock');
+  const providerEnv: string =
+    process.env['SUPPORTPLANE_AI_PROVIDER'] ??
+    (process.env['OLLAMA_ENABLED'] === 'true' ? 'ollama' : 'mock');
   const localRuntime: string = process.env['SUPPORTPLANE_AI_LOCAL_RUNTIME'] ?? providerEnv;
 
   if (localRuntime === 'ollama' || providerEnv === 'ollama') {
@@ -1157,7 +1245,12 @@ function populateDefaultAiProviders(): void {
           timeoutMs: Number(process.env['OLLAMA_TIMEOUT_MS'] ?? '15000'),
           fallbackEnabled: process.env['OLLAMA_FALLBACK_ENABLED'] !== 'false',
         }),
-        metadata: { runtime: 'ollama', providerMode: 'local', noCloudCall: true, fallbackEnabled: process.env['OLLAMA_FALLBACK_ENABLED'] !== 'false' },
+        metadata: {
+          runtime: 'ollama',
+          providerMode: 'local',
+          noCloudCall: true,
+          fallbackEnabled: process.env['OLLAMA_FALLBACK_ENABLED'] !== 'false',
+        },
       });
     }
   }
@@ -1174,7 +1267,12 @@ function populateDefaultAiProviders(): void {
           timeoutMs: Number(process.env['LMSTUDIO_TIMEOUT_MS'] ?? '15000'),
           fallbackEnabled: process.env['LMSTUDIO_FALLBACK_ENABLED'] !== 'false',
         }),
-        metadata: { runtime: 'lmstudio', providerMode: 'local', noCloudCall: true, fallbackEnabled: process.env['LMSTUDIO_FALLBACK_ENABLED'] !== 'false' },
+        metadata: {
+          runtime: 'lmstudio',
+          providerMode: 'local',
+          noCloudCall: true,
+          fallbackEnabled: process.env['LMSTUDIO_FALLBACK_ENABLED'] !== 'false',
+        },
       });
     }
   }
@@ -1208,16 +1306,14 @@ export function createModelGatewayFromRegistry(): ModelGateway {
 }
 
 export function computeContextHash(value: unknown): ContextHash {
-  return createHash('sha256')
-    .update(stableStringify(value))
-    .digest('hex') as ContextHash;
+  return createHash('sha256').update(stableStringify(value)).digest('hex') as ContextHash;
 }
 
 function buildMockDraft(
   session: SupportSessionShape,
   tickets: TicketReferenceShape[],
   packets: AIContextPacketShape[],
-  operatorInstructions?: string
+  operatorInstructions?: string,
 ): string {
   const primaryTicket = tickets[0];
   const packetSummary = packets
@@ -1322,7 +1418,10 @@ function redactBaseUrl(baseUrl: string): string {
 function redactAiContext<T>(value: T): T {
   if (value === null || typeof value !== 'object') {
     if (typeof value === 'string') {
-      return value.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[REDACTED_EMAIL]') as T;
+      return value.replace(
+        /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g,
+        '[REDACTED_EMAIL]',
+      ) as T;
     }
     return value;
   }

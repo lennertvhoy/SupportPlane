@@ -27,9 +27,7 @@ export const TelephonyAdapterCapabilities = z.object({
   recording: z.boolean(),
   transcription: z.boolean(),
 });
-export type TelephonyAdapterCapabilities = z.infer<
-  typeof TelephonyAdapterCapabilities
->;
+export type TelephonyAdapterCapabilities = z.infer<typeof TelephonyAdapterCapabilities>;
 
 export const TelephonyWebhookVerificationStatus = z.enum([
   'not_required',
@@ -37,9 +35,7 @@ export const TelephonyWebhookVerificationStatus = z.enum([
   'failed',
   'not_configured',
 ]);
-export type TelephonyWebhookVerificationStatus = z.infer<
-  typeof TelephonyWebhookVerificationStatus
->;
+export type TelephonyWebhookVerificationStatus = z.infer<typeof TelephonyWebhookVerificationStatus>;
 
 export const TelephonyWebhookVerification = z.object({
   status: TelephonyWebhookVerificationStatus,
@@ -48,9 +44,7 @@ export const TelephonyWebhookVerification = z.object({
   mockDevOnly: z.boolean().default(true),
   reason: z.string().max(512).optional(),
 });
-export type TelephonyWebhookVerification = z.infer<
-  typeof TelephonyWebhookVerification
->;
+export type TelephonyWebhookVerification = z.infer<typeof TelephonyWebhookVerification>;
 
 export const TelephonyProviderError = z.object({
   code: z.string().min(1).max(128),
@@ -60,33 +54,35 @@ export const TelephonyProviderError = z.object({
 });
 export type TelephonyProviderError = z.infer<typeof TelephonyProviderError>;
 
-export const TelephonyAdapterConfig = z.object({
-  tenantId: TenantId,
-  providerType: TelephonyProviderType,
-  mode: TelephonyAdapterMode,
-  displayName: z.string().min(1).max(128).default('Mock telephony bridge'),
-  webhookPath: z.string().min(1).max(256).optional(),
-  signatureRequired: z.boolean().default(false),
-  secretRef: z.string().min(1).max(256).optional(),
-  capabilities: TelephonyAdapterCapabilities.optional(),
-  mockDevOnly: z.boolean().default(true),
-  metadata: z.record(JsonValue).default({}),
-}).superRefine((value, ctx) => {
-  if (value.mode === 'configured' && !value.secretRef && value.signatureRequired) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['secretRef'],
-      message: 'signatureRequired configured adapters must reference a server-side secretRef',
-    });
-  }
-  if (value.mode !== 'mock' && value.mockDevOnly) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['mockDevOnly'],
-      message: 'mockDevOnly can only be true in mock mode',
-    });
-  }
-});
+export const TelephonyAdapterConfig = z
+  .object({
+    tenantId: TenantId,
+    providerType: TelephonyProviderType,
+    mode: TelephonyAdapterMode,
+    displayName: z.string().min(1).max(128).default('Mock telephony bridge'),
+    webhookPath: z.string().min(1).max(256).optional(),
+    signatureRequired: z.boolean().default(false),
+    secretRef: z.string().min(1).max(256).optional(),
+    capabilities: TelephonyAdapterCapabilities.optional(),
+    mockDevOnly: z.boolean().default(true),
+    metadata: z.record(JsonValue).default({}),
+  })
+  .superRefine((value, ctx) => {
+    if (value.mode === 'configured' && !value.secretRef && value.signatureRequired) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['secretRef'],
+        message: 'signatureRequired configured adapters must reference a server-side secretRef',
+      });
+    }
+    if (value.mode !== 'mock' && value.mockDevOnly) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['mockDevOnly'],
+        message: 'mockDevOnly can only be true in mock mode',
+      });
+    }
+  });
 export type TelephonyAdapterConfig = z.infer<typeof TelephonyAdapterConfig>;
 
 export const TelephonyAdapterStatus = z.object({
@@ -113,9 +109,7 @@ export const TelephonyWebhookLifecycleEventType = z.enum([
   'call_ended',
   'call_missed',
 ]);
-export type TelephonyWebhookLifecycleEventType = z.infer<
-  typeof TelephonyWebhookLifecycleEventType
->;
+export type TelephonyWebhookLifecycleEventType = z.infer<typeof TelephonyWebhookLifecycleEventType>;
 
 export const TelephonyWebhookEvent = z.object({
   tenantId: TenantId,
@@ -135,16 +129,8 @@ export const TelephonyWebhookEvent = z.object({
 });
 export type TelephonyWebhookEvent = z.infer<typeof TelephonyWebhookEvent>;
 
-export const TelephonyCallControlAction = z.enum([
-  'answer',
-  'hold',
-  'resume',
-  'end',
-  'transfer',
-]);
-export type TelephonyCallControlAction = z.infer<
-  typeof TelephonyCallControlAction
->;
+export const TelephonyCallControlAction = z.enum(['answer', 'hold', 'resume', 'end', 'transfer']);
+export type TelephonyCallControlAction = z.infer<typeof TelephonyCallControlAction>;
 
 export const TelephonyCallControlIntent = z.object({
   tenantId: TenantId,
@@ -159,9 +145,7 @@ export const TelephonyCallControlIntent = z.object({
   requestedAt: Timestamp,
   mockDevOnly: z.boolean().default(true),
 });
-export type TelephonyCallControlIntent = z.infer<
-  typeof TelephonyCallControlIntent
->;
+export type TelephonyCallControlIntent = z.infer<typeof TelephonyCallControlIntent>;
 
 export const TelephonyCallControlResult = z.object({
   intent: TelephonyCallControlIntent,
@@ -174,9 +158,7 @@ export const TelephonyCallControlResult = z.object({
   completedAt: Timestamp,
   mockDevOnly: z.boolean().default(true),
 });
-export type TelephonyCallControlResult = z.infer<
-  typeof TelephonyCallControlResult
->;
+export type TelephonyCallControlResult = z.infer<typeof TelephonyCallControlResult>;
 
 export const TelephonyAuditMetadata = z.object({
   tenantId: TenantId,

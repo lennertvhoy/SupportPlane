@@ -1,14 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import {
-  ConnectorErrorCode,
-  GlpiConfig,
-} from '@supportplane/contracts';
-import {
-  GlpiConnectorAdapter,
-  MockGlpiConnectorAdapter,
-  MockGlpiHttpClient,
-} from './index.js';
+import { ConnectorErrorCode, GlpiConfig } from '@supportplane/contracts';
+import { GlpiConnectorAdapter, MockGlpiConnectorAdapter, MockGlpiHttpClient } from './index.js';
 
 describe('GlpiConnectorAdapter', () => {
   it('rejects invalid config during connect', async () => {
@@ -18,7 +11,7 @@ describe('GlpiConnectorAdapter', () => {
       (err: unknown) => {
         const e = err as { code: string };
         return e.code === ConnectorErrorCode.enum.CONFIG_INVALID;
-      }
+      },
     );
   });
 
@@ -53,7 +46,7 @@ describe('GlpiConnectorAdapter', () => {
       (err: unknown) => {
         const e = err as { code: string };
         return e.code === ConnectorErrorCode.enum.CONFIG_MISSING;
-      }
+      },
     );
   });
 
@@ -64,7 +57,7 @@ describe('GlpiConnectorAdapter', () => {
       apiToken: 'test-token',
       timeoutMs: 5000,
     });
-    const result = await adapter.writeInternalNote('GLPI-101', 'Test note') as {
+    const result = (await adapter.writeInternalNote('GLPI-101', 'Test note')) as {
       success: boolean;
       error?: { code: string };
     };
@@ -76,7 +69,7 @@ describe('GlpiConnectorAdapter', () => {
 describe('MockGlpiConnectorAdapter', () => {
   it('returns deterministic ticket data', async () => {
     const adapter = new MockGlpiConnectorAdapter('mock-glpi-001' as never);
-    const ticket = await adapter.getTicket('tenant-a' as never, 'GLPI-101') as {
+    const ticket = (await adapter.getTicket('tenant-a' as never, 'GLPI-101')) as {
       externalTicketId: string;
       subject: string;
       status: string;
@@ -92,7 +85,7 @@ describe('MockGlpiConnectorAdapter', () => {
 
   it('writeInternalNote returns read-only error', async () => {
     const adapter = new MockGlpiConnectorAdapter('mock-glpi-001' as never);
-    const result = await adapter.writeInternalNote('GLPI-101', 'Test note') as {
+    const result = (await adapter.writeInternalNote('GLPI-101', 'Test note')) as {
       success: boolean;
       error?: { code: string };
     };
@@ -104,7 +97,7 @@ describe('MockGlpiConnectorAdapter', () => {
 describe('MockGlpiHttpClient', () => {
   it('getTicket returns fixture shaped like GLPI API', async () => {
     const client = new MockGlpiHttpClient();
-    const ticket = await client.getTicket('GLPI-101') as Record<string, unknown>;
+    const ticket = (await client.getTicket('GLPI-101')) as Record<string, unknown>;
     assert.strictEqual(ticket.id, 'GLPI-101');
     assert.strictEqual(ticket.subject, 'Network outage in building B');
     assert.strictEqual(ticket.status, 'new');
@@ -113,7 +106,7 @@ describe('MockGlpiHttpClient', () => {
 
   it('getUser returns fixture shaped like GLPI API', async () => {
     const client = new MockGlpiHttpClient();
-    const user = await client.getUser('GLPI-USER-5') as Record<string, unknown>;
+    const user = (await client.getUser('GLPI-USER-5')) as Record<string, unknown>;
     assert.strictEqual(user.id, 'GLPI-USER-5');
     assert.strictEqual(user.name, 'Acme BVBA');
     assert.strictEqual(user.email, 'support@acme.example');
@@ -121,7 +114,7 @@ describe('MockGlpiHttpClient', () => {
 
   it('searchTicket returns fixture list', async () => {
     const client = new MockGlpiHttpClient();
-    const results = await client.searchTicket('network') as Array<Record<string, unknown>>;
+    const results = (await client.searchTicket('network')) as Array<Record<string, unknown>>;
     assert.strictEqual(results.length, 1);
     assert.strictEqual(results[0].id, 'GLPI-101');
   });
@@ -143,7 +136,7 @@ describe('GlpiConfig validation', () => {
       GlpiConfig.parse({
         baseUrl: 'not-a-url',
         apiToken: 'token',
-      })
+      }),
     );
   });
 

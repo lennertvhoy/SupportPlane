@@ -72,7 +72,11 @@ export class ToolResultNoteDraftService {
     return this.store.listToolResultNoteDrafts(tenantId);
   }
 
-  private formatResultBody(invocation: { toolKey: string; normalizedResult: Record<string, unknown>; completedAt?: string }): string {
+  private formatResultBody(invocation: {
+    toolKey: string;
+    normalizedResult: Record<string, unknown>;
+    completedAt?: string;
+  }): string {
     return [
       `## Tool Result: ${invocation.toolKey}`,
       '',

@@ -34,7 +34,7 @@ describe('telephony-registry', () => {
 
     assert.throws(
       () => registerTelephonyAdapter(mockFactory),
-      /Telephony adapter 'mock-telephony' is already registered/
+      /Telephony adapter 'mock-telephony' is already registered/,
     );
   });
 

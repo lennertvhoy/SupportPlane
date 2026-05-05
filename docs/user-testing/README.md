@@ -12,28 +12,28 @@ SupportPlane is a **governed AI support cockpit** for IT teams and MSPs. It brin
 
 ## What This Demo IS
 
-| Feature | What you'll see |
-|---------|-----------------|
+| Feature                 | What you'll see                                                                                                                                                |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Real Zammad sandbox** | A live Zammad instance running in the local Kubernetes cluster. SupportPlane reads real tickets from it (ticket #2, "VPN connection issue for remote office"). |
-| **Real GLPI sandbox** | A live GLPI (IT asset management) instance. SupportPlane reads real tickets from it (ticket #1, "VPN connection issue"). |
-| **Honest labels** | Every connector shows its real status: configured/real, fixture, or unconfigured. Nothing pretends to be real when it isn't. |
-| **Policy controls** | Visible delivery policy, AI policy, and retention policy with kill switches, approval gates, and real-network lockdown. |
-| **Audit trail** | Every ticket load, session creation, and policy decision is recorded and viewable in the Audit Explorer. |
-| **Admin dashboard** | Governance panels for policies, users, roles, model usage, audit, GDPR, and connectors. |
+| **Real GLPI sandbox**   | A live GLPI (IT asset management) instance. SupportPlane reads real tickets from it (ticket #1, "VPN connection issue").                                       |
+| **Honest labels**       | Every connector shows its real status: configured/real, fixture, or unconfigured. Nothing pretends to be real when it isn't.                                   |
+| **Policy controls**     | Visible delivery policy, AI policy, and retention policy with kill switches, approval gates, and real-network lockdown.                                        |
+| **Audit trail**         | Every ticket load, session creation, and policy decision is recorded and viewable in the Audit Explorer.                                                       |
+| **Admin dashboard**     | Governance panels for policies, users, roles, model usage, audit, GDPR, and connectors.                                                                        |
 
 ---
 
 ## What This Demo Is NOT
 
-| Not in scope | Why |
-|-------------|-----|
-| **Not production** | All data is sandbox/dev. No real customer data. No production infrastructure. |
-| **No cloud AI** | AI uses local Ollama only (gemma4:e4b). No OpenAI, Azure, or Anthropic calls are made. |
-| **No internet writeback** | Writeback is locked to the local sandbox. No external systems are written to. |
-| **No real email** | Notifications go to local Mailpit. No internet email is sent. |
-| **No compliance certification** | No SOC2, ISO 27001, or GDPR compliance is claimed. |
-| **No real telephony** | Call Console is mock/simulated only. No phone calls. |
-| **No production secrets** | All credentials are sandbox dev defaults. Secrets are lost on pod restart. |
+| Not in scope                    | Why                                                                                    |
+| ------------------------------- | -------------------------------------------------------------------------------------- |
+| **Not production**              | All data is sandbox/dev. No real customer data. No production infrastructure.          |
+| **No cloud AI**                 | AI uses local Ollama only (gemma4:e4b). No OpenAI, Azure, or Anthropic calls are made. |
+| **No internet writeback**       | Writeback is locked to the local sandbox. No external systems are written to.          |
+| **No real email**               | Notifications go to local Mailpit. No internet email is sent.                          |
+| **No compliance certification** | No SOC2, ISO 27001, or GDPR compliance is claimed.                                     |
+| **No real telephony**           | Call Console is mock/simulated only. No phone calls.                                   |
+| **No production secrets**       | All credentials are sandbox dev defaults. Secrets are lost on pod restart.             |
 
 ---
 
@@ -43,11 +43,11 @@ SupportPlane is a **governed AI support cockpit** for IT teams and MSPs. It brin
 2. Open your browser to: **http://localhost:3300**
 3. Log in with one of these accounts:
 
-| Role | Email | Password | Tenant |
-|------|-------|----------|--------|
-| **Admin** | `admin@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| Role         | Email                         | Password            | Tenant       |
+| ------------ | ----------------------------- | ------------------- | ------------ |
+| **Admin**    | `admin@supportplane.local`    | `supportplane-demo` | `dev-tenant` |
 | **Operator** | `operator@supportplane.local` | `supportplane-demo` | `dev-tenant` |
-| **Viewer** | `viewer@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| **Viewer**   | `viewer@supportplane.local`   | `supportplane-demo` | `dev-tenant` |
 
 > Start with the **Admin** account for the full experience. Switch to Operator or Viewer later to see role-based access differences.
 
@@ -58,30 +58,34 @@ SupportPlane is a **governed AI support cockpit** for IT teams and MSPs. It brin
 ## What You'll Test — Three Flows
 
 ### Flow A: Zammad Sandbox Ticket (~5 min)
+
 Load a real Zammad ticket through SupportPlane. Verify the connector is labeled as "real" transport and "sandbox" mode. See the ticket context, customer name, and provenance.
 
 ### Flow B: GLPI Sandbox Ticket (~5 min)
+
 Load a real GLPI ticket through SupportPlane. Confirm the second connector system also reports honestly.
 
 ### Flow C: Governance, Policy & Audit (~5–8 min)
+
 Explore the Connector Status panel, Policy Editor, and Audit Explorer. See which connectors are real vs fixture. Verify that safety gates (kill switch, real-network lockdown) are enforced.
 
 ### Flow D: What Feels Wrong? (~5 min)
+
 The most valuable part. Tell us what confused you, what felt fake, what labels were unclear, and what you'd need before trusting this in a real workflow.
 
 ---
 
 ## Known Limitations (Honest List)
 
-| System | Status | What this means |
-|--------|--------|-----------------|
-| **Zammad** | Real sandbox | Reads real sandbox data. Writeback is sandbox-only. |
-| **GLPI** | Real sandbox | Reads real sandbox data. Read-only adapter. |
-| **osTicket** | Fixture | Returns deterministic demo data. No real osTicket. Blocked by upstream. |
-| **MeshCentral** | Unconfigured | No real instance. Shows honest "unconfigured" status. |
-| **Fortinet** | Unconfigured | No real instance. Shows honest "unconfigured" status. |
-| **AI / Ollama** | Local only | Uses local Ollama gemma4:e4b. May fall back if Ollama is down. |
-| **OpenBao secrets** | In-memory | Credentials lost on pod restart. Re-seed script exists. |
+| System              | Status       | What this means                                                         |
+| ------------------- | ------------ | ----------------------------------------------------------------------- |
+| **Zammad**          | Real sandbox | Reads real sandbox data. Writeback is sandbox-only.                     |
+| **GLPI**            | Real sandbox | Reads real sandbox data. Read-only adapter.                             |
+| **osTicket**        | Fixture      | Returns deterministic demo data. No real osTicket. Blocked by upstream. |
+| **MeshCentral**     | Unconfigured | No real instance. Shows honest "unconfigured" status.                   |
+| **Fortinet**        | Unconfigured | No real instance. Shows honest "unconfigured" status.                   |
+| **AI / Ollama**     | Local only   | Uses local Ollama gemma4:e4b. May fall back if Ollama is down.          |
+| **OpenBao secrets** | In-memory    | Credentials lost on pod restart. Re-seed script exists.                 |
 
 Full list: see `docs/KNOWN_DEMO_LIMITATIONS.md`.
 

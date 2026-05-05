@@ -20,7 +20,10 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
-function redactedDiff<T extends Record<string, unknown>>(before: T, after: T): Record<string, unknown> {
+function redactedDiff<T extends Record<string, unknown>>(
+  before: T,
+  after: T,
+): Record<string, unknown> {
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
   const diff: Record<string, unknown> = {};
   for (const key of keys) {
@@ -35,7 +38,7 @@ function redactedDiff<T extends Record<string, unknown>>(before: T, after: T): R
 export class AdminPolicyService {
   constructor(
     @Inject(InMemoryStore) private readonly store: Store,
-    @Inject(DeliveryPolicyService) private readonly deliveryPolicyService: DeliveryPolicyService
+    @Inject(DeliveryPolicyService) private readonly deliveryPolicyService: DeliveryPolicyService,
   ) {}
 
   // ─── List all policies ────────────────────────────────────────────────────
@@ -76,8 +79,15 @@ export class AdminPolicyService {
   }
 
   // ─── Connector policy ─────────────────────────────────────────────────────
-  async getConnectorPolicy(identity: CurrentIdentity, installationId: string): Promise<{ policy: ConnectorPolicyShape }> {
-    let policy = await this.store.getTenantPolicy(identity.tenantId, 'connector', installationId) as ConnectorPolicyShape | undefined;
+  async getConnectorPolicy(
+    identity: CurrentIdentity,
+    installationId: string,
+  ): Promise<{ policy: ConnectorPolicyShape }> {
+    let policy = (await this.store.getTenantPolicy(
+      identity.tenantId,
+      'connector',
+      installationId,
+    )) as ConnectorPolicyShape | undefined;
     if (!policy) {
       policy = this.createDefaultConnectorPolicy(identity.tenantId, installationId);
       await this.store.saveTenantPolicy(policy, 'connector', installationId);
@@ -85,13 +95,21 @@ export class AdminPolicyService {
     return { policy };
   }
 
-  async updateConnectorPolicy(identity: CurrentIdentity, installationId: string, rawBody: unknown): Promise<{ policy: ConnectorPolicyShape }> {
+  async updateConnectorPolicy(
+    identity: CurrentIdentity,
+    installationId: string,
+    rawBody: unknown,
+  ): Promise<{ policy: ConnectorPolicyShape }> {
     const body = ConnectorPolicyUpdateRequest.parse(rawBody);
     const existing = await this.getConnectorPolicy(identity, installationId);
 
     // Safety: reject real network/writeback enablement
     if (body.safetyFlags) {
-      if (body.safetyFlags.realNetworkAllowed === true || body.safetyFlags.writebackEnabled === true || body.safetyFlags.externalWriteAllowed === true) {
+      if (
+        body.safetyFlags.realNetworkAllowed === true ||
+        body.safetyFlags.writebackEnabled === true ||
+        body.safetyFlags.externalWriteAllowed === true
+      ) {
         throw new BadRequestException('Real writeback not implemented.');
       }
     }
@@ -104,15 +122,23 @@ export class AdminPolicyService {
       allowedActionTypes: body.allowedActionTypes ?? existing.policy.allowedActionTypes,
       approvalRequired: body.approvalRequired ?? existing.policy.approvalRequired,
       minimumApproverRole: body.minimumApproverRole ?? existing.policy.minimumApproverRole,
-      requireEvidenceBundleBeforeDelivery: body.requireEvidenceBundleBeforeDelivery ?? existing.policy.requireEvidenceBundleBeforeDelivery,
-      requireConnectorValidationBeforeDelivery: body.requireConnectorValidationBeforeDelivery ?? existing.policy.requireConnectorValidationBeforeDelivery,
+      requireEvidenceBundleBeforeDelivery:
+        body.requireEvidenceBundleBeforeDelivery ??
+        existing.policy.requireEvidenceBundleBeforeDelivery,
+      requireConnectorValidationBeforeDelivery:
+        body.requireConnectorValidationBeforeDelivery ??
+        existing.policy.requireConnectorValidationBeforeDelivery,
       maxRetries: body.maxRetries ?? existing.policy.maxRetries,
       backoffSeconds: body.backoffSeconds ?? existing.policy.backoffSeconds,
       safetyFlags: body.safetyFlags
         ? {
-            realNetworkAllowed: body.safetyFlags.realNetworkAllowed ?? existing.policy.safetyFlags.realNetworkAllowed,
-            writebackEnabled: body.safetyFlags.writebackEnabled ?? existing.policy.safetyFlags.writebackEnabled,
-            externalWriteAllowed: body.safetyFlags.externalWriteAllowed ?? existing.policy.safetyFlags.externalWriteAllowed,
+            realNetworkAllowed:
+              body.safetyFlags.realNetworkAllowed ?? existing.policy.safetyFlags.realNetworkAllowed,
+            writebackEnabled:
+              body.safetyFlags.writebackEnabled ?? existing.policy.safetyFlags.writebackEnabled,
+            externalWriteAllowed:
+              body.safetyFlags.externalWriteAllowed ??
+              existing.policy.safetyFlags.externalWriteAllowed,
             mockOnly: body.safetyFlags.mockOnly ?? existing.policy.safetyFlags.mockOnly,
             sandboxOnly: body.safetyFlags.sandboxOnly ?? existing.policy.safetyFlags.sandboxOnly,
           }
@@ -123,18 +149,30 @@ export class AdminPolicyService {
     };
 
     await this.store.saveTenantPolicy(updated, 'connector', installationId);
-    await this.audit(identity, 'connector_policy_updated', undefined, 'connector_policy', updated.id, {
-      policyVersion: updated.version,
-      connectorInstallationId: installationId,
-      diff: redactedDiff(before as unknown as Record<string, unknown>, updated as unknown as Record<string, unknown>),
-    });
+    await this.audit(
+      identity,
+      'connector_policy_updated',
+      undefined,
+      'connector_policy',
+      updated.id,
+      {
+        policyVersion: updated.version,
+        connectorInstallationId: installationId,
+        diff: redactedDiff(
+          before as unknown as Record<string, unknown>,
+          updated as unknown as Record<string, unknown>,
+        ),
+      },
+    );
 
     return { policy: updated };
   }
 
   // ─── AI policy ────────────────────────────────────────────────────────────
   async getAiPolicy(identity: CurrentIdentity): Promise<{ policy: AiPolicyShape }> {
-    let policy = await this.store.getTenantPolicy(identity.tenantId, 'ai', null) as AiPolicyShape | undefined;
+    let policy = (await this.store.getTenantPolicy(identity.tenantId, 'ai', null)) as
+      | AiPolicyShape
+      | undefined;
     if (!policy) {
       policy = this.createDefaultAiPolicy(identity.tenantId);
       await this.store.saveTenantPolicy(policy, 'ai', null);
@@ -142,7 +180,10 @@ export class AdminPolicyService {
     return { policy };
   }
 
-  async updateAiPolicy(identity: CurrentIdentity, rawBody: unknown): Promise<{ policy: AiPolicyShape }> {
+  async updateAiPolicy(
+    identity: CurrentIdentity,
+    rawBody: unknown,
+  ): Promise<{ policy: AiPolicyShape }> {
     const body = AiPolicyUpdateRequest.parse(rawBody);
     const existing = await this.getAiPolicy(identity);
 
@@ -171,15 +212,19 @@ export class AdminPolicyService {
       requireHumanReview: body.requireHumanReview ?? existing.policy.requireHumanReview,
       allowAutonomousSend: body.allowAutonomousSend ?? existing.policy.allowAutonomousSend,
       allowDraftGeneration: body.allowDraftGeneration ?? existing.policy.allowDraftGeneration,
-      allowGreetingSuggestions: body.allowGreetingSuggestions ?? existing.policy.allowGreetingSuggestions,
+      allowGreetingSuggestions:
+        body.allowGreetingSuggestions ?? existing.policy.allowGreetingSuggestions,
       allowScreenContext: body.allowScreenContext ?? existing.policy.allowScreenContext,
       redactionRequired: body.redactionRequired ?? existing.policy.redactionRequired,
       safetyFlags: body.safetyFlags
         ? {
-            cloudCallsAllowed: body.safetyFlags.cloudCallsAllowed ?? existing.policy.safetyFlags.cloudCallsAllowed,
-            localProvidersOnly: body.safetyFlags.localProvidersOnly ?? existing.policy.safetyFlags.localProvidersOnly,
+            cloudCallsAllowed:
+              body.safetyFlags.cloudCallsAllowed ?? existing.policy.safetyFlags.cloudCallsAllowed,
+            localProvidersOnly:
+              body.safetyFlags.localProvidersOnly ?? existing.policy.safetyFlags.localProvidersOnly,
             mockOnly: body.safetyFlags.mockOnly ?? existing.policy.safetyFlags.mockOnly,
-            reviewRequired: body.safetyFlags.reviewRequired ?? existing.policy.safetyFlags.reviewRequired,
+            reviewRequired:
+              body.safetyFlags.reviewRequired ?? existing.policy.safetyFlags.reviewRequired,
           }
         : existing.policy.safetyFlags,
       version: existing.policy.version + 1,
@@ -190,7 +235,10 @@ export class AdminPolicyService {
     await this.store.saveTenantPolicy(updated, 'ai', null);
     await this.audit(identity, 'ai_policy_updated', undefined, 'ai_policy', updated.id, {
       policyVersion: updated.version,
-      diff: redactedDiff(before as unknown as Record<string, unknown>, updated as unknown as Record<string, unknown>),
+      diff: redactedDiff(
+        before as unknown as Record<string, unknown>,
+        updated as unknown as Record<string, unknown>,
+      ),
     });
 
     return { policy: updated };
@@ -198,7 +246,9 @@ export class AdminPolicyService {
 
   // ─── Retention policy ─────────────────────────────────────────────────────
   async getRetentionPolicy(identity: CurrentIdentity): Promise<{ policy: RetentionPolicyShape }> {
-    let policy = await this.store.getTenantPolicy(identity.tenantId, 'retention', null) as RetentionPolicyShape | undefined;
+    let policy = (await this.store.getTenantPolicy(identity.tenantId, 'retention', null)) as
+      | RetentionPolicyShape
+      | undefined;
     if (!policy) {
       policy = this.createDefaultRetentionPolicy(identity.tenantId);
       await this.store.saveTenantPolicy(policy, 'retention', null);
@@ -206,13 +256,17 @@ export class AdminPolicyService {
     return { policy };
   }
 
-  async updateRetentionPolicy(identity: CurrentIdentity, rawBody: unknown): Promise<{ policy: RetentionPolicyShape }> {
+  async updateRetentionPolicy(
+    identity: CurrentIdentity,
+    rawBody: unknown,
+  ): Promise<{ policy: RetentionPolicyShape }> {
     const body = RetentionPolicyUpdateRequest.parse(rawBody);
     const existing = await this.getRetentionPolicy(identity);
 
     // Safety: auto-purge requires approval
     if (body.autoPurgeEnabled === true && body.purgeRequiresApproval !== false) {
-      const willRequireApproval = body.purgeRequiresApproval ?? existing.policy.purgeRequiresApproval;
+      const willRequireApproval =
+        body.purgeRequiresApproval ?? existing.policy.purgeRequiresApproval;
       if (!willRequireApproval) {
         throw new BadRequestException('Auto-purge without approval is not permitted.');
       }
@@ -224,27 +278,42 @@ export class AdminPolicyService {
       enabled: body.enabled ?? existing.policy.enabled,
       sessionRetentionDays: body.sessionRetentionDays ?? existing.policy.sessionRetentionDays,
       auditLogRetentionDays: body.auditLogRetentionDays ?? existing.policy.auditLogRetentionDays,
-      callRecordingRetentionDays: body.callRecordingRetentionDays ?? existing.policy.callRecordingRetentionDays,
-      screenObservationRetentionDays: body.screenObservationRetentionDays ?? existing.policy.screenObservationRetentionDays,
-      evidenceBundleRetentionDays: body.evidenceBundleRetentionDays ?? existing.policy.evidenceBundleRetentionDays,
-      actionOutboxRetentionDays: body.actionOutboxRetentionDays ?? existing.policy.actionOutboxRetentionDays,
+      callRecordingRetentionDays:
+        body.callRecordingRetentionDays ?? existing.policy.callRecordingRetentionDays,
+      screenObservationRetentionDays:
+        body.screenObservationRetentionDays ?? existing.policy.screenObservationRetentionDays,
+      evidenceBundleRetentionDays:
+        body.evidenceBundleRetentionDays ?? existing.policy.evidenceBundleRetentionDays,
+      actionOutboxRetentionDays:
+        body.actionOutboxRetentionDays ?? existing.policy.actionOutboxRetentionDays,
       promptRetentionMode: body.promptRetentionMode ?? existing.policy.promptRetentionMode,
       outputRetentionMode: body.outputRetentionMode ?? existing.policy.outputRetentionMode,
       promptRetentionDays: body.promptRetentionDays ?? existing.policy.promptRetentionDays,
       outputRetentionDays: body.outputRetentionDays ?? existing.policy.outputRetentionDays,
       autoPurgeEnabled: body.autoPurgeEnabled ?? existing.policy.autoPurgeEnabled,
       purgeRequiresApproval: body.purgeRequiresApproval ?? existing.policy.purgeRequiresApproval,
-      minimumPurgeApproverRole: body.minimumPurgeApproverRole ?? existing.policy.minimumPurgeApproverRole,
+      minimumPurgeApproverRole:
+        body.minimumPurgeApproverRole ?? existing.policy.minimumPurgeApproverRole,
       version: existing.policy.version + 1,
       updatedBy: identity.userId,
       updatedAt: nowIso(),
     };
 
     await this.store.saveTenantPolicy(updated, 'retention', null);
-    await this.audit(identity, 'retention_policy_updated', undefined, 'retention_policy', updated.id, {
-      policyVersion: updated.version,
-      diff: redactedDiff(before as unknown as Record<string, unknown>, updated as unknown as Record<string, unknown>),
-    });
+    await this.audit(
+      identity,
+      'retention_policy_updated',
+      undefined,
+      'retention_policy',
+      updated.id,
+      {
+        policyVersion: updated.version,
+        diff: redactedDiff(
+          before as unknown as Record<string, unknown>,
+          updated as unknown as Record<string, unknown>,
+        ),
+      },
+    );
 
     return { policy: updated };
   }
@@ -291,7 +360,10 @@ export class AdminPolicyService {
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
-  private createDefaultConnectorPolicy(tenantId: string, connectorInstallationId: string): ConnectorPolicyShape {
+  private createDefaultConnectorPolicy(
+    tenantId: string,
+    connectorInstallationId: string,
+  ): ConnectorPolicyShape {
     return {
       id: randomUUID(),
       tenantId,
@@ -379,7 +451,9 @@ export class AdminPolicyService {
     };
   }
 
-  private extractSafetyFlags(policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape): Record<string, boolean> {
+  private extractSafetyFlags(
+    policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape,
+  ): Record<string, boolean> {
     if ('safetyFlags' in policy) {
       const flags: Record<string, boolean> = {};
       for (const [key, val] of Object.entries(policy.safetyFlags)) {
@@ -396,7 +470,7 @@ export class AdminPolicyService {
     sessionId: string | undefined,
     resourceType: string,
     resourceId: string,
-    metadata: Record<string, unknown>
+    metadata: Record<string, unknown>,
   ) {
     const event: AuditEvent = {
       id: randomUUID() as AuditEvent['id'],

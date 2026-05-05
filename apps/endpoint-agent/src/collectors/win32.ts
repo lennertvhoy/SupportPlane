@@ -1,5 +1,9 @@
 import fs from 'fs/promises';
-import { executeFixedTemplate, WINDOWS_FLUSH_DNS_TEMPLATE, type CommandRunner } from './remediation.js';
+import {
+  executeFixedTemplate,
+  WINDOWS_FLUSH_DNS_TEMPLATE,
+  type CommandRunner,
+} from './remediation.js';
 import { runWindowsReadonlyCommand } from './windows-command-runner.js';
 
 export type WindowsServiceSummary = {

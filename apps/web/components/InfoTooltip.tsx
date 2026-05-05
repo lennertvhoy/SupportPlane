@@ -58,7 +58,14 @@ export function InlineHelp({ children, title }: { children: React.ReactNode; tit
 export function BoundaryLabel({
   type,
 }: {
-  type: 'real-sandbox' | 'mock-fixture' | 'unconfigured' | 'read-only' | 'approval-gated' | 'policy-blocked' | 'audit-evidence';
+  type:
+    | 'real-sandbox'
+    | 'mock-fixture'
+    | 'unconfigured'
+    | 'read-only'
+    | 'approval-gated'
+    | 'policy-blocked'
+    | 'audit-evidence';
 }) {
   const config: Record<string, { text: string; className: string; description: string }> = {
     'real-sandbox': {
@@ -71,7 +78,7 @@ export function BoundaryLabel({
       className: 'border-amber-700/40 bg-amber-900/30 text-amber-300',
       description: 'Deterministic local demo data. Not a real connector.',
     },
-    'unconfigured': {
+    unconfigured: {
       text: 'Unconfigured',
       className: 'border-slate-600 bg-slate-800/50 text-slate-400',
       description: 'No real instance connected. Scaffolding only.',
@@ -102,7 +109,9 @@ export function BoundaryLabel({
   if (!cfg) return null;
 
   return (
-    <span className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium ${cfg.className}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[10px] font-medium ${cfg.className}`}
+    >
       {cfg.text}
       <InfoTooltip size={10}>
         <div className="text-[11px] leading-relaxed">{cfg.description}</div>

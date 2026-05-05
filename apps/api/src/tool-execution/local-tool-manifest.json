@@ -20,7 +20,15 @@
       "commandTemplateId": "endpoint.collect_inventory.v1",
       "supportedPlatforms": ["linux", "win32", "darwin"],
       "inputSchema": {},
-      "outputSchema": { "type": "object", "properties": { "hostname": { "type": "string" }, "platform": { "type": "string" }, "cpu": { "type": "object" }, "memory": { "type": "object" } } },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "hostname": { "type": "string" },
+          "platform": { "type": "string" },
+          "cpu": { "type": "object" },
+          "memory": { "type": "object" }
+        }
+      },
       "enabled": true
     },
     {
@@ -115,7 +123,10 @@
       "commandTemplateId": "endpoint.ping_self.v1",
       "supportedPlatforms": ["linux", "win32", "darwin"],
       "inputSchema": {},
-      "outputSchema": { "type": "object", "properties": { "ok": { "type": "boolean" }, "hostname": { "type": "string" } } },
+      "outputSchema": {
+        "type": "object",
+        "properties": { "ok": { "type": "boolean" }, "hostname": { "type": "string" } }
+      },
       "enabled": true
     },
     {

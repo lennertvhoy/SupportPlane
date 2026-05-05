@@ -1,11 +1,23 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { collectInventory, collectNetwork, pingSelf, runFixedDiagnostic } from '../src/collectors/index.js';
+import {
+  collectInventory,
+  collectNetwork,
+  pingSelf,
+  runFixedDiagnostic,
+} from '../src/collectors/index.js';
 import * as linux from '../src/collectors/linux.js';
 import * as win32 from '../src/collectors/win32.js';
 import * as darwin from '../src/collectors/darwin.js';
-import { getWindowsReadonlyCommandTemplate, runWindowsReadonlyCommand, WINDOWS_READONLY_COMMANDS } from '../src/collectors/windows-command-runner.js';
-import { WINDOWS_FLUSH_DNS_TEMPLATE, LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE } from '../src/collectors/remediation.js';
+import {
+  getWindowsReadonlyCommandTemplate,
+  runWindowsReadonlyCommand,
+  WINDOWS_READONLY_COMMANDS,
+} from '../src/collectors/windows-command-runner.js';
+import {
+  WINDOWS_FLUSH_DNS_TEMPLATE,
+  LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE,
+} from '../src/collectors/remediation.js';
 import { getAgentPlatform, normalizePlatform, platformDisplayLabel } from '../src/platform.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -28,7 +40,10 @@ describe('endpoint-agent read-only collectors', () => {
     assert.strictEqual((await runFixedDiagnostic('ping_self')).kind, 'status');
     assert.strictEqual((await runFixedDiagnostic('collect_software')).kind, 'software');
     assert.strictEqual((await pingSelf()).readOnly, true);
-    await assert.rejects(() => runFixedDiagnostic('rm -rf /'), /Unsupported fixed diagnostic command/);
+    await assert.rejects(
+      () => runFixedDiagnostic('rm -rf /'),
+      /Unsupported fixed diagnostic command/,
+    );
   });
 });
 
@@ -103,7 +118,11 @@ describe('platform-specific collectors', () => {
   it('linux and darwin software collectors return honest unsupported responses', async () => {
     for (const [name, mod] of Object.entries({ linux, darwin })) {
       const software = await mod.collectSoftware();
-      assert.strictEqual(software.unsupported, true, `${name} collectSoftware should be unsupported`);
+      assert.strictEqual(
+        software.unsupported,
+        true,
+        `${name} collectSoftware should be unsupported`,
+      );
       assert.strictEqual(software.readOnly, true);
     }
   });
@@ -123,7 +142,11 @@ describe('platform-specific collectors', () => {
 
     assert.deepStrictEqual(calls, [{ file: 'ipconfig', args: ['/flushdns'] }]);
     assert.strictEqual(flush.commandTemplateId, 'windows.ipconfig.flushdns.v1');
-    assert.deepStrictEqual(flush.commandTemplate, { executable: 'ipconfig', args: ['/flushdns'], userInputUsed: false });
+    assert.deepStrictEqual(flush.commandTemplate, {
+      executable: 'ipconfig',
+      args: ['/flushdns'],
+      userInputUsed: false,
+    });
     assert.strictEqual(flush.exitCode, 0);
     assert.strictEqual(flush.resultStatus, 'succeeded');
     assert.ok(String(flush.stdoutSummary).includes('Successfully flushed'));
@@ -138,7 +161,10 @@ describe('platform-specific collectors', () => {
       const flush = await linux.flushDnsCache();
       assert.strictEqual(flush.unsupported, true);
       assert.strictEqual(flush.resultStatus, 'unsupported');
-      assert.strictEqual(flush.commandTemplateId, 'linux.systemd-resolved.resolvectl-flush-caches.v1');
+      assert.strictEqual(
+        flush.commandTemplateId,
+        'linux.systemd-resolved.resolvectl-flush-caches.v1',
+      );
     } finally {
       process.env['PATH'] = originalPath;
     }
@@ -190,8 +216,18 @@ DISPLAY_NAME: Print Spooler
 `);
 
     assert.deepStrictEqual(services, [
-      { serviceName: 'EventLog', displayName: 'Windows Event Log', type: '30  WIN32', state: 'RUNNING' },
-      { serviceName: 'Spooler', displayName: 'Print Spooler', type: '110  WIN32_OWN_PROCESS', state: 'STOPPED' },
+      {
+        serviceName: 'EventLog',
+        displayName: 'Windows Event Log',
+        type: '30  WIN32',
+        state: 'RUNNING',
+      },
+      {
+        serviceName: 'Spooler',
+        displayName: 'Print Spooler',
+        type: '110  WIN32_OWN_PROCESS',
+        state: 'STOPPED',
+      },
     ]);
   });
 
@@ -217,7 +253,8 @@ HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Nod
       version: '0.1.0',
       publisher: 'SupportPlane',
       installDate: '20260501',
-      uninstallKey: 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SupportPlane',
+      uninstallKey:
+        'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SupportPlane',
     });
     assert.strictEqual(software[1]?.name, 'Node.js');
   });
@@ -226,7 +263,10 @@ HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Nod
     for (const [name, template] of Object.entries(WINDOWS_READONLY_COMMANDS)) {
       assert.ok(['sc.exe', 'reg.exe'].includes(template.executable), `${name} executable is fixed`);
       assert.ok(Object.isFrozen(template.args) === false || Array.isArray(template.args));
-      assert.ok(!template.args.some((arg) => /[;&|`$<>]/.test(arg)), `${name} args contain no shell metacharacters`);
+      assert.ok(
+        !template.args.some((arg) => /[;&|`$<>]/.test(arg)),
+        `${name} args contain no shell metacharacters`,
+      );
       assert.strictEqual((template as Record<string, unknown>).shell, undefined);
     }
 
@@ -296,7 +336,8 @@ HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\App
       version: '2.0.0',
       publisher: undefined,
       installDate: undefined,
-      uninstallKey: 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\App1',
+      uninstallKey:
+        'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\App1',
     });
   });
 });
@@ -307,7 +348,11 @@ describe('platform-aware dispatch', () => {
     assert.strictEqual(result.kind, 'software');
     assert.strictEqual(result.payload.readOnly, true);
     if (process.platform !== 'win32') {
-      assert.strictEqual((result.payload as Record<string, unknown>).unsupported, true, 'software diagnostic only supported on win32');
+      assert.strictEqual(
+        (result.payload as Record<string, unknown>).unsupported,
+        true,
+        'software diagnostic only supported on win32',
+      );
     }
   });
 
@@ -334,8 +379,14 @@ describe('platform-aware dispatch', () => {
   });
 
   it('runFixedDiagnostic rejects unknown command kinds', async () => {
-    await assert.rejects(() => runFixedDiagnostic('wmic process list'), /Unsupported fixed diagnostic command/);
-    await assert.rejects(() => runFixedDiagnostic('cmd /c dir'), /Unsupported fixed diagnostic command/);
+    await assert.rejects(
+      () => runFixedDiagnostic('wmic process list'),
+      /Unsupported fixed diagnostic command/,
+    );
+    await assert.rejects(
+      () => runFixedDiagnostic('cmd /c dir'),
+      /Unsupported fixed diagnostic command/,
+    );
   });
 });
 
@@ -373,9 +424,15 @@ describe('Windows flush DNS enterprise hardening', () => {
 
     assert.strictEqual(calls.length, 1);
     const calledArgs = calls[0]!.args;
-    assert.ok(!calledArgs.some((a: string) => a.includes('&')), 'ampersand would be shell injection');
+    assert.ok(
+      !calledArgs.some((a: string) => a.includes('&')),
+      'ampersand would be shell injection',
+    );
     assert.ok(!calledArgs.some((a: string) => a.includes('|')), 'pipe would be shell injection');
-    assert.ok(!calledArgs.some((a: string) => a.includes(';')), 'semicolon would be shell injection');
+    assert.ok(
+      !calledArgs.some((a: string) => a.includes(';')),
+      'semicolon would be shell injection',
+    );
     assert.deepStrictEqual(calledArgs, ['/flushdns']);
     assert.strictEqual(flush.commandTemplate.userInputUsed, false);
   });
@@ -388,7 +445,10 @@ describe('diagnostic.software win32-only enforcement', () => {
     assert.strictEqual(result.kind, 'software');
     const payload = result.payload as Record<string, unknown>;
     assert.strictEqual(payload.unsupported, true);
-    assert.ok(typeof payload.note === 'string', 'software unsupported must have honest explanation');
+    assert.ok(
+      typeof payload.note === 'string',
+      'software unsupported must have honest explanation',
+    );
   });
 
   it('win32.collectSoftware reports unsupported on non-Windows hosts with correct note', async () => {
@@ -429,12 +489,20 @@ describe('arbitrary shell/command hardening — no unsafe primitives in collecto
 
   it('all WINDOWS_READONLY_COMMANDS use only fixed sc.exe or reg.exe with no shell fields', () => {
     for (const [name, template] of Object.entries(WINDOWS_READONLY_COMMANDS)) {
-      assert.ok(['sc.exe', 'reg.exe'].includes(template.executable),
-        `${name} executable must be sc.exe or reg.exe, got ${template.executable}`);
-      assert.strictEqual((template as Record<string, unknown>).shell, undefined,
-        `${name} must not have shell field`);
-      assert.strictEqual((template as Record<string, unknown>).command, undefined,
-        `${name} must not have command field`);
+      assert.ok(
+        ['sc.exe', 'reg.exe'].includes(template.executable),
+        `${name} executable must be sc.exe or reg.exe, got ${template.executable}`,
+      );
+      assert.strictEqual(
+        (template as Record<string, unknown>).shell,
+        undefined,
+        `${name} must not have shell field`,
+      );
+      assert.strictEqual(
+        (template as Record<string, unknown>).command,
+        undefined,
+        `${name} must not have command field`,
+      );
     }
   });
 
@@ -444,8 +512,10 @@ describe('arbitrary shell/command hardening — no unsafe primitives in collecto
       for (const key of Object.keys(mod as Record<string, unknown>)) {
         const lower = key.toLowerCase();
         for (const sub of forbiddenSubstrings) {
-          assert.ok(!lower.includes(sub),
-            `${modName}.${key} must not export shell/command primitive`);
+          assert.ok(
+            !lower.includes(sub),
+            `${modName}.${key} must not export shell/command primitive`,
+          );
         }
       }
     }

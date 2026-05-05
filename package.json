@@ -17,7 +17,12 @@
     "test": "npm run test --workspaces --if-present",
     "validate": "node scripts/validate-contracts.js && npx prisma validate",
     "db:seed": "tsx prisma/seed.ts",
-    "health": "node scripts/health.js"
+    "health": "node scripts/health.js",
+    "ci": "npm run build && npm run format:check && npm run lint && npm run typecheck && npm run validate && npm test",
+    "ci:local": "npm run ci",
+    "security:baseline": "bash scripts/security-baseline.sh",
+    "check:runtime-identity": "bash scripts/check_runtime_identity.sh",
+    "check:evidence-hygiene": "bash scripts/check_evidence_hygiene.sh"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

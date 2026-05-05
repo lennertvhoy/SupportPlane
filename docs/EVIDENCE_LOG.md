@@ -2,6 +2,32 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-05-183: Session 161 — BL-153 Automated Quality Gate & CI/CD Hardening Foundation (ACCEPTED)
+
+- Evidence folder: `output/playwright/session-161-ci-quality-gate-foundation/`
+- Source/System: Local shell validation against repo HEAD `f872229`
+- Action: Created `.github/workflows/ci.yml` with quality, security-baseline, and docs-governance jobs. Added PostgreSQL service container for API DB-dependent tests. Added root scripts `ci`, `ci:local`, `security:baseline`, `check:runtime-identity`, `check:evidence-hygiene`. Created `scripts/check_runtime_identity.sh` and `scripts/check_evidence_hygiene.sh` (BL-158 partial). Created `scripts/security-baseline.sh` (BL-155 partial). Fixed `PROJECT_STATE.yaml` duplicate YAML keys (`evidence`, `updated_in_session_130`) that broke `format:check`. Ran `npm run format` to fix repo-wide formatting drift. Added `// SKIP REASON:` comments to `apps/api/test/ai-services.test.ts` skipped tests (BL-154 partial).
+- Proves:
+  - `npm run format:check` passes (0 errors after drift fix)
+  - `npm run lint` passes (0 errors)
+  - `npm run typecheck` passes (all 10 workspaces)
+  - `npm run build` passes (all workspaces including Next.js static generation)
+  - `npm run validate` passes (contract validation + Prisma schema valid)
+  - `npm test` passes: 401/404 pass, 0 fail, 3 skip (documented, require DATABASE_URL)
+  - `npm run ci` passes locally (build + format:check + lint + typecheck + validate + test)
+  - CI workflow YAML syntax validated with Python yaml parser
+  - `scripts/check_evidence_hygiene.sh` passes on session-161 folder (4 files, alphabetically last, no .html wrappers, no duplicates)
+  - `scripts/security-baseline.sh` captures npm audit findings (10 pre-existing vulns: 2 high, 8 moderate)
+  - `scripts/check_runtime_identity.sh` correctly reports unreachable API (exit 2) when API is not running
+- Limitations:
+  - Remote GitHub Actions execution not yet proven (no PR/push triggered)
+  - Branch protection rules not configured (documented as required)
+  - 3 AI chat tests remain skipped without DATABASE_URL (runnable in CI with service container)
+  - 10 pre-existing npm audit findings not fixed (deferred to BL-159)
+  - No browser E2E tests added (BL-157 remains planned)
+- Type: ci-infrastructure-and-local-validation
+- as_of: 2026-05-05T09:45:00+02:00
+
 ## EV-2026-05-04-182: BL-152 — Belgium/EU Assurance Audit Readiness Dossier Created
 
 - Evidence folder: `docs/compliance/` (8 markdown files)
@@ -1764,7 +1790,6 @@
 - Type: docs-render-verification
 - as_of: 2026-04-26T22:01:00+02:00
 
-
 ## EV-2026-04-27-033: BL-046 canonical closure — Call Console with Operator Companion panel
 
 - File: output/playwright/session-046-operator-companion-closure-canonical/01-call-console-operator-companion-panel.png
@@ -2060,7 +2085,6 @@
 - Type: docs-render-verification
 - as_of: 2026-04-27T14:29:00+02:00
 
-
 ## EV-2026-04-27-052: BL-050 PostgreSQL persistence restart survival
 
 - File: scripts/verify_postgres_persistence.sh
@@ -2154,7 +2178,6 @@
   - Tenant scoping, RBAC, forged-header ignore in local mode, mock delivery safety flags, audit/timeline updates, and no-secret evidence checks are directly verified.
 - Type: api-behavior-verification
 - as_of: 2026-04-28T00:05:00+02:00
-
 
 ## EV-2026-04-28-002: BL-092 Final Closure Audit — 17 Screenshot Set and Script Fix
 
@@ -2363,7 +2386,6 @@
 - EV-2026-04-28-012 through EV-2026-04-28-031 were originally recorded against `session-094-delivery-policy-controls-final-closure/` (24 screenshots, cap violation). The canonical proof is now `session-095-bl094-final-closure-max20/` (20 screenshots, 0 duplicates).
 - The old `session-094-delivery-policy-controls-final-closure/` folder was deleted per AGENTS.md screenshot lifecycle rules.
 
-
 ## Note: Superseded BL-095 Evidence
 
 - EV-2026-04-28-036 through EV-2026-04-28-043 (8 screenshots in `session-095-connector-installation-settings/`) are superseded by EV-2026-04-28-044 through EV-2026-04-28-057.
@@ -2400,7 +2422,6 @@
 - Type: browser-runtime-verification
 - as_of: 2026-04-28T16:00:00+02:00
 
-
 ## EV-2026-04-28-058 through EV-2026-04-28-063 — BL-097 Credential Reference Foundation (Canonical Closure)
 
 - Folder: `output/playwright/session-097-credential-reference-foundation-final-closure/`
@@ -2421,7 +2442,6 @@
   - Audit events track credential reference lifecycle (created, updated, linked, unlinked).
 - Type: browser-runtime-verification
 - as_of: 2026-04-28T17:30:00+02:00
-
 
 ## EV-2026-04-28-064 through EV-2026-04-28-078: BL-098 connector runtime configuration and readiness browser proof
 
@@ -2453,7 +2473,6 @@
 - Type: browser-runtime-verification
 - as_of: 2026-04-28T18:35:00+02:00
 
-
 ## EV-2026-04-28-079 through EV-2026-04-28-093: BL-098 Closure Repair Evidence
 
 - Files: `output/playwright/session-099-bl098-closure-repair-final/01-admin-runtime-identity.png` through `15-final-mock-no-secret-proof.png`
@@ -2483,7 +2502,6 @@
   - No empty panels in audit or evidence screenshots
 - Type: browser-runtime-verification
 - as_of: 2026-04-28T19:30:00+02:00
-
 
 ## EV-2026-04-28-094 through EV-2026-04-28-108: BL-098 Evidence Repair (Second Pass)
 
@@ -2528,31 +2546,31 @@
   artifact_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
   artifact_count: 13
   screenshots:
-    - 01-admin-runtime-identity.png — admin@supportplane.local with tenant pill, role badge
-    - 02-connector-panel-config-readiness-controls.png — Config Schema, Validate Config, Runtime Readiness buttons visible
-    - 03-valid-config-validation.png — Valid badge, valid:true, mockMode:true
-    - 04-unsafe-config-rejected.png — mockMode:false, apiToken, baseUrl rejected with errors
-    - 05-runtime-readiness-mock-only.png — mockReady, realReady:false, writebackEnabled:false
-    - 06-runtime-resolve-credential-metadata-only.png — mode:mock, credential metadata only, no secretRef
-    - 07-ticket-context-connector-runtime-provenance.png — Connector Runtime Provenance card visible
-    - 08-evidence-bundle-connector-runtime-metadata.png — connector counts, realNetwork:false, no secret leakage
-    - 09-viewer-read-only-connector-panel.png — disabled buttons, read-only UI
-    - 10-viewer-server-side-denial.png — 403 response on mutation attempt
-    - 11-cross-tenant-denial.png — 404 on cross-tenant runtime access
-    - 12-real-writeback-path-design-proof.png — REAL_WRITEBACK_PATH_DESIGN.md rendered in browser
-    - 13-final-local-mock-no-real-writeback-proof.png — Mock-only badge, no real writeback
-  test_results:
-    - apps/api: 147/147 pass (14 suites)
-    - packages/contracts: 43/43 pass (7 suites)
-    - apps/web: 19/19 pass (1 suite)
-    - packages/connectors: 16/16 pass (6 suites)
-  verification_scripts:
-    - scripts/verify_connector_runtime_readiness.sh: 12/12 pass
-    - scripts/verify_connector_runtime_contracts.sh: 14/14 pass
-  docs:
-    - docs/CONNECTOR_RUNTIME_CONTRACT.md
-    - docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md
-  as_of: 2026-04-28T21:30:00+02:00
+  - 01-admin-runtime-identity.png — admin@supportplane.local with tenant pill, role badge
+  - 02-connector-panel-config-readiness-controls.png — Config Schema, Validate Config, Runtime Readiness buttons visible
+  - 03-valid-config-validation.png — Valid badge, valid:true, mockMode:true
+  - 04-unsafe-config-rejected.png — mockMode:false, apiToken, baseUrl rejected with errors
+  - 05-runtime-readiness-mock-only.png — mockReady, realReady:false, writebackEnabled:false
+  - 06-runtime-resolve-credential-metadata-only.png — mode:mock, credential metadata only, no secretRef
+  - 07-ticket-context-connector-runtime-provenance.png — Connector Runtime Provenance card visible
+  - 08-evidence-bundle-connector-runtime-metadata.png — connector counts, realNetwork:false, no secret leakage
+  - 09-viewer-read-only-connector-panel.png — disabled buttons, read-only UI
+  - 10-viewer-server-side-denial.png — 403 response on mutation attempt
+  - 11-cross-tenant-denial.png — 404 on cross-tenant runtime access
+  - 12-real-writeback-path-design-proof.png — REAL_WRITEBACK_PATH_DESIGN.md rendered in browser
+  - 13-final-local-mock-no-real-writeback-proof.png — Mock-only badge, no real writeback
+    test_results:
+  - apps/api: 147/147 pass (14 suites)
+  - packages/contracts: 43/43 pass (7 suites)
+  - apps/web: 19/19 pass (1 suite)
+  - packages/connectors: 16/16 pass (6 suites)
+    verification_scripts:
+  - scripts/verify_connector_runtime_readiness.sh: 12/12 pass
+  - scripts/verify_connector_runtime_contracts.sh: 14/14 pass
+    docs:
+  - docs/CONNECTOR_RUNTIME_CONTRACT.md
+  - docs/TICKET_CONTEXT_CONNECTOR_SAFETY.md
+    as_of: 2026-04-28T21:30:00+02:00
 
 - id: EV-2026-04-28-007
   backlog_id: BL-100
@@ -2562,12 +2580,11 @@
   artifact_folder: output/playwright/session-101-bl099-bl100-runtime-confidence-design-final/
   artifact_count: 2
   screenshots:
-    - 12-real-writeback-path-design-proof.png — REAL_WRITEBACK_PATH_DESIGN.md rendered in browser showing all sections
-    - 13-final-local-mock-no-real-writeback-proof.png — connector panel shows mock-only state with design doc referenced
-  docs:
-    - docs/REAL_WRITEBACK_PATH_DESIGN.md
-  as_of: 2026-04-28T21:30:00+02:00
-
+  - 12-real-writeback-path-design-proof.png — REAL_WRITEBACK_PATH_DESIGN.md rendered in browser showing all sections
+  - 13-final-local-mock-no-real-writeback-proof.png — connector panel shows mock-only state with design doc referenced
+    docs:
+  - docs/REAL_WRITEBACK_PATH_DESIGN.md
+    as_of: 2026-04-28T21:30:00+02:00
 
 - id: EV-2026-04-29-001
   backlog_id: BL-107
@@ -2577,27 +2594,27 @@
   artifact_folder: output/playwright/session-108-bl107-zammad-sandbox-read-connector/
   artifact_count: 11
   screenshots:
-    - 01-zammad-api-seeded-ticket.png — Zammad API returns real ticket 2 (68002) and customer 5 (Acme BVBA)
-    - 02-cockpit-loaded-ticket.png — Composite: UI shows real Zammad ticket with sandbox labels, Connector Runtime Provenance, AI Context Quality, Case Timeline
-    - 04-cluster-api-health.png — Cluster API health: store=postgres, auth=local, status=ok
-  cli_artifacts:
-    - connector-runtime-readiness.txt — realReady=true, mockReady=false, writebackEnabled=false
-    - zammad-api-read-proof.txt — SupportPlane API reads real Zammad ticket via authenticated POST
-    - boundary-proof.txt — Real sandbox read only; no production, no writeback
-    - validation-gate.txt — Exact commands and pass/fail results
-    - local-mvp-regression.txt — Local MVP not required; cluster is acceptance target
-    - proof-state-mapping.md — Maps each artifact to the state it proves
-    - screenshot-md5s.txt — Duplicate detection: 0 duplicates
-  test_results:
-    - npm run lint: passed
-    - npm run typecheck: passed (all workspaces)
-    - npm test: passed (43 tests, 0 failures)
-  verification_commands:
-    - curl http://localhost:4210/health
-    - curl -b cookies -X POST http://localhost:4210/connector-installations/conn-inst-dev-001/runtime-readiness
-    - curl -b cookies -X POST http://localhost:4210/support-sessions/{id}/zammad/ticket-context -d '{"externalTicketId":"2"}'
-    - node scripts/bl107_screenshots_final.js
-  as_of: 2026-04-29T19:55:00+02:00
+  - 01-zammad-api-seeded-ticket.png — Zammad API returns real ticket 2 (68002) and customer 5 (Acme BVBA)
+  - 02-cockpit-loaded-ticket.png — Composite: UI shows real Zammad ticket with sandbox labels, Connector Runtime Provenance, AI Context Quality, Case Timeline
+  - 04-cluster-api-health.png — Cluster API health: store=postgres, auth=local, status=ok
+    cli_artifacts:
+  - connector-runtime-readiness.txt — realReady=true, mockReady=false, writebackEnabled=false
+  - zammad-api-read-proof.txt — SupportPlane API reads real Zammad ticket via authenticated POST
+  - boundary-proof.txt — Real sandbox read only; no production, no writeback
+  - validation-gate.txt — Exact commands and pass/fail results
+  - local-mvp-regression.txt — Local MVP not required; cluster is acceptance target
+  - proof-state-mapping.md — Maps each artifact to the state it proves
+  - screenshot-md5s.txt — Duplicate detection: 0 duplicates
+    test_results:
+  - npm run lint: passed
+  - npm run typecheck: passed (all workspaces)
+  - npm test: passed (43 tests, 0 failures)
+    verification_commands:
+  - curl http://localhost:4210/health
+  - curl -b cookies -X POST http://localhost:4210/connector-installations/conn-inst-dev-001/runtime-readiness
+  - curl -b cookies -X POST http://localhost:4210/support-sessions/{id}/zammad/ticket-context -d '{"externalTicketId":"2"}'
+  - node scripts/bl107_screenshots_final.js
+    as_of: 2026-04-29T19:55:00+02:00
 
 - id: EV-2026-04-30-001
   backlog_id: BL-111
@@ -2607,31 +2624,31 @@
   artifact_folder: output/playwright/session-111-112-113-sandbox-writeback-closure-canonical/
   artifact_count: 22
   screenshots:
-    - 01-dashboard-delivery-ops-sandbox-delivered.png — Dashboard logged-in baseline
-    - 07-outbox-list-sandbox-delivered.png — Delivery Ops panel showing sandbox_delivered item at top of list
-    - 11-action-center-outbox-status.png — Action Center showing "Latest action: sandbox_delivered" with ticket_note type
-    - 12-delivery-ops-summary-and-item-detail.png — Outbox item detail: attempts 1, latest sandbox_delivered, mode sandbox
-    - 13-delivery-ops-summary-grid.png — Summary grid: sandbox_delivered=1, mock_delivered=22, total=23
-    - 19-audit-trail-sandbox-delivered-terminal.png — action_sandbox_delivered audit event at 10:29:26 AM
-    - 20-audit-trail-outbox-sandbox-delivered.png — outbox_sandbox_delivered audit event with full delivery metadata
-  cli_artifacts:
-    - validation-gate.txt — API health, action status, outbox status, Zammad article, MinIO object, Mailpit messages, build verification
-    - git-status-final.txt — clean worktree at bb81e7a
-    - proof-state-mapping.md — maps all 18 screenshots to proof states
-    - screenshot-md5s.txt — MD5 hashes, 0 duplicates after cleanup
-  test_results:
-    - npm run build: passed
-    - npm run typecheck: passed
-    - npm run lint: passed
-    - npm test: passed (24 tests)
-  verification_commands:
-    - curl http://localhost:4210/health
-    - curl -b cookies http://localhost:4210/actions/e9a4ecac-51f4-4b47-9c95-c858df818f74
-    - curl -b cookies http://localhost:4210/outbox/0c796d9b-2a03-4116-88f0-7c9aef9c846e
-    - curl -H "Authorization: Token token=$ZAMMAD_API_TOKEN" http://localhost:8080/api/v1/ticket_articles/16
-    - python3 boto3 head_object for MinIO evidence
-    - curl http://localhost:8025/api/v1/messages
-  as_of: 2026-04-30T10:45:00+02:00
+  - 01-dashboard-delivery-ops-sandbox-delivered.png — Dashboard logged-in baseline
+  - 07-outbox-list-sandbox-delivered.png — Delivery Ops panel showing sandbox_delivered item at top of list
+  - 11-action-center-outbox-status.png — Action Center showing "Latest action: sandbox_delivered" with ticket_note type
+  - 12-delivery-ops-summary-and-item-detail.png — Outbox item detail: attempts 1, latest sandbox_delivered, mode sandbox
+  - 13-delivery-ops-summary-grid.png — Summary grid: sandbox_delivered=1, mock_delivered=22, total=23
+  - 19-audit-trail-sandbox-delivered-terminal.png — action_sandbox_delivered audit event at 10:29:26 AM
+  - 20-audit-trail-outbox-sandbox-delivered.png — outbox_sandbox_delivered audit event with full delivery metadata
+    cli_artifacts:
+  - validation-gate.txt — API health, action status, outbox status, Zammad article, MinIO object, Mailpit messages, build verification
+  - git-status-final.txt — clean worktree at bb81e7a
+  - proof-state-mapping.md — maps all 18 screenshots to proof states
+  - screenshot-md5s.txt — MD5 hashes, 0 duplicates after cleanup
+    test_results:
+  - npm run build: passed
+  - npm run typecheck: passed
+  - npm run lint: passed
+  - npm test: passed (24 tests)
+    verification_commands:
+  - curl http://localhost:4210/health
+  - curl -b cookies http://localhost:4210/actions/e9a4ecac-51f4-4b47-9c95-c858df818f74
+  - curl -b cookies http://localhost:4210/outbox/0c796d9b-2a03-4116-88f0-7c9aef9c846e
+  - curl -H "Authorization: Token token=$ZAMMAD_API_TOKEN" http://localhost:8080/api/v1/ticket_articles/16
+  - python3 boto3 head_object for MinIO evidence
+  - curl http://localhost:8025/api/v1/messages
+    as_of: 2026-04-30T10:45:00+02:00
 
 - id: EV-2026-04-30-002
   backlog_id: BL-112
@@ -2641,10 +2658,10 @@
   artifact_folder: output/playwright/session-111-112-113-sandbox-writeback-closure-canonical/
   artifact_count: 22
   cli_artifacts:
-    - validation-gate.txt §5 — MinIO evidence object details: 1579 bytes, SHA-256 checksum, createdAt 2026-04-30T08:29:26.901Z
-  verification_commands:
-    - python3 boto3 head_object(Bucket='supportplane-evidence', Key='dev-tenant/writebacks/3b4e87c9-413a-4ab6-b917-65f723a304d7/0c796d9b-2a03-4116-88f0-7c9aef9c846e.json')
-  as_of: 2026-04-30T10:45:00+02:00
+  - validation-gate.txt §5 — MinIO evidence object details: 1579 bytes, SHA-256 checksum, createdAt 2026-04-30T08:29:26.901Z
+    verification_commands:
+  - python3 boto3 head_object(Bucket='supportplane-evidence', Key='dev-tenant/writebacks/3b4e87c9-413a-4ab6-b917-65f723a304d7/0c796d9b-2a03-4116-88f0-7c9aef9c846e.json')
+    as_of: 2026-04-30T10:45:00+02:00
 
 - id: EV-2026-04-30-003
   backlog_id: BL-113
@@ -2654,10 +2671,10 @@
   artifact_folder: output/playwright/session-111-112-113-sandbox-writeback-closure-canonical/
   artifact_count: 22
   cli_artifacts:
-    - validation-gate.txt §6 — Mailpit message: subject "SupportPlane sandbox writeback completed", capturedAt 2026-04-30T08:29:26.971Z
-  verification_commands:
-    - curl http://localhost:8025/api/v1/messages
-  as_of: 2026-04-30T10:45:00+02:00
+  - validation-gate.txt §6 — Mailpit message: subject "SupportPlane sandbox writeback completed", capturedAt 2026-04-30T08:29:26.971Z
+    verification_commands:
+  - curl http://localhost:8025/api/v1/messages
+    as_of: 2026-04-30T10:45:00+02:00
 
 - id: EV-2026-04-30-004
   backlog_id: BL-114
@@ -2667,34 +2684,34 @@
   artifact_folder: output/playwright/session-114-bl114-observability-baseline/
   artifact_count: 20
   screenshots:
-    - 12-ui-observability-overview-proof.png — Local Observability panel with local-only, no-production-monitoring, and no-secret telemetry copy
-    - 13-ui-correlation-drilldown-proof.png — Correlation ID/API health/worker status/queue backend summary
-    - 14-ui-sandbox-writeback-observability-proof.png — NATS JetStream worker and sandbox writeback telemetry proof
-    - 15-state-docs-proof.png — State docs reconciled to BL-114 accepted and BL-116 active/not accepted
-  cli_artifacts:
-    - 01-baseline-runtime.txt — baseline git/cluster/app/worker evidence
-    - 02-bl111-113-regression-truth-proof.txt — prior closure truth audit and dependency regression proof
-    - 03-observability-architecture-proof.md — local-only observability contract and no-secret rules
-    - 04-otel-collector-proof.txt — observability namespace/pod/service proof
-    - 05-api-worker-correlation-proof.txt — API/worker correlation proof
-    - 06-metrics-proof.txt — metrics endpoint and Prometheus query proof
-    - 07-logs-proof.txt — structured safe log proof
-    - 08-dashboard-or-query-proof.txt — Grafana/Prometheus query proof
-    - 09-no-secret-telemetry-proof.txt — secret leakage search proof
-    - 10-validation-gate.txt — exact validation commands and pass/fail results
-    - 11-cluster-redeploy-proof.txt — rebuilt local Kubernetes rollout proof
-    - 16-bl116-readiness-audit.md — readiness audit only; BL-116 not accepted
-    - 17-local-mvp-regression.txt — local MVP regression proof
-    - 18-proof-state-mapping.md — evidence-to-claim mapping
-    - 19-screenshot-md5s.txt — screenshot duplicate detection
-    - 20-git-status-final.txt — clean worktree proof
-  test_results:
-    - npm run lint: passed
-    - npm run typecheck --workspaces --if-present: passed
-    - npm test --workspaces --if-present: passed
-    - python3 scripts/check_state_docs.py: passed
-    - bash scripts/verify_observability_baseline.sh: passed
-  as_of: 2026-04-30T11:20:00+02:00
+  - 12-ui-observability-overview-proof.png — Local Observability panel with local-only, no-production-monitoring, and no-secret telemetry copy
+  - 13-ui-correlation-drilldown-proof.png — Correlation ID/API health/worker status/queue backend summary
+  - 14-ui-sandbox-writeback-observability-proof.png — NATS JetStream worker and sandbox writeback telemetry proof
+  - 15-state-docs-proof.png — State docs reconciled to BL-114 accepted and BL-116 active/not accepted
+    cli_artifacts:
+  - 01-baseline-runtime.txt — baseline git/cluster/app/worker evidence
+  - 02-bl111-113-regression-truth-proof.txt — prior closure truth audit and dependency regression proof
+  - 03-observability-architecture-proof.md — local-only observability contract and no-secret rules
+  - 04-otel-collector-proof.txt — observability namespace/pod/service proof
+  - 05-api-worker-correlation-proof.txt — API/worker correlation proof
+  - 06-metrics-proof.txt — metrics endpoint and Prometheus query proof
+  - 07-logs-proof.txt — structured safe log proof
+  - 08-dashboard-or-query-proof.txt — Grafana/Prometheus query proof
+  - 09-no-secret-telemetry-proof.txt — secret leakage search proof
+  - 10-validation-gate.txt — exact validation commands and pass/fail results
+  - 11-cluster-redeploy-proof.txt — rebuilt local Kubernetes rollout proof
+  - 16-bl116-readiness-audit.md — readiness audit only; BL-116 not accepted
+  - 17-local-mvp-regression.txt — local MVP regression proof
+  - 18-proof-state-mapping.md — evidence-to-claim mapping
+  - 19-screenshot-md5s.txt — screenshot duplicate detection
+  - 20-git-status-final.txt — clean worktree proof
+    test_results:
+  - npm run lint: passed
+  - npm run typecheck --workspaces --if-present: passed
+  - npm test --workspaces --if-present: passed
+  - python3 scripts/check_state_docs.py: passed
+  - bash scripts/verify_observability_baseline.sh: passed
+    as_of: 2026-04-30T11:20:00+02:00
 
 - id: EV-2026-04-30-005
   backlog_id: BL-116
@@ -2704,34 +2721,33 @@
   artifact_folder: output/playwright/session-115-bl116-real-sandbox-acceptance-freeze/
   artifact_count: 20
   screenshots:
-    - 12-ui-cockpit-overview.png — Cockpit with DEV/MOCK DATA badge, local auth, Zammad mode, session list
-    - 13-ui-call-console.png — Call console with "No real telephony connected" boundary warning
-    - 14-ui-observability-panel.png — Local Observability panel with localOnly, no-secret, NATS JetStream status
-    - 15-ui-delivery-policy-panel.png — Delivery Policy panel with sandbox allowlist, kill switch, approval gates
-    - 16-ui-action-outbox-panel.png — Delivery Operations panel with sandbox_delivered items and attempt history
-  cli_artifacts:
-    - 01-baseline-runtime-and-git.txt — Git HEAD, branch, API health matching runtime
-    - 02-cluster-topology-and-services-proof.txt — All 4 namespaces, pods, services, PVCs healthy
-    - 03-app-postgres-persistence-proof.txt — 20 app tables, 5 Prisma migrations, BL-105 probe survives
-    - 04-real-sandbox-e2e-flow-proof.txt — Full E2E flow: session → action → submit → approve → queue → sandbox_delivered
-    - 05-blocked-paths-and-safety-proof.txt — External URL, production URL, kill switch, unapproved writeback all blocked
-    - 06-no-secret-no-cloud-no-production-proof.txt — Negative scan of secrets, cloud AI, production monitoring
-    - 07-observability-and-correlation-proof.txt — Correlation IDs, Prometheus metrics, local status endpoint
-    - 08-validation-gate.txt — Lint, typecheck (9 packages), tests (33/33 pass), observability baseline
-    - 09-local-mvp-regression.txt — MVP regression summary with exact test inventory
-    - 10-acceptance-freeze-record.md — Formal acceptance freeze document with limitations
-    - 11-runtime-redeploy-proof.txt — Images rebuilt, cluster rolled out, health verified
-    - 17-proof-mapping.txt — Proof-state mapping table covering all required states
-    - 18-md5s.txt — MD5 checksums for all 20 files; duplicate detection shows no duplicates
-    - 19-boundary-matrix.txt — Canonical boundary matrix reference summary
-    - 20-final-git-status.txt — Clean worktree proof with full commit hash
-  test_results:
-    - npm run lint: passed
-    - npm run typecheck --workspaces --if-present: passed
-    - npm test --workspaces --if-present: passed (33/33)
-    - bash scripts/verify_observability_baseline.sh: passed
-  as_of: 2026-04-30T11:33:00+02:00
-
+  - 12-ui-cockpit-overview.png — Cockpit with DEV/MOCK DATA badge, local auth, Zammad mode, session list
+  - 13-ui-call-console.png — Call console with "No real telephony connected" boundary warning
+  - 14-ui-observability-panel.png — Local Observability panel with localOnly, no-secret, NATS JetStream status
+  - 15-ui-delivery-policy-panel.png — Delivery Policy panel with sandbox allowlist, kill switch, approval gates
+  - 16-ui-action-outbox-panel.png — Delivery Operations panel with sandbox_delivered items and attempt history
+    cli_artifacts:
+  - 01-baseline-runtime-and-git.txt — Git HEAD, branch, API health matching runtime
+  - 02-cluster-topology-and-services-proof.txt — All 4 namespaces, pods, services, PVCs healthy
+  - 03-app-postgres-persistence-proof.txt — 20 app tables, 5 Prisma migrations, BL-105 probe survives
+  - 04-real-sandbox-e2e-flow-proof.txt — Full E2E flow: session → action → submit → approve → queue → sandbox_delivered
+  - 05-blocked-paths-and-safety-proof.txt — External URL, production URL, kill switch, unapproved writeback all blocked
+  - 06-no-secret-no-cloud-no-production-proof.txt — Negative scan of secrets, cloud AI, production monitoring
+  - 07-observability-and-correlation-proof.txt — Correlation IDs, Prometheus metrics, local status endpoint
+  - 08-validation-gate.txt — Lint, typecheck (9 packages), tests (33/33 pass), observability baseline
+  - 09-local-mvp-regression.txt — MVP regression summary with exact test inventory
+  - 10-acceptance-freeze-record.md — Formal acceptance freeze document with limitations
+  - 11-runtime-redeploy-proof.txt — Images rebuilt, cluster rolled out, health verified
+  - 17-proof-mapping.txt — Proof-state mapping table covering all required states
+  - 18-md5s.txt — MD5 checksums for all 20 files; duplicate detection shows no duplicates
+  - 19-boundary-matrix.txt — Canonical boundary matrix reference summary
+  - 20-final-git-status.txt — Clean worktree proof with full commit hash
+    test_results:
+  - npm run lint: passed
+  - npm run typecheck --workspaces --if-present: passed
+  - npm test --workspaces --if-present: passed (33/33)
+  - bash scripts/verify_observability_baseline.sh: passed
+    as_of: 2026-04-30T11:33:00+02:00
 
 ## EV-2026-04-30-006: BL-116 Closure Reconciliation (ACCEPTED)
 
@@ -2772,7 +2788,6 @@
   - BL-116 is fully closure-grade: clean worktree, truthful boundary docs, strong MinIO proof, AND a passing canonical E2E verifier script.
 - as_of: 2026-04-30T12:35:00+02:00
 
-
 ## EV-2026-04-30-121 through EV-2026-04-30-136: BL-089/123/124/125/126/127 Registry Closure (ACCEPTED)
 
 - Files: `output/playwright/session-116-bl089-bl123-bl124-bl125-plugin-registry/01-registry-listing.json` through `20-git-status-proof.txt`
@@ -2800,7 +2815,6 @@
   - `18-zammad-migration-proof.txt`
   - `19-ai-registry-proof.txt`
   - `20-git-status-proof.txt`
-
 
 ## EV-2026-04-30-137 through EV-2026-04-30-152: BL-117 Local Asterisk AMI Call-Event Bridge (ACCEPTED)
 
@@ -2847,7 +2861,6 @@
   - Worktree clean at final commit.
 - Type: integration-and-browser-runtime-verification
 - as_of: 2026-04-30T16:35:00+02:00
-
 
 ## EV-2026-04-30-001 through EV-2026-04-30-020: BL-083/086/087/090 Production Readiness Hardening Wave
 
@@ -2927,6 +2940,7 @@
   - MinIO/Mailpit INFO verifier steps are acceptable because product-side deliveryResult metadata is explicitly proven.
 - Type: integration-and-browser-runtime-verification
 - as_of: 2026-04-30T23:00:00+02:00
+
 ## EV-2026-05-01-001 through EV-2026-05-01-012: Endpoint Agent + Read-Only Diagnostics Foundation
 
 - Files: `output/playwright/session-120-endpoint-agent-diagnostics/01-device-console-pre-agent.png` through `12-evidence-files.txt`
@@ -2950,7 +2964,6 @@
   - Evidence cap respected: 12 files.
 - Type: implementation-and-browser-runtime-verification
 - as_of: 2026-05-01T09:20:00+02:00
-
 
 ## EV-2026-05-01-133 through EV-2026-05-01-138: Session 123 — Real Connector Expansion + Golden Workflow Backbone
 
@@ -2980,7 +2993,6 @@
   - UI truth banners: "All writeback blocked" badge visible in header; connector panel shows "Tenant-scoped" and "External writeback requires explicit policy approval".
 - Type: integration-and-browser-runtime-verification
 - as_of: 2026-05-01T13:00:00+02:00
-
 
 ## EV-2026-05-01-139 through EV-2026-05-01-146: Session 123b — Real Connectors Golden Workflow Closure Repair
 
@@ -3012,7 +3024,6 @@
 - Type: integration-and-browser-runtime-verification
 - as_of: 2026-05-01T13:37:00+02:00
 
-
 ## EV-2026-05-01-147 through EV-2026-05-01-151: Session 123c — Final Closure Proof Repair
 
 - Files: `output/playwright/session-123c-final-closure-proof/01-runtime-identity-health.json` through `05-evidence-index.md`
@@ -3036,7 +3047,6 @@
   - **Backlog mapping accuracy:** BL-069=GLPI, BL-071=MeshCentral, BL-072=Fortinet, BL-073=knowledge schema, BL-074=knowledge retrieval, BL-127=osTicket.
 - Type: runtime-identity-and-closure-proof-repair
 - as_of: 2026-05-01T13:54:00+02:00
-
 
 ## EV-2026-05-01-152: Session 125 — Governed AI Operations and Admin Controls
 

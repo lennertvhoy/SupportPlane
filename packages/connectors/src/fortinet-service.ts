@@ -47,7 +47,10 @@ export class FortinetConnectorService implements FortinetService {
     return this.ensureClient().getInterfaceSummary();
   }
 
-  async health(): Promise<{ status: 'healthy' | 'unconfigured' | 'unhealthy'; connected: boolean }> {
+  async health(): Promise<{
+    status: 'healthy' | 'unconfigured' | 'unhealthy';
+    connected: boolean;
+  }> {
     if (!this.client) {
       return { status: 'unconfigured', connected: false };
     }

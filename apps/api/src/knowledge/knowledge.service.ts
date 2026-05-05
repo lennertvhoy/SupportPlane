@@ -20,9 +20,7 @@ import { knowledgeContentHash, resolveEmbeddingProvider } from './embedding-prov
 
 @Injectable()
 export class KnowledgeService {
-  constructor(
-    @Inject(InMemoryStore) private readonly store: Store,
-  ) {}
+  constructor(@Inject(InMemoryStore) private readonly store: Store) {}
 
   async createSource(
     tenantId: string,
@@ -52,7 +50,11 @@ export class KnowledgeService {
       resourceId: source.id,
       metadata: { name: request.name, adapterType: request.adapterType },
       hashChainPrevious: undefined,
-      integrityHash: computeIntegrityHash({ tenantId, eventType: 'knowledge_source_created', resourceId: source.id }),
+      integrityHash: computeIntegrityHash({
+        tenantId,
+        eventType: 'knowledge_source_created',
+        resourceId: source.id,
+      }),
       createdAt: new Date().toISOString(),
     });
     return source;
@@ -79,7 +81,14 @@ export class KnowledgeService {
 
     const embeddingStatus = resolveEmbeddingProvider();
     const now = new Date().toISOString();
-    let embeddingMetadata: Pick<KnowledgeArticleShape, 'embeddingProvider' | 'embeddingModel' | 'embeddingDimensions' | 'embeddingContentHash' | 'embeddedAt'> = {};
+    let embeddingMetadata: Pick<
+      KnowledgeArticleShape,
+      | 'embeddingProvider'
+      | 'embeddingModel'
+      | 'embeddingDimensions'
+      | 'embeddingContentHash'
+      | 'embeddedAt'
+    > = {};
     if (embeddingStatus.available && embeddingStatus.provider) {
       await embeddingStatus.provider.embed(`${request.title}\n\n${request.content}`);
       embeddingMetadata = {
@@ -116,7 +125,11 @@ export class KnowledgeService {
       resourceId: article.id,
       metadata: { sourceId: request.sourceId, title: request.title },
       hashChainPrevious: undefined,
-      integrityHash: computeIntegrityHash({ tenantId, eventType: 'knowledge_article_created', resourceId: article.id }),
+      integrityHash: computeIntegrityHash({
+        tenantId,
+        eventType: 'knowledge_article_created',
+        resourceId: article.id,
+      }),
       createdAt: new Date().toISOString(),
     });
     return article;
@@ -150,7 +163,14 @@ export class KnowledgeService {
       if (!request.sourceIds || request.sourceIds.length === 0) return true;
       return request.sourceIds.includes(article.sourceId);
     });
-    const embeddedCandidates = scopedCandidates.filter((article) => Boolean(article.embeddingProvider && article.embeddingModel && article.embeddingDimensions && article.embeddedAt));
+    const embeddedCandidates = scopedCandidates.filter((article) =>
+      Boolean(
+        article.embeddingProvider &&
+        article.embeddingModel &&
+        article.embeddingDimensions &&
+        article.embeddedAt,
+      ),
+    );
     const hasEmbeddedArticles = embeddedCandidates.length > 0;
     const semanticEligible = Boolean(
       readiness.pgvectorEnabled &&
@@ -169,19 +189,28 @@ export class KnowledgeService {
     });
 
     const retrievalMethod = this.chooseRetrievalMethod(requestedMode, semanticEligible);
-    const articles = await this.searchArticles(tenantId, request.query, retrievalMethod, embeddingStatus.provider, {
-      sourceIds: request.sourceIds,
-      limit: request.limit,
-    });
+    const articles = await this.searchArticles(
+      tenantId,
+      request.query,
+      retrievalMethod,
+      embeddingStatus.provider,
+      {
+        sourceIds: request.sourceIds,
+        limit: request.limit,
+      },
+    );
 
     const results: KnowledgeRetrievalResult[] = [];
     for (const [index, article] of articles.entries()) {
       const source = await this.store.getKnowledgeSource(tenantId, article.sourceId);
       // Simple lexical scoring: higher score for title matches
       const titleMatch = article.title.toLowerCase().includes(request.query.toLowerCase());
-      const baseScore = retrievalMethod === 'lexical'
-        ? (titleMatch ? 0.9 - index * 0.02 : 0.7 - index * 0.02)
-        : (0.85 - index * 0.02);
+      const baseScore =
+        retrievalMethod === 'lexical'
+          ? titleMatch
+            ? 0.9 - index * 0.02
+            : 0.7 - index * 0.02
+          : 0.85 - index * 0.02;
       results.push({
         articleId: article.id,
         sourceId: article.sourceId,
@@ -193,7 +222,12 @@ export class KnowledgeService {
           articleStatus: article.status,
           retrievedAt: new Date().toISOString(),
           retrievalMethod,
-          scoreKind: retrievalMethod === 'semantic' ? 'vector_distance' : retrievalMethod === 'hybrid' ? 'hybrid_rank' : 'lexical_rank',
+          scoreKind:
+            retrievalMethod === 'semantic'
+              ? 'vector_distance'
+              : retrievalMethod === 'hybrid'
+                ? 'hybrid_rank'
+                : 'lexical_rank',
           confidence: null,
           embeddingProvider: article.embeddingProvider,
           embeddingModel: article.embeddingModel,
@@ -223,7 +257,11 @@ export class KnowledgeService {
         fallbackReason,
       },
       hashChainPrevious: undefined,
-      integrityHash: computeIntegrityHash({ tenantId, eventType: 'knowledge_retrieval_query', resourceId: request.query }),
+      integrityHash: computeIntegrityHash({
+        tenantId,
+        eventType: 'knowledge_retrieval_query',
+        resourceId: request.query,
+      }),
       createdAt: new Date().toISOString(),
     });
 
@@ -277,7 +315,8 @@ export class KnowledgeService {
     if (!input.readiness.pgvectorEnabled) return input.readiness.pgvectorReason;
     if (!input.readiness.vectorColumnAvailable) return input.readiness.vectorColumnReason;
     if (!input.embeddingProviderAvailable) return input.embeddingProviderReason;
-    if (!input.hasEmbeddedArticles) return 'no published knowledge articles have embedding provenance';
+    if (!input.hasEmbeddedArticles)
+      return 'no published knowledge articles have embedding provenance';
     if (!input.semanticSearchAvailable) return 'store does not expose semantic knowledge search';
     return undefined;
   }

@@ -36,7 +36,7 @@ export interface TelephonyAdapter {
   mapWebhookToCallEvent(input: TelephonyWebhookEventShape & { id: string; now: string }): CallEvent;
   handleControlIntent(
     intent: TelephonyCallControlIntentShape,
-    currentCall?: CallEvent
+    currentCall?: CallEvent,
   ): TelephonyCallControlResultShape;
   getAdapterMetadata(): Record<string, unknown>;
 }
@@ -61,22 +61,16 @@ const DISCLOSURES = [
   'Controls update local mock state only',
 ];
 
-const SECRET_KEY_PATTERN =
-  /authorization|signature|token|secret|password|credential|api[-_]?key/i;
+const SECRET_KEY_PATTERN = /authorization|signature|token|secret|password|credential|api[-_]?key/i;
 
-export function redactTelephonySecrets(
-  value: Record<string, unknown>
-): Record<string, unknown> {
+export function redactTelephonySecrets(value: Record<string, unknown>): Record<string, unknown> {
   const redacted: Record<string, unknown> = {};
   for (const [key, raw] of Object.entries(value)) {
     if (SECRET_KEY_PATTERN.test(key)) {
       redacted[key] = '[REDACTED]';
     } else if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
       redacted[key] = redactTelephonySecrets(raw as Record<string, unknown>);
-    } else if (
-      typeof raw === 'string' &&
-      (/^Bearer\s+/i.test(raw) || /^Token\s+/i.test(raw))
-    ) {
+    } else if (typeof raw === 'string' && (/^Bearer\s+/i.test(raw) || /^Token\s+/i.test(raw))) {
       redacted[key] = '[REDACTED]';
     } else {
       redacted[key] = raw;
@@ -99,9 +93,7 @@ export function sanitizeTelephonyError(error: unknown): TelephonyProviderErrorSh
   });
 }
 
-export function createMockTelephonyConfig(
-  tenantId: string
-): TelephonyAdapterConfigShape {
+export function createMockTelephonyConfig(tenantId: string): TelephonyAdapterConfigShape {
   return TelephonyAdapterConfig.parse({
     tenantId,
     providerType: TelephonyProviderType.enum.mock,
@@ -171,7 +163,7 @@ export class MockTelephonyAdapter implements TelephonyAdapter {
   }
 
   mapWebhookToCallEvent(
-    input: TelephonyWebhookEventShape & { id: string; now: string }
+    input: TelephonyWebhookEventShape & { id: string; now: string },
   ): CallEvent {
     const normalized =
       input.normalizedPhoneNumber ??
@@ -207,7 +199,7 @@ export class MockTelephonyAdapter implements TelephonyAdapter {
 
   handleControlIntent(
     intent: TelephonyCallControlIntentShape,
-    currentCall?: CallEvent
+    currentCall?: CallEvent,
   ): TelephonyCallControlResultShape {
     const resultingStatus = statusForAction(intent.action);
     if (!resultingStatus || intent.action === TelephonyCallControlAction.enum.transfer) {

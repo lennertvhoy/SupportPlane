@@ -16,7 +16,12 @@ export class ZammadAdapterFactory implements TicketingAdapterFactory {
       properties: {
         baseUrl: { type: 'string', description: 'Zammad base URL' },
         apiToken: { type: 'string', description: 'Zammad API token' },
-        timeoutMs: { type: 'integer', minimum: 1000, maximum: 60000, description: 'Request timeout in milliseconds' },
+        timeoutMs: {
+          type: 'integer',
+          minimum: 1000,
+          maximum: 60000,
+          description: 'Request timeout in milliseconds',
+        },
         mockMode: { type: 'boolean', description: 'Mock mode flag' },
       },
       required: ['baseUrl'],

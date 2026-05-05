@@ -15,7 +15,7 @@ export class EndpointAgentController {
     @Headers('x-endpoint-tenant-id') tenantId: string | undefined,
     @Headers('x-endpoint-device-key') deviceKey: string | undefined,
     @Headers('x-endpoint-device-token') token: string | undefined,
-    @Body() body: Record<string, unknown>
+    @Body() body: Record<string, unknown>,
   ) {
     const device = await this.service.authenticateAgent(tenantId, deviceKey, token);
     return this.service.heartbeat(device, body as never);
@@ -26,7 +26,7 @@ export class EndpointAgentController {
     @Headers('x-endpoint-tenant-id') tenantId: string | undefined,
     @Headers('x-endpoint-device-key') deviceKey: string | undefined,
     @Headers('x-endpoint-device-token') token: string | undefined,
-    @Body() body: Record<string, unknown>
+    @Body() body: Record<string, unknown>,
   ) {
     const device = await this.service.authenticateAgent(tenantId, deviceKey, token);
     return this.service.submitSnapshot(device, body as never);
@@ -36,7 +36,7 @@ export class EndpointAgentController {
   async claim(
     @Headers('x-endpoint-tenant-id') tenantId: string | undefined,
     @Headers('x-endpoint-device-key') deviceKey: string | undefined,
-    @Headers('x-endpoint-device-token') token: string | undefined
+    @Headers('x-endpoint-device-token') token: string | undefined,
   ) {
     const device = await this.service.authenticateAgent(tenantId, deviceKey, token);
     return this.service.claimNext(device);
@@ -48,7 +48,7 @@ export class EndpointAgentController {
     @Headers('x-endpoint-device-key') deviceKey: string | undefined,
     @Headers('x-endpoint-device-token') token: string | undefined,
     @Param('id') commandId: string,
-    @Body() body: Record<string, unknown>
+    @Body() body: Record<string, unknown>,
   ) {
     const device = await this.service.authenticateAgent(tenantId, deviceKey, token);
     return this.service.submitResult(device, commandId, body as never);

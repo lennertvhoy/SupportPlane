@@ -4,12 +4,7 @@ import { EntityId, TenantId, JsonValue } from './base.js';
 export const ConnectorMode = z.enum(['mock', 'zammad', 'glpi']);
 export type ConnectorMode = z.infer<typeof ConnectorMode>;
 
-export const ConnectorHealthStatus = z.enum([
-  'healthy',
-  'degraded',
-  'unhealthy',
-  'unknown',
-]);
+export const ConnectorHealthStatus = z.enum(['healthy', 'degraded', 'unhealthy', 'unknown']);
 export type ConnectorHealthStatus = z.infer<typeof ConnectorHealthStatus>;
 
 export const ZammadConfig = z.object({

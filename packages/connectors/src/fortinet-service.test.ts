@@ -63,18 +63,20 @@ describe('FortinetConnectorService', () => {
       (err: unknown) => {
         const e = err as Error;
         return e.message.includes('unconfigured');
-      }
+      },
     );
   });
 
   it('does not fall back to fixture data when real config is present without mockMode', async () => {
-    const service = createFortinetService(mockInstallation({
-      mockMode: false,
-      config: {
-        baseUrl: 'https://fortinet.example.test',
-        apiToken: 'redacted-test-token',
-      },
-    }));
+    const service = createFortinetService(
+      mockInstallation({
+        mockMode: false,
+        config: {
+          baseUrl: 'https://fortinet.example.test',
+          apiToken: 'redacted-test-token',
+        },
+      }),
+    );
 
     const health = await service.health();
     assert.strictEqual(health.status, 'unconfigured');
@@ -84,7 +86,7 @@ describe('FortinetConnectorService', () => {
       (err: unknown) => {
         const e = err as Error;
         return e.message.includes('unconfigured');
-      }
+      },
     );
   });
 });

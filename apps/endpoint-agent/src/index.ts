@@ -10,15 +10,25 @@ interface AgentConfig {
   deviceToken?: string;
 }
 
-const CONFIG_PATH = process.env['SUPPORTPLANE_ENDPOINT_CONFIG'] ?? '.supportplane-endpoint-agent.json';
+const CONFIG_PATH =
+  process.env['SUPPORTPLANE_ENDPOINT_CONFIG'] ?? '.supportplane-endpoint-agent.json';
 
 async function loadConfig(): Promise<AgentConfig> {
-  const saved: Partial<AgentConfig> = await fs.readFile(CONFIG_PATH, 'utf8').then((v) => JSON.parse(v) as Partial<AgentConfig>).catch(() => ({}));
+  const saved: Partial<AgentConfig> = await fs
+    .readFile(CONFIG_PATH, 'utf8')
+    .then((v) => JSON.parse(v) as Partial<AgentConfig>)
+    .catch(() => ({}));
   return {
     apiUrl: process.env['SUPPORTPLANE_API_URL'] ?? saved.apiUrl ?? 'http://localhost:4110',
     tenantId: process.env['SUPPORTPLANE_ENDPOINT_TENANT_ID'] ?? saved.tenantId ?? 'dev-tenant',
-    enrollmentToken: process.env['SUPPORTPLANE_ENDPOINT_ENROLLMENT_TOKEN'] ?? saved.enrollmentToken ?? 'local-endpoint-enrollment-token',
-    deviceKey: process.env['SUPPORTPLANE_ENDPOINT_DEVICE_KEY'] ?? saved.deviceKey ?? `${os.hostname()}-${os.platform()}-${os.arch()}`,
+    enrollmentToken:
+      process.env['SUPPORTPLANE_ENDPOINT_ENROLLMENT_TOKEN'] ??
+      saved.enrollmentToken ??
+      'local-endpoint-enrollment-token',
+    deviceKey:
+      process.env['SUPPORTPLANE_ENDPOINT_DEVICE_KEY'] ??
+      saved.deviceKey ??
+      `${os.hostname()}-${os.platform()}-${os.arch()}`,
     deviceToken: process.env['SUPPORTPLANE_ENDPOINT_DEVICE_TOKEN'] ?? saved.deviceToken,
   };
 }
@@ -34,7 +44,11 @@ async function postJson(config: AgentConfig, path: string, body: unknown, agentA
     headers['x-endpoint-device-key'] = config.deviceKey;
     headers['x-endpoint-device-token'] = config.deviceToken ?? '';
   }
-  const res = await fetch(`${config.apiUrl}${path}`, { method: 'POST', headers, body: JSON.stringify(body) });
+  const res = await fetch(`${config.apiUrl}${path}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(body),
+  });
   if (!res.ok) {
     throw new Error(`${path} failed: ${res.status} ${await res.text()}`);
   }
@@ -44,18 +58,24 @@ async function postJson(config: AgentConfig, path: string, body: unknown, agentA
 async function register(config: AgentConfig): Promise<AgentConfig> {
   if (config.deviceToken) return config;
   const inventory = await collectInventory();
-  const result = await postJson(config, '/endpoint-agent/register', {
-    tenantId: config.tenantId,
-    enrollmentToken: config.enrollmentToken,
-    deviceKey: config.deviceKey,
-    displayName: os.hostname(),
-    hostname: os.hostname(),
-    platform: `${os.platform()} ${os.release()} ${os.arch()}`,
-    agentVersion: AGENT_VERSION,
-    inventory,
-  }, false);
+  const result = await postJson(
+    config,
+    '/endpoint-agent/register',
+    {
+      tenantId: config.tenantId,
+      enrollmentToken: config.enrollmentToken,
+      deviceKey: config.deviceKey,
+      displayName: os.hostname(),
+      hostname: os.hostname(),
+      platform: `${os.platform()} ${os.release()} ${os.arch()}`,
+      agentVersion: AGENT_VERSION,
+      inventory,
+    },
+    false,
+  );
   const deviceToken = result['deviceToken'];
-  if (typeof deviceToken !== 'string') throw new Error('Registration response did not include a device token.');
+  if (typeof deviceToken !== 'string')
+    throw new Error('Registration response did not include a device token.');
   const next = { ...config, deviceToken };
   await saveConfig(next);
   return next;
@@ -76,7 +96,11 @@ async function heartbeat(config: AgentConfig) {
 
 async function claimAndRun(config: AgentConfig) {
   const claimed = await postJson(config, '/endpoint-agent/commands/claim', {});
-  const command = claimed['command'] as { id?: string; commandKind?: string; nonce?: string } | null;
+  const command = claimed['command'] as {
+    id?: string;
+    commandKind?: string;
+    nonce?: string;
+  } | null;
   if (!command?.id || !command.commandKind || !command.nonce) return false;
   try {
     const diagnostic = await runFixedDiagnostic(command.commandKind);
@@ -88,8 +112,12 @@ async function claimAndRun(config: AgentConfig) {
       nonce: command.nonce,
       status: payload['ok'] === false ? 'failed' : 'succeeded',
       payload: diagnostic,
-      errorCode: payload['ok'] === false ? String(payload['resultStatus'] ?? 'command_failed') : undefined,
-      errorMessage: payload['ok'] === false ? String(payload['stderrSummary'] ?? payload['note'] ?? 'Command failed') : undefined,
+      errorCode:
+        payload['ok'] === false ? String(payload['resultStatus'] ?? 'command_failed') : undefined,
+      errorMessage:
+        payload['ok'] === false
+          ? String(payload['stderrSummary'] ?? payload['note'] ?? 'Command failed')
+          : undefined,
     });
   } catch (err) {
     await postJson(config, `/endpoint-agent/commands/${command.id}/result`, {
@@ -108,7 +136,10 @@ export async function runOnce() {
   await claimAndRun(config);
 }
 
-function parseArgs(): { mode: 'daemon' | 'register' | 'heartbeat' | 'diagnostic'; diagnosticKind?: string } | null {
+function parseArgs(): {
+  mode: 'daemon' | 'register' | 'heartbeat' | 'diagnostic';
+  diagnosticKind?: string;
+} | null {
   const args = process.argv.slice(2);
   if (args.length === 0) return { mode: 'daemon' };
   if (args.includes('--register')) return { mode: 'register' };
@@ -121,7 +152,9 @@ function parseArgs(): { mode: 'daemon' | 'register' | 'heartbeat' | 'diagnostic'
     console.error('Usage: node dist/src/index.js [--register | --heartbeat | --diagnostic <kind>]');
     console.error('  --register          Register with SupportPlane API and receive device token');
     console.error('  --heartbeat         Send heartbeat to SupportPlane API');
-    console.error('  --diagnostic <kind> Run a fixed diagnostic (inventory, disk, network, services, software, status)');
+    console.error(
+      '  --diagnostic <kind> Run a fixed diagnostic (inventory, disk, network, services, software, status)',
+    );
     console.error('');
     console.error('No flags: run as daemon (register, heartbeat, claim/run loop)');
     console.error('');
@@ -139,13 +172,15 @@ function parseArgs(): { mode: 'daemon' | 'register' | 'heartbeat' | 'diagnostic'
 async function cliRegister() {
   const config = await loadConfig();
   const result = await register(config);
-  console.log(JSON.stringify({
-    agentId: result.deviceKey,
-    platform: os.platform(),
-    hostname: os.hostname(),
-    registered: true,
-    note: 'Agent registered successfully. Device token saved locally.',
-  }));
+  console.log(
+    JSON.stringify({
+      agentId: result.deviceKey,
+      platform: os.platform(),
+      hostname: os.hostname(),
+      registered: true,
+      note: 'Agent registered successfully. Device token saved locally.',
+    }),
+  );
 }
 
 async function cliHeartbeat() {
@@ -155,12 +190,14 @@ async function cliHeartbeat() {
     process.exit(1);
   }
   await heartbeat(config);
-  console.log(JSON.stringify({
-    platform: os.platform(),
-    hostname: os.hostname(),
-    heartbeat: true,
-    status: 'online',
-  }));
+  console.log(
+    JSON.stringify({
+      platform: os.platform(),
+      hostname: os.hostname(),
+      heartbeat: true,
+      status: 'online',
+    }),
+  );
 }
 
 async function cliDiagnostic(kind: string) {
@@ -195,8 +232,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const once = process.env['SUPPORTPLANE_ENDPOINT_ONCE'] === '1';
   await runOnce();
   if (!once) {
-    setInterval(() => {
-      runOnce().catch((err) => console.error(err instanceof Error ? err.message : err));
-    }, Number(process.env['SUPPORTPLANE_ENDPOINT_INTERVAL_MS'] ?? 15000));
+    setInterval(
+      () => {
+        runOnce().catch((err) => console.error(err instanceof Error ? err.message : err));
+      },
+      Number(process.env['SUPPORTPLANE_ENDPOINT_INTERVAL_MS'] ?? 15000),
+    );
   }
 }

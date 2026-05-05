@@ -40,10 +40,7 @@ describe('call-recording contracts', () => {
   });
 
   it('CallRecordingSource accepts all enum values', () => {
-    assert.deepStrictEqual(CallRecordingSource.options, [
-      'mock_generated',
-      'provider_placeholder',
-    ]);
+    assert.deepStrictEqual(CallRecordingSource.options, ['mock_generated', 'provider_placeholder']);
   });
 
   it('CallRecordingStorageType accepts all enum values', () => {

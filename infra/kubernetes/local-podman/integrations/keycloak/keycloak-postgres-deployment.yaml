@@ -23,9 +23,9 @@ spec:
           image: postgres:16-alpine
           env:
             - name: POSTGRES_DB
-              value: "keycloak"
+              value: 'keycloak'
             - name: POSTGRES_USER
-              value: "keycloak"
+              value: 'keycloak'
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -36,23 +36,23 @@ spec:
               name: postgres
           livenessProbe:
             exec:
-              command: ["pg_isready", "-U", "keycloak"]
+              command: ['pg_isready', '-U', 'keycloak']
             initialDelaySeconds: 15
             periodSeconds: 15
             failureThreshold: 5
           readinessProbe:
             exec:
-              command: ["pg_isready", "-U", "keycloak"]
+              command: ['pg_isready', '-U', 'keycloak']
             initialDelaySeconds: 5
             periodSeconds: 10
             failureThreshold: 3
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "50m"
+              memory: '64Mi'
+              cpu: '50m'
             limits:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: '256Mi'
+              cpu: '200m'
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data

@@ -6,6 +6,7 @@
 ## Active Work
 
 ### P1 [BL-001] Implement first feature slice
+
 ### P1 [BL-002] Add proof for first user-facing claim
 
 ## Queue Rules

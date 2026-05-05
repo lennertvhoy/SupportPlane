@@ -1,13 +1,10 @@
-import type {
-  RuntimeResolverInput,
-  RuntimeResolverOutput,
-} from './types.js';
+import type { RuntimeResolverInput, RuntimeResolverOutput } from './types.js';
 import { getTicketingAdapterFactory } from './registry.js';
 
 export class AdapterRuntimeResolverError extends Error {
   constructor(
     public readonly code: string,
-    message: string
+    message: string,
   ) {
     super(message);
     this.name = 'AdapterRuntimeResolverError';
@@ -15,14 +12,14 @@ export class AdapterRuntimeResolverError extends Error {
 }
 
 export async function resolveAdapterRuntime(
-  input: RuntimeResolverInput
+  input: RuntimeResolverInput,
 ): Promise<RuntimeResolverOutput> {
   const { adapterType, installation, credentials, safety } = input;
 
   if (!installation.enabled) {
     throw new AdapterRuntimeResolverError(
       'INSTALLATION_DISABLED',
-      `Connector installation ${installation.id} is disabled.`
+      `Connector installation ${installation.id} is disabled.`,
     );
   }
 
@@ -30,7 +27,7 @@ export async function resolveAdapterRuntime(
   if (!factory) {
     throw new AdapterRuntimeResolverError(
       'ADAPTER_NOT_REGISTERED',
-      `Unknown adapter type: ${adapterType}`
+      `Unknown adapter type: ${adapterType}`,
     );
   }
 
@@ -49,8 +46,13 @@ export async function resolveAdapterRuntime(
     ...credentials,
   };
 
-  if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
-    await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect(connectConfig);
+  if (
+    typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> })
+      .connect === 'function'
+  ) {
+    await (
+      adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }
+    ).connect(connectConfig);
   }
 
   const credentialReferenceCount = Object.keys(credentials).length > 0 ? 1 : 0;

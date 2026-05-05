@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-05 09:20 CEST
+**Updated At:** 2026-05-05 09:45 CEST
 
 ## Active Work
 
@@ -37,17 +37,13 @@
   - Owner: compliance/security auditor delegate
   - Status: partial/readiness-dossier-created. 8 precheck docs created. Remaining: incident response runbook, TLS/mTLS design, SBOM, container hardening, backup restore E2E test, GDPR purge worker, CI security scanning, production auth hardening design.
 
-- [BL-153] **Automated Quality Gate & CI/CD Hardening Foundation**
-  - Owner: DevSecOps / automation engineer
-  - Status: planned. Expand CI to run build, lint, typecheck, format:check, test, validate, and `npm audit` on every PR. Make required status check.
-
 - [BL-154] **Test Trustworthiness & Anti-Fake-Completeness Strategy**
   - Owner: QA / test architect
   - Status: planned. Add worker tests, UI render tests, audit unit tests, negative tests for security boundaries, mock/real boundary documentation, skip reason comments.
 
 - [BL-155] **DevSecOps Automated Audit Foundation**
   - Owner: security engineer
-  - Status: planned. Add dependency audit, secrets detection, SAST, container scanning, SBOM generation, license scan, and K8s manifest validation to CI or nightly.
+  - Status: partial. Dependency audit runs in CI (`security-baseline` job, `npm audit --audit-level=high` blocking + full report artifact). Remaining: SAST (Semgrep/CodeQL), secrets detection (gitleaks), container scanning (Trivy), SBOM, license scan, K8s manifest validation.
 
 - [BL-156] **Accessibility, Colour Contrast & Visual Confidence Pass**
   - Owner: accessibility / frontend engineer
@@ -60,6 +56,7 @@
 - [BL-150] `[accepted]` Tool Registry RBAC & Tenant Scoping Hardening (Session 158).
 - [BL-151] `[accepted]` Web Resilience & Accessibility Foundation — minimal root error boundary + aria-labels (Session 158).
 - [BL-152] `[partial/readiness-dossier-created]` Belgium/EU Assurance Audit — 8 compliance precheck docs created (Session 158).
+- [BL-153] `[accepted]` Automated Quality Gate & CI/CD Hardening Foundation — CI workflow created, local validation passes, security baseline scaffolded, formatting drift fixed (Session 161).
 
 ## Queue Rules
 

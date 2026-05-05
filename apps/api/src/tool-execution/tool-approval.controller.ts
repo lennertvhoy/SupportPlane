@@ -21,17 +21,16 @@ export class ToolApprovalController {
   }
 
   @Post(':id/approve')
-  async approve(
-    @Req() req: Request,
-    @Param('id') id: string,
-    @Body() body: { reason?: string },
-  ) {
+  async approve(@Req() req: Request, @Param('id') id: string, @Body() body: { reason?: string }) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'endpoint_command:create');
     const approval = await this.approvalService.approveOrDeny(identity, id, 'approve', body.reason);
 
     // Dispatch the associated invocation
-    const invocation = await this.gateway['store'].getToolInvocation(identity.tenantId, approval.invocationId);
+    const invocation = await this.gateway['store'].getToolInvocation(
+      identity.tenantId,
+      approval.invocationId,
+    );
     if (invocation) {
       await this.gateway.dispatchAfterApproval(identity, invocation.id);
     }
@@ -40,11 +39,7 @@ export class ToolApprovalController {
   }
 
   @Post(':id/deny')
-  async deny(
-    @Req() req: Request,
-    @Param('id') id: string,
-    @Body() body: { reason?: string },
-  ) {
+  async deny(@Req() req: Request, @Param('id') id: string, @Body() body: { reason?: string }) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'endpoint_command:create');
     const approval = await this.approvalService.approveOrDeny(identity, id, 'deny', body.reason);

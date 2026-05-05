@@ -9,7 +9,7 @@ import type { Store } from '../store/store.interface.js';
 export class TicketsController {
   constructor(
     @Inject(InMemoryStore)
-    private readonly store: Store
+    private readonly store: Store,
   ) {}
 
   @Get()
@@ -18,7 +18,7 @@ export class TicketsController {
     @Query('customerId') customerId?: string,
     @Query('email') email?: string,
     @Query('status') status?: string,
-    @Query('priority') priority?: string
+    @Query('priority') priority?: string,
   ) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'ticket:read');

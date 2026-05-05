@@ -4,13 +4,7 @@ import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
 export const AuditEventId = EntityId.brand<'AuditEventId'>();
 export type AuditEventId = z.infer<typeof AuditEventId>;
 
-export const AuditActorType = z.enum([
-  'user',
-  'system',
-  'connector',
-  'ai',
-  'policy_engine',
-]);
+export const AuditActorType = z.enum(['user', 'system', 'connector', 'ai', 'policy_engine']);
 
 export type AuditActorType = z.infer<typeof AuditActorType>;
 

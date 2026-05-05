@@ -9,12 +9,12 @@ metadata:
 data:
   # Local sandbox configuration only
   # Note: Zammad Docker entrypoint uses POSTGRESQL_* variables
-  RAILS_ENV: "production"
-  ELASTICSEARCH_ENABLED: "false"
-  REDIS_URL: "redis://zammad-redis:6379"
-  POSTGRESQL_HOST: "zammad-postgres"
-  POSTGRESQL_PORT: "5432"
-  POSTGRESQL_DB: "zammad"
-  POSTGRESQL_USER: "zammad"
-  POSTGRESQL_DB_CREATE: "true"
-  ZAMMAD_RAILSSERVER_PORT: "3000"
+  RAILS_ENV: 'production'
+  ELASTICSEARCH_ENABLED: 'false'
+  REDIS_URL: 'redis://zammad-redis:6379'
+  POSTGRESQL_HOST: 'zammad-postgres'
+  POSTGRESQL_PORT: '5432'
+  POSTGRESQL_DB: 'zammad'
+  POSTGRESQL_USER: 'zammad'
+  POSTGRESQL_DB_CREATE: 'true'
+  ZAMMAD_RAILSSERVER_PORT: '3000'

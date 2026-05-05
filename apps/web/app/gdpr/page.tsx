@@ -6,7 +6,13 @@ import { AuthGate, IdentityPill } from '@/components/AuthGate';
 import { GdprRequestPanel } from '@/components/GdprRequestPanel';
 import type { AuthIdentity } from '@/lib/api';
 
-function GdprPageContent({ identity, logout }: { identity: AuthIdentity; logout: () => Promise<void> }) {
+function GdprPageContent({
+  identity,
+  logout,
+}: {
+  identity: AuthIdentity;
+  logout: () => Promise<void>;
+}) {
   const router = useRouter();
   return (
     <div className="flex h-screen flex-col bg-cockpit-950 text-cockpit-100">
@@ -39,5 +45,9 @@ function GdprPageContent({ identity, logout }: { identity: AuthIdentity; logout:
 }
 
 export default function GdprPage() {
-  return <AuthGate>{(identity, logout) => <GdprPageContent identity={identity} logout={logout} />}</AuthGate>;
+  return (
+    <AuthGate>
+      {(identity, logout) => <GdprPageContent identity={identity} logout={logout} />}
+    </AuthGate>
+  );
 }

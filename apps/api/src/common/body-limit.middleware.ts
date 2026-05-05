@@ -34,7 +34,7 @@ export class BodyLimitMiddleware implements NestMiddleware {
  * Standalone Express middleware function for coordinator integration.
  */
 export function bodyLimitMiddleware(
-  audit?: SecurityAuditService
+  audit?: SecurityAuditService,
 ): (req: Request, res: Response, next: NextFunction) => void {
   return (req, res, next) => {
     const limit = getBodyLimitForPath(req.path);

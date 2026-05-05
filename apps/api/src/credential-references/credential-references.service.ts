@@ -3,7 +3,10 @@ import { randomUUID } from 'crypto';
 import { InMemoryStore } from '../support-sessions/in-memory.store.js';
 import type { Store } from '../store/store.interface.js';
 import { AuditEventType, AuditActorType } from '@supportplane/contracts';
-import type { AuditEvent as AuditEventShape, ConnectorCredentialReference as ConnectorCredentialReferenceShape } from '@supportplane/contracts';
+import type {
+  AuditEvent as AuditEventShape,
+  ConnectorCredentialReference as ConnectorCredentialReferenceShape,
+} from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import type { DevIdentity } from '../auth/auth.types.js';
 import { requirePermission } from '../auth/rbac.js';
@@ -12,7 +15,7 @@ import { requirePermission } from '../auth/rbac.js';
 export class CredentialReferencesService {
   constructor(
     @Inject(InMemoryStore)
-    private readonly store: Store
+    private readonly store: Store,
   ) {}
 
   async createCredentialReference(
@@ -23,7 +26,7 @@ export class CredentialReferencesService {
       description?: string;
       status?: string;
       secretKind?: string;
-    }
+    },
   ) {
     requirePermission(identity, 'credential_reference:write');
     const now = new Date().toISOString();
@@ -34,19 +37,26 @@ export class CredentialReferencesService {
       displayName: dto.displayName,
       description: dto.description,
       status: (dto.status ?? 'active') as ConnectorCredentialReferenceShape['status'],
-      secretKind: (dto.secretKind ?? 'api_token_placeholder') as ConnectorCredentialReferenceShape['secretKind'],
+      secretKind: (dto.secretKind ??
+        'api_token_placeholder') as ConnectorCredentialReferenceShape['secretKind'],
       secretRef: 'local-dev-placeholder',
       createdAt: now,
       updatedAt: now,
       createdByUserId: identity.userId,
     };
     await this.store.saveCredentialReference(ref);
-    await this.appendAuditEvent(identity, AuditEventType.enum.credential_reference_created, 'credential_reference', ref.id, {
-      connectorType: ref.connectorType,
-      displayName: ref.displayName,
-      secretKind: ref.secretKind,
-      mockDevOnly: true,
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.credential_reference_created,
+      'credential_reference',
+      ref.id,
+      {
+        connectorType: ref.connectorType,
+        displayName: ref.displayName,
+        secretKind: ref.secretKind,
+        mockDevOnly: true,
+      },
+    );
     return { credentialReference: this.redactCredentialReference(ref) };
   }
 
@@ -73,7 +83,7 @@ export class CredentialReferencesService {
       description?: string;
       status?: string;
       secretKind?: string;
-    }
+    },
   ) {
     requirePermission(identity, 'credential_reference:write');
     const ref = await this.store.getCredentialReference(identity.tenantId, id);
@@ -86,25 +96,34 @@ export class CredentialReferencesService {
       displayName: dto.displayName ?? ref.displayName,
       description: dto.description !== undefined ? dto.description : ref.description,
       status: (dto.status ?? ref.status) as ConnectorCredentialReferenceShape['status'],
-      secretKind: (dto.secretKind ?? ref.secretKind) as ConnectorCredentialReferenceShape['secretKind'],
+      secretKind: (dto.secretKind ??
+        ref.secretKind) as ConnectorCredentialReferenceShape['secretKind'],
       updatedAt: new Date().toISOString(),
       updatedByUserId: identity.userId,
     };
 
     await this.store.saveCredentialReference(updated);
-    await this.appendAuditEvent(identity, AuditEventType.enum.credential_reference_updated, 'credential_reference', id, {
-      previousStatus: ref.status,
-      newStatus: updated.status,
-      previousSecretKind: ref.secretKind,
-      newSecretKind: updated.secretKind,
-      updatedBy: identity.userId,
-      mockDevOnly: true,
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.credential_reference_updated,
+      'credential_reference',
+      id,
+      {
+        previousStatus: ref.status,
+        newStatus: updated.status,
+        previousSecretKind: ref.secretKind,
+        newSecretKind: updated.secretKind,
+        updatedBy: identity.userId,
+        mockDevOnly: true,
+      },
+    );
 
     return { credentialReference: this.redactCredentialReference(updated) };
   }
 
-  private redactCredentialReference(ref: ConnectorCredentialReferenceShape): ConnectorCredentialReferenceShape {
+  private redactCredentialReference(
+    ref: ConnectorCredentialReferenceShape,
+  ): ConnectorCredentialReferenceShape {
     return {
       ...ref,
       secretRef: '[REDACTED]',
@@ -116,7 +135,7 @@ export class CredentialReferencesService {
     eventType: AuditEventType,
     resourceType: string,
     resourceId: string,
-    metadata: Record<string, unknown> = {}
+    metadata: Record<string, unknown> = {},
   ): Promise<void> {
     const now = new Date().toISOString();
     const event: AuditEventShape = {

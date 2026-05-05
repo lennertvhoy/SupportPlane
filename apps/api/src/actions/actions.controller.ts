@@ -82,7 +82,11 @@ export class ActionsController {
   }
 
   @Post('outbox/:id/dead-letter')
-  deadLetterOutbox(@Req() req: Request, @Param('id') id: string, @Body() body: { reason?: string }) {
+  deadLetterOutbox(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+  ) {
     return this.service.deadLetterOutbox(getCurrentIdentity(req), id, body);
   }
 

@@ -18,7 +18,11 @@ export class EndpointDevicesController {
   }
 
   @Post(':id/commands')
-  requestCommand(@Req() req: Request, @Param('id') id: string, @Body() body: Record<string, unknown>) {
+  requestCommand(
+    @Req() req: Request,
+    @Param('id') id: string,
+    @Body() body: Record<string, unknown>,
+  ) {
     return this.service.requestCommand(getCurrentIdentity(req), id, body as never);
   }
 }

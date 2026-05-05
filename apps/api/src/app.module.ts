@@ -27,12 +27,66 @@ import { AuditExplorerModule } from './audit-explorer/audit-explorer.module.js';
 import { GdprModule } from './gdpr/gdpr.module.js';
 
 @Module({
-  imports: [StoreModule, AuthModule, TelemetryModule, AuditModule, SupportSessionsModule, ConnectorsModule, CallsModule, TelephonyModule, CustomersModule, ConnectorInstallationsModule, CredentialReferencesModule, TicketsModule, ActionsModule, DeliveryPolicyModule, AdminPolicyModule, EndpointDevicesModule, ToolExecutionModule, KnowledgeModule, ModelUsageModule, AiGatewayModule, AiChatModule, AuditExplorerModule, GdprModule],
+  imports: [
+    StoreModule,
+    AuthModule,
+    TelemetryModule,
+    AuditModule,
+    SupportSessionsModule,
+    ConnectorsModule,
+    CallsModule,
+    TelephonyModule,
+    CustomersModule,
+    ConnectorInstallationsModule,
+    CredentialReferencesModule,
+    TicketsModule,
+    ActionsModule,
+    DeliveryPolicyModule,
+    AdminPolicyModule,
+    EndpointDevicesModule,
+    ToolExecutionModule,
+    KnowledgeModule,
+    ModelUsageModule,
+    AiGatewayModule,
+    AiChatModule,
+    AuditExplorerModule,
+    GdprModule,
+  ],
   controllers: [HealthController],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(CorrelationMiddleware).forRoutes('*');
-    consumer.apply(CurrentIdentityMiddleware).forRoutes('auth/me', 'auth/logout', 'auth/audit-events', 'auth/service-accounts', 'support-sessions', 'connectors', 'calls', 'telephony', 'customers', 'connector-installations', 'credential-references', 'tickets', 'actions', 'outbox', 'delivery-policies', 'admin/policies', 'endpoint-devices', 'admin/devices', 'admin/tools', 'admin/tool-invocations', 'admin/tool-approvals', 'knowledge', 'model-usage', 'ai-chat', 'audit-events', 'gdpr', 'admin/ai-provider-readiness');
+    consumer
+      .apply(CurrentIdentityMiddleware)
+      .forRoutes(
+        'auth/me',
+        'auth/logout',
+        'auth/audit-events',
+        'auth/service-accounts',
+        'support-sessions',
+        'connectors',
+        'calls',
+        'telephony',
+        'customers',
+        'connector-installations',
+        'credential-references',
+        'tickets',
+        'actions',
+        'outbox',
+        'delivery-policies',
+        'admin/policies',
+        'endpoint-devices',
+        'admin/devices',
+        'admin/tools',
+        'admin/tool-invocations',
+        'admin/tool-approvals',
+        'knowledge',
+        'model-usage',
+        'ai-chat',
+        'audit-events',
+        'gdpr',
+        'admin/ai-provider-readiness',
+      );
   }
 }

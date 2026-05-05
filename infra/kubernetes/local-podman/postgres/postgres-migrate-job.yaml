@@ -26,4 +26,4 @@ spec:
             - deploy
           env:
             - name: DATABASE_URL
-              value: "postgresql://supportplane:supportplane_dev@postgres.supportplane-data.svc.cluster.local:5432/supportplane"
+              value: 'postgresql://supportplane:supportplane_dev@postgres.supportplane-data.svc.cluster.local:5432/supportplane'

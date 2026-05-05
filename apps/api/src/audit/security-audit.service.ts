@@ -10,7 +10,9 @@ function hashIp(ip: string): string {
 
 function safeLabel(value: unknown): string {
   if (value === undefined || value === null) return 'unknown';
-  return String(value).replace(/[^A-Za-z0-9_.:-]/g, '_').slice(0, 96);
+  return String(value)
+    .replace(/[^A-Za-z0-9_.:-]/g, '_')
+    .slice(0, 96);
 }
 
 function tenantIdFromReq(req: Request): string | undefined {

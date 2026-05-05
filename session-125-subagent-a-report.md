@@ -21,13 +21,13 @@
 
 ### BL-026 — AI model gateway
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | `packages/ai/src/index.ts` — `ModelGateway` class with `generateDraft()` and `generateGreeting()`. `packages/ai/src/registry.ts` — AI provider registry. `apps/api/src/support-sessions/support-sessions.service.ts` — injects gateway via `createDefaultModelGateway()`. | No OpenAI provider implementation. No Azure OpenAI provider implementation. No cloud-provider config schema or credential integration. |
-| **UI Components** | `DraftNotePanel.tsx` shows provider badges (mock/ollama/lmstudio). `apps/web/app/page.tsx` uses `generateDraftSuggestion`. | No dedicated model gateway admin UI. No provider health/status panel beyond telemetry. |
-| **DB Tables** | No dedicated model gateway table. Provider config is env-driven only. | No persisted provider configuration. No model gateway audit log table. |
-| **Contracts** | `AiProviderId` enum = `['mock', 'ollama', 'lmstudio']`. `ModelSelection`, `PromptTemplate`, `ModelUsageMetadata`, `AiSafetyMetadata` in `packages/ai/src/index.ts`. | No OpenAI/Azure enum values. No cloud-specific safety metadata fields. |
-| **Providers** | `MockAiProvider` (deterministic fallback). `OllamaAiProvider` with `FetchOllamaClient` — real host calls proven in BL-108/BL-121. `LmStudioAiProvider` with `FetchLmStudioClient` — real host calls proven. | Cloud providers blocked by policy (`cloudCallsAllowed: false` in `AiPolicy`). No OpenAI API key integration. No Azure AD/token integration. |
+| Dimension         | What Exists                                                                                                                                                                                                                                                               | What Is Missing                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Files/APIs**    | `packages/ai/src/index.ts` — `ModelGateway` class with `generateDraft()` and `generateGreeting()`. `packages/ai/src/registry.ts` — AI provider registry. `apps/api/src/support-sessions/support-sessions.service.ts` — injects gateway via `createDefaultModelGateway()`. | No OpenAI provider implementation. No Azure OpenAI provider implementation. No cloud-provider config schema or credential integration.      |
+| **UI Components** | `DraftNotePanel.tsx` shows provider badges (mock/ollama/lmstudio). `apps/web/app/page.tsx` uses `generateDraftSuggestion`.                                                                                                                                                | No dedicated model gateway admin UI. No provider health/status panel beyond telemetry.                                                      |
+| **DB Tables**     | No dedicated model gateway table. Provider config is env-driven only.                                                                                                                                                                                                     | No persisted provider configuration. No model gateway audit log table.                                                                      |
+| **Contracts**     | `AiProviderId` enum = `['mock', 'ollama', 'lmstudio']`. `ModelSelection`, `PromptTemplate`, `ModelUsageMetadata`, `AiSafetyMetadata` in `packages/ai/src/index.ts`.                                                                                                       | No OpenAI/Azure enum values. No cloud-specific safety metadata fields.                                                                      |
+| **Providers**     | `MockAiProvider` (deterministic fallback). `OllamaAiProvider` with `FetchOllamaClient` — real host calls proven in BL-108/BL-121. `LmStudioAiProvider` with `FetchLmStudioClient` — real host calls proven.                                                               | Cloud providers blocked by policy (`cloudCallsAllowed: false` in `AiPolicy`). No OpenAI API key integration. No Azure AD/token integration. |
 
 **Recommended status outcome:** `partial/mock-default-real-when-configured`
 
@@ -37,12 +37,12 @@
 
 ### BL-027 — AI chat
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | No chat-specific API. `generateDraftSuggestion` and `generateGreetingSuggestion` are one-shot request/response, not conversational chat. | No `POST /chat` or `POST /chat/messages` endpoint. No message threading. No conversation history API. |
-| **UI Components** | No chat UI component. `DraftNotePanel.tsx` is a draft editor, not a chat interface. `GreetingSuggestionPanel.tsx` is one-shot. | No `<ChatPanel />`, `<ChatMessageList />`, or `<ChatInput />`. No message bubble UI. |
-| **DB Tables** | No `AiChatMessage`, `ChatConversation`, or equivalent table in Prisma schema. | Entire chat persistence layer is missing. |
-| **Contracts** | No chat message or conversation contracts in `packages/contracts`. | `ChatMessage`, `ChatConversation`, `ChatRole` contracts missing. |
+| Dimension         | What Exists                                                                                                                              | What Is Missing                                                                                       |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Files/APIs**    | No chat-specific API. `generateDraftSuggestion` and `generateGreetingSuggestion` are one-shot request/response, not conversational chat. | No `POST /chat` or `POST /chat/messages` endpoint. No message threading. No conversation history API. |
+| **UI Components** | No chat UI component. `DraftNotePanel.tsx` is a draft editor, not a chat interface. `GreetingSuggestionPanel.tsx` is one-shot.           | No `<ChatPanel />`, `<ChatMessageList />`, or `<ChatInput />`. No message bubble UI.                  |
+| **DB Tables**     | No `AiChatMessage`, `ChatConversation`, or equivalent table in Prisma schema.                                                            | Entire chat persistence layer is missing.                                                             |
+| **Contracts**     | No chat message or conversation contracts in `packages/contracts`.                                                                       | `ChatMessage`, `ChatConversation`, `ChatRole` contracts missing.                                      |
 
 **Recommended status outcome:** `partial/scaffold`
 
@@ -52,13 +52,13 @@
 
 ### BL-028 — Ticket summary
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | `TicketSummary` Prisma model exists (`ticket_summaries` table). No dedicated ticket summary generation API. | No `POST /tickets/:id/summary` or `POST /support-sessions/:id/ticket-summary` endpoint. No ticket summary service method. |
-| **UI Components** | `TicketSummaryPanel.tsx` exists but is a **ticket search/list panel** (searches by email/status, lists `TicketReference` items), not an AI-generated summary viewer. | No AI summary display panel. No "Generate summary" button. No summary review UI. |
-| **DB Tables** | `TicketSummary` model with `summaryText`, `keyPoints`, `sentiment`, `source`, `redactionLog`, `mockDevOnly`. | No rows are created by the app — the table is unused. No foreign key from `TicketReference` to generated summaries. |
-| **Contracts** | `TicketSummary` is not defined in `packages/contracts/src/index.ts` (only in Prisma). | Contract definition missing. No ticket summary generation request/response schema. |
-| **AI Integration** | `generateDraft` in `packages/ai/src/index.ts` uses ticket context, but does not produce a structured ticket summary. | No dedicated ticket summary prompt template. No summary-specific provider call. |
+| Dimension          | What Exists                                                                                                                                                          | What Is Missing                                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Files/APIs**     | `TicketSummary` Prisma model exists (`ticket_summaries` table). No dedicated ticket summary generation API.                                                          | No `POST /tickets/:id/summary` or `POST /support-sessions/:id/ticket-summary` endpoint. No ticket summary service method. |
+| **UI Components**  | `TicketSummaryPanel.tsx` exists but is a **ticket search/list panel** (searches by email/status, lists `TicketReference` items), not an AI-generated summary viewer. | No AI summary display panel. No "Generate summary" button. No summary review UI.                                          |
+| **DB Tables**      | `TicketSummary` model with `summaryText`, `keyPoints`, `sentiment`, `source`, `redactionLog`, `mockDevOnly`.                                                         | No rows are created by the app — the table is unused. No foreign key from `TicketReference` to generated summaries.       |
+| **Contracts**      | `TicketSummary` is not defined in `packages/contracts/src/index.ts` (only in Prisma).                                                                                | Contract definition missing. No ticket summary generation request/response schema.                                        |
+| **AI Integration** | `generateDraft` in `packages/ai/src/index.ts` uses ticket context, but does not produce a structured ticket summary.                                                 | No dedicated ticket summary prompt template. No summary-specific provider call.                                           |
 
 **Recommended status outcome:** `partial/scaffold`
 
@@ -68,13 +68,13 @@
 
 ### BL-029 — Draft note generation
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | `POST /support-sessions/:id/draft-suggestion` endpoint. `generateDraftSuggestion` in `support-sessions.service.ts`. `POST /support-sessions/:id/support-note-drafts` creates a draft record. `POST /support-sessions/:id/writeback-internal-note` for sandbox writeback. | No production writeback (intentionally blocked by policy). No cloud AI provider integration for drafts. |
-| **UI Components** | `DraftNotePanel.tsx` — full draft editor with generate button, operator instructions, review checkbox, AI metadata display, writeback button. `SupportNoteDraftPanel.tsx` — lists drafts for a session. | No cloud provider badge support in draft panel. |
-| **DB Tables** | `InternalNoteDraft` Prisma model with `body`, `reviewed`, `reviewerId`, `externalTicketId`. | No `AiDraft` table separate from `InternalNoteDraft` (the draft is ephemeral AI output, not stored separately from the reviewed note draft). |
-| **Contracts** | `GenerateDraftRequest`, `GenerateDraftResponse` in `packages/ai/src/index.ts`. `InternalNoteWritebackResult` in contracts. | No dedicated `DraftNote` contract separate from `InternalNoteDraft`. |
-| **AI Integration** | Full `ModelGateway.generateDraft()` with mock/ollama/lmstudio. Redaction before provider call. Context hash. Safety metadata. Fallback to mock on Ollama/LM Studio failure. | Token usage not extracted from Ollama response. No cost estimation. |
+| Dimension          | What Exists                                                                                                                                                                                                                                                              | What Is Missing                                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Files/APIs**     | `POST /support-sessions/:id/draft-suggestion` endpoint. `generateDraftSuggestion` in `support-sessions.service.ts`. `POST /support-sessions/:id/support-note-drafts` creates a draft record. `POST /support-sessions/:id/writeback-internal-note` for sandbox writeback. | No production writeback (intentionally blocked by policy). No cloud AI provider integration for drafts.                                      |
+| **UI Components**  | `DraftNotePanel.tsx` — full draft editor with generate button, operator instructions, review checkbox, AI metadata display, writeback button. `SupportNoteDraftPanel.tsx` — lists drafts for a session.                                                                  | No cloud provider badge support in draft panel.                                                                                              |
+| **DB Tables**      | `InternalNoteDraft` Prisma model with `body`, `reviewed`, `reviewerId`, `externalTicketId`.                                                                                                                                                                              | No `AiDraft` table separate from `InternalNoteDraft` (the draft is ephemeral AI output, not stored separately from the reviewed note draft). |
+| **Contracts**      | `GenerateDraftRequest`, `GenerateDraftResponse` in `packages/ai/src/index.ts`. `InternalNoteWritebackResult` in contracts.                                                                                                                                               | No dedicated `DraftNote` contract separate from `InternalNoteDraft`.                                                                         |
+| **AI Integration** | Full `ModelGateway.generateDraft()` with mock/ollama/lmstudio. Redaction before provider call. Context hash. Safety metadata. Fallback to mock on Ollama/LM Studio failure.                                                                                              | Token usage not extracted from Ollama response. No cost estimation.                                                                          |
 
 **Recommended status outcome:** `partial/mock-default-real-when-configured`
 
@@ -84,12 +84,12 @@
 
 ### BL-075 — Admin screens
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | `AdminPolicyController` (`/admin/policies`) — delivery, connector, AI, retention policy CRUD with RBAC. `DeliveryPolicyController`. `ConnectorInstallationsController`. `CredentialReferencesController`. `EndpointDevicesController`. `AuthController` with OIDC. | No `/admin/users` CRUD. No `/admin/roles` CRUD. No `/admin/tenants` CRUD. No admin-specific route guards beyond RBAC. |
-| **UI Components** | `AdminPolicyPanel.tsx` — policy editor with tabs (delivery, connector, AI, retention), toggle rows, audit preview. `DeliveryPolicyPanel.tsx`. `ConnectorPanel.tsx`. | No `AdminUsersPanel.tsx`. No `AdminRolesPanel.tsx`. No `AdminTenantsPanel.tsx`. No admin dashboard or navigation. |
-| **DB Tables** | `User`, `Role`, `Tenant`, `TenantPolicy`, `DeliveryPolicy`, `ConnectorInstallation`, `ConnectorCredentialReference`, `ServiceAccount` all exist. | No admin-specific tables needed. |
-| **Routes/Pages** | `apps/web/app/` has: `page.tsx` (cockpit), `call-console/page.tsx`, `device-console/page.tsx`, `tool-registry/page.tsx`, `approval-queue/page.tsx`. | No `/admin` route or page. No `/admin/users`, `/admin/roles`, `/admin/tenants` pages. |
+| Dimension         | What Exists                                                                                                                                                                                                                                                        | What Is Missing                                                                                                       |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| **Files/APIs**    | `AdminPolicyController` (`/admin/policies`) — delivery, connector, AI, retention policy CRUD with RBAC. `DeliveryPolicyController`. `ConnectorInstallationsController`. `CredentialReferencesController`. `EndpointDevicesController`. `AuthController` with OIDC. | No `/admin/users` CRUD. No `/admin/roles` CRUD. No `/admin/tenants` CRUD. No admin-specific route guards beyond RBAC. |
+| **UI Components** | `AdminPolicyPanel.tsx` — policy editor with tabs (delivery, connector, AI, retention), toggle rows, audit preview. `DeliveryPolicyPanel.tsx`. `ConnectorPanel.tsx`.                                                                                                | No `AdminUsersPanel.tsx`. No `AdminRolesPanel.tsx`. No `AdminTenantsPanel.tsx`. No admin dashboard or navigation.     |
+| **DB Tables**     | `User`, `Role`, `Tenant`, `TenantPolicy`, `DeliveryPolicy`, `ConnectorInstallation`, `ConnectorCredentialReference`, `ServiceAccount` all exist.                                                                                                                   | No admin-specific tables needed.                                                                                      |
+| **Routes/Pages**  | `apps/web/app/` has: `page.tsx` (cockpit), `call-console/page.tsx`, `device-console/page.tsx`, `tool-registry/page.tsx`, `approval-queue/page.tsx`.                                                                                                                | No `/admin` route or page. No `/admin/users`, `/admin/roles`, `/admin/tenants` pages.                                 |
 
 **Recommended status outcome:** `partial/local-mock`
 
@@ -99,12 +99,12 @@
 
 ### BL-077 — Audit explorer with filtering
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | `GET /support-sessions/:id/audit-events` — returns session-scoped audit events. `AuditEvent` Prisma model. `saveAuditEvent`, `getAuditEvents`, `getAllAuditEvents` in store. `AuditEventType` enum with 80+ event types. | No `GET /audit-events` global endpoint. No filtering by actor, event type, decision, target, date range. No pagination for audit events. |
-| **UI Components** | `AuditTrailPanel.tsx` — session-scoped audit event list with event type, actor, resource, metadata. No filters. | No dedicated `/audit-explorer` page. No filter controls (date range, actor, event type, decision). No search. No pagination. |
-| **DB Tables** | `AuditEvent` model with indexes on `tenantId`, `sessionId`, `eventType`, `actorType+actorId`, `resourceType+resourceId`, `createdAt`. | No audit event aggregation or materialized views. |
-| **Contracts** | `AuditEvent` contract in `packages/contracts/src/audit.ts`. `packages/audit/src/index.ts` — integrity hash placeholder. | No `AuditEventFilter`, `AuditEventQuery`, or `AuditExplorerResult` contracts. |
+| Dimension         | What Exists                                                                                                                                                                                                              | What Is Missing                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Files/APIs**    | `GET /support-sessions/:id/audit-events` — returns session-scoped audit events. `AuditEvent` Prisma model. `saveAuditEvent`, `getAuditEvents`, `getAllAuditEvents` in store. `AuditEventType` enum with 80+ event types. | No `GET /audit-events` global endpoint. No filtering by actor, event type, decision, target, date range. No pagination for audit events. |
+| **UI Components** | `AuditTrailPanel.tsx` — session-scoped audit event list with event type, actor, resource, metadata. No filters.                                                                                                          | No dedicated `/audit-explorer` page. No filter controls (date range, actor, event type, decision). No search. No pagination.             |
+| **DB Tables**     | `AuditEvent` model with indexes on `tenantId`, `sessionId`, `eventType`, `actorType+actorId`, `resourceType+resourceId`, `createdAt`.                                                                                    | No audit event aggregation or materialized views.                                                                                        |
+| **Contracts**     | `AuditEvent` contract in `packages/contracts/src/audit.ts`. `packages/audit/src/index.ts` — integrity hash placeholder.                                                                                                  | No `AuditEventFilter`, `AuditEventQuery`, or `AuditExplorerResult` contracts.                                                            |
 
 **Recommended status outcome:** `partial/scaffold`
 
@@ -114,12 +114,12 @@
 
 ### BL-078 — Evidence bundle timeline viewer
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | `GET /support-sessions/:id/evidence-bundle` (JSON). `GET /support-sessions/:id/evidence-bundle.md` (Markdown). `buildEvidenceBundle()` in `evidence-bundle.builder.ts`. | No dedicated timeline viewer API. No timeline-specific endpoint. |
-| **UI Components** | `EvidenceBundlePanel.tsx` — summary tab (counts), JSON tab, Markdown tab. Copy buttons. | No visual timeline (chronological event stream). No interactive timeline (zoom, filter by event type). No dedicated "timeline viewer" mode. |
-| **DB Tables** | Evidence bundle is ephemeral — built on demand from session, tickets, packets, audit events, call events, etc. | No persisted evidence bundle table (by design for MVP). |
-| **Contracts** | `EvidenceBundle` contract with `auditTimeline` array. `EvidenceBundleAuditSummary`. | No `EvidenceBundleTimelineView` or `TimelineEvent` contract. |
+| Dimension         | What Exists                                                                                                                                                             | What Is Missing                                                                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Files/APIs**    | `GET /support-sessions/:id/evidence-bundle` (JSON). `GET /support-sessions/:id/evidence-bundle.md` (Markdown). `buildEvidenceBundle()` in `evidence-bundle.builder.ts`. | No dedicated timeline viewer API. No timeline-specific endpoint.                                                                            |
+| **UI Components** | `EvidenceBundlePanel.tsx` — summary tab (counts), JSON tab, Markdown tab. Copy buttons.                                                                                 | No visual timeline (chronological event stream). No interactive timeline (zoom, filter by event type). No dedicated "timeline viewer" mode. |
+| **DB Tables**     | Evidence bundle is ephemeral — built on demand from session, tickets, packets, audit events, call events, etc.                                                          | No persisted evidence bundle table (by design for MVP).                                                                                     |
+| **Contracts**     | `EvidenceBundle` contract with `auditTimeline` array. `EvidenceBundleAuditSummary`.                                                                                     | No `EvidenceBundleTimelineView` or `TimelineEvent` contract.                                                                                |
 
 **Recommended status outcome:** `partial/local-mock`
 
@@ -129,12 +129,12 @@
 
 ### BL-079 — Evidence export to PDF
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | Evidence bundle exports JSON and Markdown. | No PDF generation endpoint. No PDF export service. |
-| **UI Components** | `EvidenceBundlePanel.tsx` has JSON and Markdown tabs. | No PDF download button. No PDF preview. |
-| **Libraries** | None. | No PDF library (e.g., `pdfmake`, `puppeteer`, `react-pdf`). |
-| **DB/Contracts** | `EvidenceBundleFormat` enum = `['json', 'markdown']`. | No `'pdf'` format value. No PDF-specific contracts. |
+| Dimension         | What Exists                                           | What Is Missing                                             |
+| ----------------- | ----------------------------------------------------- | ----------------------------------------------------------- |
+| **Files/APIs**    | Evidence bundle exports JSON and Markdown.            | No PDF generation endpoint. No PDF export service.          |
+| **UI Components** | `EvidenceBundlePanel.tsx` has JSON and Markdown tabs. | No PDF download button. No PDF preview.                     |
+| **Libraries**     | None.                                                 | No PDF library (e.g., `pdfmake`, `puppeteer`, `react-pdf`). |
+| **DB/Contracts**  | `EvidenceBundleFormat` enum = `['json', 'markdown']`. | No `'pdf'` format value. No PDF-specific contracts.         |
 
 **Recommended status outcome:** `planned`
 
@@ -144,13 +144,13 @@
 
 ### BL-080 — Model usage log
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | `telemetry.service.ts` — in-memory counters/histograms/logs (max 100 recent logs). Not persisted. `ModelUsageMetadata` in `packages/ai/src/index.ts`. Audit events track `ai_draft_generated` with `provider`, `model`, `latencyMs`, `fallbackUsed`, `contextHash`. | No `POST /model-usage` or `GET /model-usage` endpoint. No persisted model usage log. No usage log query API. |
-| **UI Components** | `DraftNotePanel.tsx` shows single-request metadata (latency, provider, model, context hash). `ObservabilityPanel.tsx` shows telemetry status. | No model usage log viewer. No usage dashboard. No cost/latency charts. |
-| **DB Tables** | No `ModelUsageLog` or `AiRequestLog` table. | Entire persisted usage log layer missing. No token usage tracking table. No cost tracking table. |
-| **Contracts** | `ModelUsageMetadata` with `inputTokens`, `outputTokens`, `totalTokens`, `costEstimateUsd`, `latencyMs` (all optional/placeholder). `EvidenceBundleAiUsageSummary`. | No `ModelUsageLogEntry` contract. No `ModelUsageQuery` contract. |
-| **Token/Cost Capture** | Token counts are not extracted from Ollama responses (Ollama `/api/generate` does not reliably return token counts in this integration). Cost estimate is always undefined. | No token counting logic. No cost estimation logic. No pricing table. |
+| Dimension              | What Exists                                                                                                                                                                                                                                                         | What Is Missing                                                                                              |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Files/APIs**         | `telemetry.service.ts` — in-memory counters/histograms/logs (max 100 recent logs). Not persisted. `ModelUsageMetadata` in `packages/ai/src/index.ts`. Audit events track `ai_draft_generated` with `provider`, `model`, `latencyMs`, `fallbackUsed`, `contextHash`. | No `POST /model-usage` or `GET /model-usage` endpoint. No persisted model usage log. No usage log query API. |
+| **UI Components**      | `DraftNotePanel.tsx` shows single-request metadata (latency, provider, model, context hash). `ObservabilityPanel.tsx` shows telemetry status.                                                                                                                       | No model usage log viewer. No usage dashboard. No cost/latency charts.                                       |
+| **DB Tables**          | No `ModelUsageLog` or `AiRequestLog` table.                                                                                                                                                                                                                         | Entire persisted usage log layer missing. No token usage tracking table. No cost tracking table.             |
+| **Contracts**          | `ModelUsageMetadata` with `inputTokens`, `outputTokens`, `totalTokens`, `costEstimateUsd`, `latencyMs` (all optional/placeholder). `EvidenceBundleAiUsageSummary`.                                                                                                  | No `ModelUsageLogEntry` contract. No `ModelUsageQuery` contract.                                             |
+| **Token/Cost Capture** | Token counts are not extracted from Ollama responses (Ollama `/api/generate` does not reliably return token counts in this integration). Cost estimate is always undefined.                                                                                         | No token counting logic. No cost estimation logic. No pricing table.                                         |
 
 **Recommended status outcome:** `partial/scaffold`
 
@@ -160,12 +160,12 @@
 
 ### BL-081 — Tenant-level prompt/output retention
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | `RetentionPolicy` contract and `TenantPolicy` Prisma model with retention fields: `sessionRetentionDays`, `auditLogRetentionDays`, `callRecordingRetentionDays`, `screenObservationRetentionDays`, `evidenceBundleRetentionDays`, `actionOutboxRetentionDays`. `GET/PUT /admin/policies/retention` endpoints. | No `promptRetentionDays` or `outputRetentionDays` fields. No retention enforcement cron/job. No actual data purge logic. |
-| **UI Components** | `AdminPolicyPanel.tsx` — Retention tab shows session, audit, call recording, screen observation, evidence bundle, action outbox retention days. | No prompt/output-specific retention fields in UI. No purge history or scheduled purge UI. |
-| **DB Tables** | `TenantPolicy` stores retention config as JSON. | No `PromptRetentionPolicy` or `AiOutputRetention` model. No retention execution log. |
-| **Enforcement** | `autoPurgeEnabled` is locked OFF in UI. `purgeRequiresApproval` defaults to true. | No retention enforcement worker. No data purge implementation. No GDPR-style deletion worker. |
+| Dimension         | What Exists                                                                                                                                                                                                                                                                                                   | What Is Missing                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Files/APIs**    | `RetentionPolicy` contract and `TenantPolicy` Prisma model with retention fields: `sessionRetentionDays`, `auditLogRetentionDays`, `callRecordingRetentionDays`, `screenObservationRetentionDays`, `evidenceBundleRetentionDays`, `actionOutboxRetentionDays`. `GET/PUT /admin/policies/retention` endpoints. | No `promptRetentionDays` or `outputRetentionDays` fields. No retention enforcement cron/job. No actual data purge logic. |
+| **UI Components** | `AdminPolicyPanel.tsx` — Retention tab shows session, audit, call recording, screen observation, evidence bundle, action outbox retention days.                                                                                                                                                               | No prompt/output-specific retention fields in UI. No purge history or scheduled purge UI.                                |
+| **DB Tables**     | `TenantPolicy` stores retention config as JSON.                                                                                                                                                                                                                                                               | No `PromptRetentionPolicy` or `AiOutputRetention` model. No retention execution log.                                     |
+| **Enforcement**   | `autoPurgeEnabled` is locked OFF in UI. `purgeRequiresApproval` defaults to true.                                                                                                                                                                                                                             | No retention enforcement worker. No data purge implementation. No GDPR-style deletion worker.                            |
 
 **Recommended status outcome:** `partial/scaffold`
 
@@ -175,13 +175,13 @@
 
 ### BL-082 — GDPR export/delete groundwork
 
-| Dimension | What Exists | What Is Missing |
-|-----------|-------------|-----------------|
-| **Files/APIs** | Evidence bundle export (`GET /support-sessions/:id/evidence-bundle`) exports all session data as JSON/Markdown with redaction. `RetentionPolicy` has retention days. Redaction logic in `packages/ai/src/index.ts` and `apps/api/src/evidence-bundle/redaction.ts`. | No `POST /gdpr/export-request` or `POST /gdpr/delete-request` endpoints. No data-subject request workflow. No right-to-erasure API. |
-| **UI Components** | `EvidenceBundlePanel.tsx` allows generating/exporting bundle for a session. | No GDPR request portal. No data subject access request (DSAR) UI. No deletion confirmation UI. |
-| **DB Tables** | No `DataSubjectRequest`, `GdprExport`, or `PrivacyRequest` table. | Entire GDPR request persistence layer missing. |
-| **Contracts** | No GDPR-specific contracts. | `DataSubjectRequest`, `GdprExportResult`, `DeletionRequest` contracts missing. |
-| **Documentation** | Evidence bundle has disclaimers: "No GDPR or legal compliance claims are made for this export format." `docs/EVIDENCE_BUNDLES.md` exists. | No GDPR-specific documentation. No data processing agreement (DPA) groundwork. |
+| Dimension         | What Exists                                                                                                                                                                                                                                                         | What Is Missing                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Files/APIs**    | Evidence bundle export (`GET /support-sessions/:id/evidence-bundle`) exports all session data as JSON/Markdown with redaction. `RetentionPolicy` has retention days. Redaction logic in `packages/ai/src/index.ts` and `apps/api/src/evidence-bundle/redaction.ts`. | No `POST /gdpr/export-request` or `POST /gdpr/delete-request` endpoints. No data-subject request workflow. No right-to-erasure API. |
+| **UI Components** | `EvidenceBundlePanel.tsx` allows generating/exporting bundle for a session.                                                                                                                                                                                         | No GDPR request portal. No data subject access request (DSAR) UI. No deletion confirmation UI.                                      |
+| **DB Tables**     | No `DataSubjectRequest`, `GdprExport`, or `PrivacyRequest` table.                                                                                                                                                                                                   | Entire GDPR request persistence layer missing.                                                                                      |
+| **Contracts**     | No GDPR-specific contracts.                                                                                                                                                                                                                                         | `DataSubjectRequest`, `GdprExportResult`, `DeletionRequest` contracts missing.                                                      |
+| **Documentation** | Evidence bundle has disclaimers: "No GDPR or legal compliance claims are made for this export format." `docs/EVIDENCE_BUNDLES.md` exists.                                                                                                                           | No GDPR-specific documentation. No data processing agreement (DPA) groundwork.                                                      |
 
 **Recommended status outcome:** `partial/scaffold`
 
@@ -191,30 +191,32 @@
 
 ## Summary of Recommended Status Changes
 
-| Backlog ID | Current Status | Recommended Status | Change? |
-|------------|---------------|--------------------|---------|
-| BL-026 | `partial/local-mock` | `partial/mock-default-real-when-configured` | ✅ Yes |
-| BL-027 | `partial/local-mock` | `partial/scaffold` | ✅ Yes |
-| BL-028 | `partial/local-mock` | `partial/scaffold` | ✅ Yes |
-| BL-029 | `partial/local-mock` | `partial/mock-default-real-when-configured` | ✅ Yes |
-| BL-075 | `partial/local-mock` | `partial/local-mock` | — No change |
-| BL-077 | `planned` | `partial/scaffold` | ✅ Yes |
-| BL-078 | `partial/local-mock` | `partial/local-mock` | — No change |
-| BL-079 | `planned` | `planned` | — No change |
-| BL-080 | `planned` | `partial/scaffold` | ✅ Yes |
-| BL-081 | `planned` | `partial/scaffold` | ✅ Yes |
-| BL-082 | `planned` | `partial/scaffold` | ✅ Yes |
+| Backlog ID | Current Status       | Recommended Status                          | Change?     |
+| ---------- | -------------------- | ------------------------------------------- | ----------- |
+| BL-026     | `partial/local-mock` | `partial/mock-default-real-when-configured` | ✅ Yes      |
+| BL-027     | `partial/local-mock` | `partial/scaffold`                          | ✅ Yes      |
+| BL-028     | `partial/local-mock` | `partial/scaffold`                          | ✅ Yes      |
+| BL-029     | `partial/local-mock` | `partial/mock-default-real-when-configured` | ✅ Yes      |
+| BL-075     | `partial/local-mock` | `partial/local-mock`                        | — No change |
+| BL-077     | `planned`            | `partial/scaffold`                          | ✅ Yes      |
+| BL-078     | `partial/local-mock` | `partial/local-mock`                        | — No change |
+| BL-079     | `planned`            | `planned`                                   | — No change |
+| BL-080     | `planned`            | `partial/scaffold`                          | ✅ Yes      |
+| BL-081     | `planned`            | `partial/scaffold`                          | ✅ Yes      |
+| BL-082     | `planned`            | `partial/scaffold`                          | ✅ Yes      |
 
 ---
 
 ## Files That Need to Change (High-Level)
 
 ### BL-026 (AI model gateway hardening)
+
 - `packages/ai/src/index.ts` — add OpenAI/Azure provider stubs or honest `501 Not Implemented` responses.
 - `packages/contracts/src/ai.ts` (or create) — add cloud provider enum values.
 - `apps/api/src/admin-policies/admin-policy.service.ts` — update AI policy allowed providers if adding stubs.
 
 ### BL-027 (AI chat)
+
 - **New:** `prisma/schema.prisma` — add `AiChatMessage`, `AiChatConversation` models.
 - **New:** `packages/contracts/src/ai-chat.ts` — chat message/conversation contracts.
 - **New:** `apps/api/src/ai-chat/ai-chat.controller.ts` — chat API endpoints.
@@ -223,6 +225,7 @@
 - **New:** Prisma migration for chat tables.
 
 ### BL-028 (Ticket summary)
+
 - **New:** `packages/contracts/src/ticket-summary.ts` — ticket summary request/response contracts.
 - `apps/api/src/support-sessions/support-sessions.controller.ts` — add `POST :id/ticket-summary` endpoint.
 - `apps/api/src/support-sessions/support-sessions.service.ts` — add `generateTicketSummary()` method.
@@ -230,11 +233,13 @@
 - `packages/ai/src/index.ts` — add ticket summary prompt template and provider method.
 
 ### BL-029 (Draft note generation)
+
 - `packages/ai/src/index.ts` — add token counting (approximate) and cost estimation.
 - `apps/api/src/telemetry/telemetry.service.ts` — persist AI usage metadata.
 - Status is largely acceptable; mostly needs usage logging and cloud provider stubs.
 
 ### BL-075 (Admin screens)
+
 - **New:** `apps/web/app/admin/page.tsx` — admin dashboard shell.
 - **New:** `apps/web/app/admin/users/page.tsx` — user management.
 - **New:** `apps/web/app/admin/roles/page.tsx` — role management.
@@ -243,6 +248,7 @@
 - `apps/api/src/auth/auth.controller.ts` — add admin CRUD endpoints for users/roles/tenants.
 
 ### BL-077 (Audit explorer with filtering)
+
 - **New:** `apps/api/src/audit/audit.controller.ts` — `GET /audit-events` with query params (tenant, session, actor, eventType, dateFrom, dateTo, pagination).
 - `apps/api/src/store/store.interface.ts` — add `searchAuditEvents()` method.
 - `apps/api/src/store/prisma.store.ts` — implement filtered audit query.
@@ -250,17 +256,20 @@
 - **New:** `apps/web/components/AuditExplorerPanel.tsx` — filter controls + paginated event list.
 
 ### BL-078 (Evidence bundle timeline viewer)
+
 - **New:** `apps/web/components/EvidenceBundleTimeline.tsx` — chronological timeline visualization.
 - `apps/web/components/EvidenceBundlePanel.tsx` — add "Timeline" tab.
 - `apps/api/src/evidence-bundle/evidence-bundle.builder.ts` — ensure events are sorted chronologically.
 
 ### BL-079 (Evidence export to PDF)
+
 - **New:** PDF generation library (e.g., `pdfmake` or server-side Puppeteer).
 - `packages/contracts/src/evidence-bundle.ts` — add `'pdf'` to `EvidenceBundleFormat`.
 - `apps/api/src/evidence-bundle/evidence-bundle.controller.ts` or service — add PDF generation endpoint.
 - `apps/web/components/EvidenceBundlePanel.tsx` — add PDF download button.
 
 ### BL-080 (Model usage log)
+
 - **New:** `prisma/schema.prisma` — add `ModelUsageLog` table.
 - **New:** `packages/contracts/src/model-usage.ts` — usage log contracts.
 - **New:** `apps/api/src/model-usage/model-usage.controller.ts` — usage log API.
@@ -270,6 +279,7 @@
 - New Prisma migration.
 
 ### BL-081 (Tenant-level prompt/output retention)
+
 - `packages/contracts/src/tenant-policy.ts` — add `promptRetentionDays`, `outputRetentionDays` to `RetentionPolicy`.
 - `prisma/schema.prisma` — add retention fields to `TenantPolicy` or create new model.
 - `apps/api/src/admin-policies/admin-policy.service.ts` — update retention policy service.
@@ -278,6 +288,7 @@
 - New Prisma migration.
 
 ### BL-082 (GDPR export/delete groundwork)
+
 - **New:** `prisma/schema.prisma` — add `DataSubjectRequest` table.
 - **New:** `packages/contracts/src/gdpr.ts` — GDPR request contracts.
 - **New:** `apps/api/src/gdpr/gdpr.controller.ts` — export/delete request endpoints.

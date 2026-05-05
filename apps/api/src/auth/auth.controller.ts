@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Inject, Post, Req, Res, UnauthorizedException, UseGuards, BadRequestException } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service.js';
 import { OidcService } from './oidc.service.js';
@@ -17,9 +28,13 @@ export class AuthController {
   @UseGuards(RateLimitGuard)
   async login(
     @Body() body: { email?: string; password?: string; tenantSlug?: string },
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) res: Response,
   ) {
-    const result = await this.authService.login(body.email ?? '', body.password ?? '', body.tenantSlug);
+    const result = await this.authService.login(
+      body.email ?? '',
+      body.password ?? '',
+      body.tenantSlug,
+    );
     if (!result) {
       throw new UnauthorizedException('Invalid local credentials');
     }
@@ -42,7 +57,8 @@ export class AuthController {
     const identity = getCurrentIdentity(req);
     return {
       identity,
-      authMode: identity?.authMode ?? (process.env['SUPPORTPLANE_AUTH_MODE'] === 'local' ? 'local' : 'dev'),
+      authMode:
+        identity?.authMode ?? (process.env['SUPPORTPLANE_AUTH_MODE'] === 'local' ? 'local' : 'dev'),
     };
   }
 
@@ -141,7 +157,7 @@ export class AuthController {
       this.authService.getOidcConfig()?.issuerUrl ?? '',
       this.authService.getOidcConfig()?.clientId ?? '',
       expiresAt,
-      identity.roles
+      identity.roles,
     );
 
     res.cookie(this.oidcService.getSessionCookieName(), rawToken, {
@@ -182,20 +198,25 @@ export class AuthController {
   @Post('service-accounts')
   async createServiceAccount(
     @Req() req: Request,
-    @Body() body: { name: string; description?: string; roles?: string[] }
+    @Body() body: { name: string; description?: string; roles?: string[] },
   ) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'audit:write');
     if (!body.name || body.name.length < 2) {
       throw new BadRequestException('Service account name is required');
     }
-    return this.authService.createServiceAccount(identity.tenantId, body.name, body.description, body.roles);
+    return this.authService.createServiceAccount(
+      identity.tenantId,
+      body.name,
+      body.description,
+      body.roles,
+    );
   }
 
   @Post('service-accounts/:id/tokens')
   async createServiceAccountToken(
     @Req() req: Request,
-    @Body() body: { scopes?: string[]; ttlHours?: number }
+    @Body() body: { scopes?: string[]; ttlHours?: number },
   ) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'audit:write');
@@ -204,7 +225,7 @@ export class AuthController {
       serviceAccountId,
       identity.tenantId,
       body.scopes,
-      body.ttlHours
+      body.ttlHours,
     );
     return {
       token: result.rawToken, // shown once only

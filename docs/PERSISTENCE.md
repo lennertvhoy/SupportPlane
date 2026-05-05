@@ -5,10 +5,10 @@
 
 SupportPlane supports two store modes:
 
-| Mode | Env var | Notes |
-|------|---------|-------|
-| Memory | `SUPPORTPLANE_STORE=memory` or unset | Test/dev fallback. Data is lost on restart. |
-| PostgreSQL | `SUPPORTPLANE_STORE=postgres` | Uses Prisma with local PostgreSQL on `localhost:5434` in the verified Podman topology. |
+| Mode       | Env var                              | Notes                                                                                  |
+| ---------- | ------------------------------------ | -------------------------------------------------------------------------------------- |
+| Memory     | `SUPPORTPLANE_STORE=memory` or unset | Test/dev fallback. Data is lost on restart.                                            |
+| PostgreSQL | `SUPPORTPLANE_STORE=postgres`        | Uses Prisma with local PostgreSQL on `localhost:5434` in the verified Podman topology. |
 
 ## Local PostgreSQL commands
 

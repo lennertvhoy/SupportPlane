@@ -31,7 +31,7 @@ export const AIContextPacket = z.object({
         field: z.string(),
         reason: z.enum(['pii', 'secret', 'policy', 'tenant_rule']),
         method: z.enum(['mask', 'remove', 'hash', 'tokenize']),
-      })
+      }),
     )
     .default([]),
   contextHash: z.string().max(128).optional(),

@@ -1,8 +1,8 @@
 ---
 name: Architecture Change
 about: Propose a change to the project architecture contract
-title: "[architecture] "
-labels: ["architecture"]
+title: '[architecture] '
+labels: ['architecture']
 ---
 
 ## Change

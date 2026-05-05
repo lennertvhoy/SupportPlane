@@ -6,10 +6,10 @@
 
 ## Demo URLs
 
-| Service | URL |
-|---------|-----|
+| Service    | URL                     |
+| ---------- | ----------------------- |
 | **Web UI** | `http://localhost:3300` |
-| **API** | `http://localhost:4210` |
+| **API**    | `http://localhost:4210` |
 
 > The demo operator must start the stack before you can access it: `bash scripts/start_demo_mode.sh`. **Before each tester, the operator must also run:** `bash scripts/reset_demo_data.sh` (clears stale sessions from prior testing). If the page doesn't load, ask the operator to run the smoke test: `bash scripts/verify_user_testing_demo.sh`.
 
@@ -48,16 +48,16 @@ These are known limitations. They are not bugs and not what we need feedback on:
 
 ## Known Limitations
 
-| System | Status |
-|--------|--------|
-| Zammad | Real sandbox read. Writeback is sandbox-only. |
-| GLPI | Real sandbox read. Read-only adapter. |
-| osTicket | Fixture data only. No real osTicket. |
-| MeshCentral | Unconfigured. Honest about it. |
-| Fortinet | Unconfigured. Honest about it. |
-| AI | Local Ollama only. May fall back if Ollama is down. |
-| Secrets | In-memory OpenBao. Lost on pod restart. |
-| Telephony | Mock/simulated only. No real phone calls. |
+| System      | Status                                              |
+| ----------- | --------------------------------------------------- |
+| Zammad      | Real sandbox read. Writeback is sandbox-only.       |
+| GLPI        | Real sandbox read. Read-only adapter.               |
+| osTicket    | Fixture data only. No real osTicket.                |
+| MeshCentral | Unconfigured. Honest about it.                      |
+| Fortinet    | Unconfigured. Honest about it.                      |
+| AI          | Local Ollama only. May fall back if Ollama is down. |
+| Secrets     | In-memory OpenBao. Lost on pod restart.             |
+| Telephony   | Mock/simulated only. No real phone calls.           |
 
 Full list: `docs/KNOWN_DEMO_LIMITATIONS.md`
 
@@ -76,6 +76,7 @@ Full list: `docs/KNOWN_DEMO_LIMITATIONS.md`
 A blocker is anything that prevents you from completing a documented demo flow.
 
 **If you hit a blocker:**
+
 1. Note which flow and step you were on.
 2. Describe exactly what happened instead of what you expected.
 3. If possible, take a screenshot.
@@ -87,6 +88,7 @@ A blocker is anything that prevents you from completing a documented demo flow.
 ## What Screenshots/Logs to Include
 
 If you can take screenshots, capture:
+
 - The full browser window of any confusing panel or error
 - Connector Status panel (to show real/fixture/unconfigured labels)
 - Any error message or blank panel
@@ -100,13 +102,13 @@ If you can't take screenshots, describe what you saw in as much detail as possib
 
 Ask the demo operator to assign you one or more of these perspectives before you start. Each persona focuses on different concerns:
 
-| Persona | Log in as | Focus |
-|---------|-----------|-------|
-| **MSP Owner / IT Manager** | Admin | Multi-tenancy, connector roster, ROI signals |
-| **Helpdesk Operator** | Operator | Speed, usability, AI draft quality |
+| Persona                            | Log in as          | Focus                                         |
+| ---------------------------------- | ------------------ | --------------------------------------------- |
+| **MSP Owner / IT Manager**         | Admin              | Multi-tenancy, connector roster, ROI signals  |
+| **Helpdesk Operator**              | Operator           | Speed, usability, AI draft quality            |
 | **Security / Governance Reviewer** | Admin, then Viewer | RBAC, audit, policy controls, secret scanning |
-| **Technical Admin** | Admin | Connector config, health, monitoring |
-| **Skeptical Enterprise Buyer** | Admin | Honesty labels, real vs mock, polish, roadmap |
+| **Technical Admin**                | Admin              | Connector config, health, monitoring          |
+| **Skeptical Enterprise Buyer**     | Admin              | Honesty labels, real vs mock, polish, roadmap |
 
 Full persona descriptions: **[TESTER_PERSONAS.md](./TESTER_PERSONAS.md)**
 
@@ -114,11 +116,11 @@ Full persona descriptions: **[TESTER_PERSONAS.md](./TESTER_PERSONAS.md)**
 
 ## Login Credentials
 
-| Role | Email | Password | Tenant |
-|------|-------|----------|--------|
-| **Admin** | `admin@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| Role         | Email                         | Password            | Tenant       |
+| ------------ | ----------------------------- | ------------------- | ------------ |
+| **Admin**    | `admin@supportplane.local`    | `supportplane-demo` | `dev-tenant` |
 | **Operator** | `operator@supportplane.local` | `supportplane-demo` | `dev-tenant` |
-| **Viewer** | `viewer@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| **Viewer**   | `viewer@supportplane.local`   | `supportplane-demo` | `dev-tenant` |
 
 ---
 

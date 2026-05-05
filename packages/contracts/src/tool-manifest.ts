@@ -75,56 +75,76 @@ export const LocalToolManifest = z.object({
   registryVersion: z.string(),
   source: z.string(),
   integrityHash: z.string(),
-  tools: z.array(z.object({
-    toolKey: z.string(),
-    displayName: z.string(),
-    description: z.string().optional(),
-    category: ToolCategory,
-    riskLevel: ToolRiskLevel,
-    implementationId: z.string(),
-    readOnly: z.boolean(),
-    remediation: z.boolean(),
-    approvalRequired: z.boolean(),
-    requiredPermission: z.string(),
-    requiredPrivilege: z.enum(['user', 'local_admin', 'system']).default('user'),
-    dryRunCapable: z.boolean().default(false),
-    commandTemplateId: z.string().optional(),
-    supportedPlatforms: z.array(EndpointPlatform),
-    inputSchema: z.record(JsonValue).optional(),
-    outputSchema: z.record(JsonValue).optional(),
-    enabled: z.boolean(),
-  })),
+  tools: z.array(
+    z.object({
+      toolKey: z.string(),
+      displayName: z.string(),
+      description: z.string().optional(),
+      category: ToolCategory,
+      riskLevel: ToolRiskLevel,
+      implementationId: z.string(),
+      readOnly: z.boolean(),
+      remediation: z.boolean(),
+      approvalRequired: z.boolean(),
+      requiredPermission: z.string(),
+      requiredPrivilege: z.enum(['user', 'local_admin', 'system']).default('user'),
+      dryRunCapable: z.boolean().default(false),
+      commandTemplateId: z.string().optional(),
+      supportedPlatforms: z.array(EndpointPlatform),
+      inputSchema: z.record(JsonValue).optional(),
+      outputSchema: z.record(JsonValue).optional(),
+      enabled: z.boolean(),
+    }),
+  ),
 });
 export type LocalToolManifest = z.infer<typeof LocalToolManifest>;
 
 // Validation rules
-export const FORBIDDEN_MANIFEST_FIELDS = ['command', 'shell', 'script', 'argv', 'executable', 'program', 'body', 'exec'];
+export const FORBIDDEN_MANIFEST_FIELDS = [
+  'command',
+  'shell',
+  'script',
+  'argv',
+  'executable',
+  'program',
+  'body',
+  'exec',
+];
 
 export function filterToolsByPlatform<T extends { supportedPlatforms: EndpointPlatform[] }>(
   tools: readonly T[],
   platform: EndpointPlatform,
 ): T[] {
   if (platform === 'unknown') return [];
-  return tools.filter((tool) => tool.supportedPlatforms.length === 0 || tool.supportedPlatforms.includes(platform));
+  return tools.filter(
+    (tool) => tool.supportedPlatforms.length === 0 || tool.supportedPlatforms.includes(platform),
+  );
 }
 
-export function computeManifestIntegrityHash(manifest: Omit<LocalToolManifest, 'integrityHash'>): string {
+export function computeManifestIntegrityHash(
+  manifest: Omit<LocalToolManifest, 'integrityHash'>,
+): string {
   const copy = { ...manifest };
   delete (copy as Partial<LocalToolManifest>).integrityHash;
   const canonical = JSON.stringify(copy, Object.keys(copy).sort());
   let hash = 0;
   for (let i = 0; i < canonical.length; i++) {
     const char = canonical.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return `local-hash-${Math.abs(hash).toString(16).padStart(8, '0')}`;
 }
 
-export function validateLocalManifest(manifest: unknown): { valid: true; data: LocalToolManifest } | { valid: false; errors: string[] } {
+export function validateLocalManifest(
+  manifest: unknown,
+): { valid: true; data: LocalToolManifest } | { valid: false; errors: string[] } {
   const parsed = LocalToolManifest.safeParse(manifest);
   if (!parsed.success) {
-    return { valid: false, errors: parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`) };
+    return {
+      valid: false,
+      errors: parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`),
+    };
   }
   const data = parsed.data;
   const errors: string[] = [];
@@ -156,7 +176,9 @@ export function validateLocalManifest(manifest: unknown): { valid: true; data: L
       errors.push(`Unknown risk level for ${tool.toolKey}: ${tool.riskLevel}`);
     }
     if (tool.remediation && tool.approvalRequired === false) {
-      errors.push(`Remediation tool ${tool.toolKey} must require approval unless explicitly exempted`);
+      errors.push(
+        `Remediation tool ${tool.toolKey} must require approval unless explicitly exempted`,
+      );
     }
   }
 

@@ -68,17 +68,21 @@ The `reset_demo_data.sh --yes` flag makes this repeatable in the operator checkl
 ## P0 / P1 / P2 Findings
 
 ### P0 — None found
+
 No demo-blockers. All 5 flows complete without crashes or wrong data. 10/10 smoke test passes.
 
 ### P1 — None found
+
 The API port label was fixed in the previous round. No new P1 issues.
 
 ### P2 — Minor friction
+
 - P2: "Zammad mode" header label — misleading since GLPI is also real
 - P2: No session search/filter
 - P2: No guided first-visit walkthrough or "Start here" link
 
 ### P3 — Cosmetic / Future
+
 - P3: favicon.ico 404
 - P3: "ALL TICKETS" panel blank after reset
 - P3: Some panels require scrolling to find (Connector Status, Evidence Bundle)
@@ -96,6 +100,7 @@ The database reset revealed that the `prisma/seed.ts` was missing a GLPI ticketi
 ## Final Go/No-Go Recommendation
 
 **GO** for real testers. All blockers are resolved:
+
 - Stale sessions: FIXED (reset script `--yes` mode)
 - API port label: FIXED (reads from env var)
 - GLPI context after reset: FIXED (seed now includes GLPI adapter)
@@ -103,6 +108,7 @@ The database reset revealed that the `prisma/seed.ts` was missing a GLPI ticketi
 - Session list: clean (7 sessions)
 
 **Pre-testing requirements for operator:**
+
 1. Run `bash scripts/start_demo_mode.sh` if cluster isn't running
 2. Run `bash scripts/reset_demo_data.sh --yes`
 3. Run `bash scripts/setup_glpi_sandbox.sh` (GLPI has no PVC)

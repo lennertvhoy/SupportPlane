@@ -9,7 +9,10 @@ export class GdprController {
   constructor(private readonly gdprService: GdprService) {}
 
   @Post('export-preview')
-  async exportPreview(@Req() req: Request, @Body() body: { subjectType?: string; subjectId?: string }) {
+  async exportPreview(
+    @Req() req: Request,
+    @Body() body: { subjectType?: string; subjectId?: string },
+  ) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'audit:read');
     if (!body.subjectType || !body.subjectId) {
@@ -19,7 +22,10 @@ export class GdprController {
   }
 
   @Post('delete-preview')
-  async deletePreview(@Req() req: Request, @Body() body: { subjectType?: string; subjectId?: string }) {
+  async deletePreview(
+    @Req() req: Request,
+    @Body() body: { subjectType?: string; subjectId?: string },
+  ) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'audit:write');
     if (!body.subjectType || !body.subjectId) {

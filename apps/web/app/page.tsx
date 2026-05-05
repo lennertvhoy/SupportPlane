@@ -58,10 +58,30 @@ import {
 function ToolsDropdown() {
   const [open, setOpen] = useState(false);
   const items = [
-    { label: 'Call Console', href: '/call-console', icon: <Phone size={12} />, note: 'Simulated call events' },
-    { label: 'Device Console', href: '/device-console', icon: <MonitorCog size={12} />, note: 'Endpoint diagnostics' },
-    { label: 'Tool Registry', href: '/tool-registry', icon: <Wrench size={12} />, note: 'Fixed tool manifests' },
-    { label: 'Approval Queue', href: '/approval-queue', icon: <ShieldAlert size={12} />, note: 'Pending approvals' },
+    {
+      label: 'Call Console',
+      href: '/call-console',
+      icon: <Phone size={12} />,
+      note: 'Simulated call events',
+    },
+    {
+      label: 'Device Console',
+      href: '/device-console',
+      icon: <MonitorCog size={12} />,
+      note: 'Endpoint diagnostics',
+    },
+    {
+      label: 'Tool Registry',
+      href: '/tool-registry',
+      icon: <Wrench size={12} />,
+      note: 'Fixed tool manifests',
+    },
+    {
+      label: 'Approval Queue',
+      href: '/approval-queue',
+      icon: <ShieldAlert size={12} />,
+      note: 'Pending approvals',
+    },
   ];
 
   return (
@@ -99,21 +119,41 @@ function ToolsDropdown() {
   );
 }
 
-function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: () => Promise<void> }) {
+function CockpitContent({
+  identity,
+  logout,
+}: {
+  identity: AuthIdentity;
+  logout: () => Promise<void>;
+}) {
   const [sessions, setSessions] = useState<SupportSession[]>([]);
   const [selectedSession, setSelectedSession] = useState<SupportSession | undefined>(undefined);
   const [ticket, setTicket] = useState<TicketReference | undefined>(undefined);
   const [packets, setPackets] = useState<AIContextPacket[]>([]);
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
-  const [draftSuggestion, setDraftSuggestion] = useState<DraftSuggestionResponse | undefined>(undefined);
-  const [greetingSuggestion, setGreetingSuggestion] = useState<GreetingSuggestionResponse | undefined>(undefined);
-  const [writebackResult, setWritebackResult] = useState<InternalNoteWritebackResult | undefined>(undefined);
+  const [draftSuggestion, setDraftSuggestion] = useState<DraftSuggestionResponse | undefined>(
+    undefined,
+  );
+  const [greetingSuggestion, setGreetingSuggestion] = useState<
+    GreetingSuggestionResponse | undefined
+  >(undefined);
+  const [writebackResult, setWritebackResult] = useState<InternalNoteWritebackResult | undefined>(
+    undefined,
+  );
   const [connectorStatus, setConnectorStatus] = useState<ConnectorStatus | undefined>(undefined);
-  const [connectorInstallations, setConnectorInstallations] = useState<import('@/lib/api').ConnectorInstallation[]>([]);
-  const [healthInfo, setHealthInfo] = useState<{ storeMode?: string; authMode?: string } | undefined>(undefined);
-  const [evidenceBundle, setEvidenceBundle] = useState<EvidenceBundleExportResponse | undefined>(undefined);
+  const [connectorInstallations, setConnectorInstallations] = useState<
+    import('@/lib/api').ConnectorInstallation[]
+  >([]);
+  const [healthInfo, setHealthInfo] = useState<
+    { storeMode?: string; authMode?: string } | undefined
+  >(undefined);
+  const [evidenceBundle, setEvidenceBundle] = useState<EvidenceBundleExportResponse | undefined>(
+    undefined,
+  );
   const [, setRecentCalls] = useState<CallEvent[]>([]);
-  const [evidenceBundleMarkdown, setEvidenceBundleMarkdown] = useState<string | undefined>(undefined);
+  const [evidenceBundleMarkdown, setEvidenceBundleMarkdown] = useState<string | undefined>(
+    undefined,
+  );
   const [evidenceBundleLoading, setEvidenceBundleLoading] = useState(false);
   const [evidenceBundleError, setEvidenceBundleError] = useState<string | null>(null);
 
@@ -158,7 +198,9 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
       setPackets(p);
       setAuditEvents(a);
     } catch (err) {
-      setPacketsError(err instanceof ApiClientError ? err.message : 'Failed to load session details');
+      setPacketsError(
+        err instanceof ApiClientError ? err.message : 'Failed to load session details',
+      );
     } finally {
       setPacketsLoading(false);
       setAuditLoading(false);
@@ -207,7 +249,13 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
     fetchConnectorInstallations();
     fetchRecentCalls();
     fetchHealth();
-  }, [fetchSessions, fetchConnectorStatus, fetchConnectorInstallations, fetchRecentCalls, fetchHealth]);
+  }, [
+    fetchSessions,
+    fetchConnectorStatus,
+    fetchConnectorInstallations,
+    fetchRecentCalls,
+    fetchHealth,
+  ]);
 
   const handleSelectSession = useCallback(
     async (session: SupportSession) => {
@@ -225,7 +273,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
       setEvidenceBundleError(null);
       await fetchSessionDetails(session);
     },
-    [fetchSessionDetails]
+    [fetchSessionDetails],
   );
 
   // Auto-select session from URL query param (e.g. coming from Call Console)
@@ -257,7 +305,9 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
       setEvidenceBundleMarkdown(mdResult);
       await fetchSessionDetails(selectedSession);
     } catch (err) {
-      setEvidenceBundleError(err instanceof ApiClientError ? err.message : 'Failed to generate evidence bundle');
+      setEvidenceBundleError(
+        err instanceof ApiClientError ? err.message : 'Failed to generate evidence bundle',
+      );
     } finally {
       setEvidenceBundleLoading(false);
     }
@@ -273,7 +323,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
         setSessionsError(err instanceof ApiClientError ? err.message : 'Failed to create session');
       }
     },
-    [handleSelectSession]
+    [handleSelectSession],
   );
 
   const handleLoadTicket = useCallback(
@@ -285,18 +335,18 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
         const result = await api.loadZammadTicketContext(selectedSession.id, externalTicketId);
         setTicket(result.ticketReference);
         setSelectedSession(result.session);
-        setSessions((prev) =>
-          prev.map((s) => (s.id === result.session.id ? result.session : s))
-        );
+        setSessions((prev) => prev.map((s) => (s.id === result.session.id ? result.session : s)));
         await fetchSessionDetails(result.session);
         await fetchConnectorStatus();
       } catch (err) {
-        setTicketError(err instanceof ApiClientError ? err.message : 'Failed to load ticket context');
+        setTicketError(
+          err instanceof ApiClientError ? err.message : 'Failed to load ticket context',
+        );
       } finally {
         setTicketLoading(false);
       }
     },
-    [selectedSession, fetchSessionDetails, fetchConnectorStatus]
+    [selectedSession, fetchSessionDetails, fetchConnectorStatus],
   );
 
   const [glpiTicket, setGlpiTicket] = useState<TicketReference | undefined>(undefined);
@@ -314,12 +364,14 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
         await fetchSessionDetails(selectedSession);
         await fetchConnectorStatus();
       } catch (err) {
-        setGlpiTicketError(err instanceof ApiClientError ? err.message : 'Failed to load GLPI ticket context');
+        setGlpiTicketError(
+          err instanceof ApiClientError ? err.message : 'Failed to load GLPI ticket context',
+        );
       } finally {
         setGlpiTicketLoading(false);
       }
     },
-    [selectedSession, fetchSessionDetails, fetchConnectorStatus]
+    [selectedSession, fetchSessionDetails, fetchConnectorStatus],
   );
 
   const handleAddManual = useCallback(
@@ -335,7 +387,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
         setPacketsError(err instanceof ApiClientError ? err.message : 'Failed to add context');
       }
     },
-    [selectedSession, fetchSessionDetails]
+    [selectedSession, fetchSessionDetails],
   );
 
   const handleGenerateDraft = useCallback(
@@ -352,13 +404,15 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
         await fetchSessionDetails(selectedSession);
         return response;
       } catch (err) {
-        setDraftError(err instanceof ApiClientError ? err.message : 'Failed to generate local AI draft');
+        setDraftError(
+          err instanceof ApiClientError ? err.message : 'Failed to generate local AI draft',
+        );
         return undefined;
       } finally {
         setDraftLoading(false);
       }
     },
-    [selectedSession, fetchSessionDetails]
+    [selectedSession, fetchSessionDetails],
   );
 
   const handleGenerateGreeting = useCallback(
@@ -376,13 +430,15 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
         await fetchSessionDetails(selectedSession);
         return response;
       } catch (err) {
-        setGreetingError(err instanceof ApiClientError ? err.message : 'Failed to generate greeting suggestion');
+        setGreetingError(
+          err instanceof ApiClientError ? err.message : 'Failed to generate greeting suggestion',
+        );
         return undefined;
       } finally {
         setGreetingLoading(false);
       }
     },
-    [selectedSession, fetchSessionDetails]
+    [selectedSession, fetchSessionDetails],
   );
 
   const handleWriteback = useCallback(
@@ -415,7 +471,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
         setWritebackLoading(false);
       }
     },
-    [selectedSession, fetchSessionDetails]
+    [selectedSession, fetchSessionDetails],
   );
 
   return (
@@ -441,22 +497,26 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             Sandbox Demo
           </span>
           {healthInfo && (
-            <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
-              healthInfo.authMode === 'oidc'
-                ? 'border-accent/40 bg-accent/10 text-accent-light'
-                : 'border-cockpit-600 bg-cockpit-900 text-cockpit-400'
-            }`}>
+            <span
+              className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
+                healthInfo.authMode === 'oidc'
+                  ? 'border-accent/40 bg-accent/10 text-accent-light'
+                  : 'border-cockpit-600 bg-cockpit-900 text-cockpit-400'
+              }`}
+            >
               <Cpu size={10} />
               {healthInfo.authMode} · {healthInfo.storeMode}
             </span>
           )}
           {connectorStatus && (
             <>
-              <span className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
-                connectorStatus.mode === 'mock'
-                  ? 'border-amber-700/40 bg-amber-900/30 text-amber-300'
-                  : 'border-emerald-700/40 bg-emerald-900/30 text-emerald-300'
-              }`}>
+              <span
+                className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
+                  connectorStatus.mode === 'mock'
+                    ? 'border-amber-700/40 bg-amber-900/30 text-amber-300'
+                    : 'border-emerald-700/40 bg-emerald-900/30 text-emerald-300'
+                }`}
+              >
                 {connectorStatus.mode === 'mock' ? 'Mock' : 'Sandbox'} mode
               </span>
               <span className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-400">
@@ -468,7 +528,7 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
           <IdentityPill identity={identity} logout={logout} />
           <ToolsDropdown />
           <button
-            onClick={() => window.location.href = '/admin'}
+            onClick={() => (window.location.href = '/admin')}
             className="inline-flex items-center gap-1 rounded border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent-light hover:bg-accent/20"
           >
             <Settings size={10} />
@@ -488,7 +548,10 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             error={sessionsError}
             onSelect={handleSelectSession}
             onCreate={handleCreateSession}
-            canCreate={identity.permissions.includes('*') || identity.permissions.includes('support_session:create')}
+            canCreate={
+              identity.permissions.includes('*') ||
+              identity.permissions.includes('support_session:create')
+            }
           />
         </aside>
 
@@ -530,7 +593,10 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
               error={ticketError}
               onLoad={handleLoadTicket}
               connectorMode={connectorStatus?.mode}
-              connectorInstallation={connectorInstallations.find((i) => i.adapterType === 'zammad') ?? connectorInstallations[0]}
+              connectorInstallation={
+                connectorInstallations.find((i) => i.adapterType === 'zammad') ??
+                connectorInstallations[0]
+              }
             />
             <TicketContextPanel
               session={selectedSession}
@@ -597,7 +663,10 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
             </button>
             <InfoTooltip>
               <div className="text-[11px] leading-relaxed">
-                Advanced panels include call simulation, detailed connector settings, customer directory, ticket summaries, greeting suggestions, outbox monitoring, observability, security readiness, delivery policy, and admin policy views. These are useful for deep demos but not required for the first-time path.
+                Advanced panels include call simulation, detailed connector settings, customer
+                directory, ticket summaries, greeting suggestions, outbox monitoring, observability,
+                security readiness, delivery policy, and admin policy views. These are useful for
+                deep demos but not required for the first-time path.
               </div>
             </InfoTooltip>
           </div>
@@ -637,5 +706,9 @@ function CockpitContent({ identity, logout }: { identity: AuthIdentity; logout: 
 }
 
 export default function CockpitPage() {
-  return <AuthGate>{(identity, logout) => <CockpitContent identity={identity} logout={logout} />}</AuthGate>;
+  return (
+    <AuthGate>
+      {(identity, logout) => <CockpitContent identity={identity} logout={logout} />}
+    </AuthGate>
+  );
 }

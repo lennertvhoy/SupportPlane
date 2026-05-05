@@ -1,14 +1,18 @@
-import { Injectable, CanActivate, ExecutionContext, HttpException, HttpStatus, Optional } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+  Optional,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { createHash } from 'crypto';
 import { SecurityAuditService } from '../audit/security-audit.service.js';
 
 export class RateLimitExceeded extends HttpException {
   constructor(retryAfter: number) {
-    super(
-      { error: 'rate_limit_exceeded', retryAfter },
-      HttpStatus.TOO_MANY_REQUESTS
-    );
+    super({ error: 'rate_limit_exceeded', retryAfter }, HttpStatus.TOO_MANY_REQUESTS);
   }
 }
 
@@ -32,7 +36,8 @@ function getLimitForPath(path: string): number {
   if (lower.includes('/auth/login')) return LIMITS['auth:login'];
   if (lower.includes('/writeback') || lower.includes('/sandbox')) return LIMITS.writeback;
   if (lower.includes('/connector') || lower.includes('/runtime')) return LIMITS.connectorRuntime;
-  if (lower.includes('/telephony') || lower.includes('/ami') || lower.includes('/asterisk')) return LIMITS.telephony;
+  if (lower.includes('/telephony') || lower.includes('/ami') || lower.includes('/asterisk'))
+    return LIMITS.telephony;
   return LIMITS.global;
 }
 

@@ -1,13 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  HttpCode,
-  Inject,
-  Param,
-  Body,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, HttpCode, Inject, Param, Body, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { CallsService } from './calls.service.js';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
@@ -17,20 +8,21 @@ import { CallStatus } from '@supportplane/contracts';
 export class CallsController {
   constructor(
     @Inject(CallsService)
-    private readonly service: CallsService
+    private readonly service: CallsService,
   ) {}
 
   @Post('fake-incoming')
   createFakeIncoming(
     @Req() req: Request,
-    @Body() body: {
+    @Body()
+    body: {
       externalCallId: string;
       rawCallerNumber: string;
       callerDisplayName?: string;
       autoCreateSession?: boolean;
       preferredSessionTitle?: string;
       preferredPriority?: string;
-    }
+    },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.createFakeIncomingCall(identity, body);
@@ -49,11 +41,7 @@ export class CallsController {
   }
 
   @Post(':id/link-session')
-  linkSession(
-    @Req() req: Request,
-    @Param('id') id: string,
-    @Body() body: { sessionId: string }
-  ) {
+  linkSession(@Req() req: Request, @Param('id') id: string, @Body() body: { sessionId: string }) {
     const identity = getCurrentIdentity(req);
     return this.service.linkCallToSession(identity, id, body);
   }
@@ -62,7 +50,7 @@ export class CallsController {
   linkTicket(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { ticketReferenceId: string }
+    @Body() body: { ticketReferenceId: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.linkTicketToCall(identity, id, body);
@@ -72,7 +60,7 @@ export class CallsController {
   unlinkTicket(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { ticketReferenceId: string }
+    @Body() body: { ticketReferenceId: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.unlinkTicketFromCall(identity, id, body);
@@ -83,14 +71,21 @@ export class CallsController {
   updateStatus(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { status: string; reason?: string }
+    @Body() body: { status: string; reason?: string },
   ) {
     const identity = getCurrentIdentity(req);
     const parsed = CallStatus.safeParse(body.status);
     if (!parsed.success) {
-      return { statusCode: 400, error: 'Bad Request', message: `Invalid call status: ${body.status}. Allowed: ${CallStatus.options.join(', ')}` };
+      return {
+        statusCode: 400,
+        error: 'Bad Request',
+        message: `Invalid call status: ${body.status}. Allowed: ${CallStatus.options.join(', ')}`,
+      };
     }
-    return this.service.updateCallStatus(identity, id, { status: parsed.data, reason: body.reason });
+    return this.service.updateCallStatus(identity, id, {
+      status: parsed.data,
+      reason: body.reason,
+    });
   }
 
   @Get(':id/timeline')
@@ -104,7 +99,7 @@ export class CallsController {
   attachMockRecording(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { source?: string; durationSeconds?: number }
+    @Body() body: { source?: string; durationSeconds?: number },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.attachMockRecording(identity, id, body);
@@ -120,7 +115,7 @@ export class CallsController {
   reviewRecording(
     @Req() req: Request,
     @Param('id') id: string,
-    @Param('recordingId') recordingId: string
+    @Param('recordingId') recordingId: string,
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.reviewCallRecording(identity, id, recordingId);
@@ -130,7 +125,7 @@ export class CallsController {
   recordPlayback(
     @Req() req: Request,
     @Param('id') id: string,
-    @Param('recordingId') recordingId: string
+    @Param('recordingId') recordingId: string,
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.recordPlaybackOpened(identity, id, recordingId);

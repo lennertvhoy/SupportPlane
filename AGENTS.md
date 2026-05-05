@@ -9,12 +9,14 @@ last_updated: 2026-05-02
 **Purpose:** Stable operating contract for technical projects that use explicit state, evidence, and short active queues.
 
 This repository supports two modes:
+
 - `bootstrap` for discovery and baseline creation
 - `operating` for steady-state delivery
 
 ## Read Order
 
 Coding agents should start every repo session by reading:
+
 1. `AGENTS.md`
 2. `STATUS.md`
 3. `PROJECT_STATE.yaml`
@@ -26,6 +28,7 @@ Read `BACKLOG.md` and `WORKLOG.md` when planning or reviewing history.
 ## Universal Rules
 
 These rules apply in all modes:
+
 - no fake completeness
 - no unverified claims presented as fact
 - user-facing behavior requires direct verification
@@ -79,21 +82,21 @@ baseline and active queue.
 
 ## Project Quick Reference
 
-| Resource     | Detail                                            |
-| ------------ | ------------------------------------------------- |
-| Package mgr  | npm (workspaces)                                  |
-| Runtime      | Node.js >= 22.0.0                                 |
-| Language     | TypeScript 5.7+ (strict, ES2022, NodeNext)        |
-| Framework    | NestJS (API), Next.js 15 (Web)                    |
-| Database     | PostgreSQL (host port 5434)                       |
-| Queue        | NATS                                              |
-| Object store | MinIO (S3-compatible)                             |
-| Web UI       | `localhost:3200`                                  |
-| API          | `localhost:4110`                                  |
-| ORM          | Prisma 7                                          |
-| Tests        | Node.js native test runner (`node --test`)        |
-| Lint         | ESLint 9 + typescript-eslint                      |
-| Formatter    | Prettier                                          |
+| Resource     | Detail                                     |
+| ------------ | ------------------------------------------ |
+| Package mgr  | npm (workspaces)                           |
+| Runtime      | Node.js >= 22.0.0                          |
+| Language     | TypeScript 5.7+ (strict, ES2022, NodeNext) |
+| Framework    | NestJS (API), Next.js 15 (Web)             |
+| Database     | PostgreSQL (host port 5434)                |
+| Queue        | NATS                                       |
+| Object store | MinIO (S3-compatible)                      |
+| Web UI       | `localhost:3200`                           |
+| API          | `localhost:4110`                           |
+| ORM          | Prisma 7                                   |
+| Tests        | Node.js native test runner (`node --test`) |
+| Lint         | ESLint 9 + typescript-eslint               |
+| Formatter    | Prettier                                   |
 
 ### Essential Commands
 
@@ -117,17 +120,21 @@ without explicit user approval. The workspace root is `SupportPlane/`.
 ## Bootstrap Mode
 
 ### When Bootstrap Mode Applies
+
 Use bootstrap mode when:
+
 - the repo is new
 - state files do not yet exist
 - project truth is unclear
 - the user explicitly asks for initialization or re-baselining
 
 ### Bootstrap Goal
+
 Establish a truthful operating baseline for the project, including filled state
 files and a real backlog, and only then switch the repo to operating mode.
 
 ### Bootstrap Procedure
+
 1. Investigate the host system and runtime
 2. Investigate the repo structure and implementation reality
 3. Ask the user only the minimum strategic questions needed
@@ -139,7 +146,9 @@ files and a real backlog, and only then switch the repo to operating mode.
 9. Record bootstrap completion in `PROJECT_STATE.yaml` and `WORKLOG.md`
 
 ### Required System Investigation
+
 Inspect and record, when relevant:
+
 - OS, distro, kernel
 - shell and terminal environment
 - package manager(s)
@@ -150,7 +159,9 @@ Inspect and record, when relevant:
 - git branch, head, and worktree state
 
 ### Required Repo Investigation
+
 Inspect and record:
+
 - top-level structure
 - app/service boundaries
 - main manifests and config files
@@ -160,7 +171,9 @@ Inspect and record:
 - contradictions between code and docs
 
 ### Bootstrap Output Files
+
 Create or initialize:
+
 - `AGENTS.md`
 - `STATUS.md`
 - `PROJECT_STATE.yaml`
@@ -176,7 +189,9 @@ Bootstrap is not complete until these files are filled out enough to guide real
 implementation and `BACKLOG.md` is more than a placeholder.
 
 ### Bootstrap Honesty Rules
+
 If something is not proven, label it as:
+
 - `observed`
 - `unknown`
 - `reported`
@@ -190,7 +205,9 @@ Do not invent architecture or maturity.
 ## Operating Mode
 
 ### Operating Model
+
 The repo now runs in a human-in-the-loop workflow:
+
 - CEO / human provides current state, requirements, priorities, and agent handoffs
 - CTO / product-architecture lead reconstructs truth from user-relayed handoffs and pasted context, judges quality, chooses the next best move, and writes the next coding-agent prompt when appropriate
 - coding agent implements one coherent step with verification and evidence, then ends with a final handoff for the CTO lane
@@ -218,7 +235,9 @@ In operating mode, the scope should usually be a backlog slice or a very small
 set of tightly related backlog items.
 
 ### CTO Review Standard
+
 Every handoff must be reviewed for:
+
 - contradictions
 - overclaims
 - missing proof
@@ -228,7 +247,9 @@ Every handoff must be reviewed for:
 - weak product prioritization
 
 ### Coding-Agent Standard
+
 Implementation prompts must:
+
 - require reading `AGENTS.md` first
 - anchor on current verified truth
 - define one coherent scope
@@ -260,6 +281,7 @@ workflow requirement.
 ## Handoff Requirements
 
 Every implementation session ends with:
+
 - what changed
 - what was directly verified
 - repo path
@@ -278,6 +300,7 @@ Every implementation session ends with:
 ### Closure-grade validation gate (mandatory)
 
 A backlog item may **not** be claimed complete unless the final handoff includes:
+
 - full final commit hash
 - clean worktree proof (`git status --short --branch`)
 - exact validation commands run and exact pass/fail results
@@ -287,12 +310,14 @@ A backlog item may **not** be claimed complete unless the final handoff includes
 - explicit unresolved limitations or risks
 
 Unacceptable shortcuts:
+
 - "Tests pass" or "validated" without listing the exact commands
 - dirty worktree, unchanged HEAD after claimed work, missing commit, missing browser proof, incomplete validation reporting, or unexplained contradictions
 
 ### Stubbed route and incomplete feature rule (mandatory)
 
 A backlog item may not be called "complete" if any newly introduced route, UI action, script, or contract is stubbed, fake-successing, or untested unless:
+
 - it returns an explicit honest unavailable response such as `501 Not Implemented`,
 - it is hidden from normal UI flows,
 - it is documented as out of scope,
@@ -369,7 +394,7 @@ exact commands and pass/fail results.
   (e.g. `session-121-bl061-068-tool-execution-safety/`).
   **Never use raw BL numbers as the folder prefix.**
 - Before creating a new evidence folder, list existing folders (`ls
-  output/playwright/ | sort -V`) to find the next available number and to check
+output/playwright/ | sort -V`) to find the next available number and to check
   for existing folders covering the same backlog item. Delete superseded folders
   and update `docs/EVIDENCE_LOG.md` references before creating the new one.
 - Duplicate screenshots are only allowed if explicitly justified, but should

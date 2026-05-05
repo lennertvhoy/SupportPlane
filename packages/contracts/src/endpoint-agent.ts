@@ -29,10 +29,14 @@ export function normalizePlatform(input: string): EndpointPlatform {
 
 export function platformDisplayLabel(platform: EndpointPlatform): string {
   switch (platform) {
-    case 'linux': return 'Linux';
-    case 'win32': return 'Windows';
-    case 'darwin': return 'macOS';
-    case 'unknown': return 'Unknown';
+    case 'linux':
+      return 'Linux';
+    case 'win32':
+      return 'Windows';
+    case 'darwin':
+      return 'macOS';
+    case 'unknown':
+      return 'Unknown';
   }
 }
 

@@ -63,7 +63,11 @@ describe('Knowledge retrieval hardening', () => {
     store.saveKnowledgeArticle(article());
     const service = new KnowledgeService(store);
 
-    const response = await service.retrieve(tenantId, userId, { query: 'VPN', mode: 'auto', limit: 5 });
+    const response = await service.retrieve(tenantId, userId, {
+      query: 'VPN',
+      mode: 'auto',
+      limit: 5,
+    });
 
     assert.equal(response.retrievalMethod, 'lexical');
     assert.equal(response.pgvectorEnabled, false);
@@ -83,7 +87,11 @@ describe('Knowledge retrieval hardening', () => {
     store.saveKnowledgeArticle(article());
     const service = new KnowledgeService(store);
 
-    const response = await service.retrieve(tenantId, userId, { query: 'VPN', mode: 'auto', limit: 1 });
+    const response = await service.retrieve(tenantId, userId, {
+      query: 'VPN',
+      mode: 'auto',
+      limit: 1,
+    });
 
     assert.equal(response.results[0].provenance.confidence, null);
     assert.equal(Object.hasOwn(response.results[0], 'confidence'), false);
@@ -92,13 +100,15 @@ describe('Knowledge retrieval hardening', () => {
   it('keeps semantic requests lexical when pgvector is ready but provider is unavailable', async () => {
     const auditEvents: unknown[] = [];
     const fakeStore = {
-      listKnowledgeArticles: () => [article({
-        embeddingProvider: 'deterministic-mock',
-        embeddingModel: 'supportplane-deterministic-test-embedding-v1',
-        embeddingDimensions: 8,
-        embeddingContentHash: 'hash',
-        embeddedAt: now(),
-      })],
+      listKnowledgeArticles: () => [
+        article({
+          embeddingProvider: 'deterministic-mock',
+          embeddingModel: 'supportplane-deterministic-test-embedding-v1',
+          embeddingDimensions: 8,
+          embeddingContentHash: 'hash',
+          embeddedAt: now(),
+        }),
+      ],
       searchKnowledgeArticles: () => [article()],
       getKnowledgeSource: () => source(),
       saveAuditEvent: (event: unknown) => auditEvents.push(event),
@@ -114,7 +124,11 @@ describe('Knowledge retrieval hardening', () => {
     } as unknown as Store;
     const service = new KnowledgeService(fakeStore);
 
-    const response = await service.retrieve(tenantId, userId, { query: 'VPN', mode: 'semantic', limit: 1 });
+    const response = await service.retrieve(tenantId, userId, {
+      query: 'VPN',
+      mode: 'semantic',
+      limit: 1,
+    });
 
     assert.equal(response.retrievalMethod, 'lexical');
     assert.equal(response.pgvectorEnabled, true);
@@ -154,7 +168,11 @@ describe('Knowledge retrieval hardening', () => {
     } as unknown as Store;
     const service = new KnowledgeService(fakeStore);
 
-    const response = await service.retrieve(tenantId, userId, { query: 'VPN', mode: 'auto', limit: 1 });
+    const response = await service.retrieve(tenantId, userId, {
+      query: 'VPN',
+      mode: 'auto',
+      limit: 1,
+    });
 
     assert.equal(response.semanticEligible, true);
     assert.equal(response.retrievalMethod, 'hybrid');

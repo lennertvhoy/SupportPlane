@@ -1,7 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, Ticket, User, Mail, Tag, Globe, Plug, Shield, Lock } from 'lucide-react';
+import {
+  Loader2,
+  AlertCircle,
+  Ticket,
+  User,
+  Mail,
+  Tag,
+  Globe,
+  Plug,
+  Shield,
+  Lock,
+} from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
 import type { TicketReference, SupportSession, ConnectorInstallation } from '@/lib/api';
@@ -23,7 +34,8 @@ export function TicketContextPanel({
   connectorMode?: 'mock' | 'zammad' | 'glpi';
   connectorInstallation?: ConnectorInstallation;
 }) {
-  const defaultTicketId = connectorMode === 'glpi' ? '1' : connectorMode === 'zammad' ? '2' : 'TICKET-101';
+  const defaultTicketId =
+    connectorMode === 'glpi' ? '1' : connectorMode === 'zammad' ? '2' : 'TICKET-101';
   const [ticketId, setTicketId] = useState(defaultTicketId);
 
   useEffect(() => {
@@ -71,12 +83,24 @@ export function TicketContextPanel({
               <div className="flex items-center gap-2">
                 <Ticket size={14} className="text-accent" />
                 <span className="text-xs font-medium text-cockpit-300">
-                  {connectorMode === 'zammad' ? 'Zammad Sandbox' : connectorMode === 'glpi' ? 'GLPI Sandbox' : 'Mock Connector Data'}
+                  {connectorMode === 'zammad'
+                    ? 'Zammad Sandbox'
+                    : connectorMode === 'glpi'
+                      ? 'GLPI Sandbox'
+                      : 'Mock Connector Data'}
                 </span>
               </div>
               <div className="flex items-center gap-1">
-                <Badge variant={connectorMode === 'zammad' || connectorMode === 'glpi' ? 'success' : 'warning'}>
-                  {connectorMode === 'zammad' ? 'Zammad sandbox' : connectorMode === 'glpi' ? 'GLPI sandbox' : 'Mock'}
+                <Badge
+                  variant={
+                    connectorMode === 'zammad' || connectorMode === 'glpi' ? 'success' : 'warning'
+                  }
+                >
+                  {connectorMode === 'zammad'
+                    ? 'Zammad sandbox'
+                    : connectorMode === 'glpi'
+                      ? 'GLPI sandbox'
+                      : 'Mock'}
                 </Badge>
                 {(connectorMode === 'zammad' || connectorMode === 'glpi') && (
                   <Badge variant="muted">Read-only</Badge>
@@ -85,9 +109,7 @@ export function TicketContextPanel({
             </div>
             <div className="space-y-2 p-3">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="text-sm font-semibold text-cockpit-100">
-                  {ticket.subject}
-                </h3>
+                <h3 className="text-sm font-semibold text-cockpit-100">{ticket.subject}</h3>
                 <Badge variant="muted">{ticket.externalTicketId}</Badge>
               </div>
 
@@ -98,8 +120,7 @@ export function TicketContextPanel({
                 </div>
                 <div className="flex items-center gap-1.5 text-cockpit-400">
                   <Tag size={12} />
-                  Priority:{' '}
-                  <span className="text-cockpit-200">{ticket.priority}</span>
+                  Priority: <span className="text-cockpit-200">{ticket.priority}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-cockpit-400">
                   <User size={12} />
@@ -150,7 +171,9 @@ export function TicketContextPanel({
                   </div>
                   <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px]">
                     <div className="text-cockpit-500">Installation:</div>
-                    <div className="text-cockpit-200">{connectorInstallation.displayName || connectorInstallation.name}</div>
+                    <div className="text-cockpit-200">
+                      {connectorInstallation.displayName || connectorInstallation.name}
+                    </div>
                     <div className="text-cockpit-500">Type:</div>
                     <div className="text-cockpit-200">{connectorInstallation.adapterType}</div>
                     <div className="text-cockpit-500">Mode:</div>
@@ -182,9 +205,13 @@ export function TicketContextPanel({
                       )}
                     </div>
                     <div className="text-cockpit-500">Credentials:</div>
-                    <div className="text-cockpit-200">{connectorInstallation.secretReferenceIds.length} linked · server-side only</div>
+                    <div className="text-cockpit-200">
+                      {connectorInstallation.secretReferenceIds.length} linked · server-side only
+                    </div>
                     <div className="text-cockpit-500">Capabilities:</div>
-                    <div className="text-cockpit-200">{connectorInstallation.capabilities.join(', ')}</div>
+                    <div className="text-cockpit-200">
+                      {connectorInstallation.capabilities.join(', ')}
+                    </div>
                   </div>
                 </div>
               )}

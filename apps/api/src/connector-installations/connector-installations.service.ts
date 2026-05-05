@@ -3,12 +3,26 @@ import { randomUUID } from 'crypto';
 import { InMemoryStore } from '../support-sessions/in-memory.store.js';
 import type { Store } from '../store/store.interface.js';
 import { AuditEventType, AuditActorType } from '@supportplane/contracts';
-import type { AuditEvent as AuditEventShape, ConnectorInstallation as ConnectorInstallationShape } from '@supportplane/contracts';
+import type {
+  AuditEvent as AuditEventShape,
+  ConnectorInstallation as ConnectorInstallationShape,
+} from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import type { DevIdentity } from '../auth/auth.types.js';
 import { requirePermission } from '../auth/rbac.js';
 
-const SECRET_KEYS = ['apiToken', 'apiKey', 'authToken', 'password', 'secret', 'token', 'privateKey', 'credential', 'bearer', 'ZAMMAD_API_TOKEN'];
+const SECRET_KEYS = [
+  'apiToken',
+  'apiKey',
+  'authToken',
+  'password',
+  'secret',
+  'token',
+  'privateKey',
+  'credential',
+  'bearer',
+  'ZAMMAD_API_TOKEN',
+];
 
 function redactConfig(config: Record<string, unknown>): Record<string, unknown> {
   const result: Record<string, unknown> = {};
@@ -34,7 +48,7 @@ function redactInstallation(installation: ConnectorInstallationShape): Connector
 export class ConnectorInstallationsService {
   constructor(
     @Inject(InMemoryStore)
-    private readonly store: Store
+    private readonly store: Store,
   ) {}
 
   async createInstallation(
@@ -44,7 +58,7 @@ export class ConnectorInstallationsService {
       adapterType: string;
       config?: Record<string, unknown>;
       safetyFlags?: Record<string, unknown>;
-    }
+    },
   ) {
     requirePermission(identity, 'connector_installation:write');
     const now = new Date().toISOString();
@@ -66,11 +80,17 @@ export class ConnectorInstallationsService {
       updatedAt: now,
     };
     await this.store.saveConnectorInstallation(installation);
-    await this.appendAuditEvent(identity, AuditEventType.enum.connector_installation_updated, 'connector_installation', installation.id, {
-      action: 'created',
-      name: installation.name,
-      mockMode: installation.mockMode,
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.connector_installation_updated,
+      'connector_installation',
+      installation.id,
+      {
+        action: 'created',
+        name: installation.name,
+        mockMode: installation.mockMode,
+      },
+    );
     return { installation: redactInstallation(installation) };
   }
 
@@ -103,7 +123,7 @@ export class ConnectorInstallationsService {
       capabilities?: string[];
       safetyFlags?: Record<string, unknown>;
       timeoutMs?: number;
-    }
+    },
   ) {
     requirePermission(identity, 'connector_installation:write');
     const installation = await this.store.getConnectorInstallation(identity.tenantId, id);
@@ -127,23 +147,26 @@ export class ConnectorInstallationsService {
     };
 
     await this.store.saveConnectorInstallation(updated);
-    await this.appendAuditEvent(identity, AuditEventType.enum.connector_installation_updated, 'connector_installation', id, {
-      previousStatus: installation.status,
-      newStatus: updated.status,
-      previousEnabled: installation.enabled,
-      newEnabled: updated.enabled,
-      previousMockMode: installation.mockMode,
-      newMockMode: updated.mockMode,
-      updatedBy: identity.userId,
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.connector_installation_updated,
+      'connector_installation',
+      id,
+      {
+        previousStatus: installation.status,
+        newStatus: updated.status,
+        previousEnabled: installation.enabled,
+        newEnabled: updated.enabled,
+        previousMockMode: installation.mockMode,
+        newMockMode: updated.mockMode,
+        updatedBy: identity.userId,
+      },
+    );
 
     return { installation: redactInstallation(updated) };
   }
 
-  async validateInstallation(
-    identity: DevIdentity,
-    id: string
-  ) {
+  async validateInstallation(identity: DevIdentity, id: string) {
     requirePermission(identity, 'connector_installation:test');
     const installation = await this.store.getConnectorInstallation(identity.tenantId, id);
     if (!installation) {
@@ -164,20 +187,23 @@ export class ConnectorInstallationsService {
       timestamp: new Date().toISOString(),
     };
 
-    await this.appendAuditEvent(identity, AuditEventType.enum.connector_config_validated, 'connector_installation', id, {
-      mode: result.mode,
-      realNetwork: result.realNetwork,
-      writebackEnabled: result.writebackEnabled,
-      mockMode: isMock,
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.connector_config_validated,
+      'connector_installation',
+      id,
+      {
+        mode: result.mode,
+        realNetwork: result.realNetwork,
+        writebackEnabled: result.writebackEnabled,
+        mockMode: isMock,
+      },
+    );
 
     return { installationId: id, result };
   }
 
-  async testInstallation(
-    identity: DevIdentity,
-    id: string
-  ) {
+  async testInstallation(identity: DevIdentity, id: string) {
     requirePermission(identity, 'connector_installation:test');
     const installation = await this.store.getConnectorInstallation(identity.tenantId, id);
     if (!installation) {
@@ -198,12 +224,18 @@ export class ConnectorInstallationsService {
       timestamp: new Date().toISOString(),
     };
 
-    await this.appendAuditEvent(identity, AuditEventType.enum.connector_tested, 'connector_installation', id, {
-      mode: result.mode,
-      realNetwork: result.realNetwork,
-      writebackEnabled: result.writebackEnabled,
-      mockMode: isMock,
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.connector_tested,
+      'connector_installation',
+      id,
+      {
+        mode: result.mode,
+        realNetwork: result.realNetwork,
+        writebackEnabled: result.writebackEnabled,
+        mockMode: isMock,
+      },
+    );
 
     return { installationId: id, result };
   }
@@ -211,19 +243,27 @@ export class ConnectorInstallationsService {
   async linkCredentialReference(
     identity: DevIdentity,
     installationId: string,
-    credentialReferenceId: string
+    credentialReferenceId: string,
   ) {
     requirePermission(identity, 'connector_installation:write');
-    const installation = await this.store.getConnectorInstallation(identity.tenantId, installationId);
+    const installation = await this.store.getConnectorInstallation(
+      identity.tenantId,
+      installationId,
+    );
     if (!installation) {
       throw new NotFoundException(`Connector installation ${installationId} not found`);
     }
-    const credRef = await this.store.getCredentialReference(identity.tenantId, credentialReferenceId);
+    const credRef = await this.store.getCredentialReference(
+      identity.tenantId,
+      credentialReferenceId,
+    );
     if (!credRef) {
       throw new NotFoundException(`Credential reference ${credentialReferenceId} not found`);
     }
 
-    const secretReferenceIds = Array.from(new Set([...installation.secretReferenceIds, credentialReferenceId]));
+    const secretReferenceIds = Array.from(
+      new Set([...installation.secretReferenceIds, credentialReferenceId]),
+    );
     const updated: ConnectorInstallationShape = {
       ...installation,
       secretReferenceIds,
@@ -231,30 +271,47 @@ export class ConnectorInstallationsService {
     };
     await this.store.saveConnectorInstallation(updated);
 
-    await this.appendAuditEvent(identity, AuditEventType.enum.credential_reference_linked, 'connector_installation', installationId, {
-      credentialReferenceId,
-      credentialReferenceDisplayName: credRef.displayName,
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.credential_reference_linked,
+      'connector_installation',
+      installationId,
+      {
+        credentialReferenceId,
+        credentialReferenceDisplayName: credRef.displayName,
+      },
+    );
 
-    return { installation: redactInstallation(updated), credentialReference: { id: credRef.id, displayName: credRef.displayName } };
+    return {
+      installation: redactInstallation(updated),
+      credentialReference: { id: credRef.id, displayName: credRef.displayName },
+    };
   }
 
   async unlinkCredentialReference(
     identity: DevIdentity,
     installationId: string,
-    credentialReferenceId: string
+    credentialReferenceId: string,
   ) {
     requirePermission(identity, 'connector_installation:write');
-    const installation = await this.store.getConnectorInstallation(identity.tenantId, installationId);
+    const installation = await this.store.getConnectorInstallation(
+      identity.tenantId,
+      installationId,
+    );
     if (!installation) {
       throw new NotFoundException(`Connector installation ${installationId} not found`);
     }
-    const credRef = await this.store.getCredentialReference(identity.tenantId, credentialReferenceId);
+    const credRef = await this.store.getCredentialReference(
+      identity.tenantId,
+      credentialReferenceId,
+    );
     if (!credRef) {
       throw new NotFoundException(`Credential reference ${credentialReferenceId} not found`);
     }
 
-    const secretReferenceIds = installation.secretReferenceIds.filter((id) => id !== credentialReferenceId);
+    const secretReferenceIds = installation.secretReferenceIds.filter(
+      (id) => id !== credentialReferenceId,
+    );
     const updated: ConnectorInstallationShape = {
       ...installation,
       secretReferenceIds,
@@ -262,12 +319,21 @@ export class ConnectorInstallationsService {
     };
     await this.store.saveConnectorInstallation(updated);
 
-    await this.appendAuditEvent(identity, AuditEventType.enum.credential_reference_unlinked, 'connector_installation', installationId, {
-      credentialReferenceId,
-      credentialReferenceDisplayName: credRef.displayName,
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.credential_reference_unlinked,
+      'connector_installation',
+      installationId,
+      {
+        credentialReferenceId,
+        credentialReferenceDisplayName: credRef.displayName,
+      },
+    );
 
-    return { installation: redactInstallation(updated), credentialReference: { id: credRef.id, displayName: credRef.displayName } };
+    return {
+      installation: redactInstallation(updated),
+      credentialReference: { id: credRef.id, displayName: credRef.displayName },
+    };
   }
 
   private async appendAuditEvent(
@@ -275,7 +341,7 @@ export class ConnectorInstallationsService {
     eventType: AuditEventType,
     resourceType: string,
     resourceId: string,
-    metadata: Record<string, unknown> = {}
+    metadata: Record<string, unknown> = {},
   ): Promise<void> {
     const now = new Date().toISOString();
     const event: AuditEventShape = {

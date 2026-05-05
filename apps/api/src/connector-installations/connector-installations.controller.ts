@@ -1,4 +1,15 @@
-import { Controller, Get, Patch, Post, Param, Req, Body, Inject, HttpCode, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Param,
+  Req,
+  Body,
+  Inject,
+  HttpCode,
+  Query,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { InMemoryStore } from '../support-sessions/in-memory.store.js';
@@ -14,11 +25,20 @@ export class ConnectorInstallationsController {
     @Inject(ConnectorInstallationsService)
     private readonly service: ConnectorInstallationsService,
     @Inject(ConnectorRuntimeService)
-    private readonly runtimeService: ConnectorRuntimeService
+    private readonly runtimeService: ConnectorRuntimeService,
   ) {}
 
   @Post()
-  async create(@Req() req: Request, @Body() body: { name: string; adapterType: string; config?: Record<string, unknown>; safetyFlags?: Record<string, unknown> }) {
+  async create(
+    @Req() req: Request,
+    @Body()
+    body: {
+      name: string;
+      adapterType: string;
+      config?: Record<string, unknown>;
+      safetyFlags?: Record<string, unknown>;
+    },
+  ) {
     const identity = getCurrentIdentity(req);
     return this.service.createInstallation(identity, body);
   }
@@ -41,7 +61,8 @@ export class ConnectorInstallationsController {
   async update(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: {
+    @Body()
+    body: {
       name?: string;
       displayName?: string;
       description?: string;
@@ -52,7 +73,7 @@ export class ConnectorInstallationsController {
       capabilities?: string[];
       safetyFlags?: Record<string, unknown>;
       timeoutMs?: number;
-    }
+    },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.updateInstallation(identity, id, body);
@@ -77,7 +98,7 @@ export class ConnectorInstallationsController {
   async linkCredential(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { credentialReferenceId: string }
+    @Body() body: { credentialReferenceId: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.linkCredentialReference(identity, id, body.credentialReferenceId);
@@ -88,7 +109,7 @@ export class ConnectorInstallationsController {
   async unlinkCredential(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { credentialReferenceId: string }
+    @Body() body: { credentialReferenceId: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.unlinkCredentialReference(identity, id, body.credentialReferenceId);
@@ -106,7 +127,7 @@ export class ConnectorInstallationsController {
   async validateConfig(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { config: Record<string, unknown> }
+    @Body() body: { config: Record<string, unknown> },
   ) {
     const identity = getCurrentIdentity(req);
     return this.runtimeService.validateConfig(identity, id, body.config);

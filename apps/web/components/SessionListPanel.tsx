@@ -116,7 +116,10 @@ export function SessionListPanel({
               className="flex-1 bg-transparent text-xs text-cockpit-100 placeholder:text-cockpit-600 focus:outline-none"
             />
             {searchText && (
-              <button onClick={() => setSearchText('')} className="text-cockpit-500 hover:text-cockpit-300">
+              <button
+                onClick={() => setSearchText('')}
+                className="text-cockpit-500 hover:text-cockpit-300"
+              >
                 <X size={12} />
               </button>
             )}
@@ -164,7 +167,13 @@ export function SessionListPanel({
           <Search size={24} className="mx-auto mb-2 opacity-50" />
           No sessions match your search or filter.
           <br />
-          <button onClick={() => { setSearchText(''); setActiveFilter(null); }} className="text-accent hover:underline text-xs mt-1">
+          <button
+            onClick={() => {
+              setSearchText('');
+              setActiveFilter(null);
+            }}
+            className="text-accent hover:underline text-xs mt-1"
+          >
             Clear search
           </button>
         </div>

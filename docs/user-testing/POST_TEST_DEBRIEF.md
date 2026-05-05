@@ -3,10 +3,10 @@
 Use this template after each tester completes their session.
 Complete it within 30 minutes of session end while impressions are fresh.
 
-**Tester ID:** _____________
-**Persona:** _____________
-**Date/Time:** _____________
-**Duration:** _____________
+**Tester ID:** **\*\***\_**\*\***
+**Persona:** **\*\***\_**\*\***
+**Date/Time:** **\*\***\_**\*\***
+**Duration:** **\*\***\_**\*\***
 
 ## What Surprised the Tester
 

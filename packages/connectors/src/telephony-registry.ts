@@ -1,7 +1,4 @@
-import {
-  CallEvent,
-  type TelephonyWebhookEvent,
-} from '@supportplane/contracts';
+import { CallEvent, type TelephonyWebhookEvent } from '@supportplane/contracts';
 import {
   MockTelephonyAdapter,
   MOCK_TELEPHONY_CAPABILITIES,
@@ -69,7 +66,7 @@ export function registerTelephonyAdapter(factory: TelephonyAdapterFactory): void
 }
 
 export function getTelephonyAdapterFactory(
-  adapterType: string
+  adapterType: string,
 ): TelephonyAdapterFactory | undefined {
   return registry.get(adapterType);
 }
@@ -112,10 +109,7 @@ export class MockTelephonyAdapterFactory implements TelephonyAdapterFactory {
   }
 
   createClient(ctx: TelephonyRuntimeContext): TelephonyAdapterClient {
-    const adapter = new MockTelephonyAdapter(
-      () =>
-        createMockTelephonyConfig(ctx.tenantId)
-    );
+    const adapter = new MockTelephonyAdapter(() => createMockTelephonyConfig(ctx.tenantId));
 
     return {
       async health(): Promise<TelephonyHealth> {

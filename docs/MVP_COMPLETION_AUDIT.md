@@ -26,16 +26,16 @@ No external integrations are active. All "connector" behavior returns determinis
 
 The following backlog items are closure-grade accepted with evidence, acceptance freezes, and clean screenshot proof:
 
-| Range | Key Deliverable |
-|-------|----------------|
-| BL-001 → BL-005 | Monorepo scaffold, contracts, mock-first API, Support Cockpit UI shell, mock AI gateway |
-| BL-006 → BL-009 | Local topology (Docker Compose/Podman), Zammad connector boundary, evidence bundles, fake incoming call webhook |
-| BL-018, BL-020 | Local auth/RBAC/tenant boundary, ticket context and connector safety |
-| BL-041 → BL-045 | Auto session creation from calls, greeting suggestions, Call Console UI, telephony adapter boundary, call recording mock |
-| BL-046 → BL-050 | Operator companion screen observations (web-based mock), active window metadata, manual screenshot metadata, structured upload/redaction, PostgreSQL persistence |
-| BL-091 → BL-094 | Support case workflow, durable action/outbox, background worker retry/dead-letter, delivery policy controls |
-| BL-095, BL-097, BL-098 | Connector installation settings, credential references, connector runtime configuration/readiness |
-| BL-099, BL-100 | Connector runtime test coverage/docs, real writeback path design document |
+| Range                  | Key Deliverable                                                                                                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BL-001 → BL-005        | Monorepo scaffold, contracts, mock-first API, Support Cockpit UI shell, mock AI gateway                                                                          |
+| BL-006 → BL-009        | Local topology (Docker Compose/Podman), Zammad connector boundary, evidence bundles, fake incoming call webhook                                                  |
+| BL-018, BL-020         | Local auth/RBAC/tenant boundary, ticket context and connector safety                                                                                             |
+| BL-041 → BL-045        | Auto session creation from calls, greeting suggestions, Call Console UI, telephony adapter boundary, call recording mock                                         |
+| BL-046 → BL-050        | Operator companion screen observations (web-based mock), active window metadata, manual screenshot metadata, structured upload/redaction, PostgreSQL persistence |
+| BL-091 → BL-094        | Support case workflow, durable action/outbox, background worker retry/dead-letter, delivery policy controls                                                      |
+| BL-095, BL-097, BL-098 | Connector installation settings, credential references, connector runtime configuration/readiness                                                                |
+| BL-099, BL-100         | Connector runtime test coverage/docs, real writeback path design document                                                                                        |
 
 ---
 
@@ -115,6 +115,7 @@ A reviewer can demo the following end-to-end flow:
 > **SupportPlane Local Mock MVP** — A governed AI support cockpit **prototype** demonstrating session-based workflows, tenant isolation, RBAC, mock AI drafting, action/outbox review gates, delivery policy controls, and evidence bundle generation. Built to validate architecture and UI/UX before external integrations and production hardening.
 
 Use this repo to:
+
 - Evaluate the cockpit layout and panel design.
 - Review the action/outbox approval workflow.
 - Inspect the connector runtime safety model.
@@ -129,12 +130,14 @@ Do **not** use this repo in production or with real customer data.
 This MVP is **done enough** for its stated purpose: a coherent, honest, demo-ready local/mock prototype.
 
 What it proves:
+
 - The architecture can support tenant-scoped sessions, RBAC, and audit trails.
 - The UI can guide an operator through ticket context → AI draft → review → action → evidence.
 - The safety model (mock-only by default, policy gates, kill switch, no secret exposure) is structurally sound.
 - The team can articulate exactly what is implemented, what is mock-only, and what is required for real writeback.
 
 What it does **not** prove:
+
 - Production scalability, security, or compliance.
 - Real integration behavior against Zammad, AI providers, or PBX systems.
 - End-user acceptance in a real support environment.

@@ -1,10 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import {
-  ConnectorMode,
-  ConnectorErrorCode,
-  ZammadConfig,
-} from '@supportplane/contracts';
+import { ConnectorMode, ConnectorErrorCode, ZammadConfig } from '@supportplane/contracts';
 import {
   ZammadConnectorAdapter,
   MockZammadConnectorAdapter,
@@ -20,7 +16,7 @@ describe('ZammadConnectorAdapter', () => {
       (err: unknown) => {
         const e = err as { code: string };
         return e.code === ConnectorErrorCode.enum.CONFIG_INVALID;
-      }
+      },
     );
   });
 
@@ -52,7 +48,7 @@ describe('ZammadConnectorAdapter', () => {
 describe('MockZammadConnectorAdapter', () => {
   it('returns deterministic ticket data', async () => {
     const adapter = new MockZammadConnectorAdapter('mock-zammad-001' as never);
-    const ticket = await adapter.getTicket('tenant-a' as never, 'TICKET-42') as {
+    const ticket = (await adapter.getTicket('tenant-a' as never, 'TICKET-42')) as {
       externalTicketId: string;
       subject: string;
       status: string;
@@ -65,7 +61,7 @@ describe('MockZammadConnectorAdapter', () => {
 
   it('returns deterministic customer data', async () => {
     const adapter = new MockZammadConnectorAdapter('mock-zammad-001' as never);
-    const ticket = await adapter.getTicket('tenant-a' as never, 'T-99') as {
+    const ticket = (await adapter.getTicket('tenant-a' as never, 'T-99')) as {
       customerEmail: string;
       customerName: string;
     };
@@ -75,7 +71,7 @@ describe('MockZammadConnectorAdapter', () => {
 
   it('writeInternalNote returns success', async () => {
     const adapter = new MockZammadConnectorAdapter('mock-zammad-001' as never);
-    const result = await adapter.writeInternalNote('42', 'Test note') as {
+    const result = (await adapter.writeInternalNote('42', 'Test note')) as {
       success: boolean;
       externalArticleId?: string;
     };
@@ -114,7 +110,7 @@ describe('ZammadConfig validation', () => {
       ZammadConfig.parse({
         baseUrl: 'not-a-url',
         apiToken: 'token',
-      })
+      }),
     );
   });
 
@@ -130,7 +126,7 @@ describe('ZammadConfig validation', () => {
 describe('MockZammadHttpClient', () => {
   it('getTicket returns fixture shaped like Zammad API', async () => {
     const client = new MockZammadHttpClient();
-    const ticket = await client.getTicket('55') as Record<string, unknown>;
+    const ticket = (await client.getTicket('55')) as Record<string, unknown>;
     assert.strictEqual(typeof ticket.id, 'number');
     assert.strictEqual(ticket.title, 'Zammad ticket 55');
     assert.ok(ticket.state);
@@ -139,11 +135,11 @@ describe('MockZammadHttpClient', () => {
 
   it('createArticle returns fixture shaped like Zammad API', async () => {
     const client = new MockZammadHttpClient();
-    const article = await client.createArticle({
+    const article = (await client.createArticle({
       ticket_id: 1,
       body: 'Note',
       internal: true,
-    }) as Record<string, unknown>;
+    })) as Record<string, unknown>;
     assert.strictEqual(typeof article.id, 'number');
     assert.strictEqual(article.internal, true);
   });

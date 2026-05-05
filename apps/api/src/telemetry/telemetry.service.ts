@@ -13,11 +13,14 @@ type LogEvent = {
   metadata?: Record<string, unknown>;
 };
 
-const SECRET_KEY_PATTERN = /(token|secret|password|credential|authorization|apiKey|api_token|bearer)/i;
+const SECRET_KEY_PATTERN =
+  /(token|secret|password|credential|authorization|apiKey|api_token|bearer)/i;
 
 function safeLabel(value: unknown): string {
   if (value === undefined || value === null) return 'unknown';
-  return String(value).replace(/[^A-Za-z0-9_.:-]/g, '_').slice(0, 96);
+  return String(value)
+    .replace(/[^A-Za-z0-9_.:-]/g, '_')
+    .slice(0, 96);
 }
 
 function labelKey(labels: Labels): string {
@@ -36,17 +39,23 @@ function redactValue(key: string, value: unknown): unknown {
       .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[REDACTED_EMAIL]')
       .slice(0, 240);
   }
-  if (Array.isArray(value)) return value.map((item) => (typeof item === 'string' ? redactValue(key, item) : item));
+  if (Array.isArray(value))
+    return value.map((item) => (typeof item === 'string' ? redactValue(key, item) : item));
   if (value && typeof value === 'object') {
     return Object.fromEntries(
-      Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => [childKey, redactValue(childKey, childValue)])
+      Object.entries(value as Record<string, unknown>).map(([childKey, childValue]) => [
+        childKey,
+        redactValue(childKey, childValue),
+      ]),
     );
   }
   return value;
 }
 
 function labelsText(labels: Labels): string {
-  const entries = Object.entries(labels).filter(([, value]) => value !== undefined && value !== null);
+  const entries = Object.entries(labels).filter(
+    ([, value]) => value !== undefined && value !== null,
+  );
   if (entries.length === 0) return '';
   return `{${entries.map(([key, value]) => `${key}="${safeLabel(value)}"`).join(',')}}`;
 }
@@ -81,7 +90,9 @@ class TelemetryRegistry {
       mode: event.mode ? safeLabel(event.mode) : undefined,
       result: event.result ? safeLabel(event.result) : undefined,
       timestamp: new Date().toISOString(),
-      metadata: event.metadata ? (redactValue('metadata', event.metadata) as Record<string, unknown>) : undefined,
+      metadata: event.metadata
+        ? (redactValue('metadata', event.metadata) as Record<string, unknown>)
+        : undefined,
     };
     this.recentLogs.push(safeEvent);
     if (this.recentLogs.length > 100) this.recentLogs.shift();
@@ -96,19 +107,29 @@ class TelemetryRegistry {
     ];
     for (const [key, value] of this.counters.entries()) {
       const [name, rawLabels = ''] = key.split('|');
-      const labels = Object.fromEntries(rawLabels.split(',').filter(Boolean).map((entry) => {
-        const [label, labelValue] = entry.split('=');
-        return [label, labelValue ?? 'unknown'];
-      }));
+      const labels = Object.fromEntries(
+        rawLabels
+          .split(',')
+          .filter(Boolean)
+          .map((entry) => {
+            const [label, labelValue] = entry.split('=');
+            return [label, labelValue ?? 'unknown'];
+          }),
+      );
       lines.push(`# TYPE ${name} counter`);
       lines.push(`${name}${labelsText(labels)} ${value}`);
     }
     for (const [key, values] of this.histograms.entries()) {
       const [name, rawLabels = ''] = key.split('|');
-      const labels = Object.fromEntries(rawLabels.split(',').filter(Boolean).map((entry) => {
-        const [label, labelValue] = entry.split('=');
-        return [label, labelValue ?? 'unknown'];
-      }));
+      const labels = Object.fromEntries(
+        rawLabels
+          .split(',')
+          .filter(Boolean)
+          .map((entry) => {
+            const [label, labelValue] = entry.split('=');
+            return [label, labelValue ?? 'unknown'];
+          }),
+      );
       const sum = values.reduce((acc, value) => acc + value, 0);
       lines.push(`# TYPE ${name} summary`);
       lines.push(`${name}_count${labelsText(labels)} ${values.length}`);
@@ -119,11 +140,19 @@ class TelemetryRegistry {
 
   status() {
     const checkedAt = new Date().toISOString();
-    const recentSandbox = [...this.recentLogs].reverse().find((event) =>
-      ['sandbox_delivered', 'sandbox_writeback_failed', 'sandbox_dry_run'].includes(event.result ?? '')
-    );
-    const recentMinio = [...this.recentLogs].reverse().find((event) => event.event === 'minio_evidence_persisted');
-    const recentMailpit = [...this.recentLogs].reverse().find((event) => event.event === 'mailpit_notification_recorded');
+    const recentSandbox = [...this.recentLogs]
+      .reverse()
+      .find((event) =>
+        ['sandbox_delivered', 'sandbox_writeback_failed', 'sandbox_dry_run'].includes(
+          event.result ?? '',
+        ),
+      );
+    const recentMinio = [...this.recentLogs]
+      .reverse()
+      .find((event) => event.event === 'minio_evidence_persisted');
+    const recentMailpit = [...this.recentLogs]
+      .reverse()
+      .find((event) => event.event === 'mailpit_notification_recorded');
     const natsEnabled = process.env['SUPPORTPLANE_QUEUE_BACKEND'] === 'nats-jetstream';
     return {
       enabled: true,
@@ -143,7 +172,10 @@ class TelemetryRegistry {
         status: 'available',
         queueBackend: process.env['SUPPORTPLANE_QUEUE_BACKEND'] ?? 'postgres-local-outbox',
         fallbackQueueBackend: 'postgres-local-outbox',
-        deliveryMode: process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true' ? 'sandbox_available' : 'mock',
+        deliveryMode:
+          process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true'
+            ? 'sandbox_available'
+            : 'mock',
         writebackEnabled: process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true',
         realNetwork: process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true',
         externalWriteAttempted: recentSandbox?.result === 'sandbox_delivered',
@@ -166,7 +198,9 @@ class TelemetryRegistry {
         status: recentSandbox?.result ?? 'not_currently_reported',
         lastStatus: recentSandbox?.result ?? 'not_currently_reported',
         lastCompletedAt: recentSandbox?.timestamp,
-        externalArticleId: String(recentSandbox?.metadata?.['externalReferenceId'] ?? 'not_currently_reported'),
+        externalArticleId: String(
+          recentSandbox?.metadata?.['externalReferenceId'] ?? 'not_currently_reported',
+        ),
       },
       ai: {
         provider: process.env['SUPPORTPLANE_AI_PROVIDER'] ?? 'ollama',
@@ -178,8 +212,14 @@ class TelemetryRegistry {
       observabilityStack: {
         prometheus: { status: 'configured', endpoint: 'http://localhost:9090 via port-forward' },
         grafana: { status: 'configured', endpoint: 'http://localhost:3001 via port-forward' },
-        otelCollector: { status: 'configured', endpoint: 'otel-collector.supportplane-observability.svc.cluster.local:4317/4318' },
-        loki: { status: 'configured_no_log_shipper', endpoint: 'http://localhost:3100 via port-forward' },
+        otelCollector: {
+          status: 'configured',
+          endpoint: 'otel-collector.supportplane-observability.svc.cluster.local:4317/4318',
+        },
+        loki: {
+          status: 'configured_no_log_shipper',
+          endpoint: 'http://localhost:3100 via port-forward',
+        },
       },
       telemetry: {
         minioEvidence: {
@@ -201,8 +241,10 @@ class TelemetryRegistry {
       endpoints: {
         apiMetrics: '/metrics',
         apiStatus: '/observability/status',
-        prometheusPortForward: 'kubectl -n supportplane-observability port-forward svc/prometheus 9090:9090',
-        grafanaPortForward: 'kubectl -n supportplane-observability port-forward svc/grafana 3001:3000',
+        prometheusPortForward:
+          'kubectl -n supportplane-observability port-forward svc/prometheus 9090:9090',
+        grafanaPortForward:
+          'kubectl -n supportplane-observability port-forward svc/grafana 3001:3000',
         otelCollector: 'supportplane-observability/otel-collector:4317,4318',
         lokiPortForward: 'kubectl -n supportplane-observability port-forward svc/loki 3100:3100',
       },
@@ -210,11 +252,16 @@ class TelemetryRegistry {
         correlationIds: true,
         structuredLogs: true,
         prometheusMetrics: true,
-        traces: 'OTel collector deployed for local ingestion; API emits correlated logs/metrics in this baseline.',
+        traces:
+          'OTel collector deployed for local ingestion; API emits correlated logs/metrics in this baseline.',
         noSecretsInTelemetry: true,
       },
       recentLogs: this.recentLogs.slice(-25),
-      disclaimers: ['Local observability only', 'No production monitoring', 'No secrets in telemetry'],
+      disclaimers: [
+        'Local observability only',
+        'No production monitoring',
+        'No secrets in telemetry',
+      ],
     };
   }
 }

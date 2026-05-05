@@ -5,6 +5,7 @@ This is typically the first question set the coding agent asks after reading the
 repo and noticing it is still in `bootstrap` mode.
 
 Rules:
+
 - ask only what is needed to unblock truthful bootstrap
 - do not invent architecture or maturity
 - preserve unknowns explicitly when the user cannot prove something yet

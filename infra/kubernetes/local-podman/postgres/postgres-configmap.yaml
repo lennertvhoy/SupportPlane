@@ -7,5 +7,5 @@ metadata:
     app.kubernetes.io/part-of: supportplane
     supportplane.io/sandbox: local-podman
 data:
-  POSTGRES_DB: "supportplane"
-  POSTGRES_USER: "supportplane"
+  POSTGRES_DB: 'supportplane'
+  POSTGRES_USER: 'supportplane'

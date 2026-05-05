@@ -15,17 +15,25 @@ export const ConnectorPolicy = z.object({
   requireConnectorValidationBeforeDelivery: z.boolean().default(true),
   maxRetries: z.number().int().min(0).max(10).default(3),
   backoffSeconds: z.number().int().min(1).max(300).default(5),
-  safetyFlags: z.object({
-    realNetworkAllowed: z.boolean().default(false),
-    writebackEnabled: z.boolean().default(false),
-    externalWriteAllowed: z.boolean().default(false),
-    mockOnly: z.boolean().default(true),
-    sandboxOnly: z.boolean().default(false),
-  }).default({}),
+  safetyFlags: z
+    .object({
+      realNetworkAllowed: z.boolean().default(false),
+      writebackEnabled: z.boolean().default(false),
+      externalWriteAllowed: z.boolean().default(false),
+      mockOnly: z.boolean().default(true),
+      sandboxOnly: z.boolean().default(false),
+    })
+    .default({}),
   updatedBy: z.string().nullable().default(null),
-  updatedAt: z.string().datetime().default(() => new Date().toISOString()),
+  updatedAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
   version: z.number().int().min(1).default(1),
-  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  createdAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
 });
 
 export type ConnectorPolicy = z.infer<typeof ConnectorPolicy>;
@@ -37,7 +45,9 @@ export const AiPolicy = z.object({
   name: z.string().default('AI Policy'),
   enabled: z.boolean().default(true),
   killSwitch: z.boolean().default(false),
-  allowedProviders: z.array(z.enum(['mock', 'ollama', 'lmstudio', 'openai', 'anthropic'])).default(['mock', 'ollama', 'lmstudio']),
+  allowedProviders: z
+    .array(z.enum(['mock', 'ollama', 'lmstudio', 'openai', 'anthropic']))
+    .default(['mock', 'ollama', 'lmstudio']),
   allowedModels: z.array(z.string()).default([]),
   maxTokensPerRequest: z.number().int().min(1).max(1000000).default(4096),
   maxCostPerDayUsd: z.number().min(0).max(10000).default(100),
@@ -47,16 +57,24 @@ export const AiPolicy = z.object({
   allowGreetingSuggestions: z.boolean().default(true),
   allowScreenContext: z.boolean().default(false),
   redactionRequired: z.boolean().default(true),
-  safetyFlags: z.object({
-    cloudCallsAllowed: z.boolean().default(false),
-    localProvidersOnly: z.boolean().default(true),
-    mockOnly: z.boolean().default(true),
-    reviewRequired: z.boolean().default(true),
-  }).default({}),
+  safetyFlags: z
+    .object({
+      cloudCallsAllowed: z.boolean().default(false),
+      localProvidersOnly: z.boolean().default(true),
+      mockOnly: z.boolean().default(true),
+      reviewRequired: z.boolean().default(true),
+    })
+    .default({}),
   updatedBy: z.string().nullable().default(null),
-  updatedAt: z.string().datetime().default(() => new Date().toISOString()),
+  updatedAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
   version: z.number().int().min(1).default(1),
-  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  createdAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
 });
 
 export type AiPolicy = z.infer<typeof AiPolicy>;
@@ -81,9 +99,15 @@ export const RetentionPolicy = z.object({
   purgeRequiresApproval: z.boolean().default(true),
   minimumPurgeApproverRole: z.enum(['admin', 'owner', 'operator']).default('owner'),
   updatedBy: z.string().nullable().default(null),
-  updatedAt: z.string().datetime().default(() => new Date().toISOString()),
+  updatedAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
   version: z.number().int().min(1).default(1),
-  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  createdAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
 });
 
 export type RetentionPolicy = z.infer<typeof RetentionPolicy>;
@@ -105,14 +129,16 @@ export type PolicySummary = z.infer<typeof PolicySummary>;
 export const PolicyAuditPreview = z.object({
   tenantId: z.string(),
   generatedAt: z.string().datetime(),
-  policies: z.array(z.object({
-    policyType: z.string(),
-    policyId: z.string(),
-    policyName: z.string(),
-    version: z.number().int(),
-    enabled: z.boolean(),
-    safetyFlags: z.record(z.boolean()),
-  })),
+  policies: z.array(
+    z.object({
+      policyType: z.string(),
+      policyId: z.string(),
+      policyName: z.string(),
+      version: z.number().int(),
+      enabled: z.boolean(),
+      safetyFlags: z.record(z.boolean()),
+    }),
+  ),
   disclaimers: z.array(z.string()),
 });
 
@@ -128,13 +154,15 @@ export const ConnectorPolicyUpdateRequest = z.object({
   requireConnectorValidationBeforeDelivery: z.boolean().optional(),
   maxRetries: z.number().int().min(0).max(10).optional(),
   backoffSeconds: z.number().int().min(1).max(300).optional(),
-  safetyFlags: z.object({
-    realNetworkAllowed: z.boolean().optional(),
-    writebackEnabled: z.boolean().optional(),
-    externalWriteAllowed: z.boolean().optional(),
-    mockOnly: z.boolean().optional(),
-    sandboxOnly: z.boolean().optional(),
-  }).optional(),
+  safetyFlags: z
+    .object({
+      realNetworkAllowed: z.boolean().optional(),
+      writebackEnabled: z.boolean().optional(),
+      externalWriteAllowed: z.boolean().optional(),
+      mockOnly: z.boolean().optional(),
+      sandboxOnly: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 export type ConnectorPolicyUpdateRequest = z.infer<typeof ConnectorPolicyUpdateRequest>;
@@ -142,7 +170,9 @@ export type ConnectorPolicyUpdateRequest = z.infer<typeof ConnectorPolicyUpdateR
 export const AiPolicyUpdateRequest = z.object({
   enabled: z.boolean().optional(),
   killSwitch: z.boolean().optional(),
-  allowedProviders: z.array(z.enum(['mock', 'ollama', 'lmstudio', 'openai', 'anthropic'])).optional(),
+  allowedProviders: z
+    .array(z.enum(['mock', 'ollama', 'lmstudio', 'openai', 'anthropic']))
+    .optional(),
   allowedModels: z.array(z.string()).optional(),
   maxTokensPerRequest: z.number().int().min(1).max(1000000).optional(),
   maxCostPerDayUsd: z.number().min(0).max(10000).optional(),
@@ -152,12 +182,14 @@ export const AiPolicyUpdateRequest = z.object({
   allowGreetingSuggestions: z.boolean().optional(),
   allowScreenContext: z.boolean().optional(),
   redactionRequired: z.boolean().optional(),
-  safetyFlags: z.object({
-    cloudCallsAllowed: z.boolean().optional(),
-    localProvidersOnly: z.boolean().optional(),
-    mockOnly: z.boolean().optional(),
-    reviewRequired: z.boolean().optional(),
-  }).optional(),
+  safetyFlags: z
+    .object({
+      cloudCallsAllowed: z.boolean().optional(),
+      localProvidersOnly: z.boolean().optional(),
+      mockOnly: z.boolean().optional(),
+      reviewRequired: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 export type AiPolicyUpdateRequest = z.infer<typeof AiPolicyUpdateRequest>;

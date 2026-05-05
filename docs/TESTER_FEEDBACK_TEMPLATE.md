@@ -6,12 +6,12 @@
 
 ## Session Info
 
-| Field | Value |
-|-------|-------|
-| **Date** | |
-| **Your role** | (e.g., IT support, MSP owner, security reviewer, curious observer) |
-| **Demo flows tried** | Flow A (Zammad) / Flow B (GLPI) / Flow C (Governance) |
-| **Duration** | minutes |
+| Field                | Value                                                              |
+| -------------------- | ------------------------------------------------------------------ |
+| **Date**             |                                                                    |
+| **Your role**        | (e.g., IT support, MSP owner, security reviewer, curious observer) |
+| **Demo flows tried** | Flow A (Zammad) / Flow B (GLPI) / Flow C (Governance)              |
+| **Duration**         | minutes                                                            |
 
 ---
 
@@ -58,12 +58,12 @@ What would you need before trusting SupportPlane in a real support workflow? Con
 
 ## Ratings (1 = worst, 5 = best)
 
-| Category | Score (1–5) | Why? |
-|----------|-------------|------|
-| **Clarity** — Is it clear what's happening? | | |
-| **Usefulness** — Would this help your team? | | |
-| **Trust** — Do you trust what the system reports? | | |
-| **Speed** — Did it feel fast enough? | | |
+| Category                                          | Score (1–5) | Why? |
+| ------------------------------------------------- | ----------- | ---- |
+| **Clarity** — Is it clear what's happening?       |             |      |
+| **Usefulness** — Would this help your team?       |             |      |
+| **Trust** — Do you trust what the system reports? |             |      |
+| **Speed** — Did it feel fast enough?              |             |      |
 
 ---
 

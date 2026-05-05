@@ -22,13 +22,15 @@ export function SandboxBoundaryPanel() {
             SupportPlane is a governed AI support cockpit.
           </div>
           <p className="leading-relaxed">
-            AI can reason, summarize, and suggest actions. Policy, role, and approval controls decide what is allowed.
-            Every action is auditable. Nothing executes autonomously.
+            AI can reason, summarize, and suggest actions. Policy, role, and approval controls
+            decide what is allowed. Every action is auditable. Nothing executes autonomously.
           </p>
         </div>
 
         <div className="space-y-1.5">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-cockpit-500">Connector states</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-cockpit-500">
+            Connector states
+          </div>
           <div className="flex flex-wrap gap-1.5">
             <BoundaryLabel type="real-sandbox" />
             <BoundaryLabel type="mock-fixture" />
@@ -37,7 +39,9 @@ export function SandboxBoundaryPanel() {
         </div>
 
         <div className="space-y-1.5">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-cockpit-500">Governance states</div>
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-cockpit-500">
+            Governance states
+          </div>
           <div className="flex flex-wrap gap-1.5">
             <BoundaryLabel type="read-only" />
             <BoundaryLabel type="approval-gated" />

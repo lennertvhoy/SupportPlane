@@ -26,7 +26,7 @@ spec:
                 name: zammad-config
             - secretRef:
                 name: zammad-db
-          command: ["/bin/sh", "-c"]
+          command: ['/bin/sh', '-c']
           args:
             - |
               set -e
@@ -38,11 +38,11 @@ spec:
               echo "Zammad init completed"
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: '256Mi'
+              cpu: '200m'
             limits:
-              memory: "1Gi"
-              cpu: "1000m"
+              memory: '1Gi'
+              cpu: '1000m'
       containers:
         - name: zammad-railsserver
           image: zammad/zammad:6.4.1-1
@@ -51,8 +51,8 @@ spec:
                 name: zammad-config
             - secretRef:
                 name: zammad-db
-          command: ["/docker-entrypoint.sh"]
-          args: ["zammad-railsserver"]
+          command: ['/docker-entrypoint.sh']
+          args: ['zammad-railsserver']
           ports:
             - containerPort: 3000
               name: http
@@ -72,11 +72,11 @@ spec:
             failureThreshold: 10
           resources:
             requests:
-              memory: "512Mi"
-              cpu: "300m"
+              memory: '512Mi'
+              cpu: '300m'
             limits:
-              memory: "2Gi"
-              cpu: "1500m"
+              memory: '2Gi'
+              cpu: '1500m'
           volumeMounts:
             - name: zammad-storage
               mountPath: /opt/zammad/storage
@@ -91,7 +91,7 @@ spec:
           app.kubernetes.io/name: zammad
           app.kubernetes.io/part-of: supportplane
       spec:
-        accessModes: ["ReadWriteOnce"]
+        accessModes: ['ReadWriteOnce']
         resources:
           requests:
             storage: 512Mi

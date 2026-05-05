@@ -10,7 +10,7 @@
 
 **Recommendation: BLOCK BL-128.** osTicket (current stable v1.x) cannot satisfy SupportPlane's read-ticket/read-customer integration requirements. Two hard blockers exist:
 
-1. **No read API** — osTicket v1.x only supports ticket *creation* via HTTP API. Listing tickets, reading ticket details, and reading users/customers is not exposed.
+1. **No read API** — osTicket v1.x only supports ticket _creation_ via HTTP API. Listing tickets, reading ticket details, and reading users/customers is not exposed.
 2. **No PostgreSQL support** — osTicket v1.x requires MySQL/MariaDB. SupportPlane's cluster is PostgreSQL-only. Adding a second RDBMS engine increases operational surface and contradicts the existing single-store topology.
 
 Additionally, there is no official osTicket container image, which introduces supply-chain and maintenance risk.
@@ -33,7 +33,7 @@ Additionally, there is no official osTicket container image, which introduces su
 
 - osTicket v1.x prerequisites: Apache/IIS, PHP 8.2–8.4, **MySQL 5.5+ or MariaDB**.
 - [osTicket FAQ](https://osticket.com/faq/) lists MySQL as a hard requirement.
-- A [May 2024 forum reply from osTicket staff](https://forum.osticket.com/d/104832-postgresql-instead-of-mysql-for-installation) states: *"no, we only support MySQL and MariaDB databases at this time. We are currently working on v2.0 which will support PostgreSQL and other database backends."*
+- A [May 2024 forum reply from osTicket staff](https://forum.osticket.com/d/104832-postgresql-instead-of-mysql-for-installation) states: _"no, we only support MySQL and MariaDB databases at this time. We are currently working on v2.0 which will support PostgreSQL and other database backends."_
 - osTicket 2.0 (announced March 2026 on [next.osticket.com](https://next.osticket.com/)) is planned to use Laravel and support PostgreSQL, but it is **not released** and no GA timeline is published.
 
 ### 2.3 Kubernetes Deployment Complexity
@@ -62,15 +62,15 @@ Source: [osTicket API Docs](https://docs.osticket.com/en/latest/Developer%20Docu
 
 ### 3.2 Available Endpoints
 
-| Endpoint | Method | Purpose | Supported |
-|----------|--------|---------|-----------|
-| `/api/tickets.json` | POST | Create ticket | Yes |
-| `/api/tickets.xml` | POST | Create ticket | Yes |
-| `/api/tickets.email` | POST | Create ticket via email | Yes |
-| `/api/tasks/cron` | POST | Trigger cron | Yes |
-| `GET /api/tickets.*` | GET | List tickets | **No** |
-| `GET /api/tickets/{id}.*` | GET | Read ticket details | **No** |
-| `GET /api/users.*` | GET | Read customers/users | **No** |
+| Endpoint                  | Method | Purpose                 | Supported |
+| ------------------------- | ------ | ----------------------- | --------- |
+| `/api/tickets.json`       | POST   | Create ticket           | Yes       |
+| `/api/tickets.xml`        | POST   | Create ticket           | Yes       |
+| `/api/tickets.email`      | POST   | Create ticket via email | Yes       |
+| `/api/tasks/cron`         | POST   | Trigger cron            | Yes       |
+| `GET /api/tickets.*`      | GET    | List tickets            | **No**    |
+| `GET /api/tickets/{id}.*` | GET    | Read ticket details     | **No**    |
+| `GET /api/users.*`        | GET    | Read customers/users    | **No**    |
 
 ### 3.3 Authentication
 
@@ -102,11 +102,11 @@ osTicket v1.x **cannot fulfill either capability** via its HTTP API. The only av
 
 ### 4.2 Exact Blockers
 
-| Blocker | Severity | Details |
-|---------|----------|---------|
-| **B1: No read API** | Hard | osTicket v1.x HTTP API supports only ticket creation. No endpoints exist to list tickets, read ticket details, or read users/customers. SupportPlane's adapter contract requires `read_tickets` and `read_customers`. |
-| **B2: No PostgreSQL support** | Hard | osTicket v1.x requires MySQL/MariaDB. SupportPlane's cluster topology is PostgreSQL-only. Adding a second RDBMS is out of scope for BL-128 and increases operational surface. |
-| **B3: No official container image** | Risk | All available Docker images are community-maintained and unofficial. No upstream security patches or version guarantees. |
+| Blocker                             | Severity | Details                                                                                                                                                                                                               |
+| ----------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **B1: No read API**                 | Hard     | osTicket v1.x HTTP API supports only ticket creation. No endpoints exist to list tickets, read ticket details, or read users/customers. SupportPlane's adapter contract requires `read_tickets` and `read_customers`. |
+| **B2: No PostgreSQL support**       | Hard     | osTicket v1.x requires MySQL/MariaDB. SupportPlane's cluster topology is PostgreSQL-only. Adding a second RDBMS is out of scope for BL-128 and increases operational surface.                                         |
+| **B3: No official container image** | Risk     | All available Docker images are community-maintained and unofficial. No upstream security patches or version guarantees.                                                                                              |
 
 ### 4.3 Conditions for Unblocking
 

@@ -94,10 +94,7 @@ describe('@supportplane/ai mock gateway', () => {
   });
 
   it('context hash is stable for object key order', () => {
-    assert.equal(
-      computeContextHash({ b: 2, a: 1 }),
-      computeContextHash({ a: 1, b: 2 })
-    );
+    assert.equal(computeContextHash({ b: 2, a: 1 }), computeContextHash({ a: 1, b: 2 }));
   });
 });
 
@@ -117,11 +114,13 @@ describe('@supportplane/ai Ollama local provider', () => {
     });
     const response = await provider.generateDraft({
       ...baseRequest,
-      ticketReferences: [{
-        ...baseRequest.ticketReferences[0],
-        customerEmail: 'person@example.com',
-        rawData: { apiToken: 'secret-token-value' },
-      }],
+      ticketReferences: [
+        {
+          ...baseRequest.ticketReferences[0],
+          customerEmail: 'person@example.com',
+          rawData: { apiToken: 'secret-token-value' },
+        },
+      ],
       modelSelection: { provider: 'ollama', model: 'llama3.1:8b' },
     });
 
@@ -169,7 +168,11 @@ describe('@supportplane/ai Ollama local provider', () => {
       new OllamaAiProvider({
         baseUrl: 'http://host.containers.internal:11434',
         model: 'llama3.1:8b',
-        client: { async generate() { return 'Local Ollama output.'; } },
+        client: {
+          async generate() {
+            return 'Local Ollama output.';
+          },
+        },
       }),
     ]);
     const response = await gateway.generateDraft({

@@ -74,17 +74,17 @@ Invalid transitions are rejected with `400 Bad Request`. The current state is vi
 
 ## API endpoints
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `POST /support-sessions/:id/screen-observations/mock` | POST | Capture a legacy mock screen observation for a session |
-| `POST /support-sessions/:id/screen-observations/active-window/mock` | POST | Capture deterministic active-window metadata (kind=`active_window`) |
-| `POST /support-sessions/:id/screen-observations/manual-screenshot` | POST | Attach manual screenshot metadata (kind=`screenshot_metadata`, retention=`disabled`) |
-| `POST /support-sessions/:id/screen-observations/structured-upload` | POST | Upload any structured observation with explicit kind/source |
-| `GET /support-sessions/:id/screen-observations/sharing-state` | GET | Read current sharing state for the session |
-| `POST /support-sessions/:id/screen-observations/sharing-state` | POST | Transition sharing state (start/pause/resume/stop) |
-| `GET /support-sessions/:id/screen-observations` | GET | List tenant-scoped observations for a session |
-| `POST /support-sessions/:id/screen-observations/:observationId/review` | POST | Approve or discard an observation |
-| `POST /support-sessions/:id/screen-observations/:observationId/context-packet` | POST | Create an AI context packet from an approved observation |
+| Endpoint                                                                       | Method | Purpose                                                                              |
+| ------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------ |
+| `POST /support-sessions/:id/screen-observations/mock`                          | POST   | Capture a legacy mock screen observation for a session                               |
+| `POST /support-sessions/:id/screen-observations/active-window/mock`            | POST   | Capture deterministic active-window metadata (kind=`active_window`)                  |
+| `POST /support-sessions/:id/screen-observations/manual-screenshot`             | POST   | Attach manual screenshot metadata (kind=`screenshot_metadata`, retention=`disabled`) |
+| `POST /support-sessions/:id/screen-observations/structured-upload`             | POST   | Upload any structured observation with explicit kind/source                          |
+| `GET /support-sessions/:id/screen-observations/sharing-state`                  | GET    | Read current sharing state for the session                                           |
+| `POST /support-sessions/:id/screen-observations/sharing-state`                 | POST   | Transition sharing state (start/pause/resume/stop)                                   |
+| `GET /support-sessions/:id/screen-observations`                                | GET    | List tenant-scoped observations for a session                                        |
+| `POST /support-sessions/:id/screen-observations/:observationId/review`         | POST   | Approve or discard an observation                                                    |
+| `POST /support-sessions/:id/screen-observations/:observationId/context-packet` | POST   | Create an AI context packet from an approved observation                             |
 
 All endpoints require dev identity headers in local mode: `x-tenant-id` and `x-user-id`.
 

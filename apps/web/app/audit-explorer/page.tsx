@@ -18,7 +18,7 @@ export default function AuditExplorerPage() {
           </div>
         </div>
         <button
-          onClick={() => window.location.href = '/'}
+          onClick={() => (window.location.href = '/')}
           className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-3 py-1.5 text-xs text-cockpit-300 hover:bg-cockpit-800"
         >
           <ArrowLeft size={14} />

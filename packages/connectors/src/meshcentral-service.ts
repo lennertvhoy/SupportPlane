@@ -51,7 +51,10 @@ export class MeshCentralConnectorService implements MeshCentralService {
     return this.ensureClient().listDevices();
   }
 
-  async health(): Promise<{ status: 'healthy' | 'unconfigured' | 'unhealthy'; connected: boolean }> {
+  async health(): Promise<{
+    status: 'healthy' | 'unconfigured' | 'unhealthy';
+    connected: boolean;
+  }> {
     if (!this.client) {
       return { status: 'unconfigured', connected: false };
     }

@@ -1,10 +1,10 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "statedd-template-v3"
-schema_version: "1.0"
+version: 'statedd-template-v3'
+schema_version: '1.0'
 
 product:
-  name: "SupportPlane"
+  name: 'SupportPlane'
   one_sentence: >
     Multi-tenant, self-hostable AI support cockpit for governed IT support
     sessions across tickets, calls, screen context, endpoint diagnostics, and
@@ -166,14 +166,14 @@ safety:
       result after approval.
 
 security_invariants:
-  - "Every tenant-scoped object includes tenant_id."
-  - "Database access must enforce tenant scoping."
-  - "AI receives explicit AIContextPacket objects, not arbitrary raw context."
-  - "Secrets are referenced by ID and resolved server-side only where allowed."
-  - "Endpoint agents connect outbound by default."
-  - "Operator screen capture is explicit, visible, and active-window-only by default."
-  - "Audit events are append-only and designed for hash chaining."
-  - "User-facing AI or action behavior needs runtime identity proof before acceptance."
+  - 'Every tenant-scoped object includes tenant_id.'
+  - 'Database access must enforce tenant scoping.'
+  - 'AI receives explicit AIContextPacket objects, not arbitrary raw context.'
+  - 'Secrets are referenced by ID and resolved server-side only where allowed.'
+  - 'Endpoint agents connect outbound by default.'
+  - 'Operator screen capture is explicit, visible, and active-window-only by default.'
+  - 'Audit events are append-only and designed for hash chaining.'
+  - 'User-facing AI or action behavior needs runtime identity proof before acceptance.'
 
 governance:
   evidence_standard: browser_verification_or_test_output

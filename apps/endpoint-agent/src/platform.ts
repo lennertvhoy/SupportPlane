@@ -12,10 +12,14 @@ export function getAgentPlatform(): AgentPlatform {
 
 export function platformDisplayLabel(platform: AgentPlatform): string {
   switch (platform) {
-    case 'linux': return 'Linux';
-    case 'win32': return 'Windows';
-    case 'darwin': return 'macOS';
-    case 'unknown': return 'Unknown';
+    case 'linux':
+      return 'Linux';
+    case 'win32':
+      return 'Windows';
+    case 'darwin':
+      return 'macOS';
+    case 'unknown':
+      return 'Unknown';
   }
 }
 

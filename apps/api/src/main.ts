@@ -32,14 +32,19 @@ async function bootstrap() {
       'http://127.0.0.1:3200',
     ],
     credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'x-user-id', 'x-user-role', 'x-correlation-id'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-tenant-id',
+      'x-user-id',
+      'x-user-role',
+      'x-correlation-id',
+    ],
     exposedHeaders: ['x-correlation-id'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
-  const port = process.env.API_PORT
-    ? parseInt(process.env.API_PORT, 10)
-    : 4110;
+  const port = process.env.API_PORT ? parseInt(process.env.API_PORT, 10) : 4110;
   await app.listen(port);
   console.log(`SupportPlane API listening on http://localhost:${port}`);
 }

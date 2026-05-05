@@ -23,7 +23,10 @@ class OsTicketConnectorAdapter implements TicketingAdapterClient {
     };
   }
 
-  async writeInternalNote(_ticketId: string, _body: string): Promise<InternalNoteWritebackResultShape> {
+  async writeInternalNote(
+    _ticketId: string,
+    _body: string,
+  ): Promise<InternalNoteWritebackResultShape> {
     throw new Error('osTicket writeback is not implemented in this slice.');
   }
 
@@ -56,7 +59,10 @@ class MockOsTicketConnectorAdapter implements TicketingAdapterClient {
     };
   }
 
-  async writeInternalNote(_ticketId: string, _body: string): Promise<InternalNoteWritebackResultShape> {
+  async writeInternalNote(
+    _ticketId: string,
+    _body: string,
+  ): Promise<InternalNoteWritebackResultShape> {
     throw new Error('Mock osTicket writeback is not implemented.');
   }
 
@@ -82,7 +88,12 @@ export class OsTicketAdapterFactory implements TicketingAdapterFactory {
       properties: {
         baseUrl: { type: 'string', description: 'osTicket base URL' },
         apiKey: { type: 'string', description: 'osTicket API key' },
-        timeoutMs: { type: 'integer', minimum: 1000, maximum: 60000, description: 'Request timeout in milliseconds' },
+        timeoutMs: {
+          type: 'integer',
+          minimum: 1000,
+          maximum: 60000,
+          description: 'Request timeout in milliseconds',
+        },
         mockMode: { type: 'boolean', description: 'Mock mode flag' },
       },
       required: ['baseUrl'],

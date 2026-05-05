@@ -34,9 +34,9 @@ spec:
                   name: grafana-local-admin
                   key: admin-password
             - name: GF_ANALYTICS_REPORTING_ENABLED
-              value: "false"
+              value: 'false'
             - name: GF_ANALYTICS_CHECK_FOR_UPDATES
-              value: "false"
+              value: 'false'
           ports:
             - containerPort: 3000
               name: http
@@ -56,11 +56,11 @@ spec:
             failureThreshold: 3
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "50m"
+              memory: '128Mi'
+              cpu: '50m'
             limits:
-              memory: "512Mi"
-              cpu: "300m"
+              memory: '512Mi'
+              cpu: '300m'
           volumeMounts:
             - name: datasources
               mountPath: /etc/grafana/provisioning/datasources/datasources.yaml

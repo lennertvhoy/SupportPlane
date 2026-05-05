@@ -224,22 +224,22 @@ and must be protected from quiet regression.
   process_or_container: Kind/Podman cluster `supportplane-local` with port-forwards
   port_or_base_url: Cluster API http://localhost:4210, Cluster Web http://localhost:3300, Local MVP API http://localhost:4110, Local MVP Web http://localhost:3200
   routes:
-    - / (cluster web)
-    - /call-console (cluster web)
-    - /health (cluster API)
-    - / (local MVP web)
-    - /call-console (local MVP web)
-    - /health (local MVP API)
-  rebuilt_in_slice: true
-  duplicate_runtimes_checked: true
-  evidence_refs:
-    - EV-2026-04-29-044 through EV-2026-04-29-058
-  regression_guard:
-    - Local MVP on localhost:4110/3200 must remain runnable unless explicitly superseded.
-    - Cluster app services must remain deployable via `kubectl apply -k infra/kubernetes/local-podman` and image build/load script.
-    - PostgreSQL PVC must remain Bound after StatefulSet restart.
-    - No real writeback, secrets, or production claims may be introduced without explicit backlog scope.
-  Notes: This is a local Kubernetes app/PostgreSQL foundation only, not production deployment. Images are local sandbox builds (`localhost/supportplane-*:local-k8s`).
+  - / (cluster web)
+  - /call-console (cluster web)
+  - /health (cluster API)
+  - / (local MVP web)
+  - /call-console (local MVP web)
+  - /health (local MVP API)
+    rebuilt_in_slice: true
+    duplicate_runtimes_checked: true
+    evidence_refs:
+  - EV-2026-04-29-044 through EV-2026-04-29-058
+    regression_guard:
+  - Local MVP on localhost:4110/3200 must remain runnable unless explicitly superseded.
+  - Cluster app services must remain deployable via `kubectl apply -k infra/kubernetes/local-podman` and image build/load script.
+  - PostgreSQL PVC must remain Bound after StatefulSet restart.
+  - No real writeback, secrets, or production claims may be introduced without explicit backlog scope.
+    Notes: This is a local Kubernetes app/PostgreSQL foundation only, not production deployment. Images are local sandbox builds (`localhost/supportplane-*:local-k8s`).
 
 ## Entry Format
 
@@ -590,7 +590,7 @@ and must be protected from quiet regression.
   - GET /auth/me
   - POST /auth/logout
   - GET /auth/audit-events
-  - /support-sessions/*
+  - /support-sessions/\*
 - store_mode: postgres
 - auth_mode: local
 - rebuilt_in_slice: true
@@ -786,7 +786,6 @@ and must be protected from quiet regression.
   - Phone normalization is Belgian-style only; international support is not implemented.
   - Caller matching is fixture-based mock data, not a real CRM or directory lookup.
   - In-memory store means call data is lost on API restart.
-
 
 ## AF-2026-04-26-006: Automatic SupportSession creation from incoming calls (BL-041)
 
@@ -986,7 +985,6 @@ and must be protected from quiet regression.
   - No real screen capture, raw pixels, clipboard access, OCR, desktop monitoring, or native OS integration exists.
   - No real database persistence; all data is in-memory and lost on API restart.
   - The earlier partial screenshot folder `output/playwright/session-047-049-screen-context-hardening/` is superseded by this final closure folder.
-
 
 ## AF-2026-04-27-008: BL-020 Ticket Context and Connector Safety Foundation
 
@@ -1321,7 +1319,6 @@ and must be protected from quiet regression.
   - No real production Zammad writeback was implemented.
   - No real email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
 
-
 ## AF-2026-04-28-013: BL-095 Connector Installation Settings Foundation
 
 - ID: AF-2026-04-28-013
@@ -1398,7 +1395,6 @@ and must be protected from quiet regression.
 - explicit_non_claims:
   - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
 
-
 ---
 
 ## AF-2026-04-28-014 — BL-097 Credential Reference Foundation
@@ -1446,7 +1442,6 @@ and must be protected from quiet regression.
 - explicit_non_claims:
   - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
   - No real secret broker, credential vault, or encrypted secret storage was implemented.
-
 
 ---
 
@@ -1600,7 +1595,6 @@ and must be protected from quiet regression.
   - No real production Zammad writeback, email sending, telephony/PBX integration, AI provider call, external broker-backed queue, object storage, raw screenshot storage, raw audio/media storage, production audit immutability, compliance certification, production deployment, SSO/OAuth/SAML/OIDC, MFA, or password reset was implemented.
   - No real secret broker, credential vault, or encrypted secret storage was implemented.
   - Design document does not constitute implementation or readiness for real writeback.
-
 
 ---
 
@@ -1826,7 +1820,6 @@ and must be protected from quiet regression.
        - Added outbox polling loop to handle NATS worker auto-claim race condition.
        - Verifier now passes 3/3 consecutive end-to-end runs with exit code 0.
 
-
 ## AF-009: BL-089/123/124/125/126/127 Registry Closure and Sandbox Truth Fields
 
 - frozen_at: 2026-04-30T14:00:00+02:00
@@ -1884,7 +1877,6 @@ and must be protected from quiet regression.
   6. Captured 16 evidence artifacts under max 20 budget.
   7. Updated BACKLOG.md, STATUS.md, NEXT_ACTIONS.md, PROJECT_STATE.yaml, WORKLOG.md, EVIDENCE_LOG.md, and ACCEPTANCE_FREEZES.md.
 
-
 ## AF-2026-04-30-009: BL-117 Local Asterisk AMI Call-Event Bridge (ACCEPTED)
 
 - ID: AF-2026-04-30-009
@@ -1930,7 +1922,6 @@ and must be protected from quiet regression.
   - No call recording or transcription.
   - osTicket remains fixture-only.
 - as_of: 2026-04-30T16:35:00+02:00
-
 
 ## AF-010: BL-086 API Gateway Hardening
 
@@ -2057,6 +2048,7 @@ and must be protected from quiet regression.
   - OIDC uses HTTP for local sandbox.
   - MFA enforcement not implemented.
   - Service account token rotation is manual.
+
 ## AF-2026-05-01-001: Endpoint Agent and Read-Only Diagnostics Foundation (PARTIAL ACCEPTANCE)
 
 - backlog_id: BL-055/BL-056/BL-057/BL-058/BL-059/BL-060/BL-118

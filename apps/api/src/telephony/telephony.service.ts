@@ -37,7 +37,7 @@ export class TelephonyService {
 
   constructor(
     @Inject(CallsService)
-    private readonly callsService: CallsService
+    private readonly callsService: CallsService,
   ) {}
 
   async getStatus(identity: DevIdentity): Promise<TelephonyAdapterStatusShape> {
@@ -56,7 +56,7 @@ export class TelephonyService {
         verificationStatus: status.webhookVerification.status,
         success: true,
         mockDevOnly: true,
-      }
+      },
     );
     return status;
   }
@@ -77,7 +77,7 @@ export class TelephonyService {
         verificationStatus: status.webhookVerification.status,
         success: true,
         mockDevOnly: true,
-      }
+      },
     );
     return status;
   }
@@ -85,15 +85,20 @@ export class TelephonyService {
   async receiveFakeProviderWebhook(
     identity: DevIdentity,
     body: FakeProviderWebhookBody,
-    headers: Record<string, string | string[] | undefined>
-  ): Promise<{ event: TelephonyWebhookEventShape; callEvent: unknown; mockDevOnly: boolean; receivedAt: string }> {
+    headers: Record<string, string | string[] | undefined>,
+  ): Promise<{
+    event: TelephonyWebhookEventShape;
+    callEvent: unknown;
+    mockDevOnly: boolean;
+    receivedAt: string;
+  }> {
     requirePermission(identity, 'telephony:webhook');
     const lifecycle = TelephonyWebhookLifecycleEventType.safeParse(
-      body.eventType ?? 'incoming_call'
+      body.eventType ?? 'incoming_call',
     );
     if (!lifecycle.success) {
       throw new BadRequestException(
-        `Invalid telephony lifecycle event: ${body.eventType}. Allowed: ${TelephonyWebhookLifecycleEventType.options.join(', ')}`
+        `Invalid telephony lifecycle event: ${body.eventType}. Allowed: ${TelephonyWebhookLifecycleEventType.options.join(', ')}`,
       );
     }
     const verification = this.adapter.verifyWebhook({
@@ -126,7 +131,7 @@ export class TelephonyService {
     const { callEvent, receivedAt } = await this.callsService.createFromTelephonyWebhook(
       identity,
       event,
-      mapped
+      mapped,
     );
 
     await this.callsService.recordTelephonyAuditEvent(
@@ -144,7 +149,7 @@ export class TelephonyService {
         verificationStatus: verification.status,
         success: true,
         mockDevOnly: true,
-      }
+      },
     );
     await this.callsService.recordTelephonyAuditEvent(
       identity,
@@ -161,7 +166,7 @@ export class TelephonyService {
         verificationStatus: verification.status,
         success: true,
         mockDevOnly: true,
-      }
+      },
     );
 
     return { event, callEvent, mockDevOnly: true, receivedAt };
@@ -170,14 +175,14 @@ export class TelephonyService {
   async controlCall(
     identity: DevIdentity,
     callId: string,
-    body: { action: string; reason?: string; target?: string }
+    body: { action: string; reason?: string; target?: string },
   ): Promise<TelephonyCallControlResultShape> {
     requirePermission(identity, 'telephony:control');
     const call = await this.callsService.getCall(identity, callId);
     const action = TelephonyCallControlAction.safeParse(body.action);
     if (!action.success) {
       throw new BadRequestException(
-        `Invalid telephony control action: ${body.action}. Allowed: ${TelephonyCallControlAction.options.join(', ')}`
+        `Invalid telephony control action: ${body.action}. Allowed: ${TelephonyCallControlAction.options.join(', ')}`,
       );
     }
     const now = new Date().toISOString();
@@ -210,7 +215,7 @@ export class TelephonyService {
         controlIntent: intent.action,
         success: true,
         mockDevOnly: true,
-      }
+      },
     );
 
     const adapterResult = this.adapter.handleControlIntent(intent, call);
@@ -231,7 +236,7 @@ export class TelephonyService {
           success: false,
           error: adapterResult.error,
           mockDevOnly: true,
-        }
+        },
       );
       return adapterResult;
     }
@@ -261,7 +266,7 @@ export class TelephonyService {
           controlIntent: intent.action,
           success: true,
           mockDevOnly: true,
-        }
+        },
       );
       return result;
     } catch (error) {
@@ -282,7 +287,7 @@ export class TelephonyService {
           success: false,
           error: sanitized,
           mockDevOnly: true,
-        }
+        },
       );
       return {
         ...adapterResult,
@@ -307,7 +312,7 @@ export class TelephonyService {
       autoCreateSession?: boolean;
       preferredSessionTitle?: string;
       preferredPriority?: string;
-    }
+    },
   ) {
     requirePermission(identity, 'telephony:webhook');
 

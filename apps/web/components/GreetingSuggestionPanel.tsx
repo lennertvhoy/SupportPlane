@@ -17,7 +17,10 @@ export function GreetingSuggestionPanel({
   suggestion?: GreetingSuggestionResponse;
   loading: boolean;
   error: string | null;
-  onGenerate: (tone: 'professional' | 'friendly' | 'concise', callEventId?: string) => Promise<GreetingSuggestionResponse | undefined>;
+  onGenerate: (
+    tone: 'professional' | 'friendly' | 'concise',
+    callEventId?: string,
+  ) => Promise<GreetingSuggestionResponse | undefined>;
 }) {
   const [tone, setTone] = useState<'professional' | 'friendly' | 'concise'>('professional');
   const [copied, setCopied] = useState(false);
@@ -37,12 +40,7 @@ export function GreetingSuggestionPanel({
   };
 
   return (
-    <Panel
-      title="Greeting Suggestion"
-      headerRight={
-        <Badge variant="warning">Mock AI</Badge>
-      }
-    >
+    <Panel title="Greeting Suggestion" headerRight={<Badge variant="warning">Mock AI</Badge>}>
       {!session ? (
         <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-500">
           Select a session to generate a greeting suggestion.
@@ -105,9 +103,7 @@ export function GreetingSuggestionPanel({
             <div className="space-y-3">
               <div className="rounded border border-cockpit-700 bg-cockpit-900/50 p-3">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-cockpit-200">
-                    Suggested greeting
-                  </span>
+                  <span className="text-xs font-semibold text-cockpit-200">Suggested greeting</span>
                   <button
                     onClick={() => handleCopy(suggestion.suggestion.greetingText)}
                     className="inline-flex items-center gap-1 rounded bg-cockpit-700 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-600"
@@ -127,9 +123,7 @@ export function GreetingSuggestionPanel({
 
               <div className="rounded border border-amber-700/40 bg-amber-950/30 p-3 text-xs">
                 <div className="mb-2 flex items-center justify-between gap-2">
-                  <span className="font-semibold text-amber-200">
-                    Mock/dev-only model metadata
-                  </span>
+                  <span className="font-semibold text-amber-200">Mock/dev-only model metadata</span>
                   <Badge variant="warning">Review before use</Badge>
                 </div>
                 <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-cockpit-400">
@@ -148,7 +142,9 @@ export function GreetingSuggestionPanel({
                   <dt>Auto-send</dt>
                   <dd className="text-cockpit-100">{suggestion.safety.autoSend ? 'Yes' : 'No'}</dd>
                   <dt>Voice</dt>
-                  <dd className="text-cockpit-100">{suggestion.safety.voiceEnabled ? 'Yes' : 'No'}</dd>
+                  <dd className="text-cockpit-100">
+                    {suggestion.safety.voiceEnabled ? 'Yes' : 'No'}
+                  </dd>
                 </dl>
               </div>
             </div>

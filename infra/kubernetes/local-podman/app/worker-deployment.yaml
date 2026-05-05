@@ -28,7 +28,7 @@ spec:
                 name: app-config
           env:
             - name: SUPPORTPLANE_API_URL
-              value: "http://supportplane-api.supportplane-app.svc.cluster.local:4110"
+              value: 'http://supportplane-api.supportplane-app.svc.cluster.local:4110'
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:

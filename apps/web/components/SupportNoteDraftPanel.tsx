@@ -19,7 +19,8 @@ export function SupportNoteDraftPanel({
   const [error, setError] = useState<string | null>(null);
   const [operatorNotes, setOperatorNotes] = useState('');
 
-  const canWrite = identity.permissions.includes('*') || identity.permissions.includes('ticket:write');
+  const canWrite =
+    identity.permissions.includes('*') || identity.permissions.includes('ticket:write');
 
   const handleGenerate = async () => {
     if (!session || !externalTicketId) return;
@@ -68,7 +69,9 @@ export function SupportNoteDraftPanel({
           Generate local-only draft
         </button>
 
-        {error && <div className="rounded bg-red-900/30 px-2 py-1 text-xs text-red-300">{error}</div>}
+        {error && (
+          <div className="rounded bg-red-900/30 px-2 py-1 text-xs text-red-300">{error}</div>
+        )}
 
         {draft && (
           <div className="space-y-2">

@@ -40,6 +40,7 @@ bash scripts/backup_local_sandbox.sh --dry-run
 ```
 
 Review the output. It will list what **would** be backed up:
+
 - Git commit hash and branch
 - Container image tags from all deployments
 - SupportPlane PostgreSQL DB dump
@@ -77,12 +78,12 @@ backups/supportplane-sandbox-YYYYMMDD-HHMMSS/
 
 Before restoring, confirm:
 
-| Check | How |
-|-------|-----|
-| kubectl context | `kubectl config current-context` must return `kind-supportplane-local` |
+| Check             | How                                                                                        |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| kubectl context   | `kubectl config current-context` must return `kind-supportplane-local`                     |
 | DATABASE_URL host | Must be `localhost`, `127.0.0.1`, `::1`, or `postgres.supportplane-data.svc.cluster.local` |
-| Environment gate | `SUPPORTPLANE_ALLOW_RESTORE_LOCAL=1` must be exported |
-| Dump file | You must have a valid `.sql` dump from a prior backup |
+| Environment gate  | `SUPPORTPLANE_ALLOW_RESTORE_LOCAL=1` must be exported                                      |
+| Dump file         | You must have a valid `.sql` dump from a prior backup                                      |
 
 ### 2. Run the restore script (dry-run by default)
 
@@ -98,6 +99,7 @@ bash scripts/restore_local_sandbox.sh --confirm --dump-file=backups/supportplane
 ```
 
 The script will:
+
 1. Restore the SupportPlane PostgreSQL database from the dump file
 2. Verify the MinIO deployment exists
 3. Verify the OpenBao secret exists
@@ -109,14 +111,14 @@ The script will:
 
 ## Safety Checks and Safeguards
 
-| Safeguard | Script | Behavior |
-|-----------|--------|----------|
-| Context lock | `restore_local_sandbox.sh` | Refuses if kubectl context is not `kind-supportplane-local` |
-| DB host check | `restore_local_sandbox.sh` | Refuses if DATABASE_URL points to a non-local or production-looking host |
-| Env gate | `restore_local_sandbox.sh` | Requires `SUPPORTPLANE_ALLOW_RESTORE_LOCAL=1` |
-| Confirm flag | both | `--confirm` required for live execution; dry-run is the default |
-| Secret redaction | `backup_local_sandbox.sh` | Never dumps Kubernetes Secrets; redacts known secret keys in ConfigMaps |
-| No password in argv | both | Uses `PGPASSWORD` environment variable for `pg_dump`/`psql` |
+| Safeguard           | Script                     | Behavior                                                                 |
+| ------------------- | -------------------------- | ------------------------------------------------------------------------ |
+| Context lock        | `restore_local_sandbox.sh` | Refuses if kubectl context is not `kind-supportplane-local`              |
+| DB host check       | `restore_local_sandbox.sh` | Refuses if DATABASE_URL points to a non-local or production-looking host |
+| Env gate            | `restore_local_sandbox.sh` | Requires `SUPPORTPLANE_ALLOW_RESTORE_LOCAL=1`                            |
+| Confirm flag        | both                       | `--confirm` required for live execution; dry-run is the default          |
+| Secret redaction    | `backup_local_sandbox.sh`  | Never dumps Kubernetes Secrets; redacts known secret keys in ConfigMaps  |
+| No password in argv | both                       | Uses `PGPASSWORD` environment variable for `pg_dump`/`psql`              |
 
 ---
 

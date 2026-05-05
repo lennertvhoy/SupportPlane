@@ -4,7 +4,11 @@ import { useState } from 'react';
 import { AlertCircle, Bot, Loader2, Send } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
-import type { DraftSuggestionResponse, SupportSession, InternalNoteWritebackResult } from '@/lib/api';
+import type {
+  DraftSuggestionResponse,
+  SupportSession,
+  InternalNoteWritebackResult,
+} from '@/lib/api';
 
 export function DraftNotePanel({
   session,
@@ -21,7 +25,10 @@ export function DraftNotePanel({
   loading: boolean;
   error: string | null;
   onGenerate: (operatorInstructions?: string) => Promise<DraftSuggestionResponse | undefined>;
-  onWriteback?: (externalTicketId: string, body: string) => Promise<InternalNoteWritebackResult | undefined>;
+  onWriteback?: (
+    externalTicketId: string,
+    body: string,
+  ) => Promise<InternalNoteWritebackResult | undefined>;
   writebackResult?: InternalNoteWritebackResult;
   writebackLoading?: boolean;
 }) {
@@ -46,12 +53,7 @@ export function DraftNotePanel({
   const canWriteback = reviewed && draft.trim().length > 0;
 
   return (
-    <Panel
-      title="Draft Note"
-      headerRight={
-        <Badge variant="warning">Review required</Badge>
-      }
-    >
+    <Panel title="Draft Note" headerRight={<Badge variant="warning">Review required</Badge>}>
       {!session ? (
         <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-500">
           Select a session to draft a note.
@@ -134,9 +136,7 @@ export function DraftNotePanel({
           {suggestion && (
             <div className="rounded border border-amber-700/40 bg-amber-950/30 p-3 text-xs">
               <div className="mb-2 flex items-center justify-between gap-2">
-                <span className="font-semibold text-amber-200">
-                  Local AI model metadata
-                </span>
+                <span className="font-semibold text-amber-200">Local AI model metadata</span>
                 <div className="flex items-center gap-2">
                   <Badge variant="info">
                     {suggestion.safety.policyChecks?.includes('blocked_by_policy')
@@ -162,9 +162,13 @@ export function DraftNotePanel({
                 <dt>No cloud AI</dt>
                 <dd className="text-cockpit-100">{String(suggestion.usage.noCloudCall ?? true)}</dd>
                 <dt>Fallback used</dt>
-                <dd className="text-cockpit-100">{String(suggestion.usage.fallbackUsed ?? suggestion.safety.fallbackUsed ?? false)}</dd>
+                <dd className="text-cockpit-100">
+                  {String(suggestion.usage.fallbackUsed ?? suggestion.safety.fallbackUsed ?? false)}
+                </dd>
                 <dt>Autonomous send</dt>
-                <dd className="text-cockpit-100">{String(suggestion.safety.autonomousSend ?? false)}</dd>
+                <dd className="text-cockpit-100">
+                  {String(suggestion.safety.autonomousSend ?? false)}
+                </dd>
                 <dt>Writeback blocked</dt>
                 <dd className="text-cockpit-100">{String(!suggestion.safety.writebackAllowed)}</dd>
                 <dt>Latency</dt>
@@ -200,20 +204,30 @@ export function DraftNotePanel({
                     ? 'bg-accent text-white hover:bg-accent-dark'
                     : 'bg-cockpit-700 text-cockpit-300 opacity-50 cursor-not-allowed'
                 } disabled:opacity-50`}
-                title={canWriteback ? 'Writeback to ticketing system' : 'Review and enter draft before writeback'}
+                title={
+                  canWriteback
+                    ? 'Writeback to ticketing system'
+                    : 'Review and enter draft before writeback'
+                }
               >
-                {writebackLoading ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                {writebackLoading ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Send size={12} />
+                )}
                 {writebackResult?.success ? 'Writeback again' : 'Writeback'}
               </button>
             </div>
           </div>
 
           {writebackResult && (
-            <div className={`rounded border p-3 text-xs ${
-              writebackResult.success
-                ? 'border-emerald-700/40 bg-emerald-950/30'
-                : 'border-danger/30 bg-danger/10'
-            }`}>
+            <div
+              className={`rounded border p-3 text-xs ${
+                writebackResult.success
+                  ? 'border-emerald-700/40 bg-emerald-950/30'
+                  : 'border-danger/30 bg-danger/10'
+              }`}
+            >
               <div className="flex items-center justify-between">
                 <span className="font-semibold">
                   {writebackResult.success ? 'Writeback succeeded' : 'Writeback failed'}

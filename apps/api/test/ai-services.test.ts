@@ -37,7 +37,10 @@ describe('AI Services', () => {
         .send({ modelSelection: { provider: 'openai', model: 'gpt-4' } })
         .expect(400);
 
-      assert.ok(res.body.message.includes('AI provider unavailable') || res.body.message.includes('Invalid model selection'));
+      assert.ok(
+        res.body.message.includes('AI provider unavailable') ||
+          res.body.message.includes('Invalid model selection'),
+      );
     });
 
     it('returns 404 for unknown session', async () => {
@@ -70,7 +73,10 @@ describe('AI Services', () => {
         .post(`/support-sessions/${created.body.id}/draft-suggestion`)
         .set('x-tenant-id', 'tenant-a')
         .set('x-user-id', 'user-1')
-        .send({ operatorInstructions: 'Test', modelSelection: { provider: 'mock', model: 'mock-support-note-v1' } })
+        .send({
+          operatorInstructions: 'Test',
+          modelSelection: { provider: 'mock', model: 'mock-support-note-v1' },
+        })
         .expect(201);
 
       assert.match(draft.body.draft, /MOCK AI DRAFT/);
@@ -96,7 +102,10 @@ describe('AI Services', () => {
         .send({ modelSelection: { provider: 'invalid' } })
         .expect(400);
 
-      assert.ok(res.body.message.includes('Invalid model selection') || res.body.message.includes('AI provider unavailable'));
+      assert.ok(
+        res.body.message.includes('Invalid model selection') ||
+          res.body.message.includes('AI provider unavailable'),
+      );
     });
 
     it('returns summary with metadata on success', async () => {
@@ -128,6 +137,10 @@ describe('AI Services', () => {
   });
 
   describe('AI Chat', () => {
+    // SKIP REASON: These tests require DATABASE_URL because they persist
+    // chat sessions and messages via Prisma. When DB is unavailable,
+    // a placeholder test runs to keep counts stable.
+    // Owner: BL-154 — Test Trustworthiness & Anti-Fake-Completeness Strategy
     const dbAvailable = !!process.env['DATABASE_URL'];
 
     it('creates a chat session and sends a message', { skip: !dbAvailable }, async () => {
@@ -142,7 +155,11 @@ describe('AI Services', () => {
         .post(`/ai-chat/sessions/${session.body.id}/messages`)
         .set('x-tenant-id', 'tenant-a')
         .set('x-user-id', 'user-1')
-        .send({ content: 'Hello', role: 'user', modelSelection: { provider: 'mock', model: 'mock-support-note-v1' } })
+        .send({
+          content: 'Hello',
+          role: 'user',
+          modelSelection: { provider: 'mock', model: 'mock-support-note-v1' },
+        })
         .expect(200);
 
       assert.ok(message.body.session);
@@ -165,7 +182,10 @@ describe('AI Services', () => {
         .send({ content: 'Hello', role: 'user', modelSelection: { provider: 'openai' } })
         .expect(400);
 
-      assert.ok(res.body.message.includes('Invalid model selection') || res.body.message.includes('AI provider unavailable'));
+      assert.ok(
+        res.body.message.includes('Invalid model selection') ||
+          res.body.message.includes('AI provider unavailable'),
+      );
     });
 
     it('returns 400 for invalid chat role', { skip: !dbAvailable }, async () => {

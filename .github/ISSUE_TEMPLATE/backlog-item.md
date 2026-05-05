@@ -1,8 +1,8 @@
 ---
 name: Backlog Item
 about: Add a new roadmap item
-title: "[backlog] "
-labels: ["backlog"]
+title: '[backlog] '
+labels: ['backlog']
 ---
 
 ## Item

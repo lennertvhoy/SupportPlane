@@ -7,5 +7,5 @@ metadata:
     app.kubernetes.io/name: glpi
     app.kubernetes.io/part-of: supportplane
 data:
-  GLPI_LANG: "en_GB"
-  GLPI_AUTOINSTALL: "no"
+  GLPI_LANG: 'en_GB'
+  GLPI_AUTOINSTALL: 'no'

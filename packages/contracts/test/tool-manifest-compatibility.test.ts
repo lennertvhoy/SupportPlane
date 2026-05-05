@@ -8,7 +8,10 @@ import {
   type ToolDefinition,
 } from '../src/index.js';
 
-function makeTool(toolKey: string, supportedPlatforms: ToolDefinition['supportedPlatforms']): Pick<ToolDefinition, 'toolKey' | 'supportedPlatforms'> {
+function makeTool(
+  toolKey: string,
+  supportedPlatforms: ToolDefinition['supportedPlatforms'],
+): Pick<ToolDefinition, 'toolKey' | 'supportedPlatforms'> {
   return { toolKey, supportedPlatforms };
 }
 
@@ -20,15 +23,14 @@ describe('tool manifest compatibility metadata', () => {
       makeTool('diagnostic.experimental', []),
     ];
 
-    assert.deepStrictEqual(filterToolsByPlatform(tools, 'win32').map((tool) => tool.toolKey), [
-      'diagnostic.status',
-      'diagnostic.software',
-      'diagnostic.experimental',
-    ]);
-    assert.deepStrictEqual(filterToolsByPlatform(tools, 'linux').map((tool) => tool.toolKey), [
-      'diagnostic.status',
-      'diagnostic.experimental',
-    ]);
+    assert.deepStrictEqual(
+      filterToolsByPlatform(tools, 'win32').map((tool) => tool.toolKey),
+      ['diagnostic.status', 'diagnostic.software', 'diagnostic.experimental'],
+    );
+    assert.deepStrictEqual(
+      filterToolsByPlatform(tools, 'linux').map((tool) => tool.toolKey),
+      ['diagnostic.status', 'diagnostic.experimental'],
+    );
     assert.deepStrictEqual(filterToolsByPlatform(tools, 'unknown'), []);
   });
 

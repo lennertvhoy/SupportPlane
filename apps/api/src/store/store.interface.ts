@@ -50,140 +50,323 @@ export interface KnowledgeRetrievalReadiness {
 export interface Store {
   // SupportSession
   saveSession(session: SupportSessionShape): Promise<void> | void;
-  getSession(tenantId: string, id: string): Promise<SupportSessionShape | undefined> | SupportSessionShape | undefined;
+  getSession(
+    tenantId: string,
+    id: string,
+  ): Promise<SupportSessionShape | undefined> | SupportSessionShape | undefined;
   listSessions(tenantId: string): Promise<SupportSessionShape[]> | SupportSessionShape[];
 
   // TicketReference
   saveTicketReference(sessionId: string, ticket: TicketReferenceShape): Promise<void> | void;
-  getTicketReferences(tenantId: string, sessionId: string): Promise<TicketReferenceShape[]> | TicketReferenceShape[];
-  listAllTicketReferences(tenantId: string): Promise<TicketReferenceShape[]> | TicketReferenceShape[];
+  getTicketReferences(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<TicketReferenceShape[]> | TicketReferenceShape[];
+  listAllTicketReferences(
+    tenantId: string,
+  ): Promise<TicketReferenceShape[]> | TicketReferenceShape[];
 
   // AIContextPacket
   saveContextPacket(packet: AIContextPacketShape): Promise<void> | void;
-  getContextPackets(tenantId: string, sessionId: string): Promise<AIContextPacketShape[]> | AIContextPacketShape[];
+  getContextPackets(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<AIContextPacketShape[]> | AIContextPacketShape[];
 
   // AuditEvent
   saveAuditEvent(event: AuditEventShape): Promise<void> | void;
-  getAuditEvents(tenantId: string, sessionId: string): Promise<AuditEventShape[]> | AuditEventShape[];
+  getAuditEvents(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<AuditEventShape[]> | AuditEventShape[];
   getAllAuditEvents(tenantId: string): Promise<AuditEventShape[]> | AuditEventShape[];
 
   // InternalNoteDraft
   saveInternalNoteDraft(draft: InternalNoteDraftShape): Promise<void> | void;
-  getInternalNoteDraft(tenantId: string, draftId: string): Promise<InternalNoteDraftShape | undefined> | InternalNoteDraftShape | undefined;
-  listInternalNoteDrafts(tenantId: string, sessionId: string): Promise<InternalNoteDraftShape[]> | InternalNoteDraftShape[];
+  getInternalNoteDraft(
+    tenantId: string,
+    draftId: string,
+  ): Promise<InternalNoteDraftShape | undefined> | InternalNoteDraftShape | undefined;
+  listInternalNoteDrafts(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<InternalNoteDraftShape[]> | InternalNoteDraftShape[];
 
   // CallEvent
   saveCallEvent(event: CallEventShape): Promise<void> | void;
-  getCallEvent(tenantId: string, id: string): Promise<CallEventShape | undefined> | CallEventShape | undefined;
+  getCallEvent(
+    tenantId: string,
+    id: string,
+  ): Promise<CallEventShape | undefined> | CallEventShape | undefined;
   listCallEvents(tenantId: string): Promise<CallEventShape[]> | CallEventShape[];
-  listCallEventsForSession(tenantId: string, sessionId: string): Promise<CallEventShape[]> | CallEventShape[];
+  listCallEventsForSession(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<CallEventShape[]> | CallEventShape[];
 
   // CallRecording
   saveCallRecording(recording: CallRecordingShape): Promise<void> | void;
-  getCallRecording(tenantId: string, id: string): Promise<CallRecordingShape | undefined> | CallRecordingShape | undefined;
-  listCallRecordings(tenantId: string, callEventId: string): Promise<CallRecordingShape[]> | CallRecordingShape[];
+  getCallRecording(
+    tenantId: string,
+    id: string,
+  ): Promise<CallRecordingShape | undefined> | CallRecordingShape | undefined;
+  listCallRecordings(
+    tenantId: string,
+    callEventId: string,
+  ): Promise<CallRecordingShape[]> | CallRecordingShape[];
 
   // ScreenObservation
   saveScreenObservation(observation: ScreenObservationShape): Promise<void> | void;
-  getScreenObservation(tenantId: string, id: string): Promise<ScreenObservationShape | undefined> | ScreenObservationShape | undefined;
-  listScreenObservations(tenantId: string, sessionId: string): Promise<ScreenObservationShape[]> | ScreenObservationShape[];
-  listScreenObservationsForCallEvent(tenantId: string, callEventId: string): Promise<ScreenObservationShape[]> | ScreenObservationShape[];
+  getScreenObservation(
+    tenantId: string,
+    id: string,
+  ): Promise<ScreenObservationShape | undefined> | ScreenObservationShape | undefined;
+  listScreenObservations(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<ScreenObservationShape[]> | ScreenObservationShape[];
+  listScreenObservationsForCallEvent(
+    tenantId: string,
+    callEventId: string,
+  ): Promise<ScreenObservationShape[]> | ScreenObservationShape[];
 
   // SharingState
-  getSharingState(tenantId: string, sessionId: string): Promise<SharingStateShape | undefined> | SharingStateShape | undefined;
+  getSharingState(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<SharingStateShape | undefined> | SharingStateShape | undefined;
   saveSharingState(state: SharingStateShape): Promise<void> | void;
 
   // CustomerReference
   saveCustomerReference(customer: CustomerReferenceShape): Promise<void> | void;
-  getCustomerReference(tenantId: string, id: string): Promise<CustomerReferenceShape | undefined> | CustomerReferenceShape | undefined;
-  listCustomerReferences(tenantId: string, options?: { email?: string; phone?: string; adapterId?: string }): Promise<CustomerReferenceShape[]> | CustomerReferenceShape[];
+  getCustomerReference(
+    tenantId: string,
+    id: string,
+  ): Promise<CustomerReferenceShape | undefined> | CustomerReferenceShape | undefined;
+  listCustomerReferences(
+    tenantId: string,
+    options?: { email?: string; phone?: string; adapterId?: string },
+  ): Promise<CustomerReferenceShape[]> | CustomerReferenceShape[];
 
   // ConnectorInstallation
   saveConnectorInstallation(installation: ConnectorInstallationShape): Promise<void> | void;
-  getConnectorInstallation(tenantId: string, id: string): Promise<ConnectorInstallationShape | undefined> | ConnectorInstallationShape | undefined;
-  listConnectorInstallations(tenantId: string): Promise<ConnectorInstallationShape[]> | ConnectorInstallationShape[];
+  getConnectorInstallation(
+    tenantId: string,
+    id: string,
+  ): Promise<ConnectorInstallationShape | undefined> | ConnectorInstallationShape | undefined;
+  listConnectorInstallations(
+    tenantId: string,
+  ): Promise<ConnectorInstallationShape[]> | ConnectorInstallationShape[];
 
   // ConnectorCredentialReference
   saveCredentialReference(ref: ConnectorCredentialReferenceShape): Promise<void> | void;
-  getCredentialReference(tenantId: string, id: string): Promise<ConnectorCredentialReferenceShape | undefined> | ConnectorCredentialReferenceShape | undefined;
-  listCredentialReferences(tenantId: string, options?: { connectorType?: string }): Promise<ConnectorCredentialReferenceShape[]> | ConnectorCredentialReferenceShape[];
+  getCredentialReference(
+    tenantId: string,
+    id: string,
+  ):
+    | Promise<ConnectorCredentialReferenceShape | undefined>
+    | ConnectorCredentialReferenceShape
+    | undefined;
+  listCredentialReferences(
+    tenantId: string,
+    options?: { connectorType?: string },
+  ): Promise<ConnectorCredentialReferenceShape[]> | ConnectorCredentialReferenceShape[];
 
   // Durable action/outbox
   saveSupportAction(action: SupportActionShape): Promise<void> | void;
-  getSupportAction(tenantId: string, id: string): Promise<SupportActionShape | undefined> | SupportActionShape | undefined;
-  listSupportActions(tenantId: string, options?: { sessionId?: string }): Promise<SupportActionShape[]> | SupportActionShape[];
+  getSupportAction(
+    tenantId: string,
+    id: string,
+  ): Promise<SupportActionShape | undefined> | SupportActionShape | undefined;
+  listSupportActions(
+    tenantId: string,
+    options?: { sessionId?: string },
+  ): Promise<SupportActionShape[]> | SupportActionShape[];
   saveActionOutboxItem(item: ActionOutboxItemShape): Promise<void> | void;
-  getActionOutboxItem(tenantId: string, id: string): Promise<ActionOutboxItemShape | undefined> | ActionOutboxItemShape | undefined;
-  listActionOutboxItems(tenantId: string, options?: { sessionId?: string; supportActionId?: string }): Promise<ActionOutboxItemShape[]> | ActionOutboxItemShape[];
+  getActionOutboxItem(
+    tenantId: string,
+    id: string,
+  ): Promise<ActionOutboxItemShape | undefined> | ActionOutboxItemShape | undefined;
+  listActionOutboxItems(
+    tenantId: string,
+    options?: { sessionId?: string; supportActionId?: string },
+  ): Promise<ActionOutboxItemShape[]> | ActionOutboxItemShape[];
   claimNextActionOutboxItem(
     tenantId: string,
-    options: { workerId: string; now: string; lockExpiresAt: string; outboxItemId?: string }
+    options: { workerId: string; now: string; lockExpiresAt: string; outboxItemId?: string },
   ): Promise<ActionOutboxItemShape | undefined> | ActionOutboxItemShape | undefined;
   saveActionOutboxAttempt(attempt: ActionOutboxAttemptShape): Promise<void> | void;
-  listActionOutboxAttempts(tenantId: string, outboxItemId: string): Promise<ActionOutboxAttemptShape[]> | ActionOutboxAttemptShape[];
+  listActionOutboxAttempts(
+    tenantId: string,
+    outboxItemId: string,
+  ): Promise<ActionOutboxAttemptShape[]> | ActionOutboxAttemptShape[];
 
   // DeliveryPolicy
   saveDeliveryPolicy(policy: DeliveryPolicyShape): Promise<void> | void;
-  getDeliveryPolicy(tenantId: string, id: string): Promise<DeliveryPolicyShape | undefined> | DeliveryPolicyShape | undefined;
-  getDeliveryPolicyByConnector(tenantId: string, connectorInstallationId: string | null): Promise<DeliveryPolicyShape | undefined> | DeliveryPolicyShape | undefined;
+  getDeliveryPolicy(
+    tenantId: string,
+    id: string,
+  ): Promise<DeliveryPolicyShape | undefined> | DeliveryPolicyShape | undefined;
+  getDeliveryPolicyByConnector(
+    tenantId: string,
+    connectorInstallationId: string | null,
+  ): Promise<DeliveryPolicyShape | undefined> | DeliveryPolicyShape | undefined;
   listDeliveryPolicies(tenantId: string): Promise<DeliveryPolicyShape[]> | DeliveryPolicyShape[];
 
   // TenantPolicy (Connector, AI, Retention)
-  saveTenantPolicy(policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape, policyType: string, scopeId?: string | null): Promise<void> | void;
-  getTenantPolicy(tenantId: string, policyType: string, scopeId?: string | null): Promise<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined> | ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined;
-  listTenantPolicies(tenantId: string): Promise<Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>> | Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>;
+  saveTenantPolicy(
+    policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape,
+    policyType: string,
+    scopeId?: string | null,
+  ): Promise<void> | void;
+  getTenantPolicy(
+    tenantId: string,
+    policyType: string,
+    scopeId?: string | null,
+  ):
+    | Promise<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined>
+    | ConnectorPolicyShape
+    | AiPolicyShape
+    | RetentionPolicyShape
+    | undefined;
+  listTenantPolicies(
+    tenantId: string,
+  ):
+    | Promise<Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>>
+    | Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>;
 
   // Endpoint agent/device diagnostics
   saveEndpointDevice(device: EndpointDeviceShape, tokenHash?: string): Promise<void> | void;
-  getEndpointDevice(tenantId: string, id: string): Promise<EndpointDeviceShape | undefined> | EndpointDeviceShape | undefined;
-  getEndpointDeviceByKey(tenantId: string, deviceKey: string): Promise<(EndpointDeviceShape & { tokenHash?: string }) | undefined> | (EndpointDeviceShape & { tokenHash?: string }) | undefined;
+  getEndpointDevice(
+    tenantId: string,
+    id: string,
+  ): Promise<EndpointDeviceShape | undefined> | EndpointDeviceShape | undefined;
+  getEndpointDeviceByKey(
+    tenantId: string,
+    deviceKey: string,
+  ):
+    | Promise<(EndpointDeviceShape & { tokenHash?: string }) | undefined>
+    | (EndpointDeviceShape & { tokenHash?: string })
+    | undefined;
   listEndpointDevices(tenantId: string): Promise<EndpointDeviceShape[]> | EndpointDeviceShape[];
   saveEndpointHeartbeat(heartbeat: EndpointHeartbeatShape): Promise<void> | void;
-  listEndpointHeartbeats(tenantId: string, deviceId: string): Promise<EndpointHeartbeatShape[]> | EndpointHeartbeatShape[];
+  listEndpointHeartbeats(
+    tenantId: string,
+    deviceId: string,
+  ): Promise<EndpointHeartbeatShape[]> | EndpointHeartbeatShape[];
   saveEndpointDiagnosticSnapshot(snapshot: EndpointDiagnosticSnapshotShape): Promise<void> | void;
-  listEndpointDiagnosticSnapshots(tenantId: string, deviceId: string): Promise<EndpointDiagnosticSnapshotShape[]> | EndpointDiagnosticSnapshotShape[];
+  listEndpointDiagnosticSnapshots(
+    tenantId: string,
+    deviceId: string,
+  ): Promise<EndpointDiagnosticSnapshotShape[]> | EndpointDiagnosticSnapshotShape[];
   saveEndpointCommand(command: EndpointCommandShape): Promise<void> | void;
-  getEndpointCommand(tenantId: string, id: string): Promise<EndpointCommandShape | undefined> | EndpointCommandShape | undefined;
-  getEndpointCommandByIdempotencyKey(tenantId: string, idempotencyKey: string): Promise<EndpointCommandShape | undefined> | EndpointCommandShape | undefined;
-  claimNextEndpointCommand(tenantId: string, deviceId: string, options: { now: string }): Promise<EndpointCommandShape | undefined> | EndpointCommandShape | undefined;
-  listEndpointCommands(tenantId: string, deviceId?: string): Promise<EndpointCommandShape[]> | EndpointCommandShape[];
+  getEndpointCommand(
+    tenantId: string,
+    id: string,
+  ): Promise<EndpointCommandShape | undefined> | EndpointCommandShape | undefined;
+  getEndpointCommandByIdempotencyKey(
+    tenantId: string,
+    idempotencyKey: string,
+  ): Promise<EndpointCommandShape | undefined> | EndpointCommandShape | undefined;
+  claimNextEndpointCommand(
+    tenantId: string,
+    deviceId: string,
+    options: { now: string },
+  ): Promise<EndpointCommandShape | undefined> | EndpointCommandShape | undefined;
+  listEndpointCommands(
+    tenantId: string,
+    deviceId?: string,
+  ): Promise<EndpointCommandShape[]> | EndpointCommandShape[];
   saveEndpointCommandResult(result: EndpointCommandResultShape): Promise<void> | void;
-  getEndpointCommandResult(tenantId: string, commandId: string): Promise<EndpointCommandResultShape | undefined> | EndpointCommandResultShape | undefined;
+  getEndpointCommandResult(
+    tenantId: string,
+    commandId: string,
+  ): Promise<EndpointCommandResultShape | undefined> | EndpointCommandResultShape | undefined;
 
   // Tool manifest/registry
   saveToolManifestRecord(record: ToolManifestRecordShape): Promise<void> | void;
-  getToolManifestRecord(id: string): Promise<ToolManifestRecordShape | undefined> | ToolManifestRecordShape | undefined;
+  getToolManifestRecord(
+    id: string,
+  ): Promise<ToolManifestRecordShape | undefined> | ToolManifestRecordShape | undefined;
   listToolManifestRecords(): Promise<ToolManifestRecordShape[]> | ToolManifestRecordShape[];
 
   saveToolDefinition(def: ToolDefinitionShape): Promise<void> | void;
-  getToolDefinition(id: string): Promise<ToolDefinitionShape | undefined> | ToolDefinitionShape | undefined;
-  getToolDefinitionByKey(toolKey: string): Promise<ToolDefinitionShape | undefined> | ToolDefinitionShape | undefined;
-  listToolDefinitions(options?: { manifestId?: string; enabled?: boolean; category?: string }): Promise<ToolDefinitionShape[]> | ToolDefinitionShape[];
+  getToolDefinition(
+    id: string,
+  ): Promise<ToolDefinitionShape | undefined> | ToolDefinitionShape | undefined;
+  getToolDefinitionByKey(
+    toolKey: string,
+  ): Promise<ToolDefinitionShape | undefined> | ToolDefinitionShape | undefined;
+  listToolDefinitions(options?: {
+    manifestId?: string;
+    enabled?: boolean;
+    category?: string;
+  }): Promise<ToolDefinitionShape[]> | ToolDefinitionShape[];
 
   // Tool invocation/approval
   saveToolInvocation(invocation: ToolInvocationShape): Promise<void> | void;
-  getToolInvocation(tenantId: string, id: string): Promise<ToolInvocationShape | undefined> | ToolInvocationShape | undefined;
-  listToolInvocations(tenantId: string, options?: { deviceId?: string; status?: string; toolKey?: string }): Promise<ToolInvocationShape[]> | ToolInvocationShape[];
+  getToolInvocation(
+    tenantId: string,
+    id: string,
+  ): Promise<ToolInvocationShape | undefined> | ToolInvocationShape | undefined;
+  listToolInvocations(
+    tenantId: string,
+    options?: { deviceId?: string; status?: string; toolKey?: string },
+  ): Promise<ToolInvocationShape[]> | ToolInvocationShape[];
 
   saveToolApproval(approval: ToolApprovalShape): Promise<void> | void;
-  getToolApproval(tenantId: string, id: string): Promise<ToolApprovalShape | undefined> | ToolApprovalShape | undefined;
-  getToolApprovalByInvocationId(invocationId: string): Promise<ToolApprovalShape | undefined> | ToolApprovalShape | undefined;
-  listToolApprovals(tenantId: string, options?: { status?: string; requestedByUserId?: string }): Promise<ToolApprovalShape[]> | ToolApprovalShape[];
+  getToolApproval(
+    tenantId: string,
+    id: string,
+  ): Promise<ToolApprovalShape | undefined> | ToolApprovalShape | undefined;
+  getToolApprovalByInvocationId(
+    invocationId: string,
+  ): Promise<ToolApprovalShape | undefined> | ToolApprovalShape | undefined;
+  listToolApprovals(
+    tenantId: string,
+    options?: { status?: string; requestedByUserId?: string },
+  ): Promise<ToolApprovalShape[]> | ToolApprovalShape[];
 
   saveToolResultNoteDraft(draft: ToolResultNoteDraftShape): Promise<void> | void;
-  getToolResultNoteDraft(tenantId: string, id: string): Promise<ToolResultNoteDraftShape | undefined> | ToolResultNoteDraftShape | undefined;
-  getToolResultNoteDraftByInvocationId(invocationId: string): Promise<ToolResultNoteDraftShape | undefined> | ToolResultNoteDraftShape | undefined;
-  listToolResultNoteDrafts(tenantId: string): Promise<ToolResultNoteDraftShape[]> | ToolResultNoteDraftShape[];
+  getToolResultNoteDraft(
+    tenantId: string,
+    id: string,
+  ): Promise<ToolResultNoteDraftShape | undefined> | ToolResultNoteDraftShape | undefined;
+  getToolResultNoteDraftByInvocationId(
+    invocationId: string,
+  ): Promise<ToolResultNoteDraftShape | undefined> | ToolResultNoteDraftShape | undefined;
+  listToolResultNoteDrafts(
+    tenantId: string,
+  ): Promise<ToolResultNoteDraftShape[]> | ToolResultNoteDraftShape[];
 
   // Knowledge (BL-073/074)
   saveKnowledgeSource(source: KnowledgeSourceShape): Promise<void> | void;
-  getKnowledgeSource(tenantId: string, id: string): Promise<KnowledgeSourceShape | undefined> | KnowledgeSourceShape | undefined;
+  getKnowledgeSource(
+    tenantId: string,
+    id: string,
+  ): Promise<KnowledgeSourceShape | undefined> | KnowledgeSourceShape | undefined;
   listKnowledgeSources(tenantId: string): Promise<KnowledgeSourceShape[]> | KnowledgeSourceShape[];
 
   saveKnowledgeArticle(article: KnowledgeArticleShape): Promise<void> | void;
-  getKnowledgeArticle(tenantId: string, id: string): Promise<KnowledgeArticleShape | undefined> | KnowledgeArticleShape | undefined;
-  listKnowledgeArticles(tenantId: string, options?: { sourceId?: string; status?: string }): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
-  searchKnowledgeArticles(tenantId: string, query: string, options?: { sourceIds?: string[]; limit?: number }): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
-  getKnowledgeRetrievalReadiness?(): Promise<KnowledgeRetrievalReadiness> | KnowledgeRetrievalReadiness;
-  searchSemanticKnowledgeArticles?(tenantId: string, queryEmbedding: number[], options?: { sourceIds?: string[]; limit?: number }): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
+  getKnowledgeArticle(
+    tenantId: string,
+    id: string,
+  ): Promise<KnowledgeArticleShape | undefined> | KnowledgeArticleShape | undefined;
+  listKnowledgeArticles(
+    tenantId: string,
+    options?: { sourceId?: string; status?: string },
+  ): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
+  searchKnowledgeArticles(
+    tenantId: string,
+    query: string,
+    options?: { sourceIds?: string[]; limit?: number },
+  ): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
+  getKnowledgeRetrievalReadiness?():
+    | Promise<KnowledgeRetrievalReadiness>
+    | KnowledgeRetrievalReadiness;
+  searchSemanticKnowledgeArticles?(
+    tenantId: string,
+    queryEmbedding: number[],
+    options?: { sourceIds?: string[]; limit?: number },
+  ): Promise<KnowledgeArticleShape[]> | KnowledgeArticleShape[];
 }

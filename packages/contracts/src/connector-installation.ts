@@ -4,11 +4,7 @@ import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
 export const ConnectorInstallationId = EntityId.brand<'ConnectorInstallationId'>();
 export type ConnectorInstallationId = z.infer<typeof ConnectorInstallationId>;
 
-export const ConnectorInstallationStatus = z.enum([
-  'active',
-  'inactive',
-  'error',
-]);
+export const ConnectorInstallationStatus = z.enum(['active', 'inactive', 'error']);
 export type ConnectorInstallationStatus = z.infer<typeof ConnectorInstallationStatus>;
 
 export const ConnectorInstallation = z.object({

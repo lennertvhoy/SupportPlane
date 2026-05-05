@@ -38,7 +38,9 @@ function ensureRegistry() {
   if (registryInitialized) return;
   const modeRaw = env('ZAMMAD_CONNECTOR_MODE') ?? 'mock';
   const isReal = modeRaw === 'zammad';
-  registerTicketingAdapter(isReal ? createZammadAdapterFactory() : createMockZammadAdapterFactory());
+  registerTicketingAdapter(
+    isReal ? createZammadAdapterFactory() : createMockZammadAdapterFactory(),
+  );
   // Register osTicket adapter (read-only, no writeback in this slice)
   registerTicketingAdapter(createOsTicketAdapterFactory());
   registerTicketingAdapter(createMockOsTicketAdapterFactory());
@@ -99,7 +101,8 @@ export class ConnectorsService {
 
   getZammadStatus(): ConnectorStatusShape {
     const isMock = this.mode === 'mock';
-    const factory = getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
+    const factory =
+      getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
     const caps = factory?.capabilities ?? ['read_tickets', 'read_customers', 'write_notes'];
 
     return ConnectorStatus.parse({
@@ -110,8 +113,12 @@ export class ConnectorsService {
       connected: isMock ? true : !!env('ZAMMAD_BASE_URL'),
       metadata: {
         startupMode: this.mode,
-        configured: isMock ? false : !!env('ZAMMAD_BASE_URL') && (env('OPENBAO_RESOLVER_ENABLED') === 'true' || !!env('ZAMMAD_API_TOKEN')),
-        credentialResolver: env('OPENBAO_RESOLVER_ENABLED') === 'true' ? 'openbao-local-sandbox' : 'env-local-legacy',
+        configured: isMock
+          ? false
+          : !!env('ZAMMAD_BASE_URL') &&
+            (env('OPENBAO_RESOLVER_ENABLED') === 'true' || !!env('ZAMMAD_API_TOKEN')),
+        credentialResolver:
+          env('OPENBAO_RESOLVER_ENABLED') === 'true' ? 'openbao-local-sandbox' : 'env-local-legacy',
         registryPattern: true,
       },
     });
@@ -152,8 +159,18 @@ export class ConnectorsService {
       return ConnectorTestResult.parse({
         mode: this.mode,
         success: env('OPENBAO_RESOLVER_ENABLED') === 'true',
-        error: env('OPENBAO_RESOLVER_ENABLED') === 'true' ? undefined : 'Zammad is not configured. Set ZAMMAD_BASE_URL and ZAMMAD_API_TOKEN or enable OpenBao resolver.',
-        metadata: { credentialResolver: env('OPENBAO_RESOLVER_ENABLED') === 'true' ? 'openbao-local-sandbox' : 'env-local-legacy', egressDecision: egress.decision, registryPattern: true },
+        error:
+          env('OPENBAO_RESOLVER_ENABLED') === 'true'
+            ? undefined
+            : 'Zammad is not configured. Set ZAMMAD_BASE_URL and ZAMMAD_API_TOKEN or enable OpenBao resolver.',
+        metadata: {
+          credentialResolver:
+            env('OPENBAO_RESOLVER_ENABLED') === 'true'
+              ? 'openbao-local-sandbox'
+              : 'env-local-legacy',
+          egressDecision: egress.decision,
+          registryPattern: true,
+        },
       });
     }
 
@@ -163,7 +180,13 @@ export class ConnectorsService {
           mode: this.mode,
           success: true,
           latencyMs: Date.now() - start,
-          metadata: { baseUrl, credentialResolver: 'openbao-local-sandbox', egressDecision: egress.decision, noSecretExposed: true, registryPattern: true },
+          metadata: {
+            baseUrl,
+            credentialResolver: 'openbao-local-sandbox',
+            egressDecision: egress.decision,
+            noSecretExposed: true,
+            registryPattern: true,
+          },
         });
       }
       const factory = getTicketingAdapterFactory('zammad');
@@ -171,14 +194,24 @@ export class ConnectorsService {
         throw new Error('Zammad adapter factory not registered');
       }
       const adapter = factory.createAdapter('zammad-test-001' as TicketingAdapterId);
-      if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
-        await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect({ baseUrl, apiToken, timeoutMs: 10000 });
+      if (
+        typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> })
+          .connect === 'function'
+      ) {
+        await (
+          adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }
+        ).connect({ baseUrl, apiToken, timeoutMs: 10000 });
       }
       return ConnectorTestResult.parse({
         mode: this.mode,
         success: true,
         latencyMs: Date.now() - start,
-        metadata: { baseUrl, credentialResolver: 'env-local-legacy', egressDecision: egress.decision, registryPattern: true },
+        metadata: {
+          baseUrl,
+          credentialResolver: 'env-local-legacy',
+          egressDecision: egress.decision,
+          registryPattern: true,
+        },
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Connection test failed';
@@ -192,19 +225,31 @@ export class ConnectorsService {
   }
 
   getZammadAdapter(): TicketingAdapterClient | undefined {
-    const factory = getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
+    const factory =
+      getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
     if (!factory) return undefined;
     return factory.createAdapter(resolveCanonicalAdapterId('zammad') as TicketingAdapterId);
   }
 
-  async createResolvedZammadAdapter(config: { baseUrl: string; apiToken: string; timeoutMs?: number }): Promise<TicketingAdapterClient> {
+  async createResolvedZammadAdapter(config: {
+    baseUrl: string;
+    apiToken: string;
+    timeoutMs?: number;
+  }): Promise<TicketingAdapterClient> {
     const factory = getTicketingAdapterFactory('zammad');
     if (!factory) {
       throw new Error('Zammad adapter factory not registered');
     }
-    const adapter = factory.createAdapter(resolveCanonicalAdapterId('zammad') as TicketingAdapterId);
-    if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
-      await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect(config);
+    const adapter = factory.createAdapter(
+      resolveCanonicalAdapterId('zammad') as TicketingAdapterId,
+    );
+    if (
+      typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> })
+        .connect === 'function'
+    ) {
+      await (
+        adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }
+      ).connect(config);
     }
     return adapter;
   }
@@ -237,7 +282,8 @@ export class ConnectorsService {
     const zammadBaseUrl = env('ZAMMAD_BASE_URL');
     const zammadApiToken = env('ZAMMAD_API_TOKEN');
     const openBaoEnabled = env('OPENBAO_RESOLVER_ENABLED') === 'true';
-    const zammadConfigured = isZammadMock || Boolean(zammadBaseUrl && (zammadApiToken || openBaoEnabled));
+    const zammadConfigured =
+      isZammadMock || Boolean(zammadBaseUrl && (zammadApiToken || openBaoEnabled));
     const zammadMode = isZammadMock ? 'mock' : zammadConfigured ? 'configured' : 'unconfigured';
     const zammadCredentialSource = isZammadMock
       ? 'none'
@@ -264,32 +310,36 @@ export class ConnectorsService {
       const token = env(connector.tokenEnv);
       const hasAnyConfig = Boolean(baseUrl || token);
       const hasFullConfig = Boolean(baseUrl && token);
-      const credentialSource = token ? 'env' as const : 'none' as const;
+      const credentialSource = token ? ('env' as const) : ('none' as const);
       const isUnsupported = hasFullConfig && connector.unsupportedRealClient === true;
-      const mode = connector.fixtureByDefault && !hasAnyConfig
-        ? 'fixture' as const
-        : isUnsupported
-          ? 'error' as const
-          : hasFullConfig
-            ? 'configured' as const
-            : hasAnyConfig
-              ? 'error' as const
-              : 'unconfigured' as const;
-      const errorCode = mode === 'fixture' || mode === 'configured'
-        ? 'OK' as const
-        : isUnsupported
-          ? 'UNSUPPORTED' as const
-          : 'CONFIG_MISSING' as const;
-      const lastError = errorCode === 'OK'
-        ? undefined
-        : isUnsupported
-          ? `${connector.displayName} real HTTP client is not implemented in this slice. Fixture fallback is disabled when real config is present.`
-          : connector.configHint;
-      const transport = mode === 'fixture'
-        ? 'fixture' as const
-        : mode === 'configured'
-          ? 'real' as const
-          : 'unconfigured' as const;
+      const mode =
+        connector.fixtureByDefault && !hasAnyConfig
+          ? ('fixture' as const)
+          : isUnsupported
+            ? ('error' as const)
+            : hasFullConfig
+              ? ('configured' as const)
+              : hasAnyConfig
+                ? ('error' as const)
+                : ('unconfigured' as const);
+      const errorCode =
+        mode === 'fixture' || mode === 'configured'
+          ? ('OK' as const)
+          : isUnsupported
+            ? ('UNSUPPORTED' as const)
+            : ('CONFIG_MISSING' as const);
+      const lastError =
+        errorCode === 'OK'
+          ? undefined
+          : isUnsupported
+            ? `${connector.displayName} real HTTP client is not implemented in this slice. Fixture fallback is disabled when real config is present.`
+            : connector.configHint;
+      const transport =
+        mode === 'fixture'
+          ? ('fixture' as const)
+          : mode === 'configured'
+            ? ('real' as const)
+            : ('unconfigured' as const);
 
       return {
         id: connector.id,
@@ -304,7 +354,7 @@ export class ConnectorsService {
         credentialSource,
         health: mode === 'fixture' ? 'healthy' : mode === 'configured' ? 'unknown' : 'unknown',
         lastCheck: {
-          status: errorCode === 'OK' ? 'ok' as const : 'error' as const,
+          status: errorCode === 'OK' ? ('ok' as const) : ('error' as const),
           timestamp: now,
         },
         lastChecked: now,
@@ -334,8 +384,12 @@ export class ConnectorsService {
         },
         lastChecked: now,
         errorCode: zammadConfigError ? 'CONFIG_MISSING' : 'OK',
-        fixtureWarning: isZammadMock ? 'Zammad is running in mock mode; no real Zammad network call is made.' : undefined,
-        lastError: zammadConfigError ? 'Zammad is not configured. Set ZAMMAD_BASE_URL and ZAMMAD_API_TOKEN or enable OpenBao resolver.' : undefined,
+        fixtureWarning: isZammadMock
+          ? 'Zammad is running in mock mode; no real Zammad network call is made.'
+          : undefined,
+        lastError: zammadConfigError
+          ? 'Zammad is not configured. Set ZAMMAD_BASE_URL and ZAMMAD_API_TOKEN or enable OpenBao resolver.'
+          : undefined,
         tenantScoped: true,
       },
       classifyConfigOnlyConnector({
@@ -347,8 +401,10 @@ export class ConnectorsService {
         tokenEnv: 'GLPI_API_TOKEN',
         fixtureByDefault: true,
         unsupportedRealClient: false,
-        fixtureWarning: 'GLPI returns fixture data until GLPI_BASE_URL and GLPI_API_TOKEN are configured with a reachable GLPI instance. Real HTTP client is available in this slice.',
-        configHint: 'GLPI is not fully configured. Set GLPI_BASE_URL and GLPI_API_TOKEN to a real GLPI instance to enable the real adapter path.',
+        fixtureWarning:
+          'GLPI returns fixture data until GLPI_BASE_URL and GLPI_API_TOKEN are configured with a reachable GLPI instance. Real HTTP client is available in this slice.',
+        configHint:
+          'GLPI is not fully configured. Set GLPI_BASE_URL and GLPI_API_TOKEN to a real GLPI instance to enable the real adapter path.',
       }),
       classifyConfigOnlyConnector({
         id: 'osticket',
@@ -358,9 +414,11 @@ export class ConnectorsService {
         baseUrlEnv: 'OSTICKET_BASE_URL',
         tokenEnv: 'OSTICKET_API_TOKEN',
         fixtureByDefault: true,
-        fixtureWarning: 'osTicket is fixture-backed in this slice; no real osTicket network call is made.',
+        fixtureWarning:
+          'osTicket is fixture-backed in this slice; no real osTicket network call is made.',
         unsupportedRealClient: true,
-        configHint: 'osTicket is not fully configured. Real osTicket integration remains out of scope for this slice.',
+        configHint:
+          'osTicket is not fully configured. Real osTicket integration remains out of scope for this slice.',
       }),
       classifyConfigOnlyConnector({
         id: 'meshcentral',
@@ -371,7 +429,8 @@ export class ConnectorsService {
         tokenEnv: 'MESHCENTRAL_API_TOKEN',
         fixtureByDefault: false,
         unsupportedRealClient: true,
-        configHint: 'No MeshCentral instance configured. Set MESHCENTRAL_BASE_URL and MESHCENTRAL_API_TOKEN to enable future real readiness work.',
+        configHint:
+          'No MeshCentral instance configured. Set MESHCENTRAL_BASE_URL and MESHCENTRAL_API_TOKEN to enable future real readiness work.',
       }),
       classifyConfigOnlyConnector({
         id: 'fortinet',
@@ -382,7 +441,8 @@ export class ConnectorsService {
         tokenEnv: 'FORTINET_API_TOKEN',
         fixtureByDefault: false,
         unsupportedRealClient: true,
-        configHint: 'No Fortinet instance configured. Set FORTINET_BASE_URL and FORTINET_API_TOKEN to enable future real readiness work.',
+        configHint:
+          'No Fortinet instance configured. Set FORTINET_BASE_URL and FORTINET_API_TOKEN to enable future real readiness work.',
       }),
     ];
   }

@@ -17,7 +17,7 @@ describe('web API client', () => {
           connected: true,
           metadata: {},
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -43,7 +43,7 @@ describe('web API client', () => {
           latencyMs: 12,
           metadata: { note: 'Mock mode' },
         }),
-        { status: 201, headers: { 'Content-Type': 'application/json' } }
+        { status: 201, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -60,15 +60,9 @@ describe('web API client', () => {
   it('handles draft suggestion response shape', async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input, init) => {
-      assert.equal(
-        input,
-        'http://localhost:4110/support-sessions/session-1/draft-suggestion'
-      );
+      assert.equal(input, 'http://localhost:4110/support-sessions/session-1/draft-suggestion');
       assert.equal(init?.method, 'POST');
-      assert.equal(
-        (init?.headers as Headers).get('x-tenant-id'),
-        'dev-tenant'
-      );
+      assert.equal((init?.headers as Headers).get('x-tenant-id'), 'dev-tenant');
       return new Response(
         JSON.stringify({
           draft: '[MOCK AI DRAFT - review required before any writeback]',
@@ -90,7 +84,7 @@ describe('web API client', () => {
           },
           generatedAt: '2026-04-26T18:00:00.000Z',
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -150,7 +144,7 @@ describe('web API client', () => {
           },
           format: 'json',
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -219,7 +213,7 @@ describe('web API client', () => {
           mockDevOnly: true,
           receivedAt: '2026-04-26T18:00:00.000Z',
         }),
-        { status: 201, headers: { 'Content-Type': 'application/json' } }
+        { status: 201, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -291,7 +285,7 @@ describe('web API client', () => {
           mockDevOnly: true,
           receivedAt: '2026-04-26T18:00:00.000Z',
         }),
-        { status: 201, headers: { 'Content-Type': 'application/json' } }
+        { status: 201, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -365,7 +359,7 @@ describe('web API client', () => {
           mockDevOnly: true,
           receivedAt: '2026-04-26T18:00:00.000Z',
         }),
-        { status: 201, headers: { 'Content-Type': 'application/json' } }
+        { status: 201, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -412,7 +406,7 @@ describe('web API client', () => {
           },
           linkedAt: '2026-04-26T18:00:00.000Z',
         }),
-        { status: 201, headers: { 'Content-Type': 'application/json' } }
+        { status: 201, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -472,7 +466,7 @@ describe('web API client', () => {
           },
           generatedAt: '2026-04-26T18:00:00.000Z',
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -480,7 +474,10 @@ describe('web API client', () => {
       const response = await api.generateGreetingSuggestion('session-1', {
         tone: 'professional',
       });
-      assert.strictEqual(response.suggestion.greetingText, 'Good day, Alice. Thank you for calling SupportPlane.');
+      assert.strictEqual(
+        response.suggestion.greetingText,
+        'Good day, Alice. Thank you for calling SupportPlane.',
+      );
       assert.strictEqual(response.suggestion.tone, 'professional');
       assert.strictEqual(response.safety.autoSend, false);
       assert.strictEqual(response.safety.voiceEnabled, false);
@@ -512,7 +509,7 @@ describe('web API client', () => {
           newStatus: 'answered',
           changedAt: '2026-04-26T18:00:00.000Z',
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -555,7 +552,7 @@ describe('web API client', () => {
           generatedAt: '2026-04-26T18:00:02.000Z',
           mockDevOnly: true,
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -603,7 +600,7 @@ describe('web API client', () => {
           disclaimers: ['No real PBX connected'],
           metadata: {},
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -652,7 +649,7 @@ describe('web API client', () => {
             disclaimers: [],
             metadata: {},
           }),
-          { status: 201, headers: { 'Content-Type': 'application/json' } }
+          { status: 201, headers: { 'Content-Type': 'application/json' } },
         );
       }
       assert.equal(input, 'http://localhost:4110/telephony/calls/call-1/control');
@@ -679,7 +676,7 @@ describe('web API client', () => {
           completedAt: '2026-04-27T08:00:01.000Z',
           mockDevOnly: true,
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -703,12 +700,17 @@ describe('web API client', () => {
       return new Response(
         JSON.stringify({
           installationId: 'inst-1',
-          schema: { type: 'object', properties: {}, required: ['mockMode'], additionalProperties: false },
+          schema: {
+            type: 'object',
+            properties: {},
+            required: ['mockMode'],
+            additionalProperties: false,
+          },
           safeFields: ['mockMode', 'enabled', 'timeoutMs'],
           rejectedFields: ['apiToken', 'password', 'secret'],
           mockOnly: true,
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -740,12 +742,15 @@ describe('web API client', () => {
             timestamp: '2026-04-28T12:00:00.000Z',
           },
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
     try {
-      const response = await api.validateConnectorConfig('inst-1', { mockMode: true, enabled: true });
+      const response = await api.validateConnectorConfig('inst-1', {
+        mockMode: true,
+        enabled: true,
+      });
       assert.strictEqual(response.result.valid, true);
       assert.strictEqual(response.result.realNetwork, false);
       assert.strictEqual(response.result.writebackEnabled, false);
@@ -774,7 +779,7 @@ describe('web API client', () => {
             timestamp: '2026-04-28T12:00:00.000Z',
           },
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -791,7 +796,10 @@ describe('web API client', () => {
   it('handles connector runtime resolve response with credential metadata only', async () => {
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input, init) => {
-      assert.equal(input, 'http://localhost:4110/connector-installations/runtime/resolve?connectorType=zammad');
+      assert.equal(
+        input,
+        'http://localhost:4110/connector-installations/runtime/resolve?connectorType=zammad',
+      );
       assert.equal(init?.method, 'GET');
       return new Response(
         JSON.stringify({
@@ -825,7 +833,7 @@ describe('web API client', () => {
             timestamp: '2026-04-28T12:00:00.000Z',
           },
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -834,7 +842,10 @@ describe('web API client', () => {
       assert.strictEqual(response.mode, 'mock');
       assert.strictEqual(response.credentialReferences.length, 1);
       assert.strictEqual(response.credentialReferences[0].secretResolutionImplemented, false);
-      assert.strictEqual((response.credentialReferences[0] as Record<string, unknown>).secretRef, undefined);
+      assert.strictEqual(
+        (response.credentialReferences[0] as Record<string, unknown>).secretRef,
+        undefined,
+      );
     } finally {
       globalThis.fetch = originalFetch;
     }
@@ -872,7 +883,7 @@ describe('web API client', () => {
           ],
           _tenantId: 'dev-tenant',
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
@@ -921,7 +932,7 @@ describe('web API client', () => {
             mockDevOnly: true,
             attachedAt: '2026-04-27T08:00:00.000Z',
           }),
-          { status: 201, headers: { 'Content-Type': 'application/json' } }
+          { status: 201, headers: { 'Content-Type': 'application/json' } },
         );
       }
       if (String(input).endsWith('/recordings')) {
@@ -941,7 +952,7 @@ describe('web API client', () => {
               noRealAudio: true,
             },
           ]),
-          { status: 200, headers: { 'Content-Type': 'application/json' } }
+          { status: 200, headers: { 'Content-Type': 'application/json' } },
         );
       }
       if (String(input).endsWith('/review')) {
@@ -964,7 +975,7 @@ describe('web API client', () => {
             },
             reviewedAt: '2026-04-27T08:01:00.000Z',
           }),
-          { status: 201, headers: { 'Content-Type': 'application/json' } }
+          { status: 201, headers: { 'Content-Type': 'application/json' } },
         );
       }
       assert.equal(input, 'http://localhost:4110/calls/call-1/recordings/rec-1/playback');
@@ -982,12 +993,15 @@ describe('web API client', () => {
           },
           recordedAt: '2026-04-27T08:02:00.000Z',
         }),
-        { status: 201, headers: { 'Content-Type': 'application/json' } }
+        { status: 201, headers: { 'Content-Type': 'application/json' } },
       );
     };
 
     try {
-      const attach = await api.attachMockRecording('call-1', { source: 'mock_generated', durationSeconds: 42 });
+      const attach = await api.attachMockRecording('call-1', {
+        source: 'mock_generated',
+        durationSeconds: 42,
+      });
       assert.strictEqual(attach.recording.status, 'available');
       assert.strictEqual(attach.recording.noRealAudio, true);
 

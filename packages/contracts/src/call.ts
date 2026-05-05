@@ -64,12 +64,7 @@ export const CallEventType = z.enum([
 ]);
 export type CallEventType = z.infer<typeof CallEventType>;
 
-export const CallerMatchStatus = z.enum([
-  'matched',
-  'no_match',
-  'ambiguous',
-  'invalid_number',
-]);
+export const CallerMatchStatus = z.enum(['matched', 'no_match', 'ambiguous', 'invalid_number']);
 export type CallerMatchStatus = z.infer<typeof CallerMatchStatus>;
 
 export const CallerIdentity = z.object({
@@ -100,9 +95,7 @@ export const PhoneNumberNormalizationResult = z.object({
   countryCode: z.string().max(8).optional(),
   error: z.string().max(512).optional(),
 });
-export type PhoneNumberNormalizationResult = z.infer<
-  typeof PhoneNumberNormalizationResult
->;
+export type PhoneNumberNormalizationResult = z.infer<typeof PhoneNumberNormalizationResult>;
 
 export const CallEvent = z.object({
   id: CallEventId,
@@ -163,9 +156,7 @@ export const IncomingCallWebhookRequest = z.object({
   preferredPriority: z.string().min(1).max(64).optional(),
   metadata: z.record(JsonValue).default({}),
 });
-export type IncomingCallWebhookRequest = z.infer<
-  typeof IncomingCallWebhookRequest
->;
+export type IncomingCallWebhookRequest = z.infer<typeof IncomingCallWebhookRequest>;
 
 export const IncomingCallWebhookResponse = z.object({
   callEvent: CallEvent,
@@ -174,9 +165,7 @@ export const IncomingCallWebhookResponse = z.object({
   mockDevOnly: z.boolean(),
   receivedAt: Timestamp,
 });
-export type IncomingCallWebhookResponse = z.infer<
-  typeof IncomingCallWebhookResponse
->;
+export type IncomingCallWebhookResponse = z.infer<typeof IncomingCallWebhookResponse>;
 
 export const CallSessionLinkRequest = z.object({
   sessionId: EntityId,

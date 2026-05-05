@@ -40,7 +40,9 @@ export class OidcService {
       clientId,
       clientSecret: clientSecret ?? '',
       redirectUri,
-      scopes: process.env['OIDC_SCOPES'] ? process.env['OIDC_SCOPES'].split(',').map((s) => s.trim()) : ['openid', 'profile', 'email'],
+      scopes: process.env['OIDC_SCOPES']
+        ? process.env['OIDC_SCOPES'].split(',').map((s) => s.trim())
+        : ['openid', 'profile', 'email'],
     };
   }
 
@@ -59,17 +61,23 @@ export class OidcService {
     if (!oidcConfig) return undefined;
 
     if (!this.configPromise) {
-      this.configPromise = client.discovery(
-        new URL(oidcConfig.issuerUrl),
-        oidcConfig.clientId,
-        { redirect_uris: [oidcConfig.redirectUri] },
-        oidcConfig.clientSecret ? client.ClientSecretPost(oidcConfig.clientSecret) : client.None(),
-        { execute: [client.allowInsecureRequests] }
-      ).catch((err) => {
-        this.logger.error(`OIDC discovery failed: ${err instanceof Error ? err.message : String(err)}`);
-        this.configPromise = undefined;
-        throw err;
-      });
+      this.configPromise = client
+        .discovery(
+          new URL(oidcConfig.issuerUrl),
+          oidcConfig.clientId,
+          { redirect_uris: [oidcConfig.redirectUri] },
+          oidcConfig.clientSecret
+            ? client.ClientSecretPost(oidcConfig.clientSecret)
+            : client.None(),
+          { execute: [client.allowInsecureRequests] },
+        )
+        .catch((err) => {
+          this.logger.error(
+            `OIDC discovery failed: ${err instanceof Error ? err.message : String(err)}`,
+          );
+          this.configPromise = undefined;
+          throw err;
+        });
     }
     return this.configPromise;
   }
@@ -99,7 +107,10 @@ export class OidcService {
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('scope', oidcConfig.scopes.join(' '));
     authUrl.searchParams.set('state', state);
-    authUrl.searchParams.set('code_challenge', await client.calculatePKCECodeChallenge(codeVerifier));
+    authUrl.searchParams.set(
+      'code_challenge',
+      await client.calculatePKCECodeChallenge(codeVerifier),
+    );
     authUrl.searchParams.set('code_challenge_method', 'S256');
     authUrl.searchParams.set('nonce', nonce);
 
@@ -108,7 +119,7 @@ export class OidcService {
 
   async authorizationCodeGrant(
     sessionId: string,
-    callbackUrl: string
+    callbackUrl: string,
   ): Promise<{ identity: CurrentIdentity; rawToken: string; expiresAt: Date } | undefined> {
     const sessionState = this.sessionStates.get(sessionId);
     if (!sessionState) {
@@ -128,9 +139,13 @@ export class OidcService {
         expectedNonce: sessionState.nonce,
       });
     } catch (err) {
-      this.logger.error(`OIDC authorizationCodeGrant failed: ${err instanceof Error ? err.message : String(err)}`);
+      this.logger.error(
+        `OIDC authorizationCodeGrant failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
       if (err instanceof Error && 'cause' in err && (err as unknown as { cause: unknown }).cause) {
-        this.logger.error(`OIDC token endpoint error cause: ${JSON.stringify((err as unknown as { cause: unknown }).cause)}`);
+        this.logger.error(
+          `OIDC token endpoint error cause: ${JSON.stringify((err as unknown as { cause: unknown }).cause)}`,
+        );
       }
       return undefined;
     }

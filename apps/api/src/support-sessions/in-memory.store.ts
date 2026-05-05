@@ -49,7 +49,10 @@ export class InMemoryStore implements Store {
   private actionOutboxItems = new Map<string, ActionOutboxItemShape>();
   private actionOutboxAttempts = new Map<string, ActionOutboxAttemptShape>();
   private deliveryPolicies = new Map<string, DeliveryPolicyShape>();
-  private tenantPolicies = new Map<string, ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>();
+  private tenantPolicies = new Map<
+    string,
+    ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape
+  >();
   private endpointDevices = new Map<string, EndpointDeviceShape & { tokenHash?: string }>();
   private endpointHeartbeats = new Map<string, EndpointHeartbeatShape>();
   private endpointSnapshots = new Map<string, EndpointDiagnosticSnapshotShape>();
@@ -114,8 +117,8 @@ export class InMemoryStore implements Store {
   }
 
   getAuditEvents(tenantId: string, sessionId: string): AuditEventShape[] {
-    return (this.auditEvents.get(`${tenantId}:${sessionId}`) ?? []).sort(
-      (a, b) => a.createdAt.localeCompare(b.createdAt)
+    return (this.auditEvents.get(`${tenantId}:${sessionId}`) ?? []).sort((a, b) =>
+      a.createdAt.localeCompare(b.createdAt),
     );
   }
 
@@ -136,7 +139,7 @@ export class InMemoryStore implements Store {
 
   listInternalNoteDrafts(tenantId: string, sessionId: string): InternalNoteDraftShape[] {
     return Array.from(this.drafts.values()).filter(
-      (d) => d.tenantId === tenantId && d.sessionId === sessionId
+      (d) => d.tenantId === tenantId && d.sessionId === sessionId,
     );
   }
 
@@ -188,7 +191,10 @@ export class InMemoryStore implements Store {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
-  listScreenObservationsForCallEvent(tenantId: string, callEventId: string): ScreenObservationShape[] {
+  listScreenObservationsForCallEvent(
+    tenantId: string,
+    callEventId: string,
+  ): ScreenObservationShape[] {
     return Array.from(this.screenObservations.values())
       .filter((o) => o.tenantId === tenantId && o.callEventId === callEventId)
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -210,8 +216,13 @@ export class InMemoryStore implements Store {
     return this.customerReferences.get(`${tenantId}:${id}`);
   }
 
-  listCustomerReferences(tenantId: string, options?: { email?: string; phone?: string; adapterId?: string }): CustomerReferenceShape[] {
-    let results = Array.from(this.customerReferences.values()).filter((c) => c.tenantId === tenantId);
+  listCustomerReferences(
+    tenantId: string,
+    options?: { email?: string; phone?: string; adapterId?: string },
+  ): CustomerReferenceShape[] {
+    let results = Array.from(this.customerReferences.values()).filter(
+      (c) => c.tenantId === tenantId,
+    );
     if (options?.email) {
       results = results.filter((c) => c.email?.toLowerCase() === options.email!.toLowerCase());
     }
@@ -240,12 +251,20 @@ export class InMemoryStore implements Store {
     this.credentialReferences.set(`${ref.tenantId}:${ref.id}`, ref);
   }
 
-  getCredentialReference(tenantId: string, id: string): ConnectorCredentialReferenceShape | undefined {
+  getCredentialReference(
+    tenantId: string,
+    id: string,
+  ): ConnectorCredentialReferenceShape | undefined {
     return this.credentialReferences.get(`${tenantId}:${id}`);
   }
 
-  listCredentialReferences(tenantId: string, options?: { connectorType?: string }): ConnectorCredentialReferenceShape[] {
-    let results = Array.from(this.credentialReferences.values()).filter((c) => c.tenantId === tenantId);
+  listCredentialReferences(
+    tenantId: string,
+    options?: { connectorType?: string },
+  ): ConnectorCredentialReferenceShape[] {
+    let results = Array.from(this.credentialReferences.values()).filter(
+      (c) => c.tenantId === tenantId,
+    );
     if (options?.connectorType) {
       results = results.filter((c) => c.connectorType === options.connectorType);
     }
@@ -262,7 +281,10 @@ export class InMemoryStore implements Store {
 
   listSupportActions(tenantId: string, options?: { sessionId?: string }): SupportActionShape[] {
     return Array.from(this.supportActions.values())
-      .filter((a) => a.tenantId === tenantId && (!options?.sessionId || a.sessionId === options.sessionId))
+      .filter(
+        (a) =>
+          a.tenantId === tenantId && (!options?.sessionId || a.sessionId === options.sessionId),
+      )
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
@@ -274,20 +296,23 @@ export class InMemoryStore implements Store {
     return this.actionOutboxItems.get(`${tenantId}:${id}`);
   }
 
-  listActionOutboxItems(tenantId: string, options?: { sessionId?: string; supportActionId?: string }): ActionOutboxItemShape[] {
+  listActionOutboxItems(
+    tenantId: string,
+    options?: { sessionId?: string; supportActionId?: string },
+  ): ActionOutboxItemShape[] {
     return Array.from(this.actionOutboxItems.values())
       .filter(
         (i) =>
           i.tenantId === tenantId &&
           (!options?.sessionId || i.sessionId === options.sessionId) &&
-          (!options?.supportActionId || i.supportActionId === options.supportActionId)
+          (!options?.supportActionId || i.supportActionId === options.supportActionId),
       )
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }
 
   claimNextActionOutboxItem(
     tenantId: string,
-    options: { workerId: string; now: string; lockExpiresAt: string; outboxItemId?: string }
+    options: { workerId: string; now: string; lockExpiresAt: string; outboxItemId?: string },
   ): ActionOutboxItemShape | undefined {
     const nowTime = Date.parse(options.now);
     const candidate = Array.from(this.actionOutboxItems.values())
@@ -295,7 +320,12 @@ export class InMemoryStore implements Store {
         if (item.tenantId !== tenantId) return false;
         if (options.outboxItemId && item.id !== options.outboxItemId) return false;
         if (!['queued', 'retry_scheduled', 'processing'].includes(item.status)) return false;
-        if (item.status === 'processing' && item.workerLockExpiresAt && Date.parse(item.workerLockExpiresAt) > nowTime) return false;
+        if (
+          item.status === 'processing' &&
+          item.workerLockExpiresAt &&
+          Date.parse(item.workerLockExpiresAt) > nowTime
+        )
+          return false;
         if (item.nextAttemptAt && Date.parse(item.nextAttemptAt) > nowTime) return false;
         return item.attemptCount < item.maxAttempts;
       })
@@ -333,9 +363,12 @@ export class InMemoryStore implements Store {
     return this.deliveryPolicies.get(`${tenantId}:${id}`);
   }
 
-  getDeliveryPolicyByConnector(tenantId: string, connectorInstallationId: string | null): DeliveryPolicyShape | undefined {
+  getDeliveryPolicyByConnector(
+    tenantId: string,
+    connectorInstallationId: string | null,
+  ): DeliveryPolicyShape | undefined {
     return Array.from(this.deliveryPolicies.values()).find(
-      (p) => p.tenantId === tenantId && p.connectorInstallationId === connectorInstallationId
+      (p) => p.tenantId === tenantId && p.connectorInstallationId === connectorInstallationId,
     );
   }
 
@@ -343,22 +376,35 @@ export class InMemoryStore implements Store {
     return Array.from(this.deliveryPolicies.values()).filter((p) => p.tenantId === tenantId);
   }
 
-  saveTenantPolicy(policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape, policyType: string, scopeId?: string | null): void {
+  saveTenantPolicy(
+    policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape,
+    policyType: string,
+    scopeId?: string | null,
+  ): void {
     const key = `${policy.tenantId}:${policyType}:${scopeId ?? 'null'}`;
     this.tenantPolicies.set(key, policy);
   }
 
-  getTenantPolicy(tenantId: string, policyType: string, scopeId?: string | null): ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined {
+  getTenantPolicy(
+    tenantId: string,
+    policyType: string,
+    scopeId?: string | null,
+  ): ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined {
     return this.tenantPolicies.get(`${tenantId}:${policyType}:${scopeId ?? 'null'}`);
   }
 
-  listTenantPolicies(tenantId: string): Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape> {
+  listTenantPolicies(
+    tenantId: string,
+  ): Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape> {
     return Array.from(this.tenantPolicies.values()).filter((p) => p.tenantId === tenantId);
   }
 
   saveEndpointDevice(device: EndpointDeviceShape, tokenHash?: string): void {
     const existing = this.endpointDevices.get(`${device.tenantId}:${device.id}`);
-    this.endpointDevices.set(`${device.tenantId}:${device.id}`, { ...device, tokenHash: tokenHash ?? existing?.tokenHash });
+    this.endpointDevices.set(`${device.tenantId}:${device.id}`, {
+      ...device,
+      tokenHash: tokenHash ?? existing?.tokenHash,
+    });
   }
 
   getEndpointDevice(tenantId: string, id: string): EndpointDeviceShape | undefined {
@@ -381,8 +427,13 @@ export class InMemoryStore implements Store {
     };
   }
 
-  getEndpointDeviceByKey(tenantId: string, deviceKey: string): (EndpointDeviceShape & { tokenHash?: string }) | undefined {
-    return Array.from(this.endpointDevices.values()).find((d) => d.tenantId === tenantId && d.deviceKey === deviceKey);
+  getEndpointDeviceByKey(
+    tenantId: string,
+    deviceKey: string,
+  ): (EndpointDeviceShape & { tokenHash?: string }) | undefined {
+    return Array.from(this.endpointDevices.values()).find(
+      (d) => d.tenantId === tenantId && d.deviceKey === deviceKey,
+    );
   }
 
   listEndpointDevices(tenantId: string): EndpointDeviceShape[] {
@@ -420,7 +471,10 @@ export class InMemoryStore implements Store {
     this.endpointSnapshots.set(`${snapshot.tenantId}:${snapshot.id}`, snapshot);
   }
 
-  listEndpointDiagnosticSnapshots(tenantId: string, deviceId: string): EndpointDiagnosticSnapshotShape[] {
+  listEndpointDiagnosticSnapshots(
+    tenantId: string,
+    deviceId: string,
+  ): EndpointDiagnosticSnapshotShape[] {
     return Array.from(this.endpointSnapshots.values())
       .filter((s) => s.tenantId === tenantId && s.deviceId === deviceId)
       .sort((a, b) => b.collectedAt.localeCompare(a.collectedAt));
@@ -434,17 +488,37 @@ export class InMemoryStore implements Store {
     return this.endpointCommands.get(`${tenantId}:${id}`);
   }
 
-  getEndpointCommandByIdempotencyKey(tenantId: string, idempotencyKey: string): EndpointCommandShape | undefined {
-    return Array.from(this.endpointCommands.values()).find((c) => c.tenantId === tenantId && c.idempotencyKey === idempotencyKey);
+  getEndpointCommandByIdempotencyKey(
+    tenantId: string,
+    idempotencyKey: string,
+  ): EndpointCommandShape | undefined {
+    return Array.from(this.endpointCommands.values()).find(
+      (c) => c.tenantId === tenantId && c.idempotencyKey === idempotencyKey,
+    );
   }
 
-  claimNextEndpointCommand(tenantId: string, deviceId: string, options: { now: string }): EndpointCommandShape | undefined {
+  claimNextEndpointCommand(
+    tenantId: string,
+    deviceId: string,
+    options: { now: string },
+  ): EndpointCommandShape | undefined {
     const nowTime = Date.parse(options.now);
     const candidate = Array.from(this.endpointCommands.values())
-      .filter((c) => c.tenantId === tenantId && c.deviceId === deviceId && c.status === 'queued' && Date.parse(c.expiresAt) > nowTime)
+      .filter(
+        (c) =>
+          c.tenantId === tenantId &&
+          c.deviceId === deviceId &&
+          c.status === 'queued' &&
+          Date.parse(c.expiresAt) > nowTime,
+      )
       .sort((a, b) => a.requestedAt.localeCompare(b.requestedAt))[0];
     if (!candidate) return undefined;
-    const claimed: EndpointCommandShape = { ...candidate, status: 'claimed', claimedAt: options.now, updatedAt: options.now };
+    const claimed: EndpointCommandShape = {
+      ...candidate,
+      status: 'claimed',
+      claimedAt: options.now,
+      updatedAt: options.now,
+    };
     this.saveEndpointCommand(claimed);
     return claimed;
   }
@@ -459,7 +533,10 @@ export class InMemoryStore implements Store {
     this.endpointCommandResults.set(`${result.tenantId}:${result.commandId}`, result);
   }
 
-  getEndpointCommandResult(tenantId: string, commandId: string): EndpointCommandResultShape | undefined {
+  getEndpointCommandResult(
+    tenantId: string,
+    commandId: string,
+  ): EndpointCommandResultShape | undefined {
     return this.endpointCommandResults.get(`${tenantId}:${commandId}`);
   }
 
@@ -473,7 +550,9 @@ export class InMemoryStore implements Store {
   }
 
   listToolManifestRecords(): ToolManifestRecordShape[] {
-    return Array.from(this.toolManifestRecords.values()).sort((a, b) => b.loadedAt.localeCompare(a.loadedAt));
+    return Array.from(this.toolManifestRecords.values()).sort((a, b) =>
+      b.loadedAt.localeCompare(a.loadedAt),
+    );
   }
 
   saveToolDefinition(def: ToolDefinitionShape): void {
@@ -488,7 +567,11 @@ export class InMemoryStore implements Store {
     return Array.from(this.toolDefinitions.values()).find((d) => d.toolKey === toolKey);
   }
 
-  listToolDefinitions(options?: { manifestId?: string; enabled?: boolean; category?: string }): ToolDefinitionShape[] {
+  listToolDefinitions(options?: {
+    manifestId?: string;
+    enabled?: boolean;
+    category?: string;
+  }): ToolDefinitionShape[] {
     return Array.from(this.toolDefinitions.values())
       .filter((d) => {
         if (options?.manifestId && d.manifestId !== options.manifestId) return false;
@@ -508,7 +591,10 @@ export class InMemoryStore implements Store {
     return this.toolInvocations.get(`${tenantId}:${id}`);
   }
 
-  listToolInvocations(tenantId: string, options?: { deviceId?: string; status?: string; toolKey?: string }): ToolInvocationShape[] {
+  listToolInvocations(
+    tenantId: string,
+    options?: { deviceId?: string; status?: string; toolKey?: string },
+  ): ToolInvocationShape[] {
     return Array.from(this.toolInvocations.values())
       .filter((i) => {
         if (i.tenantId !== tenantId) return false;
@@ -532,12 +618,16 @@ export class InMemoryStore implements Store {
     return Array.from(this.toolApprovals.values()).find((a) => a.invocationId === invocationId);
   }
 
-  listToolApprovals(tenantId: string, options?: { status?: string; requestedByUserId?: string }): ToolApprovalShape[] {
+  listToolApprovals(
+    tenantId: string,
+    options?: { status?: string; requestedByUserId?: string },
+  ): ToolApprovalShape[] {
     return Array.from(this.toolApprovals.values())
       .filter((a) => {
         if (a.tenantId !== tenantId) return false;
         if (options?.status && a.status !== options.status) return false;
-        if (options?.requestedByUserId && a.requestedByUserId !== options.requestedByUserId) return false;
+        if (options?.requestedByUserId && a.requestedByUserId !== options.requestedByUserId)
+          return false;
         return true;
       })
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -552,7 +642,9 @@ export class InMemoryStore implements Store {
   }
 
   getToolResultNoteDraftByInvocationId(invocationId: string): ToolResultNoteDraftShape | undefined {
-    return Array.from(this.toolResultNoteDrafts.values()).find((d) => d.invocationId === invocationId);
+    return Array.from(this.toolResultNoteDrafts.values()).find(
+      (d) => d.invocationId === invocationId,
+    );
   }
 
   listToolResultNoteDrafts(tenantId: string): ToolResultNoteDraftShape[] {
@@ -583,7 +675,10 @@ export class InMemoryStore implements Store {
     return this.knowledgeArticles.get(`${tenantId}:${id}`);
   }
 
-  listKnowledgeArticles(tenantId: string, options?: { sourceId?: string; status?: string }): KnowledgeArticleShape[] {
+  listKnowledgeArticles(
+    tenantId: string,
+    options?: { sourceId?: string; status?: string },
+  ): KnowledgeArticleShape[] {
     return Array.from(this.knowledgeArticles.values())
       .filter((a) => {
         if (a.tenantId !== tenantId) return false;
@@ -594,7 +689,11 @@ export class InMemoryStore implements Store {
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
 
-  searchKnowledgeArticles(tenantId: string, query: string, options?: { sourceIds?: string[]; limit?: number }): KnowledgeArticleShape[] {
+  searchKnowledgeArticles(
+    tenantId: string,
+    query: string,
+    options?: { sourceIds?: string[]; limit?: number },
+  ): KnowledgeArticleShape[] {
     const q = query.toLowerCase();
     return Array.from(this.knowledgeArticles.values())
       .filter((a) => {
@@ -611,7 +710,8 @@ export class InMemoryStore implements Store {
       pgvectorEnabled: false,
       pgvectorReason: 'pgvector readiness is not available for the in-memory store',
       vectorColumnAvailable: false,
-      vectorColumnReason: 'knowledge article vector column is not available for the in-memory store',
+      vectorColumnReason:
+        'knowledge article vector column is not available for the in-memory store',
     };
   }
 }

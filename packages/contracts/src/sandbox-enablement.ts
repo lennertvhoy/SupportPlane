@@ -18,12 +18,7 @@ export const LocalAiProviderMetadata = z.object({
 });
 export type LocalAiProviderMetadata = z.infer<typeof LocalAiProviderMetadata>;
 
-export const CredentialResolutionStatus = z.enum([
-  'resolved',
-  'disabled',
-  'missing',
-  'error',
-]);
+export const CredentialResolutionStatus = z.enum(['resolved', 'disabled', 'missing', 'error']);
 export type CredentialResolutionStatus = z.infer<typeof CredentialResolutionStatus>;
 
 export const CredentialResolutionMetadata = z.object({
@@ -62,11 +57,13 @@ export const NatsOutboxEnvelope = z.object({
     externalWriteAttempted: z.boolean(),
     noSecrets: z.literal(true),
   }),
-  telemetry: z.object({
-    correlationId: z.string().min(1).max(128),
-    localOnly: z.literal(true),
-    noSecrets: z.literal(true),
-  }).optional(),
+  telemetry: z
+    .object({
+      correlationId: z.string().min(1).max(128),
+      localOnly: z.literal(true),
+      noSecrets: z.literal(true),
+    })
+    .optional(),
   createdAt: z.string().datetime(),
 });
 export type NatsOutboxEnvelope = z.infer<typeof NatsOutboxEnvelope>;

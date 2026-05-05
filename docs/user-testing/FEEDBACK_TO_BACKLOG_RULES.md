@@ -9,10 +9,12 @@ requirements.
 ## Severity Levels
 
 ### P0 — Demo Blocker
+
 **Definition:** The demo is fundamentally broken. Tester cannot complete the
 test script. Must fix before any further tester sessions.
 
 **Examples:**
+
 - API or Web unreachable during a tester session
 - Login fails for all users
 - Connector status shows "error" for a connector that should be "configured"
@@ -29,11 +31,13 @@ Re-assign tester after fix. Do NOT invite new testers until resolved.
 ---
 
 ### P1 — Trust/Confusion Gap
+
 **Definition:** The demo works but the tester expressed significant doubt,
 confusion, or mistrust about a core aspect. This undermines the demo's
 credibility.
 
 **Examples:**
+
 - Connector shows "mock" or "fixture" when tester expected "real"
 - Misleading labels or badges (e.g., "Zammad mode" when GLPI is also real)
 - Tester cannot find a key feature without guidance
@@ -50,10 +54,12 @@ screenshot showing the fix, plus validation gate pass.
 ---
 
 ### P2 — Polish/Surface Improvement
+
 **Definition:** The demo works correctly but the tester noted something that
 could be nicer, faster, or more intuitive.
 
 **Examples:**
+
 - Missing search/filter on a list
 - No "Start here" guidance for new users
 - Button placement or labeling could be clearer
@@ -69,9 +75,11 @@ doc-only change with commit hash.
 ---
 
 ### P3 — Nice-to-Have / Future
+
 **Definition:** Valid idea but not blocking demo credibility or workflow.
 
 **Examples:**
+
 - "It would be nice to have dark/light mode toggle"
 - "Add keyboard shortcuts"
 - "Support more connector types"
@@ -88,17 +96,17 @@ until higher-priority items are cleared.
 
 Apply these tags to each feedback entry in `FEEDBACK_LOG.md`:
 
-| Tag | Meaning |
-|-----|---------|
-| `demo-blocker` | Prevents tester from completing the test script |
-| `trust-gap` | Tester doubts the demo is real/serious |
-| `ux-confusion` | Tester couldn't find or understand a feature |
-| `frontend` | Issue in the Web UI |
-| `backend` | Issue in the API or data layer |
-| `connector` | Issue with Zammad, GLPI, osTicket, MeshCentral, Fortinet |
-| `docs` | Missing or misleading documentation |
-| `performance` | Slow loading, lag, or timeout |
-| `security` | RBAC bypass, secret exposure, cross-tenant leak |
+| Tag            | Meaning                                                      |
+| -------------- | ------------------------------------------------------------ |
+| `demo-blocker` | Prevents tester from completing the test script              |
+| `trust-gap`    | Tester doubts the demo is real/serious                       |
+| `ux-confusion` | Tester couldn't find or understand a feature                 |
+| `frontend`     | Issue in the Web UI                                          |
+| `backend`      | Issue in the API or data layer                               |
+| `connector`    | Issue with Zammad, GLPI, osTicket, MeshCentral, Fortinet     |
+| `docs`         | Missing or misleading documentation                          |
+| `performance`  | Slow loading, lag, or timeout                                |
+| `security`     | RBAC bypass, secret exposure, cross-tenant leak              |
 | `completeness` | Feature exists but is partial/mock when tester expected real |
 
 ## Triage Workflow Per Tester

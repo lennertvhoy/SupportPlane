@@ -54,7 +54,12 @@ export class CurrentIdentityMiddleware implements NestMiddleware {
       const serviceUserId = req.headers['x-service-user-id'];
       const effectiveTenantId = typeof tenantId === 'string' ? tenantId : 'dev-tenant';
       // Use a seeded admin user for audit FK compatibility; allow override via header.
-      const effectiveUserId = typeof serviceUserId === 'string' ? serviceUserId : (effectiveTenantId === 'dev-tenant' ? 'dev-admin' : 'dev-admin');
+      const effectiveUserId =
+        typeof serviceUserId === 'string'
+          ? serviceUserId
+          : effectiveTenantId === 'dev-tenant'
+            ? 'dev-admin'
+            : 'dev-admin';
       (req as Request & { currentIdentity: CurrentIdentity }).currentIdentity = {
         tenantId: effectiveTenantId,
         userId: effectiveUserId,

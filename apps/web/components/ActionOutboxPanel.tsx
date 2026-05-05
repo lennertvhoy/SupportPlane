@@ -21,7 +21,7 @@ function can(identity: AuthIdentity, permission: string) {
 function latestDeliveryFlag(
   attempts: ActionOutboxAttempt[],
   item: ActionOutboxItem,
-  key: 'realNetwork' | 'writebackEnabled' | 'externalWriteAttempted'
+  key: 'realNetwork' | 'writebackEnabled' | 'externalWriteAttempted',
 ) {
   const latestAttempt = [...attempts].sort((a, b) => b.attemptNumber - a.attemptNumber)[0];
   const attemptValue = latestAttempt?.deliveryResult?.[key];
@@ -111,7 +111,9 @@ export function ActionOutboxPanel({
   };
 
   const latest = actions[0];
-  const latestOutbox = latest ? outboxItems.find((item) => item.supportActionId === latest.id) : undefined;
+  const latestOutbox = latest
+    ? outboxItems.find((item) => item.supportActionId === latest.id)
+    : undefined;
   const mayCreate = can(identity, 'action:create');
   const mayApprove = can(identity, 'action:approve');
   const mayDeliver = can(identity, 'outbox:mock_deliver');
@@ -125,7 +127,11 @@ export function ActionOutboxPanel({
             : 'Local/mock delivery only. Human review required. No real Zammad writeback, email, telephony, AI provider, external broker, raw media, or compliance-grade evidence.'}
         </div>
 
-        {!session && <div className="text-xs text-cockpit-500">Select a session to prepare a support action.</div>}
+        {!session && (
+          <div className="text-xs text-cockpit-500">
+            Select a session to prepare a support action.
+          </div>
+        )}
 
         {session && (
           <>
@@ -149,32 +155,51 @@ export function ActionOutboxPanel({
                       ticketReferenceId: ticket?.id,
                       subject: ticket?.subject,
                       body,
-                    })
+                    }),
                   )
                 }
                 className="inline-flex items-center justify-center gap-1 rounded bg-accent px-2 py-1.5 text-xs font-medium text-white disabled:opacity-50"
               >
-                {busy === 'create' ? <Loader2 size={12} className="animate-spin" /> : <Clock size={12} />}
+                {busy === 'create' ? (
+                  <Loader2 size={12} className="animate-spin" />
+                ) : (
+                  <Clock size={12} />
+                )}
                 Create draft action
               </button>
               <button
-                disabled={!latest || latest.status !== 'draft' || !can(identity, 'action:submit') || busy !== null}
+                disabled={
+                  !latest ||
+                  latest.status !== 'draft' ||
+                  !can(identity, 'action:submit') ||
+                  busy !== null
+                }
                 onClick={() => run('submit', () => api.submitActionForReview(latest!.id))}
                 className="inline-flex items-center justify-center gap-1 rounded border border-cockpit-600 px-2 py-1.5 text-xs text-cockpit-200 disabled:opacity-50"
               >
                 Submit for review
               </button>
               <button
-                disabled={!latest || latest.status !== 'review_required' || !mayApprove || busy !== null}
-                onClick={() => run('approve', () => api.approveAction(latest!.id, 'Approved for local mock delivery'))}
+                disabled={
+                  !latest || latest.status !== 'review_required' || !mayApprove || busy !== null
+                }
+                onClick={() =>
+                  run('approve', () =>
+                    api.approveAction(latest!.id, 'Approved for local mock delivery'),
+                  )
+                }
                 className="inline-flex items-center justify-center gap-1 rounded border border-emerald-700/50 px-2 py-1.5 text-xs text-emerald-300 disabled:opacity-50"
               >
                 <Check size={12} />
                 Approve
               </button>
               <button
-                disabled={!latest || latest.status !== 'review_required' || !mayApprove || busy !== null}
-                onClick={() => run('reject', () => api.rejectAction(latest!.id, 'Rejected in local review'))}
+                disabled={
+                  !latest || latest.status !== 'review_required' || !mayApprove || busy !== null
+                }
+                onClick={() =>
+                  run('reject', () => api.rejectAction(latest!.id, 'Rejected in local review'))
+                }
                 className="inline-flex items-center justify-center gap-1 rounded border border-red-700/50 px-2 py-1.5 text-xs text-red-300 disabled:opacity-50"
               >
                 <X size={12} />
@@ -200,7 +225,9 @@ export function ActionOutboxPanel({
             {!mayApprove && (
               <button
                 disabled={!latest || latest.status !== 'review_required' || busy !== null}
-                onClick={() => run('forbidden', () => api.approveAction(latest!.id, 'Viewer forbidden proof'))}
+                onClick={() =>
+                  run('forbidden', () => api.approveAction(latest!.id, 'Viewer forbidden proof'))
+                }
                 className="inline-flex w-full items-center justify-center gap-1 rounded border border-amber-700/50 px-2 py-1.5 text-xs text-amber-300 disabled:opacity-50"
               >
                 <ShieldAlert size={12} />
@@ -208,26 +235,48 @@ export function ActionOutboxPanel({
               </button>
             )}
 
-            {loading && <div className="flex items-center gap-2 text-xs text-cockpit-400"><Loader2 size={12} className="animate-spin" /> Loading action state...</div>}
-            {error && <div className="rounded bg-red-900/30 px-2 py-1 text-xs text-red-300">{error}</div>}
-            {forbiddenProof && <div className="rounded border border-amber-700/50 bg-amber-900/20 px-2 py-1 text-xs text-amber-300">Server-side RBAC denial: {forbiddenProof}</div>}
+            {loading && (
+              <div className="flex items-center gap-2 text-xs text-cockpit-400">
+                <Loader2 size={12} className="animate-spin" /> Loading action state...
+              </div>
+            )}
+            {error && (
+              <div className="rounded bg-red-900/30 px-2 py-1 text-xs text-red-300">{error}</div>
+            )}
+            {forbiddenProof && (
+              <div className="rounded border border-amber-700/50 bg-amber-900/20 px-2 py-1 text-xs text-amber-300">
+                Server-side RBAC denial: {forbiddenProof}
+              </div>
+            )}
 
             {latest && (
               <div className="rounded border border-cockpit-700 bg-cockpit-900/60 p-2 text-[11px] text-cockpit-300">
                 <div className="font-medium text-cockpit-100">Latest action: {latest.status}</div>
                 <div>Type: {latest.actionType}</div>
                 <div>Idempotency: {latest.idempotencyKey}</div>
-                <div>Review: {latest.reviewDecision ?? 'pending'} {latest.reviewedBy ? `by ${latest.reviewedBy}` : ''}</div>
+                <div>
+                  Review: {latest.reviewDecision ?? 'pending'}{' '}
+                  {latest.reviewedBy ? `by ${latest.reviewedBy}` : ''}
+                </div>
                 <div>Preview: {latest.safeBodyPreview ?? 'none'}</div>
               </div>
             )}
 
             {latestOutbox && (
               <div className="rounded border border-cockpit-700 bg-cockpit-900/60 p-2 text-[11px] text-cockpit-300">
-                <div className="font-medium text-cockpit-100">Outbox item: {latestOutbox.status}</div>
+                <div className="font-medium text-cockpit-100">
+                  Outbox item: {latestOutbox.status}
+                </div>
                 <div>Attempts: {latestOutbox.attemptCount}</div>
                 <div>Latest attempt: {latestOutbox.latestAttemptState ?? 'none'}</div>
-                <div>mode: {latestOutbox.deliveryMode ?? 'mock'} / realNetwork: {String(latestDeliveryFlag(attempts, latestOutbox, 'realNetwork'))} / writebackEnabled: {String(latestDeliveryFlag(attempts, latestOutbox, 'writebackEnabled'))} / externalWriteAttempted: {String(latestDeliveryFlag(attempts, latestOutbox, 'externalWriteAttempted'))}</div>
+                <div>
+                  mode: {latestOutbox.deliveryMode ?? 'mock'} / realNetwork:{' '}
+                  {String(latestDeliveryFlag(attempts, latestOutbox, 'realNetwork'))} /
+                  writebackEnabled:{' '}
+                  {String(latestDeliveryFlag(attempts, latestOutbox, 'writebackEnabled'))} /
+                  externalWriteAttempted:{' '}
+                  {String(latestDeliveryFlag(attempts, latestOutbox, 'externalWriteAttempted'))}
+                </div>
               </div>
             )}
 
@@ -235,8 +284,25 @@ export function ActionOutboxPanel({
               <div className="space-y-1">
                 <div className="text-[11px] font-medium text-cockpit-300">Attempt history</div>
                 {attempts.map((attempt) => (
-                  <div key={attempt.id} className="rounded border border-cockpit-700 px-2 py-1 text-[10px] text-cockpit-400">
-                    #{attempt.attemptNumber} {attempt.state} at {new Date(attempt.attemptedAt).toLocaleString()} / realNetwork: {String((attempt.deliveryResult as Record<string, unknown>)?.realNetwork ?? false)} / writeback: {String((attempt.deliveryResult as Record<string, unknown>)?.writebackEnabled ?? false)} / externalWriteAttempted: {String((attempt.deliveryResult as Record<string, unknown>)?.externalWriteAttempted ?? false)}
+                  <div
+                    key={attempt.id}
+                    className="rounded border border-cockpit-700 px-2 py-1 text-[10px] text-cockpit-400"
+                  >
+                    #{attempt.attemptNumber} {attempt.state} at{' '}
+                    {new Date(attempt.attemptedAt).toLocaleString()} / realNetwork:{' '}
+                    {String(
+                      (attempt.deliveryResult as Record<string, unknown>)?.realNetwork ?? false,
+                    )}{' '}
+                    / writeback:{' '}
+                    {String(
+                      (attempt.deliveryResult as Record<string, unknown>)?.writebackEnabled ??
+                        false,
+                    )}{' '}
+                    / externalWriteAttempted:{' '}
+                    {String(
+                      (attempt.deliveryResult as Record<string, unknown>)?.externalWriteAttempted ??
+                        false,
+                    )}
                   </div>
                 ))}
               </div>

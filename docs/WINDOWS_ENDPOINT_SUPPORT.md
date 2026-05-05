@@ -21,21 +21,21 @@ SupportPlane now treats Windows as a first-class endpoint platform alongside Lin
 
 ### Read-Only Diagnostics
 
-| Collector | Linux | Windows | macOS | Notes |
-|-----------|-------|---------|-------|-------|
-| `status` (ping_self) | ✅ | ✅ | ✅ | Cross-platform via Node `os` module |
-| `inventory` | ✅ | ✅ | ✅ | Hostname, platform, arch, CPU, memory |
-| `disk` | ✅ | ✅ | ✅ | Uses `fs.statfs`; Windows tries `C:\` |
-| `network` | ✅ | ✅ | ✅ | Uses `os.networkInterfaces()` |
-| `services` | ✅ | ✅ | ❌ | Windows uses fixed `sc.exe` args; proven on real Windows runner (Session 134) |
-| `software` | ❌ | ✅ | ❌ | Windows uses fixed `reg.exe` uninstall-key queries; proven on real Windows runner (Session 134) |
+| Collector            | Linux | Windows | macOS | Notes                                                                                           |
+| -------------------- | ----- | ------- | ----- | ----------------------------------------------------------------------------------------------- |
+| `status` (ping_self) | ✅    | ✅      | ✅    | Cross-platform via Node `os` module                                                             |
+| `inventory`          | ✅    | ✅      | ✅    | Hostname, platform, arch, CPU, memory                                                           |
+| `disk`               | ✅    | ✅      | ✅    | Uses `fs.statfs`; Windows tries `C:\`                                                           |
+| `network`            | ✅    | ✅      | ✅    | Uses `os.networkInterfaces()`                                                                   |
+| `services`           | ✅    | ✅      | ❌    | Windows uses fixed `sc.exe` args; proven on real Windows runner (Session 134)                   |
+| `software`           | ❌    | ✅      | ❌    | Windows uses fixed `reg.exe` uninstall-key queries; proven on real Windows runner (Session 134) |
 
 ### Remediation
 
-| Tool | Linux | Windows | macOS | Notes |
-|------|-------|---------|-------|-------|
-| `flush_dns_cache` | supported when `resolvectl` exists | fixed-template, proven on real Windows | ❌ | Approval-gated remediation using `resolvectl flush-caches` on Linux and `ipconfig /flushdns` on Windows; Windows template proven in Session 134 |
-| `clear_temp_preview` | ❌ | ❌ | ❌ | Returns `unsupported: true` with honest note |
+| Tool                 | Linux                              | Windows                                | macOS | Notes                                                                                                                                           |
+| -------------------- | ---------------------------------- | -------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `flush_dns_cache`    | supported when `resolvectl` exists | fixed-template, proven on real Windows | ❌    | Approval-gated remediation using `resolvectl flush-caches` on Linux and `ipconfig /flushdns` on Windows; Windows template proven in Session 134 |
+| `clear_temp_preview` | ❌                                 | ❌                                     | ❌    | Returns `unsupported: true` with honest note                                                                                                    |
 
 `flush_dns_cache` is enabled in the local tool manifest and still requires
 policy allowance plus approval. Other remediation commands remain disabled or
@@ -54,12 +54,14 @@ returns an approved endpoint result with browser/API evidence.
 ## Policy Behavior
 
 ### Allowed
+
 - Windows device invoking `diagnostic.status` → `allowed: true`
 - Windows device invoking `diagnostic.inventory` → `allowed: true`
 - Windows device invoking `diagnostic.services` → `allowed: true`
 - Windows device invoking `diagnostic.software` → `allowed: true`
 
 ### Denied
+
 - Linux device invoking `diagnostic.software` → `decision: unsupported_platform`
 - Windows device invoking `remediation.flush_dns_cache` → `approval_required`, then dispatches fixed `ipconfig /flushdns` only after approval; real Windows execution proof remains pending
 - Unknown platform invoking any platform-gated tool → `decision: unsupported_platform`
@@ -102,6 +104,7 @@ bash scripts/bl130_bl131_bl132_windows_readiness.sh
 ```
 
 The agent test suite now includes enterprise hardening coverage:
+
 - `platform-aware dispatch` — verifies `runFixedDiagnostic` dispatches correctly for all command kinds
 - `Windows flush DNS enterprise hardening` — verifies flush DNS template has no shell/PowerShell/cmd fields and no shell metacharacters
 - `diagnostic.software win32-only enforcement` — verifies software diagnostic is only supported on win32
@@ -151,6 +154,7 @@ The intended production path remains:
 ## Future Work
 
 See backlog items:
+
 - **BL-130:** Windows diagnostics collectors completion (services, installed software real-runner proof still required)
 - **BL-131:** Windows tool-manifest compatibility completion
 - **BL-132:** Windows service/install packaging plan

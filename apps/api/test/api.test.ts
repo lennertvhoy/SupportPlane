@@ -6,7 +6,6 @@ import type { INestApplication } from '@nestjs/common';
 import { AppModule } from '../src/app.module.js';
 import { InMemoryStore } from '../src/support-sessions/in-memory.store.js';
 
-
 describe('SupportPlane API', () => {
   let app: INestApplication;
   let server: ReturnType<INestApplication['getHttpServer']>;
@@ -300,7 +299,9 @@ describe('SupportPlane API', () => {
       .set('x-user-id', 'viewer-1')
       .set('x-user-role', 'viewer')
       .expect(200);
-    assert.ok(timeline.body.timeline.some((item: { type: string }) => item.type === 'action_outbox_item'));
+    assert.ok(
+      timeline.body.timeline.some((item: { type: string }) => item.type === 'action_outbox_item'),
+    );
 
     const evidence = await supertest(server)
       .get(`/support-sessions/${created.body.id}/evidence-bundle`)
@@ -335,7 +336,12 @@ describe('SupportPlane API', () => {
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
       .expect(200);
-    assert.strictEqual(draftList.body.outboxItems.filter((i: { supportActionId: string }) => i.supportActionId === actionCreated.body.action.id).length, 0);
+    assert.strictEqual(
+      draftList.body.outboxItems.filter(
+        (i: { supportActionId: string }) => i.supportActionId === actionCreated.body.action.id,
+      ).length,
+      0,
+    );
 
     // 2. review_required has no outbox item and zero attempts
     const submitted = await supertest(server)
@@ -350,7 +356,12 @@ describe('SupportPlane API', () => {
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
       .expect(200);
-    assert.strictEqual(reviewList.body.outboxItems.filter((i: { supportActionId: string }) => i.supportActionId === actionCreated.body.action.id).length, 0);
+    assert.strictEqual(
+      reviewList.body.outboxItems.filter(
+        (i: { supportActionId: string }) => i.supportActionId === actionCreated.body.action.id,
+      ).length,
+      0,
+    );
 
     // 3. approved has no outbox item and zero attempts
     const approved = await supertest(server)
@@ -366,7 +377,12 @@ describe('SupportPlane API', () => {
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
       .expect(200);
-    assert.strictEqual(approvedList.body.outboxItems.filter((i: { supportActionId: string }) => i.supportActionId === actionCreated.body.action.id).length, 0);
+    assert.strictEqual(
+      approvedList.body.outboxItems.filter(
+        (i: { supportActionId: string }) => i.supportActionId === actionCreated.body.action.id,
+      ).length,
+      0,
+    );
 
     // 4. queued creates outbox item with attemptCount 0
     const queued = await supertest(server)
@@ -517,7 +533,7 @@ describe('SupportPlane API', () => {
       .expect(200);
 
     const modelEvent = audit.body.find(
-      (event: { eventType: string }) => event.eventType === 'ai_draft_generated'
+      (event: { eventType: string }) => event.eventType === 'ai_draft_generated',
     );
     assert.ok(modelEvent);
     assert.equal(modelEvent.metadata.provider, 'mock');
@@ -538,9 +554,7 @@ describe('Zammad connector endpoints', () => {
   });
 
   it('GET /connectors/zammad/status requires tenant identity', async () => {
-    const res = await supertest(server)
-      .get('/connectors/zammad/status')
-      .expect(400);
+    const res = await supertest(server).get('/connectors/zammad/status').expect(400);
     assert.ok(res.body.error.includes('x-tenant-id'));
   });
 
@@ -585,7 +599,10 @@ describe('Zammad connector endpoints', () => {
       assert.strictEqual(res.body.connectors.length, 5);
 
       const byId = new Map<string, Record<string, unknown>>(
-        res.body.connectors.map((connector: Record<string, unknown>) => [connector.id as string, connector])
+        res.body.connectors.map((connector: Record<string, unknown>) => [
+          connector.id as string,
+          connector,
+        ]),
       );
       const glpi = byId.get('glpi');
       const meshcentral = byId.get('meshcentral');
@@ -640,7 +657,9 @@ describe('Zammad connector endpoints', () => {
         .set('x-user-id', 'user-1')
         .expect(200);
 
-      const fortinet = (res.body.connectors as Array<Record<string, unknown>>).find((connector) => connector.id === 'fortinet');
+      const fortinet = (res.body.connectors as Array<Record<string, unknown>>).find(
+        (connector) => connector.id === 'fortinet',
+      );
       assert.ok(fortinet);
       assert.strictEqual(fortinet.mode, 'error');
       assert.strictEqual(fortinet.credentialSource, 'env');
@@ -675,7 +694,9 @@ describe('Zammad connector endpoints', () => {
         .set('x-user-id', 'user-1')
         .expect(200);
 
-      const glpi = (res.body.connectors as Array<Record<string, unknown>>).find((c) => c.id === 'glpi');
+      const glpi = (res.body.connectors as Array<Record<string, unknown>>).find(
+        (c) => c.id === 'glpi',
+      );
       assert.ok(glpi);
       assert.strictEqual(glpi.mode, 'configured');
       assert.strictEqual(glpi.credentialSource, 'env');
@@ -706,7 +727,9 @@ describe('Zammad connector endpoints', () => {
         .set('x-user-id', 'user-1')
         .expect(200);
 
-      const osticket = (res.body.connectors as Array<Record<string, unknown>>).find((c) => c.id === 'osticket');
+      const osticket = (res.body.connectors as Array<Record<string, unknown>>).find(
+        (c) => c.id === 'osticket',
+      );
       assert.ok(osticket);
       assert.strictEqual(osticket.mode, 'error');
       assert.strictEqual(osticket.credentialSource, 'env');
@@ -737,7 +760,9 @@ describe('Zammad connector endpoints', () => {
         .set('x-user-id', 'user-1')
         .expect(200);
 
-      const meshcentral = (res.body.connectors as Array<Record<string, unknown>>).find((c) => c.id === 'meshcentral');
+      const meshcentral = (res.body.connectors as Array<Record<string, unknown>>).find(
+        (c) => c.id === 'meshcentral',
+      );
       assert.ok(meshcentral);
       assert.strictEqual(meshcentral.mode, 'error');
       assert.strictEqual(meshcentral.credentialSource, 'env');
@@ -780,7 +805,11 @@ describe('Zammad connector endpoints', () => {
 
       for (const connector of res.body.connectors as Array<Record<string, unknown>>) {
         assert.notStrictEqual(connector.mode, 'live', `${connector.id} must not report live mode`);
-        assert.notStrictEqual(connector.status, 'live', `${connector.id} must not report live status`);
+        assert.notStrictEqual(
+          connector.status,
+          'live',
+          `${connector.id} must not report live status`,
+        );
       }
     } finally {
       for (const [key, value] of previous) {
@@ -830,7 +859,7 @@ describe('Zammad connector endpoints', () => {
       .expect(200);
 
     const connectorEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'zammad_ticket_loaded'
+      (e: { eventType: string }) => e.eventType === 'zammad_ticket_loaded',
     );
     assert.ok(connectorEvent, 'zammad_ticket_loaded audit event should exist');
     assert.strictEqual(connectorEvent.metadata.externalTicketId, 'ZAMMAD-99');
@@ -863,7 +892,7 @@ describe('Zammad connector endpoints', () => {
       .expect(200);
 
     const draftEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'internal_note_drafted'
+      (e: { eventType: string }) => e.eventType === 'internal_note_drafted',
     );
     assert.ok(draftEvent, 'internal_note_drafted audit event should exist');
     assert.strictEqual(draftEvent.metadata.externalTicketId, 'Z-1');
@@ -905,12 +934,12 @@ describe('Zammad connector endpoints', () => {
       .expect(200);
 
     const attemptEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'internal_note_writeback_attempted'
+      (e: { eventType: string }) => e.eventType === 'internal_note_writeback_attempted',
     );
     assert.ok(attemptEvent, 'writeback attempted audit event should exist');
 
     const failedEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'internal_note_writeback_failed'
+      (e: { eventType: string }) => e.eventType === 'internal_note_writeback_failed',
     );
     assert.ok(failedEvent, 'writeback failed audit event should exist');
     assert.strictEqual(failedEvent.metadata.egressDecision, 'blocked_writeback_disabled');
@@ -957,9 +986,7 @@ describe('Customer and connector installation endpoints (BL-020)', () => {
   });
 
   it('GET /customers requires tenant identity', async () => {
-    const res = await supertest(server)
-      .get('/customers')
-      .expect(400);
+    const res = await supertest(server).get('/customers').expect(400);
     assert.ok(res.body.error.includes('x-tenant-id'));
   });
 
@@ -984,9 +1011,7 @@ describe('Customer and connector installation endpoints (BL-020)', () => {
   });
 
   it('GET /connector-installations requires tenant identity', async () => {
-    const res = await supertest(server)
-      .get('/connector-installations')
-      .expect(400);
+    const res = await supertest(server).get('/connector-installations').expect(400);
     assert.ok(res.body.error.includes('x-tenant-id'));
   });
 
@@ -1164,7 +1189,11 @@ describe('Customer and connector installation endpoints (BL-020)', () => {
       .send({
         name: 'Redaction Test',
         adapterType: 'zammad',
-        config: { apiToken: 'super-secret-123', baseUrl: 'http://localhost:3000', password: 'hunter2' },
+        config: {
+          apiToken: 'super-secret-123',
+          baseUrl: 'http://localhost:3000',
+          password: 'hunter2',
+        },
       })
       .expect(201);
 
@@ -1234,9 +1263,7 @@ describe('Credential reference endpoints', () => {
   });
 
   it('GET /credential-references requires tenant identity', async () => {
-    const res = await supertest(server)
-      .get('/credential-references')
-      .expect(400);
+    const res = await supertest(server).get('/credential-references').expect(400);
     assert.ok(res.body.error.includes('x-tenant-id'));
   });
 
@@ -1365,7 +1392,9 @@ describe('Credential reference endpoints', () => {
       .send({ credentialReferenceId: credential.body.credentialReference.id })
       .expect(200);
 
-    assert.ok(res.body.installation.secretReferenceIds.includes(credential.body.credentialReference.id));
+    assert.ok(
+      res.body.installation.secretReferenceIds.includes(credential.body.credentialReference.id),
+    );
   });
 
   it('POST /connector-installations/:id/unlink-credential unlinks credential from installation', async () => {
@@ -1401,7 +1430,9 @@ describe('Credential reference endpoints', () => {
       .send({ credentialReferenceId: credential.body.credentialReference.id })
       .expect(200);
 
-    assert.ok(!res.body.installation.secretReferenceIds.includes(credential.body.credentialReference.id));
+    assert.ok(
+      !res.body.installation.secretReferenceIds.includes(credential.body.credentialReference.id),
+    );
   });
 });
 
@@ -1498,7 +1529,9 @@ describe('Connector runtime configuration and readiness (BL-098)', () => {
     assert.strictEqual(res.body.result.mockMode, false);
     assert.strictEqual(res.body.result.realNetwork, true);
     // Unknown fields get warnings, not errors.
-    const warningIssues = res.body.result.issues.filter((i: { severity: string }) => i.severity === 'warning');
+    const warningIssues = res.body.result.issues.filter(
+      (i: { severity: string }) => i.severity === 'warning',
+    );
     const codes = warningIssues.map((i: { code: string }) => i.code);
     assert.ok(codes.includes('UNKNOWN_FIELD'), 'Expected UNKNOWN_FIELD warning for realEndpoint');
   });
@@ -1654,7 +1687,10 @@ describe('Connector runtime configuration and readiness (BL-098)', () => {
       .expect(201);
 
     const payload = res.body.contextPacket.payload as Record<string, unknown>;
-    assert.ok(payload.connectorInstallationProvenance, 'connectorInstallationProvenance should exist');
+    assert.ok(
+      payload.connectorInstallationProvenance,
+      'connectorInstallationProvenance should exist',
+    );
     const provenance = payload.connectorInstallationProvenance as Record<string, unknown>;
     assert.strictEqual(provenance.noRealNetworkCall, true);
     assert.strictEqual(provenance.realNetwork, false);
@@ -1736,9 +1772,14 @@ describe('Connector runtime configuration and readiness (BL-098)', () => {
         .send({ config: { mockMode: true, [field]: 'super-secret' } })
         .expect(200);
 
-      const errors = res.body.result.issues.filter((i: { severity: string }) => i.severity === 'error');
+      const errors = res.body.result.issues.filter(
+        (i: { severity: string }) => i.severity === 'error',
+      );
       const codes = errors.map((i: { code: string }) => i.code);
-      assert.ok(codes.includes('UNSAFE_FIELD_REJECTED'), `field ${field} should trigger UNSAFE_FIELD_REJECTED`);
+      assert.ok(
+        codes.includes('UNSAFE_FIELD_REJECTED'),
+        `field ${field} should trigger UNSAFE_FIELD_REJECTED`,
+      );
     }
   });
 
@@ -1760,9 +1801,14 @@ describe('Connector runtime configuration and readiness (BL-098)', () => {
         .send({ config: { mockMode: true, [field]: 'http://real.example.com' } })
         .expect(200);
 
-      const errors = res.body.result.issues.filter((i: { severity: string }) => i.severity === 'error');
+      const errors = res.body.result.issues.filter(
+        (i: { severity: string }) => i.severity === 'error',
+      );
       const codes = errors.map((i: { code: string }) => i.code);
-      assert.ok(codes.includes('REAL_NETWORK_FIELD_REJECTED'), `field ${field} should trigger REAL_NETWORK_FIELD_REJECTED`);
+      assert.ok(
+        codes.includes('REAL_NETWORK_FIELD_REJECTED'),
+        `field ${field} should trigger REAL_NETWORK_FIELD_REJECTED`,
+      );
     }
   });
 
@@ -1774,7 +1820,12 @@ describe('Connector runtime configuration and readiness (BL-098)', () => {
       .set('x-tenant-id', 'tenant-runtime')
       .set('x-user-id', 'admin-1')
       .set('x-user-role', 'admin')
-      .send({ name: 'Deterministic Count Test', adapterType: 'mock', enabled: true, status: 'active' })
+      .send({
+        name: 'Deterministic Count Test',
+        adapterType: 'mock',
+        enabled: true,
+        status: 'active',
+      })
       .expect(201);
 
     const credential = await supertest(server)
@@ -1914,13 +1965,13 @@ describe('Evidence bundle endpoints', () => {
       .expect(200);
 
     const generatedEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'evidence_bundle_generated'
+      (e: { eventType: string }) => e.eventType === 'evidence_bundle_generated',
     );
     assert.ok(generatedEvent, 'evidence_bundle_generated audit event should exist');
     assert.strictEqual(generatedEvent.metadata.format, 'json');
 
     const exportedEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'evidence_bundle_exported'
+      (e: { eventType: string }) => e.eventType === 'evidence_bundle_exported',
     );
     assert.ok(exportedEvent, 'evidence_bundle_exported audit event should exist');
     assert.strictEqual(exportedEvent.metadata.format, 'json');
@@ -1979,7 +2030,11 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-1', rawCallerNumber: '03 555 01 01', callerDisplayName: 'Test' })
+      .send({
+        externalCallId: 'FAKE-1',
+        rawCallerNumber: '03 555 01 01',
+        callerDisplayName: 'Test',
+      })
       .expect(201);
 
     assert.strictEqual(res.body.callEvent.provider, 'fake_webhook');
@@ -2002,7 +2057,10 @@ describe('Call simulator endpoints', () => {
 
     assert.strictEqual(res.body.callEvent.callerMatch.status, 'matched');
     assert.strictEqual(res.body.callEvent.callerMatch.customerName, 'Acme BVBA');
-    assert.deepStrictEqual(res.body.callEvent.callerMatch.matchedTicketIds, ['TICKET-101', 'TICKET-102']);
+    assert.deepStrictEqual(res.body.callEvent.callerMatch.matchedTicketIds, [
+      'TICKET-101',
+      'TICKET-102',
+    ]);
   });
 
   it('POST /calls/fake-incoming auto-creates session when autoCreateSession=true and caller matched', async () => {
@@ -2010,7 +2068,11 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-AUTO-1', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true })
+      .send({
+        externalCallId: 'FAKE-AUTO-1',
+        rawCallerNumber: '+32 3 555 01 01',
+        autoCreateSession: true,
+      })
       .expect(201);
 
     assert.strictEqual(res.body.autoCreateResult, 'auto_created');
@@ -2029,7 +2091,12 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-AUTO-1-HIGH', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true, preferredPriority: 'high' })
+      .send({
+        externalCallId: 'FAKE-AUTO-1-HIGH',
+        rawCallerNumber: '+32 3 555 01 01',
+        autoCreateSession: true,
+        preferredPriority: 'high',
+      })
       .expect(201);
 
     assert.strictEqual(res.body.autoCreateResult, 'auto_created');
@@ -2043,7 +2110,12 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-AUTO-1-TITLE', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true, preferredSessionTitle: 'VIP Escalation' })
+      .send({
+        externalCallId: 'FAKE-AUTO-1-TITLE',
+        rawCallerNumber: '+32 3 555 01 01',
+        autoCreateSession: true,
+        preferredSessionTitle: 'VIP Escalation',
+      })
       .expect(201);
 
     assert.strictEqual(res.body.autoCreateResult, 'auto_created');
@@ -2057,7 +2129,11 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-AUTO-2', rawCallerNumber: '+32 9 999 9999', autoCreateSession: true })
+      .send({
+        externalCallId: 'FAKE-AUTO-2',
+        rawCallerNumber: '+32 9 999 9999',
+        autoCreateSession: true,
+      })
       .expect(201);
 
     assert.strictEqual(res.body.autoCreateResult, 'skipped_no_match');
@@ -2070,7 +2146,11 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-AUTO-3', rawCallerNumber: 'not-a-number', autoCreateSession: true })
+      .send({
+        externalCallId: 'FAKE-AUTO-3',
+        rawCallerNumber: 'not-a-number',
+        autoCreateSession: true,
+      })
       .expect(201);
 
     assert.strictEqual(res.body.autoCreateResult, 'skipped_invalid_phone');
@@ -2082,7 +2162,11 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-AUTO-4', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true })
+      .send({
+        externalCallId: 'FAKE-AUTO-4',
+        rawCallerNumber: '+32 3 555 01 01',
+        autoCreateSession: true,
+      })
       .expect(201);
 
     const sessionId = res.body.createdSession.id;
@@ -2107,7 +2191,11 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-AUTO-5', rawCallerNumber: '03 555 01 01', autoCreateSession: true })
+      .send({
+        externalCallId: 'FAKE-AUTO-5',
+        rawCallerNumber: '03 555 01 01',
+        autoCreateSession: true,
+      })
       .expect(201);
 
     const sessionId = res.body.createdSession.id;
@@ -2119,13 +2207,13 @@ describe('Call simulator endpoints', () => {
       .expect(200);
 
     const autoCreateEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'support_session_auto_created'
+      (e: { eventType: string }) => e.eventType === 'support_session_auto_created',
     );
     assert.ok(autoCreateEvent, 'support_session_auto_created audit event should exist');
     assert.strictEqual(autoCreateEvent.metadata.customerName, 'Acme BVBA');
 
     const autoLinkEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'call_auto_linked_to_session'
+      (e: { eventType: string }) => e.eventType === 'call_auto_linked_to_session',
     );
     assert.ok(autoLinkEvent, 'call_auto_linked_to_session audit event should exist');
     assert.strictEqual(autoLinkEvent.metadata.sessionId, sessionId);
@@ -2136,7 +2224,11 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-AUTO-6', rawCallerNumber: '03 555 01 01', autoCreateSession: true })
+      .send({
+        externalCallId: 'FAKE-AUTO-6',
+        rawCallerNumber: '03 555 01 01',
+        autoCreateSession: true,
+      })
       .expect(201);
 
     const sessionId = res.body.createdSession.id;
@@ -2156,17 +2248,20 @@ describe('Call simulator endpoints', () => {
 
     const auditTimeline = bundleRes.body.bundle.auditTimeline;
     const receivedEvent = auditTimeline.find(
-      (e: { eventType: string }) => e.eventType === 'call_event_received'
+      (e: { eventType: string }) => e.eventType === 'call_event_received',
     );
     assert.ok(receivedEvent, 'call_event_received should be in evidence bundle audit timeline');
     const matchedEvent = auditTimeline.find(
-      (e: { eventType: string }) => e.eventType === 'caller_matched'
+      (e: { eventType: string }) => e.eventType === 'caller_matched',
     );
     assert.ok(matchedEvent, 'caller_matched should be in evidence bundle audit timeline');
     const autoCreateEvent = auditTimeline.find(
-      (e: { eventType: string }) => e.eventType === 'support_session_auto_created'
+      (e: { eventType: string }) => e.eventType === 'support_session_auto_created',
     );
-    assert.ok(autoCreateEvent, 'support_session_auto_created should be in evidence bundle audit timeline');
+    assert.ok(
+      autoCreateEvent,
+      'support_session_auto_created should be in evidence bundle audit timeline',
+    );
   });
 
   it('GET /calls/recent lists recent calls', async () => {
@@ -2277,7 +2372,7 @@ describe('Call simulator endpoints', () => {
       .expect(200);
 
     const linkedEvent = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'call_linked_to_session'
+      (e: { eventType: string }) => e.eventType === 'call_linked_to_session',
     );
     assert.ok(linkedEvent, 'call_linked_to_session audit event should exist');
     assert.strictEqual(linkedEvent.metadata.sessionId, session.body.id);
@@ -2324,7 +2419,12 @@ describe('Call simulator endpoints', () => {
       .post('/calls/fake-incoming')
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ externalCallId: 'FAKE-AUTO-BAD', rawCallerNumber: '+32 3 555 01 01', autoCreateSession: true, preferredPriority: 'urgent' })
+      .send({
+        externalCallId: 'FAKE-AUTO-BAD',
+        rawCallerNumber: '+32 3 555 01 01',
+        autoCreateSession: true,
+        preferredPriority: 'urgent',
+      })
       .expect(400);
 
     assert.ok(res.body.message.includes('Invalid preferredPriority'));
@@ -2440,7 +2540,7 @@ describe('Greeting suggestion endpoints', () => {
       .expect(200);
 
     const event = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'greeting_suggestion_generated'
+      (e: { eventType: string }) => e.eventType === 'greeting_suggestion_generated',
     );
     assert.ok(event, 'greeting_suggestion_generated audit event should exist');
     assert.strictEqual(event.metadata.provider, 'mock');
@@ -2689,7 +2789,7 @@ describe('Call status transition endpoints', () => {
       .expect(200);
 
     const event = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'call_status_changed'
+      (e: { eventType: string }) => e.eventType === 'call_status_changed',
     );
     assert.ok(event, 'call_status_changed audit event should exist');
     assert.strictEqual(event.metadata.previousStatus, 'answered');
@@ -2715,8 +2815,12 @@ describe('Call status transition endpoints', () => {
     assert.strictEqual(res.body.callEventId, call.body.callEvent.id);
     assert.ok(Array.isArray(res.body.timelineItems));
     assert.strictEqual(res.body.mockDevOnly, true);
-    const received = res.body.timelineItems.find((t: { type: string }) => t.type === 'call_received');
-    const matched = res.body.timelineItems.find((t: { type: string }) => t.type === 'caller_matched');
+    const received = res.body.timelineItems.find(
+      (t: { type: string }) => t.type === 'call_received',
+    );
+    const matched = res.body.timelineItems.find(
+      (t: { type: string }) => t.type === 'caller_matched',
+    );
     assert.ok(received, 'timeline should include call_received');
     assert.ok(matched, 'timeline should include caller_matched');
   });
@@ -2772,7 +2876,9 @@ describe('Call status transition endpoints', () => {
 
     const held = res.body.timelineItems.find((t: { type: string }) => t.type === 'call_held');
     const resumed = res.body.timelineItems.find((t: { type: string }) => t.type === 'call_resumed');
-    const greeting = res.body.timelineItems.find((t: { type: string }) => t.type === 'greeting_suggested');
+    const greeting = res.body.timelineItems.find(
+      (t: { type: string }) => t.type === 'greeting_suggested',
+    );
     assert.ok(held, 'timeline should include call_held');
     assert.ok(resumed, 'timeline should include call_resumed');
     assert.ok(greeting, 'timeline should include greeting_suggested');
@@ -2814,16 +2920,16 @@ describe('Call status transition endpoints', () => {
       .expect(200);
 
     const statusEvent = res.body.bundle.auditTimeline.find(
-      (e: { eventType: string }) => e.eventType === 'call_status_changed'
+      (e: { eventType: string }) => e.eventType === 'call_status_changed',
     );
     assert.ok(statusEvent, 'evidence bundle audit timeline should include call_status_changed');
     assert.strictEqual(statusEvent.metadataSummary.newStatus, 'ended');
     const receivedEvent = res.body.bundle.auditTimeline.find(
-      (e: { eventType: string }) => e.eventType === 'call_event_received'
+      (e: { eventType: string }) => e.eventType === 'call_event_received',
     );
     assert.ok(receivedEvent, 'evidence bundle audit timeline should include call_event_received');
     const matchedEvent = res.body.bundle.auditTimeline.find(
-      (e: { eventType: string }) => e.eventType === 'caller_matched'
+      (e: { eventType: string }) => e.eventType === 'caller_matched',
     );
     assert.ok(matchedEvent, 'evidence bundle audit timeline should include caller_matched');
   });
@@ -2840,9 +2946,7 @@ describe('Telephony adapter boundary endpoints', () => {
   });
 
   it('GET /telephony/status requires tenant identity', async () => {
-    const res = await supertest(server)
-      .get('/telephony/status')
-      .expect(400);
+    const res = await supertest(server).get('/telephony/status').expect(400);
     assert.ok(res.body.error.includes('x-tenant-id'));
   });
 
@@ -2911,7 +3015,7 @@ describe('Telephony adapter boundary endpoints', () => {
       .expect(200);
 
     const bridgeEvents = timeline.body.timelineItems.filter(
-      (item: { type: string }) => item.type === 'telephony_bridge_event'
+      (item: { type: string }) => item.type === 'telephony_bridge_event',
     );
     assert.ok(bridgeEvents.length >= 3);
   });
@@ -2993,10 +3097,7 @@ describe('Call recording endpoints', () => {
   });
 
   it('POST /calls/:id/recordings/mock requires tenant identity', async () => {
-    const res = await supertest(server)
-      .post('/calls/call-1/recordings/mock')
-      .send({})
-      .expect(400);
+    const res = await supertest(server).post('/calls/call-1/recordings/mock').send({}).expect(400);
     assert.ok(res.body.error.includes('x-tenant-id'));
   });
 
@@ -3171,7 +3272,7 @@ describe('Call recording endpoints', () => {
       .expect(200);
 
     const event = audit.body.find(
-      (e: { eventType: string }) => e.eventType === 'call_recording_attached'
+      (e: { eventType: string }) => e.eventType === 'call_recording_attached',
     );
     assert.ok(event, 'call_recording_attached audit event should exist');
     assert.strictEqual(event.metadata.noRealAudio, true);
@@ -3216,7 +3317,7 @@ describe('Call recording endpoints', () => {
         .expect(200);
 
       const event = audit.body.find(
-        (e: { eventType: string }) => e.eventType === 'call_recording_reviewed'
+        (e: { eventType: string }) => e.eventType === 'call_recording_reviewed',
       );
       if (event) {
         assert.strictEqual(event.metadata.previousStatus, 'available');
@@ -3306,10 +3407,12 @@ describe('Call recording endpoints', () => {
 
     const bodyStr = JSON.stringify(bundle.body);
     assert.ok(!bodyStr.includes('mock://recordings/'), 'mockMediaUrl must not be in bundle');
-    assert.ok(!bodyStr.includes('sha256-mock-'), 'checksum hash placeholder should not leak in bundle');
+    assert.ok(
+      !bodyStr.includes('sha256-mock-'),
+      'checksum hash placeholder should not leak in bundle',
+    );
   });
 });
-
 
 describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
   let app: INestApplication;
@@ -3333,7 +3436,11 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       .post(`/support-sessions/${session.body.id}/screen-observations/active-window/mock`)
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ appLabel: 'VS Code:', windowLabel: 'server.ts', rawInputPlaceholder: 'apiToken=abc123' })
+      .send({
+        appLabel: 'VS Code:',
+        windowLabel: 'server.ts',
+        rawInputPlaceholder: 'apiToken=abc123',
+      })
       .expect(201);
 
     assert.strictEqual(res.body.observation.kind, 'active_window');
@@ -3359,7 +3466,11 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       .post(`/support-sessions/${session.body.id}/screen-observations/manual-screenshot`)
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ appLabel: 'Chrome', windowLabel: 'Dashboard', rawInputPlaceholder: 'password=hunter2' })
+      .send({
+        appLabel: 'Chrome',
+        windowLabel: 'Dashboard',
+        rawInputPlaceholder: 'password=hunter2',
+      })
       .expect(201);
 
     assert.strictEqual(res.body.observation.kind, 'screenshot_metadata');
@@ -3385,7 +3496,11 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       .post(`/support-sessions/${session.body.id}/screen-observations/structured-upload`)
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ kind: 'url', urlLabel: 'https://example.com', rawInputPlaceholder: 'Authorization: Bearer abc' })
+      .send({
+        kind: 'url',
+        urlLabel: 'https://example.com',
+        rawInputPlaceholder: 'Authorization: Bearer abc',
+      })
       .expect(201);
 
     assert.strictEqual(res.body.observation.kind, 'url');
@@ -3450,9 +3565,21 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       .set('x-user-id', 'user-1')
       .expect(200);
 
-    assert.ok(audit.body.find((e: { eventType: string }) => e.eventType === 'screen_observation_sharing_started'));
-    assert.ok(audit.body.find((e: { eventType: string }) => e.eventType === 'screen_observation_sharing_paused'));
-    assert.ok(audit.body.find((e: { eventType: string }) => e.eventType === 'screen_observation_sharing_stopped'));
+    assert.ok(
+      audit.body.find(
+        (e: { eventType: string }) => e.eventType === 'screen_observation_sharing_started',
+      ),
+    );
+    assert.ok(
+      audit.body.find(
+        (e: { eventType: string }) => e.eventType === 'screen_observation_sharing_paused',
+      ),
+    );
+    assert.ok(
+      audit.body.find(
+        (e: { eventType: string }) => e.eventType === 'screen_observation_sharing_stopped',
+      ),
+    );
   });
 
   it('sharing state rejects invalid transitions', async () => {
@@ -3566,7 +3693,11 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       .post(`/support-sessions/${session.body.id}/screen-observations/structured-upload`)
       .set('x-tenant-id', 'tenant-a')
       .set('x-user-id', 'user-1')
-      .send({ kind: 'application', appLabel: 'Terminal', rawInputPlaceholder: 'ZAMMAD_API_TOKEN=secretvalue' })
+      .send({
+        kind: 'application',
+        appLabel: 'Terminal',
+        rawInputPlaceholder: 'ZAMMAD_API_TOKEN=secretvalue',
+      })
       .expect(201);
 
     const bundle = await supertest(server)
@@ -3606,13 +3737,25 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       requireHumanReview: true,
       requireEvidenceBundleBeforeDelivery: false,
       requireConnectorValidationBeforeDelivery: false,
-      retryPolicy: { maxAttempts: 3, baseDelaySeconds: 5, maxDelaySeconds: 300, backoffMultiplier: 2 },
+      retryPolicy: {
+        maxAttempts: 3,
+        baseDelaySeconds: 5,
+        maxDelaySeconds: 300,
+        backoffMultiplier: 2,
+      },
       deadLetterPolicy: { enabled: true, maxAttemptsBeforeDeadLetter: 3, requireManualRetry: true },
       updatedBy: 'user-1',
       updatedAt: new Date().toISOString(),
       policyVersion: 1,
       lastValidationStatus: 'valid' as const,
-      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true, sandboxOnly: false },
+      safetyFlags: {
+        realNetworkAllowed: false,
+        writebackEnabled: false,
+        externalWriteAllowed: false,
+        mockOnly: true,
+        localDevOnly: true,
+        sandboxOnly: false,
+      },
       createdAt: new Date().toISOString(),
     };
     store.saveDeliveryPolicy(policy);
@@ -3701,13 +3844,25 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       requireHumanReview: true,
       requireEvidenceBundleBeforeDelivery: false,
       requireConnectorValidationBeforeDelivery: false,
-      retryPolicy: { maxAttempts: 3, baseDelaySeconds: 5, maxDelaySeconds: 300, backoffMultiplier: 2 },
+      retryPolicy: {
+        maxAttempts: 3,
+        baseDelaySeconds: 5,
+        maxDelaySeconds: 300,
+        backoffMultiplier: 2,
+      },
       deadLetterPolicy: { enabled: true, maxAttemptsBeforeDeadLetter: 3, requireManualRetry: true },
       updatedBy: 'user-1',
       updatedAt: new Date().toISOString(),
       policyVersion: 1,
       lastValidationStatus: 'valid' as const,
-      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true, sandboxOnly: false },
+      safetyFlags: {
+        realNetworkAllowed: false,
+        writebackEnabled: false,
+        externalWriteAllowed: false,
+        mockOnly: true,
+        localDevOnly: true,
+        sandboxOnly: false,
+      },
       createdAt: new Date().toISOString(),
     };
     store.saveDeliveryPolicy(policy);
@@ -3726,7 +3881,9 @@ describe('Screen observation sharing and redaction (BL-047/048/049)', () => {
       .expect(200);
 
     assert.ok(Array.isArray(bundle.body.bundle.deliveryPolicies));
-    const found = bundle.body.bundle.deliveryPolicies.find((p: { policyId: string }) => p.policyId === policy.id);
+    const found = bundle.body.bundle.deliveryPolicies.find(
+      (p: { policyId: string }) => p.policyId === policy.id,
+    );
     assert.ok(found, 'expected policy in evidence bundle');
     assert.strictEqual(found.mockOnlyEnforced, true);
     assert.strictEqual(found.allowRealNetworkCalls, false);
@@ -3749,7 +3906,10 @@ describe('Endpoint agent diagnostics API', () => {
     if (app) await app.close();
   });
 
-  async function registerDevice(tenantId = 'tenant-endpoint-a', deviceKey = `device-${Date.now()}`) {
+  async function registerDevice(
+    tenantId = 'tenant-endpoint-a',
+    deviceKey = `device-${Date.now()}`,
+  ) {
     const res = await supertest(server)
       .post('/endpoint-agent/register')
       .send({
@@ -3804,7 +3964,11 @@ describe('Endpoint agent diagnostics API', () => {
       .set('x-endpoint-tenant-id', 'tenant-endpoint-a')
       .set('x-endpoint-device-key', registered.device.deviceKey)
       .set('x-endpoint-device-token', registered.deviceToken)
-      .send({ nonce: claimed.body.command.nonce, status: 'succeeded', payload: { kind: 'disk', readOnly: true } })
+      .send({
+        nonce: claimed.body.command.nonce,
+        status: 'succeeded',
+        payload: { kind: 'disk', readOnly: true },
+      })
       .expect(201);
 
     const detail = await supertest(server)
@@ -3995,7 +4159,10 @@ describe('Tool execution and platform policy API', () => {
         inventory: { readOnly: true },
       })
       .expect(201);
-    return res.body as { device: { id: string; deviceKey: string; platform: string }; deviceToken: string };
+    return res.body as {
+      device: { id: string; deviceKey: string; platform: string };
+      deviceToken: string;
+    };
   }
 
   it('lists tools with platform compatibility in registry', async () => {
@@ -4006,16 +4173,22 @@ describe('Tool execution and platform policy API', () => {
       .set('x-user-role', 'admin')
       .expect(200);
     assert.ok(Array.isArray(res.body.tools));
-    const inventoryTool = res.body.tools.find((t: { toolKey: string }) => t.toolKey === 'diagnostic.inventory');
+    const inventoryTool = res.body.tools.find(
+      (t: { toolKey: string }) => t.toolKey === 'diagnostic.inventory',
+    );
     assert.ok(inventoryTool);
     assert.ok(inventoryTool.supportedPlatforms.includes('linux'));
     assert.ok(inventoryTool.supportedPlatforms.includes('win32'));
     assert.ok(inventoryTool.supportedPlatforms.includes('darwin'));
-    const servicesTool = res.body.tools.find((t: { toolKey: string }) => t.toolKey === 'diagnostic.services');
+    const servicesTool = res.body.tools.find(
+      (t: { toolKey: string }) => t.toolKey === 'diagnostic.services',
+    );
     assert.ok(servicesTool);
     assert.ok(servicesTool.supportedPlatforms.includes('linux'));
     assert.ok(servicesTool.supportedPlatforms.includes('win32'));
-    const softwareTool = res.body.tools.find((t: { toolKey: string }) => t.toolKey === 'diagnostic.software');
+    const softwareTool = res.body.tools.find(
+      (t: { toolKey: string }) => t.toolKey === 'diagnostic.software',
+    );
     assert.ok(softwareTool);
     assert.deepStrictEqual(softwareTool.supportedPlatforms, ['win32']);
   });
@@ -4103,7 +4276,11 @@ describe('Tool execution and platform policy API', () => {
   });
 
   it('does not dispatch flush DNS remediation before approval', async () => {
-    const device = await registerDevice('tenant-tool-remediation-a', 'linux-device-remediation-a', 'linux');
+    const device = await registerDevice(
+      'tenant-tool-remediation-a',
+      'linux-device-remediation-a',
+      'linux',
+    );
 
     const res = await supertest(server)
       .post(`/admin/devices/${device.device.id}/tools/remediation.flush_dns_cache/invoke`)
@@ -4133,7 +4310,11 @@ describe('Tool execution and platform policy API', () => {
     const previous = process.env['SUPPORTPLANE_REMEDIATION_ENABLED'];
     process.env['SUPPORTPLANE_REMEDIATION_ENABLED'] = 'false';
     try {
-      const device = await registerDevice('tenant-tool-remediation-b', 'linux-device-remediation-b', 'linux');
+      const device = await registerDevice(
+        'tenant-tool-remediation-b',
+        'linux-device-remediation-b',
+        'linux',
+      );
 
       const res = await supertest(server)
         .post(`/admin/devices/${device.device.id}/tools/remediation.flush_dns_cache/invoke`)
@@ -4156,7 +4337,11 @@ describe('Tool execution and platform policy API', () => {
   });
 
   it('denies flush DNS remediation on unknown platform device', async () => {
-    const device = await registerDevice('tenant-tool-remediation-c', 'unknown-remediation-device', 'freebsd');
+    const device = await registerDevice(
+      'tenant-tool-remediation-c',
+      'unknown-remediation-device',
+      'freebsd',
+    );
 
     const res = await supertest(server)
       .post(`/admin/devices/${device.device.id}/tools/remediation.flush_dns_cache/invoke`)
@@ -4172,7 +4357,11 @@ describe('Tool execution and platform policy API', () => {
   });
 
   it('records flush DNS remediation stdout stderr and exit code after approval', async () => {
-    const device = await registerDevice('tenant-tool-remediation-d', 'win-device-remediation-d', 'win32');
+    const device = await registerDevice(
+      'tenant-tool-remediation-d',
+      'win-device-remediation-d',
+      'win32',
+    );
 
     const invoked = await supertest(server)
       .post(`/admin/devices/${device.device.id}/tools/remediation.flush_dns_cache/invoke`)
@@ -4235,8 +4424,15 @@ describe('Tool execution and platform policy API', () => {
     assert.strictEqual(completed.body.invocation.status, 'succeeded');
     assert.strictEqual(completed.body.invocation.normalizedResult.status, 'succeeded');
     assert.strictEqual(completed.body.invocation.normalizedResult.payload.payload.exitCode, 0);
-    assert.ok(completed.body.invocation.normalizedResult.payload.payload.stdoutSummary.includes('Successfully flushed'));
-    assert.strictEqual(completed.body.invocation.normalizedResult.payload.payload.stderrSummary, '');
+    assert.ok(
+      completed.body.invocation.normalizedResult.payload.payload.stdoutSummary.includes(
+        'Successfully flushed',
+      ),
+    );
+    assert.strictEqual(
+      completed.body.invocation.normalizedResult.payload.payload.stderrSummary,
+      '',
+    );
   });
 
   it('rejects arbitrary shell, command, script, argv, executable, powershell, cmd in tool invocation', async () => {
@@ -4250,7 +4446,10 @@ describe('Tool execution and platform policy API', () => {
         .set('x-user-role', 'operator')
         .send({ requestedInput: { [field]: 'whoami' } })
         .expect(400);
-      assert.ok(res.body.message.includes('Arbitrary'), `Expected Arbitrary rejection for ${field}`);
+      assert.ok(
+        res.body.message.includes('Arbitrary'),
+        `Expected Arbitrary rejection for ${field}`,
+      );
     }
   });
 
@@ -4305,7 +4504,11 @@ describe('Tool execution and platform policy API', () => {
       .set('x-endpoint-tenant-id', 'tenant-tool-h')
       .set('x-endpoint-device-key', device.device.deviceKey)
       .set('x-endpoint-device-token', device.deviceToken)
-      .send({ nonce: claimed.body.command.nonce, status: 'succeeded', payload: { ok: true, readOnly: true } })
+      .send({
+        nonce: claimed.body.command.nonce,
+        status: 'succeeded',
+        payload: { ok: true, readOnly: true },
+      })
       .expect(201);
 
     // Now create note draft

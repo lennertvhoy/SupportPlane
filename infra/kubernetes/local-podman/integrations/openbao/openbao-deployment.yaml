@@ -27,7 +27,7 @@ spec:
             - -dev-root-token-id=openbao-local-root-token
           env:
             - name: BAO_ADDR
-              value: "http://0.0.0.0:8200"
+              value: 'http://0.0.0.0:8200'
           ports:
             - containerPort: 8200
               name: http
@@ -49,11 +49,11 @@ spec:
             failureThreshold: 3
           resources:
             requests:
-              memory: "128Mi"
-              cpu: "100m"
+              memory: '128Mi'
+              cpu: '100m'
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
           volumeMounts:
             - name: data
               mountPath: /openbao/file

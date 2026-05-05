@@ -20,9 +20,7 @@ export class MockFortinetClient implements FortinetClient {
   private readonly fixtureStatus: FortinetFirewallStatus = {
     deviceName: 'FGT-ACME-01',
     firmware: '7.4.2',
-    interfaces: [
-      { name: 'port1', status: 'up', ip: '192.168.1.1' },
-    ],
+    interfaces: [{ name: 'port1', status: 'up', ip: '192.168.1.1' }],
     policies: 42,
   };
 

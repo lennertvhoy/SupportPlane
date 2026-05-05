@@ -33,10 +33,7 @@ export class MockTicketingAdapter implements TicketingAdapterDriver {
     return Promise.resolve();
   }
 
-  getTicket(
-    tenantId: TenantId,
-    externalTicketId: string
-  ): Promise<TicketReferenceShape> {
+  getTicket(tenantId: TenantId, externalTicketId: string): Promise<TicketReferenceShape> {
     const now = new Date().toISOString();
     const ticket: TicketReferenceShape = {
       id: `mock-tr-${externalTicketId}` as TicketReferenceId,
@@ -63,10 +60,7 @@ export class MockTicketingAdapter implements TicketingAdapterDriver {
     });
   }
 
-  writeInternalNote(
-    _ticketId: string,
-    _body: string
-  ): Promise<{ success: boolean }> {
+  writeInternalNote(_ticketId: string, _body: string): Promise<{ success: boolean }> {
     return Promise.resolve({ success: true });
   }
 

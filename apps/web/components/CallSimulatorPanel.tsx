@@ -4,7 +4,13 @@ import { useState } from 'react';
 import { Phone, Link2, AlertTriangle, Loader2, CheckCircle, Sparkles } from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
-import { api, type CallEvent, type SupportSession, type IncomingCallResponse, ApiClientError } from '@/lib/api';
+import {
+  api,
+  type CallEvent,
+  type SupportSession,
+  type IncomingCallResponse,
+  ApiClientError,
+} from '@/lib/api';
 
 interface CallSimulatorPanelProps {
   sessions: SupportSession[];
@@ -23,7 +29,9 @@ export function CallSimulatorPanel({
   const [callEvent, setCallEvent] = useState<CallEvent | undefined>(undefined);
   const [callResponse, setCallResponse] = useState<IncomingCallResponse | undefined>(undefined);
   const [autoCreate, setAutoCreate] = useState(false);
-  const [preferredPriority, setPreferredPriority] = useState<'low' | 'normal' | 'high' | 'critical'>('normal');
+  const [preferredPriority, setPreferredPriority] = useState<
+    'low' | 'normal' | 'high' | 'critical'
+  >('normal');
   const [preferredSessionTitle, setPreferredSessionTitle] = useState('');
   const [loading, setLoading] = useState(false);
   const [linkLoading, setLinkLoading] = useState(false);
@@ -44,7 +52,8 @@ export function CallSimulatorPanel({
         callerDisplayName: 'Mock Caller',
         autoCreateSession: autoCreate,
         preferredPriority: autoCreate ? preferredPriority : undefined,
-        preferredSessionTitle: autoCreate && preferredSessionTitle.trim() ? preferredSessionTitle.trim() : undefined,
+        preferredSessionTitle:
+          autoCreate && preferredSessionTitle.trim() ? preferredSessionTitle.trim() : undefined,
       });
       setCallResponse(response);
       setCallEvent(response.callEvent);
@@ -84,7 +93,7 @@ export function CallSimulatorPanel({
       e.eventType === 'caller_matched' ||
       e.eventType === 'call_linked_to_session' ||
       e.eventType === 'support_session_auto_created' ||
-      e.eventType === 'call_auto_linked_to_session'
+      e.eventType === 'call_auto_linked_to_session',
   );
 
   return (
@@ -141,7 +150,9 @@ export function CallSimulatorPanel({
               </label>
               <select
                 value={preferredPriority}
-                onChange={(e) => setPreferredPriority(e.target.value as 'low' | 'normal' | 'high' | 'critical')}
+                onChange={(e) =>
+                  setPreferredPriority(e.target.value as 'low' | 'normal' | 'high' | 'critical')
+                }
                 className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 focus:border-accent focus:outline-none"
               >
                 <option value="low">Low</option>
@@ -186,7 +197,12 @@ export function CallSimulatorPanel({
           <div className="space-y-2 rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-medium text-cockpit-300">Fake Incoming Call</span>
-              <Badge variant={callResponse.callEvent.callerMatch?.status === 'matched' ? 'success' : 'default'} className="text-[10px]">
+              <Badge
+                variant={
+                  callResponse.callEvent.callerMatch?.status === 'matched' ? 'success' : 'default'
+                }
+                className="text-[10px]"
+              >
                 {callResponse.callEvent.status}
               </Badge>
             </div>
@@ -195,7 +211,10 @@ export function CallSimulatorPanel({
               <div className="flex items-center gap-1 text-[10px]">
                 <Sparkles size={10} className="text-accent" />
                 <span className="text-cockpit-300">Auto-create:</span>
-                <Badge variant={callResponse.autoCreateResult === 'auto_created' ? 'success' : 'warning'} className="text-[10px]">
+                <Badge
+                  variant={callResponse.autoCreateResult === 'auto_created' ? 'success' : 'warning'}
+                  className="text-[10px]"
+                >
                   {callResponse.autoCreateResult}
                 </Badge>
               </div>
@@ -209,31 +228,42 @@ export function CallSimulatorPanel({
               {callResponse.callEvent.caller.normalizedNumber && (
                 <div className="flex justify-between">
                   <span className="text-cockpit-500">Normalized</span>
-                  <span className="font-medium text-cockpit-200">{callResponse.callEvent.caller.normalizedNumber}</span>
+                  <span className="font-medium text-cockpit-200">
+                    {callResponse.callEvent.caller.normalizedNumber}
+                  </span>
                 </div>
               )}
               {callResponse.callEvent.callerMatch && (
                 <>
                   <div className="flex justify-between">
                     <span className="text-cockpit-500">Match status</span>
-                    <span className="text-cockpit-200">{callResponse.callEvent.callerMatch.status}</span>
+                    <span className="text-cockpit-200">
+                      {callResponse.callEvent.callerMatch.status}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-cockpit-500">Confidence</span>
-                    <span className="text-cockpit-200">{callResponse.callEvent.callerMatch.confidence}</span>
+                    <span className="text-cockpit-200">
+                      {callResponse.callEvent.callerMatch.confidence}
+                    </span>
                   </div>
                   {callResponse.callEvent.callerMatch.customerName && (
                     <div className="flex justify-between">
                       <span className="text-cockpit-500">Customer</span>
-                      <span className="text-cockpit-200">{callResponse.callEvent.callerMatch.customerName}</span>
+                      <span className="text-cockpit-200">
+                        {callResponse.callEvent.callerMatch.customerName}
+                      </span>
                     </div>
                   )}
-                  {callResponse.callEvent.callerMatch.matchedTicketIds && callResponse.callEvent.callerMatch.matchedTicketIds.length > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-cockpit-500">Recent tickets</span>
-                      <span className="text-cockpit-200">{callResponse.callEvent.callerMatch.matchedTicketIds.join(', ')}</span>
-                    </div>
-                  )}
+                  {callResponse.callEvent.callerMatch.matchedTicketIds &&
+                    callResponse.callEvent.callerMatch.matchedTicketIds.length > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-cockpit-500">Recent tickets</span>
+                        <span className="text-cockpit-200">
+                          {callResponse.callEvent.callerMatch.matchedTicketIds.join(', ')}
+                        </span>
+                      </div>
+                    )}
                 </>
               )}
             </div>
@@ -245,7 +275,8 @@ export function CallSimulatorPanel({
                   {callResponse.createdSession.title}
                 </div>
                 <div className="text-[10px] text-emerald-400/80">
-                  ID: {callResponse.createdSession.id.slice(0, 8)}... | Priority: {callResponse.createdSession.priority}
+                  ID: {callResponse.createdSession.id.slice(0, 8)}... | Priority:{' '}
+                  {callResponse.createdSession.priority}
                 </div>
                 <button
                   onClick={handleSelectCreatedSession}
@@ -276,9 +307,7 @@ export function CallSimulatorPanel({
                     Linked to session {selectedSession.id.slice(0, 8)}...
                   </div>
                 )}
-                {linkError && (
-                  <div className="text-[10px] text-danger">{linkError}</div>
-                )}
+                {linkError && <div className="text-[10px] text-danger">{linkError}</div>}
               </div>
             ) : (
               !callResponse.createdSession && (
@@ -294,10 +323,15 @@ export function CallSimulatorPanel({
           <div className="space-y-1">
             <div className="text-[10px] font-medium text-cockpit-400">Call audit trail</div>
             {callAuditEvents.map((e, i) => (
-              <div key={i} className="rounded border border-cockpit-700/50 bg-cockpit-900/30 px-2 py-1 text-[10px]">
+              <div
+                key={i}
+                className="rounded border border-cockpit-700/50 bg-cockpit-900/30 px-2 py-1 text-[10px]"
+              >
                 <div className="flex items-center justify-between">
                   <span className="text-cockpit-300">{e.eventType}</span>
-                  <span className="text-cockpit-500">{new Date(e.createdAt).toLocaleTimeString()}</span>
+                  <span className="text-cockpit-500">
+                    {new Date(e.createdAt).toLocaleTimeString()}
+                  </span>
                 </div>
                 {typeof e.metadata.normalizedNumber === 'string' && (
                   <div className="text-cockpit-500">{e.metadata.normalizedNumber}</div>

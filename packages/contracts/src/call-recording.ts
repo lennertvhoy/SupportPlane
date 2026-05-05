@@ -13,17 +13,10 @@ export const CallRecordingStatus = z.enum([
 ]);
 export type CallRecordingStatus = z.infer<typeof CallRecordingStatus>;
 
-export const CallRecordingSource = z.enum([
-  'mock_generated',
-  'provider_placeholder',
-]);
+export const CallRecordingSource = z.enum(['mock_generated', 'provider_placeholder']);
 export type CallRecordingSource = z.infer<typeof CallRecordingSource>;
 
-export const CallRecordingStorageType = z.enum([
-  'none',
-  'mock_inline',
-  'future_object_storage',
-]);
+export const CallRecordingStorageType = z.enum(['none', 'mock_inline', 'future_object_storage']);
 export type CallRecordingStorageType = z.infer<typeof CallRecordingStorageType>;
 
 export const CallRecording = z.object({

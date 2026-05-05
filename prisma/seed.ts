@@ -20,11 +20,41 @@ function passwordHash(password: string, salt: string): string {
 const demoPasswordHash = passwordHash('supportplane-demo', 'supportplane-local-demo-salt');
 
 const roles = [
-  { id: 'role-dev-admin', tenantId: 'dev-tenant', name: 'admin', permissions: ['*'], description: 'Local demo administrator' },
-  { id: 'role-dev-operator', tenantId: 'dev-tenant', name: 'operator', permissions: [], description: 'Local demo support operator' },
-  { id: 'role-dev-viewer', tenantId: 'dev-tenant', name: 'viewer', permissions: [], description: 'Local demo read-only viewer' },
-  { id: 'role-alt-admin', tenantId: 'alt-tenant', name: 'admin', permissions: ['*'], description: 'Second tenant administrator' },
-  { id: 'role-alt-operator', tenantId: 'alt-tenant', name: 'operator', permissions: [], description: 'Second tenant operator' },
+  {
+    id: 'role-dev-admin',
+    tenantId: 'dev-tenant',
+    name: 'admin',
+    permissions: ['*'],
+    description: 'Local demo administrator',
+  },
+  {
+    id: 'role-dev-operator',
+    tenantId: 'dev-tenant',
+    name: 'operator',
+    permissions: [],
+    description: 'Local demo support operator',
+  },
+  {
+    id: 'role-dev-viewer',
+    tenantId: 'dev-tenant',
+    name: 'viewer',
+    permissions: [],
+    description: 'Local demo read-only viewer',
+  },
+  {
+    id: 'role-alt-admin',
+    tenantId: 'alt-tenant',
+    name: 'admin',
+    permissions: ['*'],
+    description: 'Second tenant administrator',
+  },
+  {
+    id: 'role-alt-operator',
+    tenantId: 'alt-tenant',
+    name: 'operator',
+    permissions: [],
+    description: 'Second tenant operator',
+  },
 ];
 
 const users = [
@@ -269,7 +299,8 @@ async function main() {
       tenantId: 'dev-tenant',
       name: 'Local Zammad Sandbox',
       displayName: 'Local Zammad Sandbox',
-      description: 'Sandbox internal-note writeback enabled; no public reply; no production writeback.',
+      description:
+        'Sandbox internal-note writeback enabled; no public reply; no production writeback.',
       adapterType: 'zammad',
       capabilities: ['read_tickets', 'read_customers', 'write_notes'],
       config: {
@@ -298,7 +329,8 @@ async function main() {
       tenantId: 'dev-tenant',
       name: 'Local GLPI Sandbox',
       displayName: 'Local GLPI Sandbox',
-      description: 'Real sandbox GLPI read-only adapter. Reads tickets from local GLPI sandbox. No writeback.',
+      description:
+        'Real sandbox GLPI read-only adapter. Reads tickets from local GLPI sandbox. No writeback.',
       adapterType: 'glpi',
       capabilities: ['read_tickets', 'read_customers'],
       config: {
@@ -325,7 +357,8 @@ async function main() {
       tenantId: 'dev-tenant',
       name: 'osTicket Read-Only Fixture',
       displayName: 'osTicket Read-Only Fixture',
-      description: 'Fixture-backed osTicket read-only adapter. No writeback. No real osTicket service.',
+      description:
+        'Fixture-backed osTicket read-only adapter. No writeback. No real osTicket service.',
       adapterType: 'osticket',
       capabilities: ['read_tickets', 'read_customers'],
       config: {
@@ -407,7 +440,8 @@ async function main() {
       tenantId: 'dev-tenant',
       connectorType: 'zammad',
       displayName: 'OpenBao Zammad Sandbox API Token',
-      description: 'Local sandbox OpenBao credential reference. Raw token is resolved server-side only.',
+      description:
+        'Local sandbox OpenBao credential reference. Raw token is resolved server-side only.',
       status: 'active',
       secretKind: 'api_token_placeholder',
       secretRef: 'secret/data/supportplane/dev/zammad',
@@ -478,12 +512,23 @@ async function main() {
       requireHumanReview: true,
       requireEvidenceBundleBeforeDelivery: false,
       requireConnectorValidationBeforeDelivery: false,
-      retryPolicy: { maxAttempts: 3, baseDelaySeconds: 5, maxDelaySeconds: 300, backoffMultiplier: 2 },
+      retryPolicy: {
+        maxAttempts: 3,
+        baseDelaySeconds: 5,
+        maxDelaySeconds: 300,
+        backoffMultiplier: 2,
+      },
       deadLetterPolicy: { enabled: true, maxAttemptsBeforeDeadLetter: 3, requireManualRetry: true },
       updatedBy: 'dev-admin',
       policyVersion: 1,
       lastValidationStatus: 'valid',
-      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true },
+      safetyFlags: {
+        realNetworkAllowed: false,
+        writebackEnabled: false,
+        externalWriteAllowed: false,
+        mockOnly: true,
+        localDevOnly: true,
+      },
     },
     {
       id: 'delivery-policy-alt-001',
@@ -501,12 +546,23 @@ async function main() {
       requireHumanReview: true,
       requireEvidenceBundleBeforeDelivery: false,
       requireConnectorValidationBeforeDelivery: false,
-      retryPolicy: { maxAttempts: 3, baseDelaySeconds: 5, maxDelaySeconds: 300, backoffMultiplier: 2 },
+      retryPolicy: {
+        maxAttempts: 3,
+        baseDelaySeconds: 5,
+        maxDelaySeconds: 300,
+        backoffMultiplier: 2,
+      },
       deadLetterPolicy: { enabled: true, maxAttemptsBeforeDeadLetter: 3, requireManualRetry: true },
       updatedBy: 'alt-admin',
       policyVersion: 1,
       lastValidationStatus: 'valid',
-      safetyFlags: { realNetworkAllowed: false, writebackEnabled: false, externalWriteAllowed: false, mockOnly: true, localDevOnly: true },
+      safetyFlags: {
+        realNetworkAllowed: false,
+        writebackEnabled: false,
+        externalWriteAllowed: false,
+        mockOnly: true,
+        localDevOnly: true,
+      },
     },
   ];
 
@@ -620,7 +676,8 @@ async function main() {
       tenantId: 'dev-tenant',
       sourceId: 'kb-source-dev-001',
       title: 'VPN Connection Troubleshooting',
-      content: 'If users cannot connect to the corporate VPN, first verify that the VPN client is up to date. Check network adapter settings and ensure split tunneling is enabled. For Windows endpoints, run the diagnostic.network tool to verify adapter state. For Linux endpoints, check `ip route` output. If DNS resolution fails after connection, the flush_dns_cache remediation may help once approved.',
+      content:
+        'If users cannot connect to the corporate VPN, first verify that the VPN client is up to date. Check network adapter settings and ensure split tunneling is enabled. For Windows endpoints, run the diagnostic.network tool to verify adapter state. For Linux endpoints, check `ip route` output. If DNS resolution fails after connection, the flush_dns_cache remediation may help once approved.',
       tags: ['vpn', 'network', 'connectivity'],
       metadata: { category: 'networking', priority: 'high' },
       status: 'published',
@@ -630,7 +687,8 @@ async function main() {
       tenantId: 'dev-tenant',
       sourceId: 'kb-source-dev-001',
       title: 'Printer Offline on Windows',
-      content: 'When a printer shows offline on a Windows endpoint, verify the print spooler service is running. Use the device console to check the endpoint status. If the spooler is stopped, a service restart may be required (requires approval). Ensure the printer is reachable on the network using ping from the endpoint.',
+      content:
+        'When a printer shows offline on a Windows endpoint, verify the print spooler service is running. Use the device console to check the endpoint status. If the spooler is stopped, a service restart may be required (requires approval). Ensure the printer is reachable on the network using ping from the endpoint.',
       tags: ['printer', 'windows', 'services'],
       metadata: { category: 'hardware', priority: 'normal' },
       status: 'published',
@@ -640,7 +698,8 @@ async function main() {
       tenantId: 'dev-tenant',
       sourceId: 'kb-source-dev-002',
       title: 'Disk Space Warning on Linux Workstations',
-      content: 'Linux workstations may report disk space warnings due to accumulated logs in /var/log. Use the diagnostic.disk tool to verify available space. If /tmp or /var/log are above 90% usage, clear temporary files with approval. Monitor using the endpoint agent inventory snapshot.',
+      content:
+        'Linux workstations may report disk space warnings due to accumulated logs in /var/log. Use the diagnostic.disk tool to verify available space. If /tmp or /var/log are above 90% usage, clear temporary files with approval. Monitor using the endpoint agent inventory snapshot.',
       tags: ['disk', 'linux', 'monitoring'],
       metadata: { category: 'storage', priority: 'high' },
       status: 'published',
@@ -650,7 +709,8 @@ async function main() {
       tenantId: 'dev-tenant',
       sourceId: 'kb-source-dev-002',
       title: 'Endpoint Agent Registration Failure',
-      content: 'If an endpoint agent fails to register, verify the enrollment token is correct and not expired. Check that the device can reach the API at the configured SUPPORTPLANE_API_URL. Ensure the tenant ID matches the device tenant. Review audit events for registration attempts.',
+      content:
+        'If an endpoint agent fails to register, verify the enrollment token is correct and not expired. Check that the device can reach the API at the configured SUPPORTPLANE_API_URL. Ensure the tenant ID matches the device tenant. Review audit events for registration attempts.',
       tags: ['endpoint', 'agent', 'registration'],
       metadata: { category: 'agent', priority: 'critical' },
       status: 'published',
@@ -665,7 +725,9 @@ async function main() {
     });
   }
 
-  console.log('Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, credential references, delivery policies, endpoint devices, knowledge sources, and articles');
+  console.log(
+    'Seeded local demo tenants, roles, users, adapters, customers, tickets, connector installations, credential references, delivery policies, endpoint devices, knowledge sources, and articles',
+  );
 }
 
 main()

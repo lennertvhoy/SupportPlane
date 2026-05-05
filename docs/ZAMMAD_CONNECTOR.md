@@ -38,11 +38,11 @@ The adapter will attempt to connect on startup. Connection failures are recorded
 
 ## Required environment variables
 
-| Variable | Default | Required for real mode |
-|----------|---------|----------------------|
-| `ZAMMAD_CONNECTOR_MODE` | `mock` | No |
-| `ZAMMAD_BASE_URL` | — | Yes |
-| `ZAMMAD_API_TOKEN` | — | Yes |
+| Variable                | Default | Required for real mode |
+| ----------------------- | ------- | ---------------------- |
+| `ZAMMAD_CONNECTOR_MODE` | `mock`  | No                     |
+| `ZAMMAD_BASE_URL`       | —       | Yes                    |
+| `ZAMMAD_API_TOKEN`      | —       | Yes                    |
 
 ## Secret handling rules
 
@@ -56,12 +56,12 @@ The adapter will attempt to connect on startup. Connection failures are recorded
 
 ## Supported operations
 
-| Operation | Mock | Real | Endpoint |
-|-----------|------|------|----------|
-| Connector status | Yes | Yes | `GET /connectors/zammad/status` |
-| Connector test | Yes | Yes | `POST /connectors/zammad/test` |
-| Ticket read | Yes | Yes | `POST /support-sessions/:id/zammad/ticket-context` |
-| Internal note draft | Yes | Yes | `POST /support-sessions/:id/zammad/internal-note-draft` |
+| Operation               | Mock            | Real          | Endpoint                                                    |
+| ----------------------- | --------------- | ------------- | ----------------------------------------------------------- |
+| Connector status        | Yes             | Yes           | `GET /connectors/zammad/status`                             |
+| Connector test          | Yes             | Yes           | `POST /connectors/zammad/test`                              |
+| Ticket read             | Yes             | Yes           | `POST /support-sessions/:id/zammad/ticket-context`          |
+| Internal note draft     | Yes             | Yes           | `POST /support-sessions/:id/zammad/internal-note-draft`     |
 | Internal note writeback | Yes (mock-safe) | Yes (sandbox) | `POST /support-sessions/:id/zammad/internal-note-writeback` |
 
 ## Unsupported operations
@@ -116,6 +116,7 @@ The following audit events are emitted by the connector boundary:
 - `internal_note_writeback_failed` — when writeback fails.
 
 All events include:
+
 - `tenantId`, `actorId`
 - `connectorType`: `zammad`
 - `connectorMode`: `mock`, `sandbox`, or `zammad`

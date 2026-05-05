@@ -60,7 +60,10 @@ export function ModelUsagePanel({
 
       const [logsRes, summaryRes] = await Promise.all([
         fetch(`${apiBase}/model-usage?${params.toString()}`, { headers, credentials: 'include' }),
-        fetch(`${apiBase}/model-usage/summary?${params.toString()}`, { headers, credentials: 'include' }),
+        fetch(`${apiBase}/model-usage/summary?${params.toString()}`, {
+          headers,
+          credentials: 'include',
+        }),
       ]);
 
       if (!logsRes.ok) throw new Error(`Failed to load usage logs: ${logsRes.status}`);

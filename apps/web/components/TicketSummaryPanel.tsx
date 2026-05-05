@@ -21,7 +21,8 @@ export function TicketSummaryPanel({
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('');
 
-  const canRead = identity.permissions.includes('*') || identity.permissions.includes('ticket:read');
+  const canRead =
+    identity.permissions.includes('*') || identity.permissions.includes('ticket:read');
 
   const handleSearch = useCallback(async () => {
     if (!canRead) {
@@ -76,12 +77,17 @@ export function TicketSummaryPanel({
           </button>
         </div>
 
-        {error && <div className="rounded bg-red-900/30 px-2 py-1 text-xs text-red-300">{error}</div>}
+        {error && (
+          <div className="rounded bg-red-900/30 px-2 py-1 text-xs text-red-300">{error}</div>
+        )}
 
         {tickets.length === 0 && !loading && !error && (
           <div className="rounded border border-cockpit-700 bg-cockpit-900/50 px-3 py-3 text-center text-xs text-cockpit-500">
             <p className="mb-1">No aggregated ticket list loaded in this sandbox view.</p>
-            <p>Use the Zammad or GLPI demo flows in <strong>Ticket Context</strong> to load ticket data, or search by email above.</p>
+            <p>
+              Use the Zammad or GLPI demo flows in <strong>Ticket Context</strong> to load ticket
+              data, or search by email above.
+            </p>
           </div>
         )}
 
@@ -98,7 +104,15 @@ export function TicketSummaryPanel({
             >
               <div className="flex items-center justify-between">
                 <span className="font-medium text-cockpit-100">{ticket.externalTicketId}</span>
-                <Badge variant={ticket.status === 'open' ? 'success' : ticket.status === 'closed' ? 'default' : 'warning'}>
+                <Badge
+                  variant={
+                    ticket.status === 'open'
+                      ? 'success'
+                      : ticket.status === 'closed'
+                        ? 'default'
+                        : 'warning'
+                  }
+                >
                   {ticket.status}
                 </Badge>
               </div>

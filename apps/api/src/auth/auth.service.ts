@@ -54,13 +54,25 @@ export class AuthService {
       include: { tenant: true, roles: true },
     });
 
-    if (!user || user.tenant.status !== 'active' || !verifyLocalPassword(password, user.passwordHash)) {
+    if (
+      !user ||
+      user.tenant.status !== 'active' ||
+      !verifyLocalPassword(password, user.passwordHash)
+    ) {
       if (user) {
-        await this.recordAudit(user.tenantId, user.id, undefined, AuditEventType.enum.user_login_failed, 'auth', user.id, {
-          email: normalizedEmail,
-          tenantSlug: user.tenant.slug,
-          reason: 'invalid_credentials',
-        });
+        await this.recordAudit(
+          user.tenantId,
+          user.id,
+          undefined,
+          AuditEventType.enum.user_login_failed,
+          'auth',
+          user.id,
+          {
+            email: normalizedEmail,
+            tenantSlug: user.tenant.slug,
+            reason: 'invalid_credentials',
+          },
+        );
       }
       return undefined;
     }
@@ -76,11 +88,19 @@ export class AuthService {
       },
     });
     await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-    await this.recordAudit(user.tenantId, user.id, undefined, AuditEventType.enum.user_login, 'auth', user.id, {
-      email: user.email,
-      tenantSlug: user.tenant.slug,
-      authMode: 'local',
-    });
+    await this.recordAudit(
+      user.tenantId,
+      user.id,
+      undefined,
+      AuditEventType.enum.user_login,
+      'auth',
+      user.id,
+      {
+        email: user.email,
+        tenantSlug: user.tenant.slug,
+        authMode: 'local',
+      },
+    );
 
     return {
       token: rawToken,
@@ -96,9 +116,17 @@ export class AuthService {
       data: { revokedAt: new Date() },
     });
     if (identity) {
-      await this.recordAudit(identity.tenantId, identity.userId, undefined, AuditEventType.enum.user_logout, 'auth', identity.userId, {
-        authMode: 'local',
-      });
+      await this.recordAudit(
+        identity.tenantId,
+        identity.userId,
+        undefined,
+        AuditEventType.enum.user_logout,
+        'auth',
+        identity.userId,
+        {
+          authMode: 'local',
+        },
+      );
     }
   }
 
@@ -108,12 +136,20 @@ export class AuthService {
       where: { tokenHash: tokenHash(token) },
       include: { user: { include: { tenant: true, roles: true } } },
     });
-    if (!session || session.revokedAt || session.expiresAt.getTime() <= Date.now()) return undefined;
-    if (session.user.status !== 'active' || session.user.tenant.status !== 'active') return undefined;
+    if (!session || session.revokedAt || session.expiresAt.getTime() <= Date.now())
+      return undefined;
+    if (session.user.status !== 'active' || session.user.tenant.status !== 'active')
+      return undefined;
     return this.mapIdentity(session.user);
   }
 
-  async recordAccessDenied(identity: CurrentIdentity, permission: string, resourceType: string, resourceId: string, reason: string) {
+  async recordAccessDenied(
+    identity: CurrentIdentity,
+    permission: string,
+    resourceType: string,
+    resourceId: string,
+    reason: string,
+  ) {
     await this.recordAudit(
       identity.tenantId,
       identity.userId,
@@ -121,11 +157,15 @@ export class AuthService {
       AuditEventType.enum.rbac_access_denied,
       resourceType,
       resourceId,
-      { permission, reason, roles: identity.roles, authMode: identity.authMode }
+      { permission, reason, roles: identity.roles, authMode: identity.authMode },
     );
   }
 
-  async recordTenantBoundaryDenied(identity: CurrentIdentity, resourceType: string, resourceId: string) {
+  async recordTenantBoundaryDenied(
+    identity: CurrentIdentity,
+    resourceType: string,
+    resourceId: string,
+  ) {
     await this.recordAudit(
       identity.tenantId,
       identity.userId,
@@ -133,7 +173,7 @@ export class AuthService {
       AuditEventType.enum.tenant_boundary_denied,
       resourceType,
       resourceId,
-      { reason: 'not_found_in_actor_tenant', authMode: identity.authMode }
+      { reason: 'not_found_in_actor_tenant', authMode: identity.authMode },
     );
   }
 
@@ -198,7 +238,9 @@ export class AuthService {
       clientId,
       clientSecret: clientSecret ?? '',
       redirectUri,
-      scopes: scopesEnv ? scopesEnv.split(',').map((s) => s.trim()) : ['openid', 'profile', 'email'],
+      scopes: scopesEnv
+        ? scopesEnv.split(',').map((s) => s.trim())
+        : ['openid', 'profile', 'email'],
     };
   }
 
@@ -222,7 +264,15 @@ export class AuthService {
   }
 
   // OIDC session persistence
-  async createOidcSession(identity: CurrentIdentity, tokenHash: string, idTokenSub: string, idTokenIssuer: string, idTokenAud: string, expiresAt: Date, oidcRealmRoles?: string[]) {
+  async createOidcSession(
+    identity: CurrentIdentity,
+    tokenHash: string,
+    idTokenSub: string,
+    idTokenIssuer: string,
+    idTokenAud: string,
+    expiresAt: Date,
+    oidcRealmRoles?: string[],
+  ) {
     // Auto-provision OIDC user if they don't exist yet
     const user = await this.prisma.user.upsert({
       where: { id: identity.userId },
@@ -270,11 +320,19 @@ export class AuthService {
         expiresAt,
       },
     });
-    await this.recordAudit(identity.tenantId, identity.userId, undefined, AuditEventType.enum.user_login, 'auth', identity.userId, {
-      email: identity.userEmail,
-      tenantSlug: identity.tenantSlug,
-      authMode: 'oidc',
-    });
+    await this.recordAudit(
+      identity.tenantId,
+      identity.userId,
+      undefined,
+      AuditEventType.enum.user_login,
+      'auth',
+      identity.userId,
+      {
+        email: identity.userEmail,
+        tenantSlug: identity.tenantSlug,
+        authMode: 'oidc',
+      },
+    );
   }
 
   async resolveOidcSession(token: string | undefined): Promise<CurrentIdentity | undefined> {
@@ -282,7 +340,8 @@ export class AuthService {
     const session = await this.prisma.oidcAuthSession.findUnique({
       where: { tokenHash: tokenHash(token) },
     });
-    if (!session || session.revokedAt || session.expiresAt.getTime() <= Date.now()) return undefined;
+    if (!session || session.revokedAt || session.expiresAt.getTime() <= Date.now())
+      return undefined;
     const user = await this.prisma.user.findUnique({
       where: { id: session.userId },
       include: { roles: true, tenant: true },
@@ -311,9 +370,17 @@ export class AuthService {
       data: { revokedAt: new Date() },
     });
     if (identity) {
-      await this.recordAudit(identity.tenantId, identity.userId, undefined, AuditEventType.enum.user_logout, 'auth', identity.userId, {
-        authMode: 'oidc',
-      });
+      await this.recordAudit(
+        identity.tenantId,
+        identity.userId,
+        undefined,
+        AuditEventType.enum.user_logout,
+        'auth',
+        identity.userId,
+        {
+          authMode: 'oidc',
+        },
+      );
     }
   }
 
@@ -321,11 +388,25 @@ export class AuthService {
   async listServiceAccounts(tenantId: string) {
     return this.prisma.serviceAccount.findMany({
       where: { tenantId },
-      select: { id: true, tenantId: true, name: true, description: true, roles: true, status: true, createdAt: true, updatedAt: true },
+      select: {
+        id: true,
+        tenantId: true,
+        name: true,
+        description: true,
+        roles: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 
-  async createServiceAccount(tenantId: string, name: string, description?: string, roles?: string[]) {
+  async createServiceAccount(
+    tenantId: string,
+    name: string,
+    description?: string,
+    roles?: string[],
+  ) {
     return this.prisma.serviceAccount.create({
       data: {
         tenantId,
@@ -333,11 +414,25 @@ export class AuthService {
         description: description ?? '',
         roles: roles ?? ['viewer'],
       },
-      select: { id: true, tenantId: true, name: true, description: true, roles: true, status: true, createdAt: true, updatedAt: true },
+      select: {
+        id: true,
+        tenantId: true,
+        name: true,
+        description: true,
+        roles: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
   }
 
-  async createServiceAccountToken(serviceAccountId: string, tenantId: string, scopes?: string[], ttlHours = 168) {
+  async createServiceAccountToken(
+    serviceAccountId: string,
+    tenantId: string,
+    scopes?: string[],
+    ttlHours = 168,
+  ) {
     const rawToken = `spt_${randomBytes(32).toString('base64url')}`;
     const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * ttlHours);
     const token = await this.prisma.serviceAccountToken.create({
@@ -348,12 +443,21 @@ export class AuthService {
         scopes: scopes ?? ['support_session:read'],
         expiresAt,
       },
-      select: { id: true, tenantId: true, serviceAccountId: true, scopes: true, expiresAt: true, createdAt: true },
+      select: {
+        id: true,
+        tenantId: true,
+        serviceAccountId: true,
+        scopes: true,
+        expiresAt: true,
+        createdAt: true,
+      },
     });
     return { rawToken, token };
   }
 
-  async resolveServiceAccountToken(token: string | undefined): Promise<CurrentIdentity | undefined> {
+  async resolveServiceAccountToken(
+    token: string | undefined,
+  ): Promise<CurrentIdentity | undefined> {
     if (!token || !token.startsWith('spt_')) return undefined;
     const record = await this.prisma.serviceAccountToken.findUnique({
       where: { tokenHash: tokenHash(token) },
@@ -366,7 +470,8 @@ export class AuthService {
       where: { id: record.id },
       data: { lastUsedAt: new Date() },
     });
-    const roles = record.serviceAccount.roles.length > 0 ? record.serviceAccount.roles : ['service'];
+    const roles =
+      record.serviceAccount.roles.length > 0 ? record.serviceAccount.roles : ['service'];
     return {
       tenantId: record.tenantId,
       userId: record.serviceAccountId,
@@ -407,7 +512,7 @@ export class AuthService {
     eventType: AuditEventType,
     resourceType: string,
     resourceId: string,
-    metadata: Record<string, unknown>
+    metadata: Record<string, unknown>,
   ) {
     const now = new Date();
     await this.prisma.auditEvent.create({

@@ -6,7 +6,13 @@ export type DataSubjectRequestType = z.infer<typeof DataSubjectRequestType>;
 export const DataSubjectType = z.enum(['user', 'customer', 'tenant']);
 export type DataSubjectType = z.infer<typeof DataSubjectType>;
 
-export const DataSubjectRequestStatus = z.enum(['pending', 'processing', 'completed', 'failed', 'cancelled']);
+export const DataSubjectRequestStatus = z.enum([
+  'pending',
+  'processing',
+  'completed',
+  'failed',
+  'cancelled',
+]);
 export type DataSubjectRequestStatus = z.infer<typeof DataSubjectRequestStatus>;
 
 export const DataSubjectRequest = z.object({

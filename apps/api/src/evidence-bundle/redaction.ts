@@ -46,7 +46,11 @@ function looksLikeEnvValue(key: string): boolean {
 function redactValue(value: unknown): unknown {
   if (typeof value === 'string') {
     // Redact Authorization header values
-    if (value.toLowerCase().startsWith('bearer ') || value.toLowerCase().startsWith('token ') || value.toLowerCase().startsWith('basic ')) {
+    if (
+      value.toLowerCase().startsWith('bearer ') ||
+      value.toLowerCase().startsWith('token ') ||
+      value.toLowerCase().startsWith('basic ')
+    ) {
       return '[REDACTED]';
     }
     // Redact long token-like strings
@@ -54,7 +58,11 @@ function redactValue(value: unknown): unknown {
       return '[REDACTED]';
     }
     // Redact anything containing obvious secret phrases
-    if (/apiToken|api_token|apiKey|api_key|authToken|auth_token|password|secret|privateKey|private_key|zammad_api_token/i.test(value)) {
+    if (
+      /apiToken|api_token|apiKey|api_key|authToken|auth_token|password|secret|privateKey|private_key|zammad_api_token/i.test(
+        value,
+      )
+    ) {
       return '[REDACTED]';
     }
   }
@@ -73,7 +81,9 @@ export function redactSecrets<T extends Record<string, unknown>>(obj: T): T {
       out[key] = redactSecrets(value as Record<string, unknown>);
     } else if (Array.isArray(value)) {
       out[key] = value.map((item) =>
-        typeof item === 'object' && item !== null ? redactSecrets(item as Record<string, unknown>) : redactValue(item)
+        typeof item === 'object' && item !== null
+          ? redactSecrets(item as Record<string, unknown>)
+          : redactValue(item),
       );
     } else {
       out[key] = redactValue(value);
@@ -85,11 +95,18 @@ export function redactSecrets<T extends Record<string, unknown>>(obj: T): T {
 /**
  * Redact a placeholder string and report the redaction status.
  */
-export function redactPlaceholder(input: string | undefined): { redacted: string; redactionStatus: 'not_needed' | 'placeholder_redacted' | 'pattern_redacted' | 'blocked' } {
+export function redactPlaceholder(input: string | undefined): {
+  redacted: string;
+  redactionStatus: 'not_needed' | 'placeholder_redacted' | 'pattern_redacted' | 'blocked';
+} {
   if (!input) return { redacted: '', redactionStatus: 'not_needed' };
   const redacted = redactString(input);
   const hasPatterns = redacted.includes('[REDACTED]');
-  const status: 'not_needed' | 'placeholder_redacted' | 'pattern_redacted' | 'blocked' = hasPatterns ? 'pattern_redacted' : input.length > 0 ? 'placeholder_redacted' : 'not_needed';
+  const status: 'not_needed' | 'placeholder_redacted' | 'pattern_redacted' | 'blocked' = hasPatterns
+    ? 'pattern_redacted'
+    : input.length > 0
+      ? 'placeholder_redacted'
+      : 'not_needed';
   return { redacted, redactionStatus: status };
 }
 
@@ -110,9 +127,15 @@ export function redactString(input: string): string {
   out = out.replace(/([A-Z_]*PASSWORD[A-Z_]*\s*=\s*).+/g, '$1[REDACTED]');
   out = out.replace(/(apiToken\s*=\s*).+/gi, '$1[REDACTED]');
   out = out.replace(/(password\s*=\s*).+/gi, '$1[REDACTED]');
-  out = out.replace(/(?<![A-Za-z0-9_\-./+=])[A-Za-z0-9_\-./+=]{20,}(?![A-Za-z0-9_\-./+=])/g, '[REDACTED]');
+  out = out.replace(
+    /(?<![A-Za-z0-9_\-./+=])[A-Za-z0-9_\-./+=]{20,}(?![A-Za-z0-9_\-./+=])/g,
+    '[REDACTED]',
+  );
   // Redact obvious filesystem paths (Unix absolute and Windows absolute)
-  out = out.replace(/(?<![A-Za-z0-9_\-./:])(\/(?:[A-Za-z0-9_\-.]+\/)+[A-Za-z0-9_\-.]+)/g, '[REDACTED_PATH]');
+  out = out.replace(
+    /(?<![A-Za-z0-9_\-./:])(\/(?:[A-Za-z0-9_\-.]+\/)+[A-Za-z0-9_\-.]+)/g,
+    '[REDACTED_PATH]',
+  );
   out = out.replace(/([A-Z]:\\(?:[A-Za-z0-9_\-.\s]+\\)*[A-Za-z0-9_\-.\s]+)/g, '[REDACTED_PATH]');
   return out;
 }

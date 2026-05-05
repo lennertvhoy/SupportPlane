@@ -34,10 +34,7 @@ export class AiChatService {
   }
   private readonly modelGateway = createDefaultModelGateway();
 
-  async createChatSession(
-    identity: DevIdentity,
-    dto: { sessionId?: string; title?: string }
-  ) {
+  async createChatSession(identity: DevIdentity, dto: { sessionId?: string; title?: string }) {
     requirePermission(identity, 'ai:chat');
     const now = new Date();
     const chatSession = await this.prisma.aiChatSession.create({
@@ -65,7 +62,7 @@ export class AiChatService {
     }
     return this.mapChatSession(
       chatSession,
-      chatSession.messages.map((m) => this.mapChatMessage(m))
+      chatSession.messages.map((m) => this.mapChatMessage(m)),
     );
   }
 
@@ -78,7 +75,9 @@ export class AiChatService {
     return sessions.map((s) => this.mapChatSession(s, []));
   }
 
-  private safeParseModelSelection(dtoModelSelection: unknown): import('@supportplane/ai').ModelSelection | undefined {
+  private safeParseModelSelection(
+    dtoModelSelection: unknown,
+  ): import('@supportplane/ai').ModelSelection | undefined {
     if (!dtoModelSelection) return undefined;
     try {
       return ModelSelection.parse(dtoModelSelection);
@@ -106,27 +105,40 @@ export class AiChatService {
 
   private async checkAiPolicy(
     identity: DevIdentity,
-    modelSelection?: import('@supportplane/ai').ModelSelection
+    modelSelection?: import('@supportplane/ai').ModelSelection,
   ): Promise<{ allowed: true } | { allowed: false; reason: string }> {
     const policy = await this.getAiPolicy(identity.tenantId);
     if (!policy) return { allowed: true };
 
     const allowChat = policy.allowChat !== false;
     if (!allowChat) {
-      await this.logBlockedUsage(identity, modelSelection?.provider ?? 'mock', modelSelection?.model ?? 'mock-support-note-v1', 'chat_disabled_by_policy');
+      await this.logBlockedUsage(
+        identity,
+        modelSelection?.provider ?? 'mock',
+        modelSelection?.model ?? 'mock-support-note-v1',
+        'chat_disabled_by_policy',
+      );
       return { allowed: false, reason: 'chat_disabled_by_policy' };
     }
 
     const allowedProviders = (policy.allowedProviders as string[]) ?? ['mock'];
     if (modelSelection?.provider && !allowedProviders.includes(modelSelection.provider)) {
-      await this.logBlockedUsage(identity, modelSelection.provider, modelSelection.model ?? 'unknown', 'provider_not_allowed_by_policy');
+      await this.logBlockedUsage(
+        identity,
+        modelSelection.provider,
+        modelSelection.model ?? 'unknown',
+        'provider_not_allowed_by_policy',
+      );
       return { allowed: false, reason: 'provider_not_allowed_by_policy' };
     }
 
     return { allowed: true };
   }
 
-  private computeRetentionDecision(retention: Record<string, unknown> | undefined): { storeOutput: boolean; metadataOnly: boolean } {
+  private computeRetentionDecision(retention: Record<string, unknown> | undefined): {
+    storeOutput: boolean;
+    metadataOnly: boolean;
+  } {
     if (!retention || !retention.enabled) return { storeOutput: true, metadataOnly: false };
     const mode = retention.outputRetentionMode as string | undefined;
     if (mode === 'none') return { storeOutput: false, metadataOnly: false };
@@ -141,7 +153,7 @@ export class AiChatService {
       content: string;
       role?: string;
       modelSelection?: { provider?: string; model?: string };
-    }
+    },
   ) {
     requirePermission(identity, 'ai:chat');
     const chatSession = await this.prisma.aiChatSession.findFirst({
@@ -180,17 +192,19 @@ export class AiChatService {
     });
 
     // Only generate AI response for user messages
-    let assistantMessage: {
-      id: string;
-      tenantId: string;
-      chatSessionId: string;
-      role: string;
-      content: string;
-      provider?: string;
-      model?: string;
-      usageMetadata?: Record<string, unknown>;
-      createdAt: string;
-    } | undefined;
+    let assistantMessage:
+      | {
+          id: string;
+          tenantId: string;
+          chatSessionId: string;
+          role: string;
+          content: string;
+          provider?: string;
+          model?: string;
+          usageMetadata?: Record<string, unknown>;
+          createdAt: string;
+        }
+      | undefined;
 
     if (role === 'user') {
       const allMessages = await this.prisma.aiChatMessage.findMany({
@@ -227,27 +241,29 @@ export class AiChatService {
         storedContent = '[REDACTED — metadata only retention]';
       }
 
-      assistantMessage = await this.prisma.aiChatMessage.create({
-        data: {
-          id: randomUUID(),
-          tenantId: identity.tenantId,
-          chatSessionId,
-          role: 'assistant',
-          content: storedContent,
-          provider: aiResponse.provider,
-          model: aiResponse.model,
-          usageMetadata: {
-            latencyMs: aiResponse.usage.latencyMs,
-            providerMode: aiResponse.usage.providerMode,
-            runtime: aiResponse.usage.runtime,
-            fallbackUsed: aiResponse.usage.fallbackUsed,
-            noCloudCall: aiResponse.usage.noCloudCall,
-            originalContentLength: aiResponse.content.length,
-            retentionApplied: retentionDecision.metadataOnly || !retentionDecision.storeOutput,
-          } as unknown as Prisma.InputJsonValue,
-          createdAt: new Date(),
-        },
-      }).then((m) => this.mapChatMessage(m));
+      assistantMessage = await this.prisma.aiChatMessage
+        .create({
+          data: {
+            id: randomUUID(),
+            tenantId: identity.tenantId,
+            chatSessionId,
+            role: 'assistant',
+            content: storedContent,
+            provider: aiResponse.provider,
+            model: aiResponse.model,
+            usageMetadata: {
+              latencyMs: aiResponse.usage.latencyMs,
+              providerMode: aiResponse.usage.providerMode,
+              runtime: aiResponse.usage.runtime,
+              fallbackUsed: aiResponse.usage.fallbackUsed,
+              noCloudCall: aiResponse.usage.noCloudCall,
+              originalContentLength: aiResponse.content.length,
+              retentionApplied: retentionDecision.metadataOnly || !retentionDecision.storeOutput,
+            } as unknown as Prisma.InputJsonValue,
+            createdAt: new Date(),
+          },
+        })
+        .then((m) => this.mapChatMessage(m));
 
       await this.logModelUsage(
         identity,
@@ -256,7 +272,7 @@ export class AiChatService {
         aiResponse.provider,
         aiResponse.model,
         aiResponse.usage.latencyMs ?? 0,
-        aiResponse.usage.fallbackUsed ? 'fallback_mock' : 'succeeded'
+        aiResponse.usage.fallbackUsed ? 'fallback_mock' : 'succeeded',
       );
 
       // Write audit event for chat message generation
@@ -299,7 +315,7 @@ export class AiChatService {
     return {
       session: this.mapChatSession(
         updatedSession,
-        updatedSession.messages.map((m) => this.mapChatMessage(m))
+        updatedSession.messages.map((m) => this.mapChatMessage(m)),
       ),
       assistantMessage,
     };
@@ -312,7 +328,7 @@ export class AiChatService {
     provider: string,
     model: string,
     latencyMs: number,
-    status: 'succeeded' | 'failed' | 'blocked_by_policy' | 'fallback_mock'
+    status: 'succeeded' | 'failed' | 'blocked_by_policy' | 'fallback_mock',
   ): Promise<void> {
     try {
       await this.prisma.modelUsageLog.create({
@@ -340,7 +356,7 @@ export class AiChatService {
     identity: DevIdentity,
     provider: string,
     model: string,
-    errorCode: string
+    errorCode: string,
   ): Promise<void> {
     try {
       await this.prisma.modelUsageLog.create({
@@ -356,7 +372,10 @@ export class AiChatService {
           latencyMs: 0,
           status: 'blocked_by_policy',
           errorCode,
-          metadata: { source: 'ai-chat.service', blockedByPolicy: true } as unknown as Prisma.InputJsonValue,
+          metadata: {
+            source: 'ai-chat.service',
+            blockedByPolicy: true,
+          } as unknown as Prisma.InputJsonValue,
           createdAt: new Date(),
         },
       });
@@ -385,7 +404,7 @@ export class AiChatService {
       model?: string;
       usageMetadata?: Record<string, unknown>;
       createdAt: string;
-    }>
+    }>,
   ) {
     return {
       id: session.id,

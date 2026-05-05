@@ -46,6 +46,7 @@ Paste-ready CTO wording
 ```
 
 Required fields:
+
 - what changed
 - what was directly verified
 - repo path

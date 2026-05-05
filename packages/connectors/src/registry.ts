@@ -9,7 +9,9 @@ export function registerTicketingAdapter(factory: TicketingAdapterFactory): void
   registry.set(factory.adapterType, factory);
 }
 
-export function getTicketingAdapterFactory(adapterType: string): TicketingAdapterFactory | undefined {
+export function getTicketingAdapterFactory(
+  adapterType: string,
+): TicketingAdapterFactory | undefined {
   return registry.get(adapterType);
 }
 

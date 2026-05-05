@@ -9,7 +9,7 @@ import type { Store } from '../store/store.interface.js';
 export class CustomersController {
   constructor(
     @Inject(InMemoryStore)
-    private readonly store: Store
+    private readonly store: Store,
   ) {}
 
   @Get()

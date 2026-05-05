@@ -27,9 +27,10 @@ interface AuditExplorerResponse {
   offset: number;
 }
 
-const API_BASE = typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE_URL
-  ? process.env.NEXT_PUBLIC_API_BASE_URL
-  : 'http://localhost:4110';
+const API_BASE =
+  typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_BASE_URL
+    ? process.env.NEXT_PUBLIC_API_BASE_URL
+    : 'http://localhost:4110';
 
 async function fetchAuditEvents(query: Record<string, string>): Promise<AuditExplorerResponse> {
   const params = new URLSearchParams(query);
@@ -152,11 +153,16 @@ export function AuditExplorerPanel() {
           <label className="mb-0.5 block text-[10px] text-cockpit-500">Event Type</label>
           <select
             value={filters.eventType}
-            onChange={(e) => { setFilters((f) => ({ ...f, eventType: e.target.value })); setOffset(0); }}
+            onChange={(e) => {
+              setFilters((f) => ({ ...f, eventType: e.target.value }));
+              setOffset(0);
+            }}
             className="w-full rounded border border-cockpit-700 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-200"
           >
             {EVENT_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t}>
+                {t}
+              </option>
             ))}
           </select>
         </div>
@@ -164,11 +170,16 @@ export function AuditExplorerPanel() {
           <label className="mb-0.5 block text-[10px] text-cockpit-500">Actor Type</label>
           <select
             value={filters.actorType}
-            onChange={(e) => { setFilters((f) => ({ ...f, actorType: e.target.value })); setOffset(0); }}
+            onChange={(e) => {
+              setFilters((f) => ({ ...f, actorType: e.target.value }));
+              setOffset(0);
+            }}
             className="w-full rounded border border-cockpit-700 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-200"
           >
             {ACTOR_TYPES.map((t) => (
-              <option key={t} value={t}>{t}</option>
+              <option key={t} value={t}>
+                {t}
+              </option>
             ))}
           </select>
         </div>
@@ -177,7 +188,10 @@ export function AuditExplorerPanel() {
           <input
             type="text"
             value={filters.actorId}
-            onChange={(e) => { setFilters((f) => ({ ...f, actorId: e.target.value })); setOffset(0); }}
+            onChange={(e) => {
+              setFilters((f) => ({ ...f, actorId: e.target.value }));
+              setOffset(0);
+            }}
             placeholder="Search actor..."
             className="w-full rounded border border-cockpit-700 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-200 placeholder:text-cockpit-600"
           />
@@ -187,7 +201,10 @@ export function AuditExplorerPanel() {
           <input
             type="text"
             value={filters.resourceType}
-            onChange={(e) => { setFilters((f) => ({ ...f, resourceType: e.target.value })); setOffset(0); }}
+            onChange={(e) => {
+              setFilters((f) => ({ ...f, resourceType: e.target.value }));
+              setOffset(0);
+            }}
             placeholder="e.g. support_session"
             className="w-full rounded border border-cockpit-700 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-200 placeholder:text-cockpit-600"
           />
@@ -197,7 +214,10 @@ export function AuditExplorerPanel() {
           <input
             type="date"
             value={filters.dateFrom}
-            onChange={(e) => { setFilters((f) => ({ ...f, dateFrom: e.target.value })); setOffset(0); }}
+            onChange={(e) => {
+              setFilters((f) => ({ ...f, dateFrom: e.target.value }));
+              setOffset(0);
+            }}
             className="w-full rounded border border-cockpit-700 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-200"
           />
         </div>
@@ -206,7 +226,10 @@ export function AuditExplorerPanel() {
           <input
             type="date"
             value={filters.dateTo}
-            onChange={(e) => { setFilters((f) => ({ ...f, dateTo: e.target.value })); setOffset(0); }}
+            onChange={(e) => {
+              setFilters((f) => ({ ...f, dateTo: e.target.value }));
+              setOffset(0);
+            }}
             className="w-full rounded border border-cockpit-700 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-200"
           />
         </div>
@@ -237,9 +260,7 @@ export function AuditExplorerPanel() {
                 className="rounded border border-cockpit-700 bg-cockpit-900/40 px-3 py-2"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-semibold text-cockpit-200">
-                    {e.eventType}
-                  </span>
+                  <span className="text-xs font-semibold text-cockpit-200">{e.eventType}</span>
                   <span className="shrink-0 text-[10px] text-cockpit-500">
                     <Clock size={10} className="mr-1 inline" />
                     {new Date(e.createdAt).toLocaleString()}
@@ -256,9 +277,7 @@ export function AuditExplorerPanel() {
                   </span>
                 </div>
                 {e.sessionId && (
-                  <div className="mt-0.5 text-[10px] text-cockpit-600">
-                    Session: {e.sessionId}
-                  </div>
+                  <div className="mt-0.5 text-[10px] text-cockpit-600">Session: {e.sessionId}</div>
                 )}
                 {Object.keys(e.metadata).length > 0 && (
                   <div className="mt-1.5 rounded bg-cockpit-950 px-2 py-1 text-[10px] text-cockpit-500">

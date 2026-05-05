@@ -5,6 +5,7 @@
 ## 1. CTO audit verdict
 
 BL-094 is closure-grade after governance repair. The previous closure captured 24 screenshots, violating the repo rule of max 20 screenshots per backlog item. This repair:
+
 - Deletes the 24-screenshot folder.
 - Creates a new canonical max-20 folder.
 - Updates AGENTS.md to enforce a hard 20-screenshot cap with no override.
@@ -123,85 +124,90 @@ BL-094 is closure-grade after governance repair. The previous closure captured 2
 **Count:** 20 screenshots (hard cap enforced)
 **Duplicate Check:** 0 duplicate MD5 hashes — all 20 are unique.
 
-| # | File | State Proven |
-|---|------|-------------|
-| 01 | `01-login-local-auth.png` | Login page in local auth mode |
-| 02 | `02-admin-cockpit-header.png` | Authenticated admin cockpit header showing user, tenant, role, API, auth/store/mock mode |
-| 03 | `03-delivery-policy-safe-defaults.png` | Delivery policy panel showing safe defaults, mock-only enforced, real network locked off |
-| 04 | `04-policy-update-saved.png` | Admin policy update + saved version/actor visible |
-| 05 | `05-connector-readiness-mock-only.png` | Connector readiness showing mock-ready and real-writeback-not-ready |
-| 06 | `06-queue-allowed-policy-decision.png` | Queue allowed path with policy decision visible |
-| 07 | `07-delivery-operations-worker-status.png` | Delivery operations/worker status showing mock mode, policy mode, queue stats |
-| 08 | `08-queue-blocked-killswitch.png` | Queue blocked by kill switch/policy |
-| 09 | `09-worker-deadlettered-policy.png` | Worker process blocked/dead-lettered by policy |
-| 10 | `10-worker-allowed-mock-detail.png` | Worker process allowed in mock mode with attempt detail, policy/version/safety flags |
-| 11 | `11-case-timeline-policy-events.png` | Case timeline showing policy/worker decision events |
-| 12 | `12-audit-trail-policy-events.png` | Audit trail showing policy updated, policy decision, blocked/allowed events |
-| 13 | `13-evidence-bundle-summary.png` | Evidence bundle summary showing delivery policy provenance |
-| 14 | `14-evidence-bundle-json-safety.png` | Evidence bundle JSON showing no secrets/tokens/password hashes/raw media and safety flags |
-| 15 | `15-viewer-readonly-policy.png` | Viewer role can inspect policy but controls are disabled/read-only |
-| 16 | `16-viewer-rbac-denial.png` | Direct forbidden mutation / viewer server-side RBAC denial, shown via UI evidence |
-| 17 | `17-cross-tenant-denied.png` | Cross-tenant access denied |
-| 18 | `18-logout-relogin-policy-preserved.png` | Logout and re-login proof, with preserved policy state |
-| 19 | `19-persistence-outbox-state.png` | API restart/persistence proof for policy/outbox state (data survives full reload) |
-| 20 | `20-final-mock-no-secret-proof.png` | Final no-real-writeback/no-secret/local-mock proof |
+| #   | File                                       | State Proven                                                                              |
+| --- | ------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| 01  | `01-login-local-auth.png`                  | Login page in local auth mode                                                             |
+| 02  | `02-admin-cockpit-header.png`              | Authenticated admin cockpit header showing user, tenant, role, API, auth/store/mock mode  |
+| 03  | `03-delivery-policy-safe-defaults.png`     | Delivery policy panel showing safe defaults, mock-only enforced, real network locked off  |
+| 04  | `04-policy-update-saved.png`               | Admin policy update + saved version/actor visible                                         |
+| 05  | `05-connector-readiness-mock-only.png`     | Connector readiness showing mock-ready and real-writeback-not-ready                       |
+| 06  | `06-queue-allowed-policy-decision.png`     | Queue allowed path with policy decision visible                                           |
+| 07  | `07-delivery-operations-worker-status.png` | Delivery operations/worker status showing mock mode, policy mode, queue stats             |
+| 08  | `08-queue-blocked-killswitch.png`          | Queue blocked by kill switch/policy                                                       |
+| 09  | `09-worker-deadlettered-policy.png`        | Worker process blocked/dead-lettered by policy                                            |
+| 10  | `10-worker-allowed-mock-detail.png`        | Worker process allowed in mock mode with attempt detail, policy/version/safety flags      |
+| 11  | `11-case-timeline-policy-events.png`       | Case timeline showing policy/worker decision events                                       |
+| 12  | `12-audit-trail-policy-events.png`         | Audit trail showing policy updated, policy decision, blocked/allowed events               |
+| 13  | `13-evidence-bundle-summary.png`           | Evidence bundle summary showing delivery policy provenance                                |
+| 14  | `14-evidence-bundle-json-safety.png`       | Evidence bundle JSON showing no secrets/tokens/password hashes/raw media and safety flags |
+| 15  | `15-viewer-readonly-policy.png`            | Viewer role can inspect policy but controls are disabled/read-only                        |
+| 16  | `16-viewer-rbac-denial.png`                | Direct forbidden mutation / viewer server-side RBAC denial, shown via UI evidence         |
+| 17  | `17-cross-tenant-denied.png`               | Cross-tenant access denied                                                                |
+| 18  | `18-logout-relogin-policy-preserved.png`   | Logout and re-login proof, with preserved policy state                                    |
+| 19  | `19-persistence-outbox-state.png`          | API restart/persistence proof for policy/outbox state (data survives full reload)         |
+| 20  | `20-final-mock-no-secret-proof.png`        | Final no-real-writeback/no-secret/local-mock proof                                        |
 
 **Screenshot Script:** `scripts/bl094_screenshots.js` — committed, hard-fails at >20 screenshots, prints proof-state mapping and md5 checksums.
 
 ## 19. Full validation gate results
 
 ### Unit & Integration Tests
-| Package | Tests | Pass | Fail |
-|---------|-------|------|------|
-| apps/api | 116 | 116 | 0 |
-| apps/web | 15 | 15 | 0 |
-| packages/contracts | 29 | 29 | 0 |
-| packages/ai | 9 | 9 | 0 |
-| packages/connectors | 16 | 16 | 0 |
+
+| Package             | Tests | Pass | Fail |
+| ------------------- | ----- | ---- | ---- |
+| apps/api            | 116   | 116  | 0    |
+| apps/web            | 15    | 15   | 0    |
+| packages/contracts  | 29    | 29   | 0    |
+| packages/ai         | 9     | 9    | 0    |
+| packages/connectors | 16    | 16   | 0    |
 
 ### Static Checks
-| Check | Result |
-|-------|--------|
-| `npm run lint` | pass (no errors) |
+
+| Check                                         | Result           |
+| --------------------------------------------- | ---------------- |
+| `npm run lint`                                | pass (no errors) |
 | `npm run typecheck --workspaces --if-present` | pass (no errors) |
-| `npm run validate` | pass |
-| `npm run health` | pass |
-| `npx prisma validate` | pass |
-| `npx prisma generate` | pass |
-| `npx prisma migrate status` | pass |
-| `npx prisma db seed` | pass |
+| `npm run validate`                            | pass             |
+| `npm run health`                              | pass             |
+| `npx prisma validate`                         | pass             |
+| `npx prisma generate`                         | pass             |
+| `npx prisma migrate status`                   | pass             |
+| `npx prisma db seed`                          | pass             |
 
 ### Verification Scripts
-| Script | Result |
-|--------|--------|
-| `scripts/verify_postgres_persistence.sh` | pass |
-| `scripts/verify_local_auth_rbac.sh` | pass |
-| `scripts/verify_ticket_context_connector.sh` | pass |
-| `scripts/verify_support_case_workflow.sh` | pass |
-| `scripts/verify_durable_action_outbox.sh` | pass |
-| `scripts/verify_outbox_worker_retry_deadletter.sh` | pass |
-| `scripts/verify_delivery_policy_controls.sh` | all 14 checks pass |
+
+| Script                                             | Result             |
+| -------------------------------------------------- | ------------------ |
+| `scripts/verify_postgres_persistence.sh`           | pass               |
+| `scripts/verify_local_auth_rbac.sh`                | pass               |
+| `scripts/verify_ticket_context_connector.sh`       | pass               |
+| `scripts/verify_support_case_workflow.sh`          | pass               |
+| `scripts/verify_durable_action_outbox.sh`          | pass               |
+| `scripts/verify_outbox_worker_retry_deadletter.sh` | pass               |
+| `scripts/verify_delivery_policy_controls.sh`       | all 14 checks pass |
 
 ### State Docs & Hygiene
-| Check | Result |
-|-------|--------|
-| `python3 scripts/check_state_docs.py` | pass |
-| `python3 scripts/check_state_docs.py --bootstrap-gate` | pass |
-| `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` | pass |
+
+| Check                                                                        | Result |
+| ---------------------------------------------------------------------------- | ------ |
+| `python3 scripts/check_state_docs.py`                                        | pass   |
+| `python3 scripts/check_state_docs.py --bootstrap-gate`                       | pass   |
+| `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` | pass   |
 
 ### npm audit
+
 10 vulnerabilities (8 moderate, 2 high) — all pre-existing, unchanged by this repair.
 
 ## 20. Runtime status
 
-| Service | Endpoint / Port | Status |
-|---------|-----------------|--------|
-| API | http://localhost:4110/health | ok |
-| Web | http://localhost:3200 | HTTP 200 |
-| PostgreSQL | localhost:5434 | healthy (sp-postgres Podman container) |
-| NATS | localhost:4222 | healthy (sp-nats) |
-| MinIO | localhost:9000 | healthy (sp-minio) |
-| Worker placeholder | — | running (sp-worker) |
+| Service            | Endpoint / Port              | Status                                 |
+| ------------------ | ---------------------------- | -------------------------------------- |
+| API                | http://localhost:4110/health | ok                                     |
+| Web                | http://localhost:3200        | HTTP 200                               |
+| PostgreSQL         | localhost:5434               | healthy (sp-postgres Podman container) |
+| NATS               | localhost:4222               | healthy (sp-nats)                      |
+| MinIO              | localhost:9000               | healthy (sp-minio)                     |
+| Worker placeholder | —                            | running (sp-worker)                    |
 
 - **Store mode:** postgres
 - **Auth mode:** local

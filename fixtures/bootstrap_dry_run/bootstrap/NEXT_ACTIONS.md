@@ -6,6 +6,7 @@
 ## Active Work
 
 ### P0 [BL-001] Confirm project scope
+
 ### P0 [BL-004] Flip to operating mode
 
 ## Queue Rules

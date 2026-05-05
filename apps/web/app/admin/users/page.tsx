@@ -16,7 +16,13 @@ interface UserRow {
   createdAt: string;
 }
 
-function UsersPageContent({ identity, logout }: { identity: AuthIdentity; logout: () => Promise<void> }) {
+function UsersPageContent({
+  identity,
+  logout,
+}: {
+  identity: AuthIdentity;
+  logout: () => Promise<void>;
+}) {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,9 +31,7 @@ function UsersPageContent({ identity, logout }: { identity: AuthIdentity; logout
     setLoading(true);
     // No dedicated user list API exists yet; show current identity as placeholder
     // and attempt to fetch service accounts as a proxy for tenant actors.
-    Promise.all([
-      api.me().catch(() => null),
-    ])
+    Promise.all([api.me().catch(() => null)])
       .then(([me]) => {
         const rows: UserRow[] = [];
         if (me?.identity) {
@@ -47,7 +51,12 @@ function UsersPageContent({ identity, logout }: { identity: AuthIdentity; logout
   }, []);
 
   return (
-    <AdminDashboardShell identity={identity} logout={logout} title="Users" subtitle="Tenant user directory.">
+    <AdminDashboardShell
+      identity={identity}
+      logout={logout}
+      title="Users"
+      subtitle="Tenant user directory."
+    >
       <div className="mx-auto max-w-4xl space-y-4">
         {loading && <p className="text-xs text-cockpit-500">Loading...</p>}
         {error && <p className="text-xs text-red-400">{error}</p>}
@@ -61,16 +70,25 @@ function UsersPageContent({ identity, logout }: { identity: AuthIdentity; logout
           ) : (
             <div className="space-y-2">
               {users.map((u) => (
-                <div key={u.id} className="flex items-center justify-between rounded border border-cockpit-700 bg-cockpit-950/40 px-3 py-2">
+                <div
+                  key={u.id}
+                  className="flex items-center justify-between rounded border border-cockpit-700 bg-cockpit-950/40 px-3 py-2"
+                >
                   <div>
                     <div className="text-xs font-medium text-cockpit-100">{u.name}</div>
-                    <div className="text-[10px] text-cockpit-500">{u.email} · {u.id.slice(0, 8)}</div>
+                    <div className="text-[10px] text-cockpit-500">
+                      {u.email} · {u.id.slice(0, 8)}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1">
                     {u.roles.map((r) => (
-                      <Badge key={r} variant="muted">{r}</Badge>
+                      <Badge key={r} variant="muted">
+                        {r}
+                      </Badge>
                     ))}
-                    <Badge variant={u.status === 'active' ? 'success' : 'warning'}>{u.status}</Badge>
+                    <Badge variant={u.status === 'active' ? 'success' : 'warning'}>
+                      {u.status}
+                    </Badge>
                   </div>
                 </div>
               ))}
@@ -79,7 +97,8 @@ function UsersPageContent({ identity, logout }: { identity: AuthIdentity; logout
         </div>
 
         <div className="rounded border border-amber-700/30 bg-amber-950/20 px-3 py-2 text-[10px] text-amber-300">
-          Note: Full user management API is not yet wired. This page displays the authenticated identity only.
+          Note: Full user management API is not yet wired. This page displays the authenticated
+          identity only.
         </div>
       </div>
     </AdminDashboardShell>
@@ -87,5 +106,9 @@ function UsersPageContent({ identity, logout }: { identity: AuthIdentity; logout
 }
 
 export default function UsersPage() {
-  return <AuthGate>{(identity, logout) => <UsersPageContent identity={identity} logout={logout} />}</AuthGate>;
+  return (
+    <AuthGate>
+      {(identity, logout) => <UsersPageContent identity={identity} logout={logout} />}
+    </AuthGate>
+  );
 }

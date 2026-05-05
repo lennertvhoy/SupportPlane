@@ -4,7 +4,10 @@ import type { BrowserConnectorStatus } from '@/lib/api';
 import { AlertTriangle, CheckCircle, XCircle, HelpCircle, Shield } from 'lucide-react';
 import { InfoTooltip } from './InfoTooltip';
 
-const statusConfig: Record<string, { icon: React.ReactNode; color: string; label: string; help: string }> = {
+const statusConfig: Record<
+  string,
+  { icon: React.ReactNode; color: string; label: string; help: string }
+> = {
   live: {
     icon: <CheckCircle className="w-4 h-4" />,
     color: 'text-emerald-400 bg-emerald-900/30 border-emerald-700',
@@ -47,7 +50,8 @@ const connectorDescription = (id: string): string | null => {
   const descriptions: Record<string, string> = {
     zammad: 'Real sandbox — live Zammad instance with OpenBao credential resolution.',
     glpi: 'Real sandbox — live GLPI instance with REST API session token auth.',
-    osticket: 'Fixture only — osTicket is blocked upstream (no read API, MySQL-only, no container image).',
+    osticket:
+      'Fixture only — osTicket is blocked upstream (no read API, MySQL-only, no container image).',
     meshcentral: 'Not configured — MeshCentral scaffolding exists but no real instance deployed.',
     fortinet: 'Not configured — Fortinet scaffolding exists but no real instance connected.',
   };
@@ -100,7 +104,8 @@ export function ConnectorStatusPanel() {
         <h3 className="text-sm font-semibold text-cockpit-100">Connector Status</h3>
         <InfoTooltip size={12}>
           <div className="text-[11px] leading-relaxed">
-            Shows every registered connector and its runtime truth. Real sandbox = live local instance. Fixture = deterministic demo data. Unconfigured = scaffolding only.
+            Shows every registered connector and its runtime truth. Real sandbox = live local
+            instance. Fixture = deterministic demo data. Unconfigured = scaffolding only.
           </div>
         </InfoTooltip>
         <span className="text-xs text-cockpit-500 ml-auto">Tenant-scoped</span>
@@ -133,7 +138,10 @@ export function ConnectorStatusPanel() {
               </div>
               <div className="mt-1 flex flex-wrap gap-1">
                 {conn.capabilities.map((cap) => (
-                  <span key={cap} className="text-xs px-1.5 py-0.5 rounded bg-cockpit-900/40 border border-cockpit-700/50">
+                  <span
+                    key={cap}
+                    className="text-xs px-1.5 py-0.5 rounded bg-cockpit-900/40 border border-cockpit-700/50"
+                  >
                     {cap}
                   </span>
                 ))}
@@ -152,7 +160,9 @@ export function ConnectorStatusPanel() {
                 )}
               </div>
               {connectorDescription(conn.id) && (
-                <div className="mt-1 text-[10px] text-cockpit-400 italic">{connectorDescription(conn.id)}</div>
+                <div className="mt-1 text-[10px] text-cockpit-400 italic">
+                  {connectorDescription(conn.id)}
+                </div>
               )}
               {conn.fixtureWarning && (
                 <div className="mt-1 text-xs opacity-80 italic">{conn.fixtureWarning}</div>
@@ -166,7 +176,8 @@ export function ConnectorStatusPanel() {
       </div>
 
       <div className="mt-3 text-xs text-cockpit-500 border-t border-cockpit-700/50 pt-2">
-        All connector credentials are tenant-scoped. External writeback requires explicit policy approval.
+        All connector credentials are tenant-scoped. External writeback requires explicit policy
+        approval.
       </div>
     </div>
   );

@@ -37,7 +37,11 @@ export class AdminPolicyController {
   }
 
   @Put('connectors/:installationId')
-  async updateConnector(@Req() req: Request, @Param('installationId') installationId: string, @Body() body: unknown) {
+  async updateConnector(
+    @Req() req: Request,
+    @Param('installationId') installationId: string,
+    @Body() body: unknown,
+  ) {
     const identity = getCurrentIdentity(req);
     requirePermission(identity, 'delivery_policy:write');
     return this.service.updateConnectorPolicy(identity, installationId, body);

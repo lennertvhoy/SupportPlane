@@ -75,11 +75,11 @@ spec:
             failureThreshold: 60
           resources:
             requests:
-              memory: "1Gi"
-              cpu: "250m"
+              memory: '1Gi'
+              cpu: '250m'
             limits:
-              memory: "1536Mi"
-              cpu: "1000m"
+              memory: '1536Mi'
+              cpu: '1000m'
       volumes:
         - name: realm-import
           configMap:

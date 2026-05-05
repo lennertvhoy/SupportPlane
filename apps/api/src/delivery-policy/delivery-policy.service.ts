@@ -55,7 +55,8 @@ const HARDCODED_DEFAULT_DECISION: DeliveryPolicyDecision = {
 export class DeliveryPolicyService {
   constructor(
     @Inject(InMemoryStore) private readonly store: Store,
-    @Inject(ConnectorInstallationsService) private readonly connectorService: ConnectorInstallationsService
+    @Inject(ConnectorInstallationsService)
+    private readonly connectorService: ConnectorInstallationsService,
   ) {}
 
   async listPolicies(identity: CurrentIdentity) {
@@ -76,7 +77,11 @@ export class DeliveryPolicyService {
 
     // Reject any attempt to enable real writeback
     const update = body as Record<string, unknown>;
-    if (update.allowRealNetworkCalls === true || update.writebackEnabled === true || update.externalWriteAllowed === true) {
+    if (
+      update.allowRealNetworkCalls === true ||
+      update.writebackEnabled === true ||
+      update.externalWriteAllowed === true
+    ) {
       throw new BadRequestException('Real writeback not implemented.');
     }
 
@@ -95,21 +100,31 @@ export class DeliveryPolicyService {
       approvalRequired: body.approvalRequired ?? existing.approvalRequired,
       minimumApproverRole: body.minimumApproverRole ?? existing.minimumApproverRole,
       requireHumanReview: body.requireHumanReview ?? existing.requireHumanReview,
-      requireEvidenceBundleBeforeDelivery: body.requireEvidenceBundleBeforeDelivery ?? existing.requireEvidenceBundleBeforeDelivery,
-      requireConnectorValidationBeforeDelivery: body.requireConnectorValidationBeforeDelivery ?? existing.requireConnectorValidationBeforeDelivery,
+      requireEvidenceBundleBeforeDelivery:
+        body.requireEvidenceBundleBeforeDelivery ?? existing.requireEvidenceBundleBeforeDelivery,
+      requireConnectorValidationBeforeDelivery:
+        body.requireConnectorValidationBeforeDelivery ??
+        existing.requireConnectorValidationBeforeDelivery,
       retryPolicy: body.retryPolicy
         ? {
             maxAttempts: body.retryPolicy.maxAttempts ?? existing.retryPolicy.maxAttempts,
-            baseDelaySeconds: body.retryPolicy.baseDelaySeconds ?? existing.retryPolicy.baseDelaySeconds,
-            maxDelaySeconds: body.retryPolicy.maxDelaySeconds ?? existing.retryPolicy.maxDelaySeconds,
-            backoffMultiplier: body.retryPolicy.backoffMultiplier ?? existing.retryPolicy.backoffMultiplier,
+            baseDelaySeconds:
+              body.retryPolicy.baseDelaySeconds ?? existing.retryPolicy.baseDelaySeconds,
+            maxDelaySeconds:
+              body.retryPolicy.maxDelaySeconds ?? existing.retryPolicy.maxDelaySeconds,
+            backoffMultiplier:
+              body.retryPolicy.backoffMultiplier ?? existing.retryPolicy.backoffMultiplier,
           }
         : existing.retryPolicy,
       deadLetterPolicy: body.deadLetterPolicy
         ? {
             enabled: body.deadLetterPolicy.enabled ?? existing.deadLetterPolicy.enabled,
-            maxAttemptsBeforeDeadLetter: body.deadLetterPolicy.maxAttemptsBeforeDeadLetter ?? existing.deadLetterPolicy.maxAttemptsBeforeDeadLetter,
-            requireManualRetry: body.deadLetterPolicy.requireManualRetry ?? existing.deadLetterPolicy.requireManualRetry,
+            maxAttemptsBeforeDeadLetter:
+              body.deadLetterPolicy.maxAttemptsBeforeDeadLetter ??
+              existing.deadLetterPolicy.maxAttemptsBeforeDeadLetter,
+            requireManualRetry:
+              body.deadLetterPolicy.requireManualRetry ??
+              existing.deadLetterPolicy.requireManualRetry,
           }
         : existing.deadLetterPolicy,
       policyVersion: existing.policyVersion + 1,
@@ -118,10 +133,17 @@ export class DeliveryPolicyService {
     };
 
     await this.store.saveDeliveryPolicy(updated);
-    await this.audit(identity, 'delivery_policy_updated', undefined, 'delivery_policy', updated.id, {
-      policyVersion: updated.policyVersion,
-      updatedFields: Object.keys(body),
-    });
+    await this.audit(
+      identity,
+      'delivery_policy_updated',
+      undefined,
+      'delivery_policy',
+      updated.id,
+      {
+        policyVersion: updated.policyVersion,
+        updatedFields: Object.keys(body),
+      },
+    );
 
     return { policy: updated };
   }
@@ -131,32 +153,53 @@ export class DeliveryPolicyService {
     if (!policy) {
       throw new NotFoundException(`Delivery policy ${id} not found`);
     }
-    const decision = this.buildDecisionFromPolicy(policy, 'ticket_note', 'admin', false, false, true, true);
+    const decision = this.buildDecisionFromPolicy(
+      policy,
+      'ticket_note',
+      'admin',
+      false,
+      false,
+      true,
+      true,
+    );
     return { policy, decision };
   }
 
   async checkConnectorReadiness(
     identity: CurrentIdentity,
     connectorInstallationId: string,
-    actionType = 'ticket_note'
+    actionType = 'ticket_note',
   ): Promise<ConnectorReadinessResult> {
-    const installation = await this.connectorService.getConnectorInstallation(identity, connectorInstallationId);
+    const installation = await this.connectorService.getConnectorInstallation(
+      identity,
+      connectorInstallationId,
+    );
 
-    const policy = await this.store.getDeliveryPolicyByConnector(identity.tenantId, connectorInstallationId)
-      ?? await this.store.getDeliveryPolicyByConnector(identity.tenantId, null);
+    const policy =
+      (await this.store.getDeliveryPolicyByConnector(identity.tenantId, connectorInstallationId)) ??
+      (await this.store.getDeliveryPolicyByConnector(identity.tenantId, null));
 
     const decision = policy
-      ? this.buildDecisionFromPolicy(policy, actionType, 'admin', false, Boolean(installation.lastVerifiedAt), true, true)
+      ? this.buildDecisionFromPolicy(
+          policy,
+          actionType,
+          'admin',
+          false,
+          Boolean(installation.lastVerifiedAt),
+          true,
+          true,
+        )
       : HARDCODED_DEFAULT_DECISION;
 
     const capabilities = installation.config.capabilities as string[] | undefined;
-    const connectorSupportsActionType = actionType === 'ticket_note'
-      ? (capabilities?.includes('write_notes') ?? true)
-      : false;
+    const connectorSupportsActionType =
+      actionType === 'ticket_note' ? (capabilities?.includes('write_notes') ?? true) : false;
 
-    const readyForMockDelivery = decision.allowed && installation.status === 'active' && connectorSupportsActionType;
+    const readyForMockDelivery =
+      decision.allowed && installation.status === 'active' && connectorSupportsActionType;
     const isSandbox = decision.decision === 'sandbox_allowed';
-    const sandboxWritebackReady = isSandbox && connectorSupportsActionType && installation.status === 'active';
+    const sandboxWritebackReady =
+      isSandbox && connectorSupportsActionType && installation.status === 'active';
 
     return {
       mode: isSandbox ? 'sandbox' : 'mock',
@@ -191,17 +234,25 @@ export class DeliveryPolicyService {
     hasEvidenceBundle: boolean,
     connectorValidated: boolean,
     actionIsApproved = false,
-    actionIsReviewed = false
+    actionIsReviewed = false,
   ): Promise<DeliveryPolicyDecision> {
     const policy = connectorInstallationId
-      ? (await this.store.getDeliveryPolicyByConnector(tenantId, connectorInstallationId))
-      : (await this.store.getDeliveryPolicyByConnector(tenantId, null));
+      ? await this.store.getDeliveryPolicyByConnector(tenantId, connectorInstallationId)
+      : await this.store.getDeliveryPolicyByConnector(tenantId, null);
 
     if (!policy) {
       return HARDCODED_DEFAULT_DECISION;
     }
 
-    return this.buildDecisionFromPolicy(policy, actionType, currentUserRole, hasEvidenceBundle, connectorValidated, actionIsApproved, actionIsReviewed);
+    return this.buildDecisionFromPolicy(
+      policy,
+      actionType,
+      currentUserRole,
+      hasEvidenceBundle,
+      connectorValidated,
+      actionIsApproved,
+      actionIsReviewed,
+    );
   }
 
   private buildDecisionFromPolicy(
@@ -211,7 +262,7 @@ export class DeliveryPolicyService {
     hasEvidenceBundle: boolean,
     connectorValidated: boolean,
     actionIsApproved = false,
-    actionIsReviewed = false
+    actionIsReviewed = false,
   ): DeliveryPolicyDecision {
     const sandboxEnabled = process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true';
     const safetyFlags = {
@@ -396,7 +447,7 @@ export class DeliveryPolicyService {
     sessionId: string | undefined,
     resourceType: string,
     resourceId: string,
-    metadata: Record<string, unknown>
+    metadata: Record<string, unknown>,
   ) {
     const event: AuditEvent = {
       id: randomUUID() as AuditEvent['id'],

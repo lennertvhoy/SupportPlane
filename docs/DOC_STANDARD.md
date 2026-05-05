@@ -10,17 +10,17 @@ coding-agent session may close if documentation is stale or contradictory.
 
 Every document in `docs/` belongs to one of the following categories:
 
-| Category | Owner | Update Trigger |
-|----------|-------|----------------|
-| Product/State | CTO/coding-agent | When project truth changes |
-| Architecture | CTO/coding-agent | When architecture or contracts change |
-| Operations/Runbooks | CTO/coding-agent | When deployment or operational procedures change |
-| Security/Governance | CTO/coding-agent | When security model, threats, or policy changes |
-| Integration | CTO/coding-agent | When connector or integration behavior changes |
+| Category               | Owner            | Update Trigger                                   |
+| ---------------------- | ---------------- | ------------------------------------------------ |
+| Product/State          | CTO/coding-agent | When project truth changes                       |
+| Architecture           | CTO/coding-agent | When architecture or contracts change            |
+| Operations/Runbooks    | CTO/coding-agent | When deployment or operational procedures change |
+| Security/Governance    | CTO/coding-agent | When security model, threats, or policy changes  |
+| Integration            | CTO/coding-agent | When connector or integration behavior changes   |
 | Self-Hosted/Kubernetes | CTO/coding-agent | When sandbox/cluster topology or services change |
-| Endpoint/Windows | CTO/coding-agent | When endpoint agent or platform behavior changes |
-| Evidence | coding-agent | When evidence is captured or accepted |
-| Historical Reports | none (frozen) | Never updated after closure |
+| Endpoint/Windows       | CTO/coding-agent | When endpoint agent or platform behavior changes |
+| Evidence               | coding-agent     | When evidence is captured or accepted            |
+| Historical Reports     | none (frozen)    | Never updated after closure                      |
 
 The category assignment is recorded in `docs/README.md` (the docs index).
 
@@ -54,16 +54,16 @@ The category assignment is recorded in `docs/README.md` (the docs index).
 
 The following events require doc updates:
 
-| Event | Docs to Update |
-|-------|----------------|
-| Backlog item status changes | `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml` |
-| New feature implemented | All relevant `docs/*` files, `docs/README.md` index |
-| Behavior changes at runtime | Affected architecture/integration/runbook docs |
-| Evidence captured | `docs/EVIDENCE_LOG.md` |
-| Milestone accepted | `docs/ACCEPTANCE_FREEZES.md`, `STATUS.md`, `PROJECT_STATE.yaml` |
-| Doc added or removed | `docs/README.md` index |
+| Event                           | Docs to Update                                                          |
+| ------------------------------- | ----------------------------------------------------------------------- |
+| Backlog item status changes     | `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`      |
+| New feature implemented         | All relevant `docs/*` files, `docs/README.md` index                     |
+| Behavior changes at runtime     | Affected architecture/integration/runbook docs                          |
+| Evidence captured               | `docs/EVIDENCE_LOG.md`                                                  |
+| Milestone accepted              | `docs/ACCEPTANCE_FREEZES.md`, `STATUS.md`, `PROJECT_STATE.yaml`         |
+| Doc added or removed            | `docs/README.md` index                                                  |
 | Connector or integration change | Affected integration doc, `CONNECTOR_RUNTIME_CONTRACT.md` if applicable |
-| Security or policy change | Affected security/governance docs, `THREAT_MODEL.md` |
+| Security or policy change       | Affected security/governance docs, `THREAT_MODEL.md`                    |
 
 ## Review Cadence
 

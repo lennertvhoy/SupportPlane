@@ -1,7 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, BookOpen, CheckCircle, Lock, RefreshCw, ShieldCheck, ShieldX, Loader2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  BookOpen,
+  CheckCircle,
+  Lock,
+  RefreshCw,
+  ShieldCheck,
+  ShieldX,
+  Loader2,
+} from 'lucide-react';
 import { Panel } from './Panel';
 import { Badge } from './Badge';
 import { api, type AuthIdentity, type ApiHealthStatus } from '@/lib/api';
@@ -64,7 +73,11 @@ export function SecurityReadinessPanel({ identity }: { identity: AuthIdentity })
     <Panel
       title="Security & Release Readiness"
       headerRight={
-        <button onClick={refresh} disabled={loading} className="inline-flex items-center gap-1 rounded border border-cockpit-600 px-2 py-1 text-xs text-cockpit-200 disabled:opacity-50">
+        <button
+          onClick={refresh}
+          disabled={loading}
+          className="inline-flex items-center gap-1 rounded border border-cockpit-600 px-2 py-1 text-xs text-cockpit-200 disabled:opacity-50"
+        >
           {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
           Refresh
         </button>
@@ -75,18 +88,44 @@ export function SecurityReadinessPanel({ identity }: { identity: AuthIdentity })
           Local sandbox security only. Not production hardened.
         </div>
 
-        {error && <div className="rounded bg-red-900/30 px-2 py-1 text-xs text-red-300">{error}</div>}
+        {error && (
+          <div className="rounded bg-red-900/30 px-2 py-1 text-xs text-red-300">{error}</div>
+        )}
 
         <div className="space-y-1">
           <div className="mb-1 flex items-center gap-2 text-xs font-medium text-cockpit-200">
             <Lock size={14} />
             Authentication & Identity
           </div>
-          <ItemRow label="Local auth enabled" value={authMode === 'local' ? 'Yes' : 'No'} tone={authMode === 'local' ? 'success' : 'muted'} />
-          <ItemRow label="OIDC ready" value={oidcReady ? 'Yes' : 'No'} tone={oidcReady ? 'success' : 'muted'} note="Keycloak local sandbox" />
-          <ItemRow label="MFA hook available" value={mfaHook ? 'Yes' : 'No'} tone={mfaHook ? 'success' : 'muted'} note="Not enforced" />
-          <ItemRow label="Service-auth worker path" value="Protected" tone="success" note="X-Service-Token required" />
-          <ItemRow label="Short-lived service token policy" value="Conceptual" tone="warning" note="Hooks only; no persistent storage" />
+          <ItemRow
+            label="Local auth enabled"
+            value={authMode === 'local' ? 'Yes' : 'No'}
+            tone={authMode === 'local' ? 'success' : 'muted'}
+          />
+          <ItemRow
+            label="OIDC ready"
+            value={oidcReady ? 'Yes' : 'No'}
+            tone={oidcReady ? 'success' : 'muted'}
+            note="Keycloak local sandbox"
+          />
+          <ItemRow
+            label="MFA hook available"
+            value={mfaHook ? 'Yes' : 'No'}
+            tone={mfaHook ? 'success' : 'muted'}
+            note="Not enforced"
+          />
+          <ItemRow
+            label="Service-auth worker path"
+            value="Protected"
+            tone="success"
+            note="X-Service-Token required"
+          />
+          <ItemRow
+            label="Short-lived service token policy"
+            value="Conceptual"
+            tone="warning"
+            note="Hooks only; no persistent storage"
+          />
         </div>
 
         <div className="space-y-1">
@@ -95,9 +134,24 @@ export function SecurityReadinessPanel({ identity }: { identity: AuthIdentity })
             API Gateway Hardening
           </div>
           <ItemRow label="Rate limits enabled" value="Yes" tone="success" note="In-memory per IP" />
-          <ItemRow label="Body limits enabled" value="Yes" tone="success" note="Path-specific limits" />
-          <ItemRow label="Request validation enabled" value="Yes" tone="success" note="URL, adapter type, tenant, telephony event" />
-          <ItemRow label="Security headers" value="Yes" tone="success" note="X-Content-Type-Options, X-Frame-Options, Referrer-Policy" />
+          <ItemRow
+            label="Body limits enabled"
+            value="Yes"
+            tone="success"
+            note="Path-specific limits"
+          />
+          <ItemRow
+            label="Request validation enabled"
+            value="Yes"
+            tone="success"
+            note="URL, adapter type, tenant, telephony event"
+          />
+          <ItemRow
+            label="Security headers"
+            value="Yes"
+            tone="success"
+            note="X-Content-Type-Options, X-Frame-Options, Referrer-Policy"
+          />
         </div>
 
         <div className="space-y-1">
@@ -105,15 +159,36 @@ export function SecurityReadinessPanel({ identity }: { identity: AuthIdentity })
             <BookOpen size={14} />
             Operations & Runbooks
           </div>
-          <ItemRow label="Backup/restore runbook" value="Available" tone="success" note="docs/RUNBOOK_BACKUP_RESTORE.md" />
-          <ItemRow label="Release runbook" value="Available" tone="success" note="docs/RELEASE_RUNBOOK.md" />
-          <ItemRow label="Demo runbook" value="Available" tone="success" note="docs/DEMO_RUNBOOK.md" />
-          <ItemRow label="Demo reset script" value="Available" tone="success" note="scripts/reset_demo_data.sh" />
+          <ItemRow
+            label="Backup/restore runbook"
+            value="Available"
+            tone="success"
+            note="docs/RUNBOOK_BACKUP_RESTORE.md"
+          />
+          <ItemRow
+            label="Release runbook"
+            value="Available"
+            tone="success"
+            note="docs/RELEASE_RUNBOOK.md"
+          />
+          <ItemRow
+            label="Demo runbook"
+            value="Available"
+            tone="success"
+            note="docs/DEMO_RUNBOOK.md"
+          />
+          <ItemRow
+            label="Demo reset script"
+            value="Available"
+            tone="success"
+            note="scripts/reset_demo_data.sh"
+          />
         </div>
 
         <div className="flex items-center gap-2 rounded border border-cockpit-700 px-2 py-1.5 text-[11px] text-cockpit-400">
           <AlertTriangle size={13} className="shrink-0 text-amber-300" />
-          No raw secrets in evidence. All secrets are redacted in API responses, logs, and screenshots.
+          No raw secrets in evidence. All secrets are redacted in API responses, logs, and
+          screenshots.
         </div>
       </div>
     </Panel>

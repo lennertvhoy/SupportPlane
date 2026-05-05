@@ -23,6 +23,7 @@ SupportPlane integrates with GLPI (ITSM/IT asset management) as a real sandbox c
 ## Connector Status
 
 Authenticated connector-status (`GET /connectors/status`):
+
 - Mode: `configured`
 - Transport: `real`
 - Credential source: `env`

@@ -11,28 +11,33 @@
 Before starting the demo, ensure the local sandbox is running:
 
 1. **Local Kubernetes cluster** is created and healthy:
+
    ```bash
    kind get clusters
    # Expected: supportplane-local
    ```
 
 2. **Images are built and loaded**:
+
    ```bash
    bash scripts/build_and_load_local_k8s_images.sh
    ```
 
 3. **Manifests are applied**:
+
    ```bash
    kubectl apply -k infra/kubernetes/local-podman
    ```
 
 4. **Port forwards are active**:
+
    ```bash
    kubectl port-forward -n supportplane-app svc/supportplane-api 4210:4110 &
    kubectl port-forward -n supportplane-app svc/supportplane-web 3300:3200 &
    ```
 
 5. **All pods are Running**:
+
    ```bash
    kubectl get pods --all-namespaces
    ```
@@ -58,6 +63,7 @@ bash scripts/reset_demo_data.sh --confirm
 ```
 
 The reset script will:
+
 1. Reset the SupportPlane PostgreSQL database via Prisma migrate reset + seed
 2. Verify Zammad connector and delivery policy references exist
 3. Verify OpenBao secret exists in the cluster
@@ -77,10 +83,12 @@ The reset script will:
 Open `http://localhost:3300/` in a browser.
 
 Log in with:
+
 - **Email:** `admin@supportplane.local`
 - **Password:** `supportplane-demo`
 
 **Expected outcome:**
+
 - Dashboard loads with header identity pill: `Demo Admin / Acme Support Demo / admin`
 - Amber `DEV / MOCK DATA` banner is visible at the top
 - Connector panel shows `Local Zammad Sandbox` with `active` status
@@ -94,6 +102,7 @@ Enter title: `Demo Session — VPN Issue`
 Click **Create**.
 
 **Expected outcome:**
+
 - Session appears in the left sidebar with `open` badge
 - Session detail panel opens on the right
 
@@ -104,6 +113,7 @@ Click **Create**.
 In the **Ticket Context** panel, enter `TICKET-101` and click **Load**.
 
 **Expected outcome:**
+
 - Ticket subject: `VPN not connecting for remote user`
 - Customer: `Acme BVBA`
 - Connector runtime provenance card is visible
@@ -116,6 +126,7 @@ In the **Ticket Context** panel, enter `TICKET-101` and click **Load**.
 In the **AI Assistant** panel, click **Generate Draft**.
 
 **Expected outcome:**
+
 - Draft text appears after a short delay
 - Model provenance shows `provider=ollama`, `providerMode=local`
 - If Ollama is reachable: `fallbackUsed=false`, `noCloudCall=true`
@@ -129,6 +140,7 @@ In the **AI Assistant** panel, click **Generate Draft**.
 Review the draft. Click **Approve** in the delivery policy panel.
 
 **Expected outcome:**
+
 - Approval is recorded with your user identity and timestamp
 - Delivery policy gate is evaluated (`approvalRequired=true`, `minimumApproverRole=admin`)
 - If policy passes, an outbox item is queued
@@ -146,6 +158,7 @@ curl -s http://localhost:4210/outbox/worker/status | jq .
 Or view the **Outbox** panel in the UI.
 
 **Expected outcome:**
+
 - Outbox item shows `status: queued` or `status: processed`
 - Worker logs show idempotent processing
 - If writeback is enabled and policy allows: Zammad internal note is created with SupportPlane provenance marker

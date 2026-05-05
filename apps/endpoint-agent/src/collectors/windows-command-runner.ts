@@ -1,6 +1,9 @@
 import { execFile } from 'node:child_process';
 
-export type WindowsReadonlyCommandName = 'services' | 'installedSoftwareHklm64' | 'installedSoftwareHklm32';
+export type WindowsReadonlyCommandName =
+  | 'services'
+  | 'installedSoftwareHklm64'
+  | 'installedSoftwareHklm32';
 
 export type WindowsReadonlyCommandTemplate = {
   executable: 'sc.exe' | 'reg.exe';
@@ -9,7 +12,10 @@ export type WindowsReadonlyCommandTemplate = {
   maxBufferBytes: number;
 };
 
-export const WINDOWS_READONLY_COMMANDS: Record<WindowsReadonlyCommandName, WindowsReadonlyCommandTemplate> = {
+export const WINDOWS_READONLY_COMMANDS: Record<
+  WindowsReadonlyCommandName,
+  WindowsReadonlyCommandTemplate
+> = {
   services: {
     executable: 'sc.exe',
     args: ['query', 'type=', 'service', 'state=', 'all'],
@@ -24,13 +30,19 @@ export const WINDOWS_READONLY_COMMANDS: Record<WindowsReadonlyCommandName, Windo
   },
   installedSoftwareHklm32: {
     executable: 'reg.exe',
-    args: ['query', 'HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall', '/s'],
+    args: [
+      'query',
+      'HKLM\\SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall',
+      '/s',
+    ],
     timeoutMs: 20_000,
     maxBufferBytes: 5 * 1024 * 1024,
   },
 };
 
-export function getWindowsReadonlyCommandTemplate(name: WindowsReadonlyCommandName): WindowsReadonlyCommandTemplate {
+export function getWindowsReadonlyCommandTemplate(
+  name: WindowsReadonlyCommandName,
+): WindowsReadonlyCommandTemplate {
   return WINDOWS_READONLY_COMMANDS[name];
 }
 
@@ -44,18 +56,23 @@ export async function runWindowsReadonlyCommand(
 
   const template = getWindowsReadonlyCommandTemplate(name);
   return new Promise((resolve, reject) => {
-    execFile(template.executable, [...template.args], {
-      windowsHide: true,
-      timeout: template.timeoutMs,
-      maxBuffer: template.maxBufferBytes,
-      shell: false,
-    }, (error, stdout, stderr) => {
-      if (error) {
-        const detail = stderr.trim() || error.message;
-        reject(new Error(detail));
-        return;
-      }
-      resolve(stdout);
-    });
+    execFile(
+      template.executable,
+      [...template.args],
+      {
+        windowsHide: true,
+        timeout: template.timeoutMs,
+        maxBuffer: template.maxBufferBytes,
+        shell: false,
+      },
+      (error, stdout, stderr) => {
+        if (error) {
+          const detail = stderr.trim() || error.message;
+          reject(new Error(detail));
+          return;
+        }
+        resolve(stdout);
+      },
+    );
   });
 }

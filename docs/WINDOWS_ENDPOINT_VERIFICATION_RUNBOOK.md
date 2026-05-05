@@ -10,15 +10,15 @@ This runbook describes the exact steps to build, run, and verify the SupportPlan
 
 ## Prerequisites
 
-| Requirement | Minimum | Verified With |
-|---|---|---|
-| Windows host | Windows 10 / Server 2019+ | `[System.Environment]::OSVersion` |
-| Node.js | 22.0.0+ | `node --version` |
-| npm | included with Node 22 | `npm --version` |
-| SupportPlane API | running and reachable | `curl $API_URL/health` |
-| Enrollment token | issued by SupportPlane | provided by operator |
-| Tenant ID | valid SupportPlane tenant | provided by operator |
-| Network access | outbound HTTPS to API | `Test-NetConnection $API_URL -Port 443` |
+| Requirement      | Minimum                   | Verified With                           |
+| ---------------- | ------------------------- | --------------------------------------- |
+| Windows host     | Windows 10 / Server 2019+ | `[System.Environment]::OSVersion`       |
+| Node.js          | 22.0.0+                   | `node --version`                        |
+| npm              | included with Node 22     | `npm --version`                         |
+| SupportPlane API | running and reachable     | `curl $API_URL/health`                  |
+| Enrollment token | issued by SupportPlane    | provided by operator                    |
+| Tenant ID        | valid SupportPlane tenant | provided by operator                    |
+| Network access   | outbound HTTPS to API     | `Test-NetConnection $API_URL -Port 443` |
 
 ## Method A: Manual Verification on Windows Host
 
@@ -46,6 +46,7 @@ node --test dist/test/**/*.test.js
 ```
 
 Expected output:
+
 ```
 ▶ endpoint-agent read-only collectors
   ✔ collects inventory without mutation
@@ -124,6 +125,7 @@ node dist/src/index.js --register
 ```
 
 Expected output:
+
 ```
 [agent] registering with SupportPlane API...
 [agent] platform: win32
@@ -137,6 +139,7 @@ node dist/src/index.js --heartbeat
 ```
 
 Expected output:
+
 ```
 [agent] heartbeat sent
 [agent] commands pending: 0
@@ -154,6 +157,7 @@ node dist/src/index.js --diagnostic status
 ```
 
 Expected `inventory` output (example):
+
 ```json
 {
   "hostname": "WIN-DESKTOP-01",
@@ -167,6 +171,7 @@ Expected `inventory` output (example):
 ```
 
 Expected `services` output (real Windows only):
+
 ```json
 {
   "services": [
@@ -179,6 +184,7 @@ Expected `services` output (real Windows only):
 ```
 
 Expected `software` output (real Windows only):
+
 ```json
 {
   "software": [
@@ -199,6 +205,7 @@ Attempt a tool not supported on Windows:
 ```
 
 Expected behavior:
+
 - `clear_temp_preview` → API returns `decision: unsupported_platform` or agent returns `unsupported: true`
 - `flush_dns_cache` → API returns `approval_required` before executing `ipconfig /flushdns`
 
@@ -217,6 +224,7 @@ Trigger the workflow manually from the Actions tab:
 The workflow file: `.github/workflows/windows-endpoint-verification.yml`
 
 The workflow:
+
 - Checks out the repo
 - Sets up Node.js 22
 - Runs `npm ci`
@@ -287,10 +295,11 @@ gh workflow run windows-endpoint-verification.yml \
   -f apiUrl="https://api.supportplane.example.com"
 ```
 
-**Note:** The workflow was successfully triggered and passed in Session 134 (2026-05-03). 
+**Note:** The workflow was successfully triggered and passed in Session 134 (2026-05-03).
 The SupportPlane API is reachable via Tailscale Funnel at `https://ff-fedora.tail2dc90.ts.net` (temporary, tied to the host running the tunnel).
 
 To re-trigger or reproduce:
+
 1. Ensure the K8s cluster is running: `kubectl get pods -A`
 2. Start port-forward: `kubectl port-forward -n supportplane-app svc/supportplane-api 4210:4110 &`
 3. Start Tailscale Funnel: `tailscale funnel 4210`

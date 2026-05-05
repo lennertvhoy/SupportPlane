@@ -71,7 +71,12 @@ x-user-id: dev-user
   "safety": {
     "mockOnly": true,
     "externalCallMade": false,
-    "policyChecks": ["mock_provider_only", "review_required", "auto_send_disabled", "voice_disabled"],
+    "policyChecks": [
+      "mock_provider_only",
+      "review_required",
+      "auto_send_disabled",
+      "voice_disabled"
+    ],
     "reviewRequired": true,
     "autoSend": false,
     "voiceEnabled": false
@@ -82,11 +87,11 @@ x-user-id: dev-user
 
 ### Tones
 
-| Tone | Example output |
-|------|----------------|
+| Tone           | Example output                                                                                                                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `professional` | "Good day, Acme BVBA. Thank you for calling SupportPlane. I can see we have 2 open ticket(s) on file. My name is the assigned support agent, and I'll be assisting you today. How may I help?" |
-| `friendly` | "Hi Acme BVBA! This is SupportPlane. I see you're calling in — thanks for reaching out. I'm here to help with whatever you need today." |
-| `concise` | "Good day, Acme BVBA. SupportPlane here. How can I assist?" |
+| `friendly`     | "Hi Acme BVBA! This is SupportPlane. I see you're calling in — thanks for reaching out. I'm here to help with whatever you need today."                                                        |
+| `concise`      | "Good day, Acme BVBA. SupportPlane here. How can I assist?"                                                                                                                                    |
 
 ## UI flow
 
@@ -114,6 +119,7 @@ x-user-id: dev-user
 ## Evidence bundle inclusion
 
 Evidence bundles include a `greetingSuggestions` array with:
+
 - `greetingText`
 - `tone`
 - `provider`, `model`, `promptVersion`, `contextHash`

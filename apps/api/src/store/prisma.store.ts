@@ -408,7 +408,10 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getInternalNoteDraft(tenantId: string, draftId: string): Promise<InternalNoteDraftShape | undefined> {
+  async getInternalNoteDraft(
+    tenantId: string,
+    draftId: string,
+  ): Promise<InternalNoteDraftShape | undefined> {
     const row = await this.prisma.internalNoteDraft.findFirst({
       where: { id: draftId, tenantId },
     });
@@ -416,7 +419,10 @@ export class PrismaStore implements Store {
     return this.mapInternalNoteDraft(row);
   }
 
-  async listInternalNoteDrafts(tenantId: string, sessionId: string): Promise<InternalNoteDraftShape[]> {
+  async listInternalNoteDrafts(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<InternalNoteDraftShape[]> {
     const rows = await this.prisma.internalNoteDraft.findMany({
       where: { tenantId, sessionId },
       orderBy: { createdAt: 'asc' },
@@ -714,7 +720,10 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getScreenObservation(tenantId: string, id: string): Promise<ScreenObservationShape | undefined> {
+  async getScreenObservation(
+    tenantId: string,
+    id: string,
+  ): Promise<ScreenObservationShape | undefined> {
     const row = await this.prisma.screenObservation.findFirst({
       where: { id, tenantId },
     });
@@ -722,7 +731,10 @@ export class PrismaStore implements Store {
     return this.mapScreenObservation(row);
   }
 
-  async listScreenObservations(tenantId: string, sessionId: string): Promise<ScreenObservationShape[]> {
+  async listScreenObservations(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<ScreenObservationShape[]> {
     const rows = await this.prisma.screenObservation.findMany({
       where: { tenantId, sessionId },
       orderBy: { createdAt: 'desc' },
@@ -730,7 +742,10 @@ export class PrismaStore implements Store {
     return rows.map((r) => this.mapScreenObservation(r));
   }
 
-  async listScreenObservationsForCallEvent(tenantId: string, callEventId: string): Promise<ScreenObservationShape[]> {
+  async listScreenObservationsForCallEvent(
+    tenantId: string,
+    callEventId: string,
+  ): Promise<ScreenObservationShape[]> {
     const rows = await this.prisma.screenObservation.findMany({
       where: { tenantId, callEventId },
       orderBy: { createdAt: 'desc' },
@@ -795,7 +810,10 @@ export class PrismaStore implements Store {
   }
 
   // SharingState
-  async getSharingState(tenantId: string, sessionId: string): Promise<SharingStateShape | undefined> {
+  async getSharingState(
+    tenantId: string,
+    sessionId: string,
+  ): Promise<SharingStateShape | undefined> {
     const row = await this.prisma.sharingState.findUnique({
       where: { tenantId_sessionId: { tenantId, sessionId } },
     });
@@ -861,7 +879,10 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getCustomerReference(tenantId: string, id: string): Promise<CustomerReferenceShape | undefined> {
+  async getCustomerReference(
+    tenantId: string,
+    id: string,
+  ): Promise<CustomerReferenceShape | undefined> {
     const row = await this.prisma.customerReference.findFirst({
       where: { id, tenantId },
     });
@@ -869,12 +890,18 @@ export class PrismaStore implements Store {
     return this.mapCustomerReference(row);
   }
 
-  async listCustomerReferences(tenantId: string, options?: { email?: string; phone?: string; adapterId?: string }): Promise<CustomerReferenceShape[]> {
+  async listCustomerReferences(
+    tenantId: string,
+    options?: { email?: string; phone?: string; adapterId?: string },
+  ): Promise<CustomerReferenceShape[]> {
     const where: Prisma.CustomerReferenceWhereInput = { tenantId };
     if (options?.email) where.email = { equals: options.email, mode: 'insensitive' };
     if (options?.phone) where.phone = options.phone;
     if (options?.adapterId) where.adapterId = options.adapterId;
-    const rows = await this.prisma.customerReference.findMany({ where, orderBy: { updatedAt: 'desc' } });
+    const rows = await this.prisma.customerReference.findMany({
+      where,
+      orderBy: { updatedAt: 'desc' },
+    });
     return rows.map((r) => this.mapCustomerReference(r));
   }
 
@@ -952,7 +979,10 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getConnectorInstallation(tenantId: string, id: string): Promise<ConnectorInstallationShape | undefined> {
+  async getConnectorInstallation(
+    tenantId: string,
+    id: string,
+  ): Promise<ConnectorInstallationShape | undefined> {
     const row = await this.prisma.connectorInstallation.findFirst({
       where: { id, tenantId },
     });
@@ -1001,7 +1031,10 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getCredentialReference(tenantId: string, id: string): Promise<ConnectorCredentialReferenceShape | undefined> {
+  async getCredentialReference(
+    tenantId: string,
+    id: string,
+  ): Promise<ConnectorCredentialReferenceShape | undefined> {
     const row = await this.prisma.connectorCredentialReference.findFirst({
       where: { id, tenantId },
     });
@@ -1009,7 +1042,10 @@ export class PrismaStore implements Store {
     return this.mapCredentialReference(row);
   }
 
-  async listCredentialReferences(tenantId: string, options?: { connectorType?: string }): Promise<ConnectorCredentialReferenceShape[]> {
+  async listCredentialReferences(
+    tenantId: string,
+    options?: { connectorType?: string },
+  ): Promise<ConnectorCredentialReferenceShape[]> {
     const where: Prisma.ConnectorCredentialReferenceWhereInput = { tenantId };
     if (options?.connectorType) where.connectorType = options.connectorType;
     const rows = await this.prisma.connectorCredentialReference.findMany({
@@ -1144,7 +1180,10 @@ export class PrismaStore implements Store {
     return row ? this.mapSupportAction(row) : undefined;
   }
 
-  async listSupportActions(tenantId: string, options?: { sessionId?: string }): Promise<SupportActionShape[]> {
+  async listSupportActions(
+    tenantId: string,
+    options?: { sessionId?: string },
+  ): Promise<SupportActionShape[]> {
     const rows = await this.prisma.supportAction.findMany({
       where: { tenantId, ...(options?.sessionId ? { sessionId: options.sessionId } : {}) },
       orderBy: { updatedAt: 'desc' },
@@ -1153,12 +1192,30 @@ export class PrismaStore implements Store {
   }
 
   private mapSupportAction(row: {
-    id: string; tenantId: string; sessionId: string; callEventId: string | null; customerReferenceId: string | null;
-    ticketReferenceId: string | null; connectorInstallationId: string | null; actionType: string; status: string;
-    idempotencyKey: string; requestedBy: string; submittedAt: Date | null; reviewedBy: string | null;
-    reviewDecision: string | null; reviewReason: string | null; reviewedAt: Date | null; queuedAt: Date | null;
-    mockDeliveredAt: Date | null; failureReason: string | null; payloadSummary: unknown; safeBodyPreview: string | null;
-    mockDevOnly: boolean; createdAt: Date; updatedAt: Date;
+    id: string;
+    tenantId: string;
+    sessionId: string;
+    callEventId: string | null;
+    customerReferenceId: string | null;
+    ticketReferenceId: string | null;
+    connectorInstallationId: string | null;
+    actionType: string;
+    status: string;
+    idempotencyKey: string;
+    requestedBy: string;
+    submittedAt: Date | null;
+    reviewedBy: string | null;
+    reviewDecision: string | null;
+    reviewReason: string | null;
+    reviewedAt: Date | null;
+    queuedAt: Date | null;
+    mockDeliveredAt: Date | null;
+    failureReason: string | null;
+    payloadSummary: unknown;
+    safeBodyPreview: string | null;
+    mockDevOnly: boolean;
+    createdAt: Date;
+    updatedAt: Date;
   }): SupportActionShape {
     return {
       id: row.id as SupportActionShape['id'],
@@ -1254,12 +1311,18 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getActionOutboxItem(tenantId: string, id: string): Promise<ActionOutboxItemShape | undefined> {
+  async getActionOutboxItem(
+    tenantId: string,
+    id: string,
+  ): Promise<ActionOutboxItemShape | undefined> {
     const row = await this.prisma.actionOutboxItem.findFirst({ where: { tenantId, id } });
     return row ? this.mapActionOutboxItem(row) : undefined;
   }
 
-  async listActionOutboxItems(tenantId: string, options?: { sessionId?: string; supportActionId?: string }): Promise<ActionOutboxItemShape[]> {
+  async listActionOutboxItems(
+    tenantId: string,
+    options?: { sessionId?: string; supportActionId?: string },
+  ): Promise<ActionOutboxItemShape[]> {
     const rows = await this.prisma.actionOutboxItem.findMany({
       where: {
         tenantId,
@@ -1273,7 +1336,7 @@ export class PrismaStore implements Store {
 
   async claimNextActionOutboxItem(
     tenantId: string,
-    options: { workerId: string; now: string; lockExpiresAt: string; outboxItemId?: string }
+    options: { workerId: string; now: string; lockExpiresAt: string; outboxItemId?: string },
   ): Promise<ActionOutboxItemShape | undefined> {
     const now = new Date(options.now);
     const lockExpiresAt = new Date(options.lockExpiresAt);
@@ -1289,7 +1352,11 @@ export class PrismaStore implements Store {
       });
       if (!candidate) return undefined;
       if (candidate.attemptCount >= candidate.maxAttempts) return undefined;
-      if (candidate.status === 'processing' && candidate.workerLockExpiresAt && candidate.workerLockExpiresAt > now) {
+      if (
+        candidate.status === 'processing' &&
+        candidate.workerLockExpiresAt &&
+        candidate.workerLockExpiresAt > now
+      ) {
         return undefined;
       }
       const result = await tx.actionOutboxItem.updateMany({
@@ -1300,7 +1367,11 @@ export class PrismaStore implements Store {
           OR:
             candidate.status === 'processing'
               ? [{ workerLockExpiresAt: null }, { workerLockExpiresAt: { lte: now } }]
-              : [{ workerLockExpiresAt: null }, { workerLockExpiresAt: { lte: now } }, { status: { not: 'processing' } }],
+              : [
+                  { workerLockExpiresAt: null },
+                  { workerLockExpiresAt: { lte: now } },
+                  { status: { not: 'processing' } },
+                ],
         },
         data: {
           status: 'processing',
@@ -1319,14 +1390,39 @@ export class PrismaStore implements Store {
   }
 
   private mapActionOutboxItem(row: {
-    id: string; tenantId: string; supportActionId: string; sessionId: string; connectorInstallationId: string | null;
-    actionType: string; status: string; idempotencyKey: string; deliveryMode: string; deliveryIntent: unknown; attemptCount: number;
-    maxAttempts: number; latestAttemptState: string | null; queuedAt: Date; nextAttemptAt: Date | null;
-    processingStartedAt: Date | null; workerLockId: string | null; workerLockedAt: Date | null; workerLockExpiresAt: Date | null;
-    mockDeliveredAt: Date | null; failedAt: Date | null; retryScheduledAt: Date | null; deadLetteredAt: Date | null;
-    cancelledAt: Date | null; lastError: string | null; lastErrorCode: string | null; lastErrorMessage: string | null;
-    lastErrorRedacted: boolean; deadLetterReason: string | null;
-    safetyFlags: unknown; mockDevOnly: boolean; createdAt: Date; updatedAt: Date;
+    id: string;
+    tenantId: string;
+    supportActionId: string;
+    sessionId: string;
+    connectorInstallationId: string | null;
+    actionType: string;
+    status: string;
+    idempotencyKey: string;
+    deliveryMode: string;
+    deliveryIntent: unknown;
+    attemptCount: number;
+    maxAttempts: number;
+    latestAttemptState: string | null;
+    queuedAt: Date;
+    nextAttemptAt: Date | null;
+    processingStartedAt: Date | null;
+    workerLockId: string | null;
+    workerLockedAt: Date | null;
+    workerLockExpiresAt: Date | null;
+    mockDeliveredAt: Date | null;
+    failedAt: Date | null;
+    retryScheduledAt: Date | null;
+    deadLetteredAt: Date | null;
+    cancelledAt: Date | null;
+    lastError: string | null;
+    lastErrorCode: string | null;
+    lastErrorMessage: string | null;
+    lastErrorRedacted: boolean;
+    deadLetterReason: string | null;
+    safetyFlags: unknown;
+    mockDevOnly: boolean;
+    createdAt: Date;
+    updatedAt: Date;
   }): ActionOutboxItemShape {
     return {
       id: row.id as ActionOutboxItemShape['id'],
@@ -1394,7 +1490,10 @@ export class PrismaStore implements Store {
     });
   }
 
-  async listActionOutboxAttempts(tenantId: string, outboxItemId: string): Promise<ActionOutboxAttemptShape[]> {
+  async listActionOutboxAttempts(
+    tenantId: string,
+    outboxItemId: string,
+  ): Promise<ActionOutboxAttemptShape[]> {
     const rows = await this.prisma.actionOutboxAttempt.findMany({
       where: { tenantId, outboxItemId },
       orderBy: { attemptNumber: 'asc' },
@@ -1475,7 +1574,10 @@ export class PrismaStore implements Store {
     return this.mapDeliveryPolicy(row);
   }
 
-  async getDeliveryPolicyByConnector(tenantId: string, connectorInstallationId: string | null): Promise<DeliveryPolicyShape | undefined> {
+  async getDeliveryPolicyByConnector(
+    tenantId: string,
+    connectorInstallationId: string | null,
+  ): Promise<DeliveryPolicyShape | undefined> {
     const row = await this.prisma.deliveryPolicy.findFirst({
       where: { tenantId, connectorInstallationId },
     });
@@ -1544,7 +1646,7 @@ export class PrismaStore implements Store {
   async saveTenantPolicy(
     policy: ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape,
     policyType: string,
-    scopeId?: string | null
+    scopeId?: string | null,
   ): Promise<void> {
     const effectiveScopeId = scopeId ?? null;
     const existing = await this.prisma.tenantPolicy.findFirst({
@@ -1578,7 +1680,7 @@ export class PrismaStore implements Store {
   async getTenantPolicy(
     tenantId: string,
     policyType: string,
-    scopeId?: string | null
+    scopeId?: string | null,
   ): Promise<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape | undefined> {
     const effectiveScopeId = scopeId ?? null;
     const row = await this.prisma.tenantPolicy.findFirst({
@@ -1589,7 +1691,7 @@ export class PrismaStore implements Store {
   }
 
   async listTenantPolicies(
-    tenantId: string
+    tenantId: string,
   ): Promise<Array<ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape>> {
     const rows = await this.prisma.tenantPolicy.findMany({ where: { tenantId } });
     return rows.map((r) => r.config as ConnectorPolicyShape | AiPolicyShape | RetentionPolicyShape);
@@ -1597,7 +1699,9 @@ export class PrismaStore implements Store {
 
   // Endpoint agent/device diagnostics
   async saveEndpointDevice(device: EndpointDeviceShape, tokenHash?: string): Promise<void> {
-    const existing = await this.prisma.endpointDevice.findFirst({ where: { tenantId: device.tenantId, id: device.id } });
+    const existing = await this.prisma.endpointDevice.findFirst({
+      where: { tenantId: device.tenantId, id: device.id },
+    });
     await this.prisma.endpointDevice.upsert({
       where: { id: device.id },
       create: {
@@ -1635,7 +1739,10 @@ export class PrismaStore implements Store {
     return row ? this.mapEndpointDevice(row) : undefined;
   }
 
-  async getEndpointDeviceByKey(tenantId: string, deviceKey: string): Promise<(EndpointDeviceShape & { tokenHash?: string }) | undefined> {
+  async getEndpointDeviceByKey(
+    tenantId: string,
+    deviceKey: string,
+  ): Promise<(EndpointDeviceShape & { tokenHash?: string }) | undefined> {
     const row = await this.prisma.endpointDevice.findFirst({ where: { tenantId, deviceKey } });
     return row ? { ...this.mapEndpointDevice(row), tokenHash: row.tokenHash } : undefined;
   }
@@ -1662,7 +1769,10 @@ export class PrismaStore implements Store {
     });
   }
 
-  async listEndpointHeartbeats(tenantId: string, deviceId: string): Promise<EndpointHeartbeatShape[]> {
+  async listEndpointHeartbeats(
+    tenantId: string,
+    deviceId: string,
+  ): Promise<EndpointHeartbeatShape[]> {
     const rows = await this.prisma.endpointHeartbeat.findMany({
       where: { tenantId, deviceId },
       orderBy: { observedAt: 'desc' },
@@ -1694,7 +1804,10 @@ export class PrismaStore implements Store {
     });
   }
 
-  async listEndpointDiagnosticSnapshots(tenantId: string, deviceId: string): Promise<EndpointDiagnosticSnapshotShape[]> {
+  async listEndpointDiagnosticSnapshots(
+    tenantId: string,
+    deviceId: string,
+  ): Promise<EndpointDiagnosticSnapshotShape[]> {
     const rows = await this.prisma.endpointDiagnosticSnapshot.findMany({
       where: { tenantId, deviceId },
       orderBy: { collectedAt: 'desc' },
@@ -1748,17 +1861,29 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getEndpointCommand(tenantId: string, id: string): Promise<EndpointCommandShape | undefined> {
+  async getEndpointCommand(
+    tenantId: string,
+    id: string,
+  ): Promise<EndpointCommandShape | undefined> {
     const row = await this.prisma.endpointCommand.findFirst({ where: { tenantId, id } });
     return row ? this.mapEndpointCommand(row) : undefined;
   }
 
-  async getEndpointCommandByIdempotencyKey(tenantId: string, idempotencyKey: string): Promise<EndpointCommandShape | undefined> {
-    const row = await this.prisma.endpointCommand.findFirst({ where: { tenantId, idempotencyKey } });
+  async getEndpointCommandByIdempotencyKey(
+    tenantId: string,
+    idempotencyKey: string,
+  ): Promise<EndpointCommandShape | undefined> {
+    const row = await this.prisma.endpointCommand.findFirst({
+      where: { tenantId, idempotencyKey },
+    });
     return row ? this.mapEndpointCommand(row) : undefined;
   }
 
-  async claimNextEndpointCommand(tenantId: string, deviceId: string, options: { now: string }): Promise<EndpointCommandShape | undefined> {
+  async claimNextEndpointCommand(
+    tenantId: string,
+    deviceId: string,
+    options: { now: string },
+  ): Promise<EndpointCommandShape | undefined> {
     const candidate = await this.prisma.endpointCommand.findFirst({
       where: { tenantId, deviceId, status: 'queued', expiresAt: { gt: dateOrNow(options.now) } },
       orderBy: { requestedAt: 'asc' },
@@ -1766,7 +1891,11 @@ export class PrismaStore implements Store {
     if (!candidate) return undefined;
     const updated = await this.prisma.endpointCommand.update({
       where: { id: candidate.id },
-      data: { status: 'claimed', claimedAt: dateOrNow(options.now), updatedAt: dateOrNow(options.now) },
+      data: {
+        status: 'claimed',
+        claimedAt: dateOrNow(options.now),
+        updatedAt: dateOrNow(options.now),
+      },
     });
     return this.mapEndpointCommand(updated);
   }
@@ -1796,23 +1925,40 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getEndpointCommandResult(tenantId: string, commandId: string): Promise<EndpointCommandResultShape | undefined> {
+  async getEndpointCommandResult(
+    tenantId: string,
+    commandId: string,
+  ): Promise<EndpointCommandResultShape | undefined> {
     const r = await this.prisma.endpointCommandResult.findFirst({ where: { tenantId, commandId } });
-    return r ? {
-      id: r.id as EndpointCommandResultShape['id'],
-      commandId: r.commandId as EndpointCommandResultShape['commandId'],
-      tenantId: r.tenantId as EndpointCommandResultShape['tenantId'],
-      deviceId: r.deviceId as EndpointCommandResultShape['deviceId'],
-      status: r.status as EndpointCommandResultShape['status'],
-      payload: r.payload as Record<string, unknown>,
-      errorCode: r.errorCode ?? undefined,
-      errorMessage: r.errorMessage ?? undefined,
-      submittedAt: toISO(r.submittedAt)!,
-    } : undefined;
+    return r
+      ? {
+          id: r.id as EndpointCommandResultShape['id'],
+          commandId: r.commandId as EndpointCommandResultShape['commandId'],
+          tenantId: r.tenantId as EndpointCommandResultShape['tenantId'],
+          deviceId: r.deviceId as EndpointCommandResultShape['deviceId'],
+          status: r.status as EndpointCommandResultShape['status'],
+          payload: r.payload as Record<string, unknown>,
+          errorCode: r.errorCode ?? undefined,
+          errorMessage: r.errorMessage ?? undefined,
+          submittedAt: toISO(r.submittedAt)!,
+        }
+      : undefined;
   }
 
   private mapEndpointDevice(row: {
-    id: string; tenantId: string; displayName: string; hostname: string; deviceKey: string; fingerprint: string; platform: string; agentVersion: string; status: string; lastSeenAt: Date | null; enrolledAt: Date; createdAt: Date; updatedAt: Date;
+    id: string;
+    tenantId: string;
+    displayName: string;
+    hostname: string;
+    deviceKey: string;
+    fingerprint: string;
+    platform: string;
+    agentVersion: string;
+    status: string;
+    lastSeenAt: Date | null;
+    enrolledAt: Date;
+    createdAt: Date;
+    updatedAt: Date;
   }): EndpointDeviceShape {
     return {
       id: row.id as EndpointDeviceShape['id'],
@@ -1832,7 +1978,24 @@ export class PrismaStore implements Store {
   }
 
   private mapEndpointCommand(row: {
-    id: string; tenantId: string; deviceId: string; commandKind: string; status: string; nonce: string; idempotencyKey: string; requestedByUserId: string; requestedAt: Date; claimedAt: Date | null; completedAt: Date | null; expiresAt: Date; policyDecision: unknown; result: unknown; errorCode: string | null; errorMessage: string | null; createdAt: Date; updatedAt: Date;
+    id: string;
+    tenantId: string;
+    deviceId: string;
+    commandKind: string;
+    status: string;
+    nonce: string;
+    idempotencyKey: string;
+    requestedByUserId: string;
+    requestedAt: Date;
+    claimedAt: Date | null;
+    completedAt: Date | null;
+    expiresAt: Date;
+    policyDecision: unknown;
+    result: unknown;
+    errorCode: string | null;
+    errorMessage: string | null;
+    createdAt: Date;
+    updatedAt: Date;
   }): EndpointCommandShape {
     return {
       id: row.id as EndpointCommandShape['id'],
@@ -1896,7 +2059,16 @@ export class PrismaStore implements Store {
   }
 
   private mapToolManifestRecord(r: {
-    id: string; manifestVersion: string; registryVersion: string; source: string; integrityHash: string; status: string; loadedAt: Date; metadata: unknown; createdAt: Date; updatedAt: Date;
+    id: string;
+    manifestVersion: string;
+    registryVersion: string;
+    source: string;
+    integrityHash: string;
+    status: string;
+    loadedAt: Date;
+    metadata: unknown;
+    createdAt: Date;
+    updatedAt: Date;
   }): ToolManifestRecordShape {
     return {
       id: r.id as ToolManifestRecordShape['id'],
@@ -1972,7 +2144,11 @@ export class PrismaStore implements Store {
     return r ? this.mapToolDefinition(r) : undefined;
   }
 
-  async listToolDefinitions(options?: { manifestId?: string; enabled?: boolean; category?: string }): Promise<ToolDefinitionShape[]> {
+  async listToolDefinitions(options?: {
+    manifestId?: string;
+    enabled?: boolean;
+    category?: string;
+  }): Promise<ToolDefinitionShape[]> {
     const rows = await this.prisma.toolDefinition.findMany({
       where: {
         ...(options?.manifestId ? { manifestId: options.manifestId } : {}),
@@ -1985,7 +2161,27 @@ export class PrismaStore implements Store {
   }
 
   private mapToolDefinition(r: {
-    id: string; manifestId: string; toolKey: string; displayName: string; description: string | null; category: string; riskLevel: string; implementationId: string; readOnly: boolean; remediation: boolean; approvalRequired: boolean; requiredPermission: string; requiredPrivilege: string; dryRunCapable: boolean; commandTemplateId: string | null; supportedPlatforms: unknown; inputSchema: unknown; outputSchema: unknown; enabled: boolean; createdAt: Date; updatedAt: Date;
+    id: string;
+    manifestId: string;
+    toolKey: string;
+    displayName: string;
+    description: string | null;
+    category: string;
+    riskLevel: string;
+    implementationId: string;
+    readOnly: boolean;
+    remediation: boolean;
+    approvalRequired: boolean;
+    requiredPermission: string;
+    requiredPrivilege: string;
+    dryRunCapable: boolean;
+    commandTemplateId: string | null;
+    supportedPlatforms: unknown;
+    inputSchema: unknown;
+    outputSchema: unknown;
+    enabled: boolean;
+    createdAt: Date;
+    updatedAt: Date;
   }): ToolDefinitionShape {
     return {
       id: r.id as ToolDefinitionShape['id'],
@@ -2051,7 +2247,10 @@ export class PrismaStore implements Store {
     return r ? this.mapToolInvocation(r) : undefined;
   }
 
-  async listToolInvocations(tenantId: string, options?: { deviceId?: string; status?: string; toolKey?: string }): Promise<ToolInvocationShape[]> {
+  async listToolInvocations(
+    tenantId: string,
+    options?: { deviceId?: string; status?: string; toolKey?: string },
+  ): Promise<ToolInvocationShape[]> {
     const rows = await this.prisma.toolInvocation.findMany({
       where: {
         tenantId,
@@ -2066,7 +2265,21 @@ export class PrismaStore implements Store {
   }
 
   private mapToolInvocation(r: {
-    id: string; tenantId: string; deviceId: string; toolDefinitionId: string; toolKey: string; requestedByUserId: string; status: string; policyDecision: unknown; approvalId: string | null; endpointCommandId: string | null; requestedInput: unknown; normalizedResult: unknown; createdAt: Date; updatedAt: Date; completedAt: Date | null;
+    id: string;
+    tenantId: string;
+    deviceId: string;
+    toolDefinitionId: string;
+    toolKey: string;
+    requestedByUserId: string;
+    status: string;
+    policyDecision: unknown;
+    approvalId: string | null;
+    endpointCommandId: string | null;
+    requestedInput: unknown;
+    normalizedResult: unknown;
+    createdAt: Date;
+    updatedAt: Date;
+    completedAt: Date | null;
   }): ToolInvocationShape {
     return {
       id: r.id as ToolInvocationShape['id'],
@@ -2120,12 +2333,17 @@ export class PrismaStore implements Store {
     return r ? this.mapToolApproval(r) : undefined;
   }
 
-  async getToolApprovalByInvocationId(invocationId: string): Promise<ToolApprovalShape | undefined> {
+  async getToolApprovalByInvocationId(
+    invocationId: string,
+  ): Promise<ToolApprovalShape | undefined> {
     const r = await this.prisma.toolApproval.findUnique({ where: { invocationId } });
     return r ? this.mapToolApproval(r) : undefined;
   }
 
-  async listToolApprovals(tenantId: string, options?: { status?: string; requestedByUserId?: string }): Promise<ToolApprovalShape[]> {
+  async listToolApprovals(
+    tenantId: string,
+    options?: { status?: string; requestedByUserId?: string },
+  ): Promise<ToolApprovalShape[]> {
     const rows = await this.prisma.toolApproval.findMany({
       where: {
         tenantId,
@@ -2139,7 +2357,18 @@ export class PrismaStore implements Store {
   }
 
   private mapToolApproval(r: {
-    id: string; tenantId: string; invocationId: string; requestedByUserId: string; approvedByUserId: string | null; status: string; reason: string | null; comment: string | null; expiresAt: Date; decidedAt: Date | null; createdAt: Date; updatedAt: Date;
+    id: string;
+    tenantId: string;
+    invocationId: string;
+    requestedByUserId: string;
+    approvedByUserId: string | null;
+    status: string;
+    reason: string | null;
+    comment: string | null;
+    expiresAt: Date;
+    decidedAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
   }): ToolApprovalShape {
     return {
       id: r.id as ToolApprovalShape['id'],
@@ -2182,12 +2411,17 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getToolResultNoteDraft(tenantId: string, id: string): Promise<ToolResultNoteDraftShape | undefined> {
+  async getToolResultNoteDraft(
+    tenantId: string,
+    id: string,
+  ): Promise<ToolResultNoteDraftShape | undefined> {
     const r = await this.prisma.toolResultNoteDraft.findFirst({ where: { tenantId, id } });
     return r ? this.mapToolResultNoteDraft(r) : undefined;
   }
 
-  async getToolResultNoteDraftByInvocationId(invocationId: string): Promise<ToolResultNoteDraftShape | undefined> {
+  async getToolResultNoteDraftByInvocationId(
+    invocationId: string,
+  ): Promise<ToolResultNoteDraftShape | undefined> {
     const r = await this.prisma.toolResultNoteDraft.findUnique({ where: { invocationId } });
     return r ? this.mapToolResultNoteDraft(r) : undefined;
   }
@@ -2202,7 +2436,16 @@ export class PrismaStore implements Store {
   }
 
   private mapToolResultNoteDraft(r: {
-    id: string; tenantId: string; invocationId: string; ticketId: string | null; title: string | null; body: string; status: string; createdByUserId: string; createdAt: Date; updatedAt: Date;
+    id: string;
+    tenantId: string;
+    invocationId: string;
+    ticketId: string | null;
+    title: string | null;
+    body: string;
+    status: string;
+    createdByUserId: string;
+    createdAt: Date;
+    updatedAt: Date;
   }): ToolResultNoteDraftShape {
     return {
       id: r.id as ToolResultNoteDraftShape['id'],
@@ -2245,7 +2488,10 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getKnowledgeSource(tenantId: string, id: string): Promise<KnowledgeSourceShape | undefined> {
+  async getKnowledgeSource(
+    tenantId: string,
+    id: string,
+  ): Promise<KnowledgeSourceShape | undefined> {
     const r = await this.prisma.knowledgeSource.findFirst({ where: { tenantId, id } });
     return r ? this.mapKnowledgeSource(r) : undefined;
   }
@@ -2295,12 +2541,18 @@ export class PrismaStore implements Store {
     });
   }
 
-  async getKnowledgeArticle(tenantId: string, id: string): Promise<KnowledgeArticleShape | undefined> {
+  async getKnowledgeArticle(
+    tenantId: string,
+    id: string,
+  ): Promise<KnowledgeArticleShape | undefined> {
     const r = await this.prisma.knowledgeArticle.findFirst({ where: { tenantId, id } });
     return r ? this.mapKnowledgeArticle(r) : undefined;
   }
 
-  async listKnowledgeArticles(tenantId: string, options?: { sourceId?: string; status?: string }): Promise<KnowledgeArticleShape[]> {
+  async listKnowledgeArticles(
+    tenantId: string,
+    options?: { sourceId?: string; status?: string },
+  ): Promise<KnowledgeArticleShape[]> {
     const rows = await this.prisma.knowledgeArticle.findMany({
       where: {
         tenantId,
@@ -2312,11 +2564,17 @@ export class PrismaStore implements Store {
     return rows.map((r) => this.mapKnowledgeArticle(r));
   }
 
-  async searchKnowledgeArticles(tenantId: string, query: string, options?: { sourceIds?: string[]; limit?: number }): Promise<KnowledgeArticleShape[]> {
+  async searchKnowledgeArticles(
+    tenantId: string,
+    query: string,
+    options?: { sourceIds?: string[]; limit?: number },
+  ): Promise<KnowledgeArticleShape[]> {
     const rows = await this.prisma.knowledgeArticle.findMany({
       where: {
         tenantId,
-        ...(options?.sourceIds && options.sourceIds.length > 0 ? { sourceId: { in: options.sourceIds } } : {}),
+        ...(options?.sourceIds && options.sourceIds.length > 0
+          ? { sourceId: { in: options.sourceIds } }
+          : {}),
         OR: [
           { title: { contains: query, mode: 'insensitive' } },
           { content: { contains: query, mode: 'insensitive' } },
@@ -2360,13 +2618,23 @@ export class PrismaStore implements Store {
         pgvectorEnabled: false,
         pgvectorReason: `pgvector readiness check failed: ${error instanceof Error ? error.message : 'unknown error'}`,
         vectorColumnAvailable: false,
-        vectorColumnReason: 'vector column readiness was not proven because the pgvector check failed',
+        vectorColumnReason:
+          'vector column readiness was not proven because the pgvector check failed',
       };
     }
   }
 
   private mapKnowledgeSource(r: {
-    id: string; tenantId: string; name: string; description: string | null; adapterType: string; status: string; config: unknown; lastSyncAt: Date | null; createdAt: Date; updatedAt: Date;
+    id: string;
+    tenantId: string;
+    name: string;
+    description: string | null;
+    adapterType: string;
+    status: string;
+    config: unknown;
+    lastSyncAt: Date | null;
+    createdAt: Date;
+    updatedAt: Date;
   }): KnowledgeSourceShape {
     return {
       id: r.id as KnowledgeSourceShape['id'],
@@ -2383,7 +2651,21 @@ export class PrismaStore implements Store {
   }
 
   private mapKnowledgeArticle(r: {
-    id: string; tenantId: string; sourceId: string; title: string; content: string; tags: string[]; metadata: unknown; embeddingProvider: string | null; embeddingModel: string | null; embeddingDimensions: number | null; embeddingContentHash: string | null; embeddedAt: Date | null; status: string; createdAt: Date; updatedAt: Date;
+    id: string;
+    tenantId: string;
+    sourceId: string;
+    title: string;
+    content: string;
+    tags: string[];
+    metadata: unknown;
+    embeddingProvider: string | null;
+    embeddingModel: string | null;
+    embeddingDimensions: number | null;
+    embeddingContentHash: string | null;
+    embeddedAt: Date | null;
+    status: string;
+    createdAt: Date;
+    updatedAt: Date;
   }): KnowledgeArticleShape {
     return {
       id: r.id as KnowledgeArticleShape['id'],

@@ -87,7 +87,10 @@ describe('greeting suggestion contracts', () => {
       },
       generatedAt: now,
     });
-    assert.strictEqual(res.suggestion.greetingText, 'Good day, Alice. Thank you for calling SupportPlane.');
+    assert.strictEqual(
+      res.suggestion.greetingText,
+      'Good day, Alice. Thank you for calling SupportPlane.',
+    );
     assert.strictEqual(res.safety.autoSend, false);
     assert.strictEqual(res.safety.voiceEnabled, false);
   });

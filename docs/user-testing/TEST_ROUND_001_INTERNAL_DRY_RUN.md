@@ -51,20 +51,20 @@
 
 ## Unclear Labels
 
-| Label | Issue | Severity |
-|-------|-------|----------|
-| "API: localhost:4110" | Port is wrong (should be 4210) | P1 — FIXED |
-| "Zammad mode" | Only mentions Zammad; GLPI is also real | P2 |
-| "Connector Runtime Provenance" | Jargon-heavy for non-technical testers | P3 |
+| Label                          | Issue                                   | Severity   |
+| ------------------------------ | --------------------------------------- | ---------- |
+| "API: localhost:4110"          | Port is wrong (should be 4210)          | P1 — FIXED |
+| "Zammad mode"                  | Only mentions Zammad; GLPI is also real | P2         |
+| "Connector Runtime Provenance" | Jargon-heavy for non-technical testers  | P3         |
 
 ---
 
 ## Demo Blockers Found
 
-| # | Blocker | Severity | Status |
-|---|---------|----------|--------|
-| 1 | Session list has 100+ stale entries from prior testing | P0 | Documented — must `reset_demo_data.sh` before testing |
-| 2 | Header API port label shows `localhost:4110` instead of `4210` | P1 | FIXED — now reads from NEXT_PUBLIC_API_BASE_URL |
+| #   | Blocker                                                        | Severity | Status                                                |
+| --- | -------------------------------------------------------------- | -------- | ----------------------------------------------------- |
+| 1   | Session list has 100+ stale entries from prior testing         | P0       | Documented — must `reset_demo_data.sh` before testing |
+| 2   | Header API port label shows `localhost:4110` instead of `4210` | P1       | FIXED — now reads from NEXT_PUBLIC_API_BASE_URL       |
 
 ---
 

@@ -75,18 +75,20 @@ describe('MeshCentralConnectorService', () => {
       (err: unknown) => {
         const e = err as Error;
         return e.message.includes('unconfigured');
-      }
+      },
     );
   });
 
   it('does not fall back to fixture data when real config is present without mockMode', async () => {
-    const service = createMeshCentralService(mockInstallation({
-      mockMode: false,
-      config: {
-        baseUrl: 'https://meshcentral.example.test',
-        apiToken: 'redacted-test-token',
-      },
-    }));
+    const service = createMeshCentralService(
+      mockInstallation({
+        mockMode: false,
+        config: {
+          baseUrl: 'https://meshcentral.example.test',
+          apiToken: 'redacted-test-token',
+        },
+      }),
+    );
 
     const health = await service.health();
     assert.strictEqual(health.status, 'unconfigured');
@@ -96,7 +98,7 @@ describe('MeshCentralConnectorService', () => {
       (err: unknown) => {
         const e = err as Error;
         return e.message.includes('unconfigured');
-      }
+      },
     );
   });
 });

@@ -51,14 +51,14 @@ b9cd490 fix(bl143): closure — ticket ID defaults (TICKET-101→2), connectorMo
 
 ### Runtime / Final HEAD Analysis
 
-| Field | Value |
-|---|---|
-| Final repo HEAD | `403c5e2` |
-| API `/health` HEAD (Session 159 deploy time) | `c6cccb8320957208fd9cb42d6870c91c3975f65c` |
-| Match | **NO** — but difference is docs-only |
-| Diff `c6cccb8..72e8572` | BACKLOG.md, PROJECT_STATE.yaml, STATUS.md, docs/EVIDENCE_LOG.md |
-| Diff `bf4f44e..c6cccb8` | docs/compliance/* (8 precheck docs), state doc updates |
-| Runtime code HEAD | `bf4f44e` (actual deployed code for BL-148/149/150/151) |
+| Field                                        | Value                                                           |
+| -------------------------------------------- | --------------------------------------------------------------- |
+| Final repo HEAD                              | `403c5e2`                                                       |
+| API `/health` HEAD (Session 159 deploy time) | `c6cccb8320957208fd9cb42d6870c91c3975f65c`                      |
+| Match                                        | **NO** — but difference is docs-only                            |
+| Diff `c6cccb8..72e8572`                      | BACKLOG.md, PROJECT_STATE.yaml, STATUS.md, docs/EVIDENCE_LOG.md |
+| Diff `bf4f44e..c6cccb8`                      | docs/compliance/\* (8 precheck docs), state doc updates         |
+| Runtime code HEAD                            | `bf4f44e` (actual deployed code for BL-148/149/150/151)         |
 
 ### Classification: B → Dispositioned to A-
 
@@ -90,44 +90,44 @@ b9cd490 fix(bl143): closure — ticket ID defaults (TICKET-101→2), connectorMo
 
 Five parallel audit workstreams were executed:
 
-| Subagent | Focus | Status |
-|---|---|---|
-| A | Automation / CI/CD / DevSecOps | Complete |
-| B | Test Trustworthiness / Anti-Fake-Completeness | Complete |
-| C | Security / Compliance-Readiness Backlog | Complete |
-| D | Accessibility / Contrast / Visual Confidence | Complete |
-| E | Logo / House Style / Design-System Identity | Complete |
+| Subagent | Focus                                         | Status   |
+| -------- | --------------------------------------------- | -------- |
+| A        | Automation / CI/CD / DevSecOps                | Complete |
+| B        | Test Trustworthiness / Anti-Fake-Completeness | Complete |
+| C        | Security / Compliance-Readiness Backlog       | Complete |
+| D        | Accessibility / Contrast / Visual Confidence  | Complete |
+| E        | Logo / House Style / Design-System Identity   | Complete |
 
 ---
 
 ## Phase 2 — Existing Guardrail Inventory
 
-| Category | Status | Path | Command | Blocks PR | Local | CI | Trust | Next Action |
-|---|---|---|---|---|---|---|---|---|
-| Formatting | Exists but not enforced | `.prettierrc` | `npm run format:check` | No | Yes | No | Medium | Add to PR-blocking CI job |
-| Linting | Exists but not enforced | `eslint.config.mjs` | `npm run lint` | No | Yes | No | Medium | Add to PR-blocking CI job |
-| Type checking | Exists but not enforced | `tsconfig.json` (11 files) | `npm run typecheck` | No | Yes | No | Medium | Add to PR-blocking CI job |
-| Unit tests | Exists but not enforced | Workspace `package.json`s | `npm test` | No | Yes | No* | Medium | Add to CI; audit "No tests yet" workspaces |
-| Integration tests | Exists but not enforced | `apps/api/test/*.test.ts` | `npm test` | No | Yes | No | Medium | Run in CI with ephemeral PostgreSQL |
-| API contract tests | Exists but not enforced | `scripts/validate-contracts.js` | `npm run validate` | No | Yes | No | Medium | Add to CI |
-| RBAC/tenant tests | Exists but not enforced | `apps/api/test/api.test.ts`, `security-hardening.test.ts` | `npm test` | No | Yes | No | Medium | Promote to CI with seeded DB |
-| DB migration validation | Exists but weak | `prisma/migrations/` (17 dirs) | `npx prisma migrate status` (manual) | No | Manual | No | Low | Add dry-run validation in CI |
-| Prisma/schema validation | Exists but not enforced | `prisma/schema.prisma` | `npm run validate` | No | Yes | No | Medium | Add to CI |
-| Worker/outbox/retry tests | Exists but weak | `apps/api/test/api.test.ts` | `npm test` | No | Partial | No | Low | Write worker-specific tests |
-| Browser/E2E tests | **Missing** | — | — | — | — | — | — | Create Playwright suite |
-| Accessibility checks | **Missing** | — | — | — | — | — | — | Add axe-core or Lighthouse |
-| Visual regression | Manual only | `scripts/*screenshots*.js` | `node scripts/...` | No | Yes | No | Low | Consolidate into Playwright suite |
-| CI/CD workflows | Exists but weak | `.github/workflows/validate.yml` | N/A | Partial | N/A | Yes | Low | Expand to build/test/lint/typecheck |
-| Container/image scanning | **Missing** | `apps/*/Containerfile.*` | — | No | No | No | — | Add Trivy/Grype to CI |
-| Dependency vulnerability scanning | Manual only | — | `npm audit` (ad-hoc) | No | Manual | No | Low | Add `npm audit` or `audit-ci` to CI |
-| Secrets detection | Exists but weak | `.github/workflows/windows-endpoint-verification.yml` (custom regex) | — | No | No | Partial | Low | Integrate gitleaks/trufflehog |
-| Static security analysis | **Missing** | — | — | — | — | — | — | Add Semgrep/CodeQL |
-| Supply-chain hardening | Exists but weak | `package-lock.json` | — | No | N/A | No | Low | Enable npm provenance, generate SBOM |
-| Kubernetes manifest validation | Exists but not enforced | `infra/kubernetes/local-podman/*.yaml` | — | No | No | No | Low | Add kube-linter/checkov |
-| Runtime identity checks | Exists and enforced (local) | `scripts/health.js`, `apps/api/src/health/` | `npm run health` | No | Yes | Partial | Medium | Add assertions to standard CI |
-| Evidence hygiene checks | Exists and enforced | `scripts/check_state_docs.py`, `scripts/check_docs_hygiene.py` | `python3 scripts/...` | Yes (docs) | Yes | Yes | Medium | Expand to cover code-quality gates |
+| Category                          | Status                      | Path                                                                 | Command                              | Blocks PR  | Local   | CI      | Trust  | Next Action                                |
+| --------------------------------- | --------------------------- | -------------------------------------------------------------------- | ------------------------------------ | ---------- | ------- | ------- | ------ | ------------------------------------------ |
+| Formatting                        | Exists but not enforced     | `.prettierrc`                                                        | `npm run format:check`               | No         | Yes     | No      | Medium | Add to PR-blocking CI job                  |
+| Linting                           | Exists but not enforced     | `eslint.config.mjs`                                                  | `npm run lint`                       | No         | Yes     | No      | Medium | Add to PR-blocking CI job                  |
+| Type checking                     | Exists but not enforced     | `tsconfig.json` (11 files)                                           | `npm run typecheck`                  | No         | Yes     | No      | Medium | Add to PR-blocking CI job                  |
+| Unit tests                        | Exists but not enforced     | Workspace `package.json`s                                            | `npm test`                           | No         | Yes     | No\*    | Medium | Add to CI; audit "No tests yet" workspaces |
+| Integration tests                 | Exists but not enforced     | `apps/api/test/*.test.ts`                                            | `npm test`                           | No         | Yes     | No      | Medium | Run in CI with ephemeral PostgreSQL        |
+| API contract tests                | Exists but not enforced     | `scripts/validate-contracts.js`                                      | `npm run validate`                   | No         | Yes     | No      | Medium | Add to CI                                  |
+| RBAC/tenant tests                 | Exists but not enforced     | `apps/api/test/api.test.ts`, `security-hardening.test.ts`            | `npm test`                           | No         | Yes     | No      | Medium | Promote to CI with seeded DB               |
+| DB migration validation           | Exists but weak             | `prisma/migrations/` (17 dirs)                                       | `npx prisma migrate status` (manual) | No         | Manual  | No      | Low    | Add dry-run validation in CI               |
+| Prisma/schema validation          | Exists but not enforced     | `prisma/schema.prisma`                                               | `npm run validate`                   | No         | Yes     | No      | Medium | Add to CI                                  |
+| Worker/outbox/retry tests         | Exists but weak             | `apps/api/test/api.test.ts`                                          | `npm test`                           | No         | Partial | No      | Low    | Write worker-specific tests                |
+| Browser/E2E tests                 | **Missing**                 | —                                                                    | —                                    | —          | —       | —       | —      | Create Playwright suite                    |
+| Accessibility checks              | **Missing**                 | —                                                                    | —                                    | —          | —       | —       | —      | Add axe-core or Lighthouse                 |
+| Visual regression                 | Manual only                 | `scripts/*screenshots*.js`                                           | `node scripts/...`                   | No         | Yes     | No      | Low    | Consolidate into Playwright suite          |
+| CI/CD workflows                   | Exists but weak             | `.github/workflows/validate.yml`                                     | N/A                                  | Partial    | N/A     | Yes     | Low    | Expand to build/test/lint/typecheck        |
+| Container/image scanning          | **Missing**                 | `apps/*/Containerfile.*`                                             | —                                    | No         | No      | No      | —      | Add Trivy/Grype to CI                      |
+| Dependency vulnerability scanning | Manual only                 | —                                                                    | `npm audit` (ad-hoc)                 | No         | Manual  | No      | Low    | Add `npm audit` or `audit-ci` to CI        |
+| Secrets detection                 | Exists but weak             | `.github/workflows/windows-endpoint-verification.yml` (custom regex) | —                                    | No         | No      | Partial | Low    | Integrate gitleaks/trufflehog              |
+| Static security analysis          | **Missing**                 | —                                                                    | —                                    | —          | —       | —       | —      | Add Semgrep/CodeQL                         |
+| Supply-chain hardening            | Exists but weak             | `package-lock.json`                                                  | —                                    | No         | N/A     | No      | Low    | Enable npm provenance, generate SBOM       |
+| Kubernetes manifest validation    | Exists but not enforced     | `infra/kubernetes/local-podman/*.yaml`                               | —                                    | No         | No      | No      | Low    | Add kube-linter/checkov                    |
+| Runtime identity checks           | Exists and enforced (local) | `scripts/health.js`, `apps/api/src/health/`                          | `npm run health`                     | No         | Yes     | Partial | Medium | Add assertions to standard CI              |
+| Evidence hygiene checks           | Exists and enforced         | `scripts/check_state_docs.py`, `scripts/check_docs_hygiene.py`       | `python3 scripts/...`                | Yes (docs) | Yes     | Yes     | Medium | Expand to cover code-quality gates         |
 
-*Note: `apps/worker`, `packages/audit`, `packages/ui` echo "No tests yet".*
+_Note: `apps/worker`, `packages/audit`, `packages/ui` echo "No tests yet"._
 
 ---
 
@@ -135,19 +135,19 @@ Five parallel audit workstreams were executed:
 
 ### Test Inventory (Verified)
 
-| Workspace | Tests | Pass | Fail | Skip | Todo |
-|---|---|---|---|---|---|
-| apps/api | 220 | 217 | 0 | 3 | 0 |
-| apps/web | 22 | 22 | 0 | 0 | 0 |
-| apps/endpoint-agent | 44 | 44 | 0 | 0 | 0 |
-| apps/worker | 0 | 0 | 0 | 0 | 0 |
-| packages/ai | 12 | 12 | 0 | 0 | 0 |
-| packages/audit | 0 | 0 | 0 | 0 | 0 |
-| packages/connectors | 50 | 50 | 0 | 0 | 0 |
-| packages/contracts | 49 | 49 | 0 | 0 | 0 |
-| packages/policy | 7 | 7 | 0 | 0 | 0 |
-| packages/ui | 0 | 0 | 0 | 0 | 0 |
-| **TOTAL** | **404** | **401** | **0** | **3** | **0** |
+| Workspace           | Tests   | Pass    | Fail  | Skip  | Todo  |
+| ------------------- | ------- | ------- | ----- | ----- | ----- |
+| apps/api            | 220     | 217     | 0     | 3     | 0     |
+| apps/web            | 22      | 22      | 0     | 0     | 0     |
+| apps/endpoint-agent | 44      | 44      | 0     | 0     | 0     |
+| apps/worker         | 0       | 0       | 0     | 0     | 0     |
+| packages/ai         | 12      | 12      | 0     | 0     | 0     |
+| packages/audit      | 0       | 0       | 0     | 0     | 0     |
+| packages/connectors | 50      | 50      | 0     | 0     | 0     |
+| packages/contracts  | 49      | 49      | 0     | 0     | 0     |
+| packages/policy     | 7       | 7       | 0     | 0     | 0     |
+| packages/ui         | 0       | 0       | 0     | 0     | 0     |
+| **TOTAL**           | **404** | **401** | **0** | **3** | **0** |
 
 ### Strengths
 
@@ -205,14 +205,14 @@ Five parallel audit workstreams were executed:
 
 ### Contrast Ratios (WCAG 2.1 AA)
 
-| Combination | Ratio | AA Normal | Where Used |
-|---|---|---|---|
-| `text-white` on `bg-accent` (#3b82f6) | **3.68:1** | **FAIL** | Primary buttons everywhere |
-| `text-cockpit-500` on `bg-cockpit-900` | **2.53:1** | **FAIL** | Metadata, helper text |
-| `text-cockpit-400` on `bg-cockpit-900` | 7.54:1 | Pass | Body text |
-| `text-amber-300` on `bg-amber-900/30` | 11.54:1 | Pass | Warning badges |
-| `text-green-300` on `bg-green-900/40` | 10.90:1 | Pass | Success badges |
-| `text-red-300` on `bg-red-900/40` | 8.58:1 | Pass | Danger badges |
+| Combination                            | Ratio      | AA Normal | Where Used                 |
+| -------------------------------------- | ---------- | --------- | -------------------------- |
+| `text-white` on `bg-accent` (#3b82f6)  | **3.68:1** | **FAIL**  | Primary buttons everywhere |
+| `text-cockpit-500` on `bg-cockpit-900` | **2.53:1** | **FAIL**  | Metadata, helper text      |
+| `text-cockpit-400` on `bg-cockpit-900` | 7.54:1     | Pass      | Body text                  |
+| `text-amber-300` on `bg-amber-900/30`  | 11.54:1    | Pass      | Warning badges             |
+| `text-green-300` on `bg-green-900/40`  | 10.90:1    | Pass      | Success badges             |
+| `text-red-300` on `bg-red-900/40`      | 8.58:1     | Pass      | Danger badges              |
 
 **Critical:** Primary CTA buttons fail WCAG AA normal text contrast (need 4.5:1).
 **Secondary:** `text-cockpit-500` helper text fails AA on dark backgrounds.
@@ -247,14 +247,14 @@ Five parallel audit workstreams were executed:
 
 ### Brand Asset Inventory
 
-| Asset | Path | Status |
-|---|---|---|
-| Logo (SVG) | `apps/web/app/icon.svg` | Placeholder-quality geometric cyan square |
-| Favicon | `apps/web/app/icon.svg` | Minimal; no `.ico`, `.png`, `apple-touch-icon`, `manifest.json` |
-| Wordmark / Logotype | *Not found* | Missing |
-| Icons | `lucide-react` | Consistent library, generic |
-| Fonts | System default | Missing custom typography |
-| Shared UI package | `packages/ui/src/index.ts` | Ghost — exports only `UI_VERSION` |
+| Asset               | Path                       | Status                                                          |
+| ------------------- | -------------------------- | --------------------------------------------------------------- |
+| Logo (SVG)          | `apps/web/app/icon.svg`    | Placeholder-quality geometric cyan square                       |
+| Favicon             | `apps/web/app/icon.svg`    | Minimal; no `.ico`, `.png`, `apple-touch-icon`, `manifest.json` |
+| Wordmark / Logotype | _Not found_                | Missing                                                         |
+| Icons               | `lucide-react`             | Consistent library, generic                                     |
+| Fonts               | System default             | Missing custom typography                                       |
+| Shared UI package   | `packages/ui/src/index.ts` | Ghost — exports only `UI_VERSION`                               |
 
 ### Consistency Findings
 
@@ -281,6 +281,7 @@ Five parallel audit workstreams were executed:
 #### [BL-147] Design-System Consistency Pass
 
 **Strengthened scope:**
+
 - Unify spacing, typography, badge styles, card layouts, loading/error states.
 - **Add:** Logo, wordmark, favicon set, and brand identity consistency.
 - **Add:** Shared UI primitives migration (`Button`, `Input`, `Card`, `Badge`, `EmptyState`, `Skeleton`) into `packages/ui`.
@@ -290,6 +291,7 @@ Five parallel audit workstreams were executed:
 - **Add:** Empty-state illustration pattern.
 
 **Acceptance:**
+
 - `packages/ui` exports ≥5 real components with tests.
 - Zero arbitrary font-size classes remain.
 - Login page, header, and PDF exports share the same logo/wordmark.
@@ -299,6 +301,7 @@ Five parallel audit workstreams were executed:
 #### [BL-152] Belgium/EU Assurance Audit
 
 **Strengthened scope:**
+
 - 8 compliance precheck docs already created (honest, no certification claimed).
 - **Add concrete next gates:**
   1. Incident response runbook (`docs/RUNBOOK_INCIDENT_RESPONSE.md`)
@@ -319,6 +322,7 @@ Five parallel audit workstreams were executed:
 **Why it matters:** Broken builds, type errors, lint failures, and failing tests can be merged undetected. This undermines every other quality effort.
 
 **Scope:**
+
 - Expand `.github/workflows/validate.yml` (or create `ci.yml`) to run on every PR/push:
   - `npm run build`
   - `npm run typecheck`
@@ -331,20 +335,24 @@ Five parallel audit workstreams were executed:
 - Make the workflow a required status check for merge.
 
 **Non-goals:**
+
 - Do not add container builds to PR CI yet (too slow).
 - Do not add K8s deployment tests in this slice.
 
 **Acceptance:**
+
 - PR with intentional lint error is blocked.
 - PR with intentional test failure is blocked.
 - `npm audit` findings are surfaced (even if not all fixed immediately).
 - CI runtime < 10 minutes.
 
 **Evidence:**
+
 - Screenshot of PR checks panel showing all green.
 - Screenshot of intentional-failure PR being blocked.
 
 **Risk notes:**
+
 - 3 skipped AI chat tests may cause CI to report skip counts; acceptable if documented.
 - Worker/UI/audit "No tests yet" will show 0 tests; acceptable if backlog exists.
 
@@ -355,6 +363,7 @@ Five parallel audit workstreams were executed:
 **Why it matters:** Untested worker delivery, untested UI components, and missing negative tests create silent regression risks. Fake completeness (passing tests that bless broken behavior) is worse than no tests.
 
 **Scope:**
+
 1. Worker tests: `processOnce`, retry logic, dead-letter handling, NATS consume/ack.
 2. UI tests: At least render/snapshot tests for shared primitives in `packages/ui`.
 3. Audit tests: `computeIntegrityHash` placeholder behavior, redaction helpers.
@@ -364,10 +373,12 @@ Five parallel audit workstreams were executed:
 7. Skipped tests: Document reason and owner for all skips.
 
 **Non-goals:**
+
 - Do not replace all mocks with real integrations in this slice.
 - Do not add full Playwright E2E suite (that is BL-159).
 
 **Acceptance:**
+
 - `apps/worker` has ≥5 meaningful tests.
 - `packages/ui` has ≥3 render tests.
 - `packages/audit` has ≥3 unit tests.
@@ -375,6 +386,7 @@ Five parallel audit workstreams were executed:
 - No new test merely blesses broken behavior.
 
 **Evidence:**
+
 - `npm test` output showing new pass counts.
 - Test file listings per workspace.
 
@@ -385,6 +397,7 @@ Five parallel audit workstreams were executed:
 **Why it matters:** Security regressions and supply-chain attacks will not be caught until manual review. NIS2 and EU Cyber Resilience Act readiness require evidence of these controls.
 
 **Scope:**
+
 1. **Dependency vulnerability scanning:** `npm audit --audit-level=moderate` in CI; triage 10 pre-existing vulns.
 2. **Secrets detection:** Integrate `gitleaks` or `trufflehog` in CI, or enable GitHub secret scanning.
 3. **SAST:** Add Semgrep or CodeQL with findings tracked (not hidden).
@@ -395,21 +408,25 @@ Five parallel audit workstreams were executed:
 8. **Security headers / runtime identity:** Automated assertions in CI or nightly.
 
 **Non-goals:**
+
 - Do not claim all findings will be fixed immediately.
 - Do not add production-grade DAST (out of scope for local sandbox).
 
 **Acceptance:**
+
 - CI runs at least 3 new security checks (dependency audit, secrets scan, SAST).
 - First scan results are committed even if findings exist (honesty rule).
 - SBOM generation script exists and runs successfully.
 - K8s manifest validation script exists and reports issues.
 
 **Evidence:**
+
 - CI workflow YAML showing security steps.
 - Scan result artifacts (JSON/txt).
 - SBOM file committed.
 
 **Risk notes:**
+
 - False positives from SAST must be triaged, not ignored.
 - Container scanning requires image build; may be slow for PR CI — consider nightly.
 
@@ -420,6 +437,7 @@ Five parallel audit workstreams were executed:
 **Why it matters:** Enterprise buyers audit for accessibility. Screen reader and keyboard users cannot effectively use the application. WCAG non-compliance is a legal risk in EU public-sector sales.
 
 **Scope:**
+
 1. **Color / Contrast**
    - Darken `accent` or lighten button text to achieve ≥ 4.5:1 on primary buttons.
    - Audit all `text-cockpit-500` usages; replace with `text-cockpit-400` where AA normal text is required.
@@ -446,11 +464,13 @@ Five parallel audit workstreams were executed:
    - Add keyboard navigation test for `ToolsDropdown` and `InfoTooltip`.
 
 **Non-goals:**
+
 - Do not redesign the entire UI.
 - Do not add light mode in this slice.
 - Do not claim full WCAG 2.1 AA certification.
 
 **Acceptance:**
+
 - Primary buttons pass 4.5:1 contrast.
 - `aria-label` count ≥ 20 across the web app.
 - Focus rings visible on all interactive elements.
@@ -458,11 +478,13 @@ Five parallel audit workstreams were executed:
 - `docs/compliance/ACCESSIBILITY_AUDIT.md` updated with resolved issues and new baseline.
 
 **Evidence:**
+
 - Browser screenshots before/after of login page, dashboard, admin panel.
 - axe-core report artifact.
 - Contrast calculation screenshots or tool output.
 
 **Risk notes:**
+
 - Some contrast fixes may require broader color token changes.
 - Focus rings may clash with existing design; adjust offset colors as needed.
 
@@ -473,6 +495,7 @@ Five parallel audit workstreams were executed:
 **Why it matters:** Manual screenshots are slow, inconsistent, and skip accessibility/keyboard/interaction validation. A first-tester-facing bug (e.g., broken login form, missing session list) will not be caught by unit tests.
 
 **Scope:**
+
 1. Create formal Playwright E2E suite with `playwright.config.ts`.
 2. Smoke tests for critical paths:
    - Login → Dashboard load
@@ -484,16 +507,19 @@ Five parallel audit workstreams were executed:
 4. Run E2E in CI (against local dev server or ephemeral cluster).
 
 **Non-goals:**
+
 - Do not cover every panel and edge case in the first slice.
 - Do not replace manual screenshot scripts entirely (they still serve evidence purposes).
 
 **Acceptance:**
+
 - `npx playwright test` runs locally and passes.
 - ≥5 smoke tests covering the 5 paths above.
 - CI runs E2E on PR or nightly.
 - axe-core scans report 0 critical violations.
 
 **Evidence:**
+
 - Playwright report artifact.
 - Screenshot of passing CI E2E step.
 
@@ -504,6 +530,7 @@ Five parallel audit workstreams were executed:
 **Why it matters:** Every closure session requires runtime identity proof, clean worktree, and evidence folder compliance. Automating these checks reduces human error and closure-repair cycles.
 
 **Scope:**
+
 1. **Runtime identity gate script:** `scripts/check_runtime_identity.sh`
    - Compares API `/health` HEAD to `git rev-parse HEAD`.
    - Fails with explicit message if mismatch > acceptable threshold.
@@ -516,15 +543,18 @@ Five parallel audit workstreams were executed:
 3. **Integrate into CI or pre-commit:** Optional fast check.
 
 **Non-goals:**
+
 - Do not enforce runtime identity in CI if cluster is not running in CI.
 - Do not auto-delete stale evidence.
 
 **Acceptance:**
+
 - `scripts/check_runtime_identity.sh` runs and reports match/mismatch.
 - `scripts/check_evidence_hygiene.sh` runs and reports violations.
 - Both scripts documented in `docs/RELEASE_RUNBOOK.md`.
 
 **Evidence:**
+
 - CLI output of both scripts.
 
 #### [BL-159] Supply Chain / SBOM / License Gate
@@ -534,6 +564,7 @@ Five parallel audit workstreams were executed:
 **Why it matters:** NIS2 and EU Cyber Resilience Act require supply-chain transparency. Customers and auditors will ask for SBOMs and license attestations.
 
 **Scope:**
+
 1. Generate SBOM (`npm sbom --format=cyclonedx` or `cyclonedx-npm`).
 2. Commit SBOM to `docs/compliance/sbom/` per release.
 3. Run license scan (`license-checker --json` or `fossa`).
@@ -542,10 +573,12 @@ Five parallel audit workstreams were executed:
 6. Enable Dependabot for automated security update PRs.
 
 **Non-goals:**
+
 - Do not fix all vulnerabilities in this slice (triage and document).
 - Do not sign artifacts with Sigstore/cosign yet (future hardening).
 
 **Acceptance:**
+
 - SBOM generation script runs successfully.
 - License scan output committed.
 - `npm audit` runs in CI and surfaces findings.
@@ -553,6 +586,7 @@ Five parallel audit workstreams were executed:
 - `docs/compliance/SUPPLY_CHAIN_AUDIT.md` updated with automated evidence.
 
 **Evidence:**
+
 - SBOM JSON artifact.
 - License scan output.
 - CI screenshot showing audit step.
@@ -583,17 +617,17 @@ python3 scripts/check_docs_hygiene.py  # PASS
 
 ### Results
 
-| Check | Command | Result |
-|---|---|---|
-| Git worktree | `git status --short --branch` | Clean, ahead 35 |
-| Git HEAD | `git rev-parse HEAD` | `403c5e2` |
-| Contract validation | `npm run validate` | Pass |
-| Prisma schema | `npx prisma validate` | Valid |
-| Lint | `npm run lint` | Pass (0 errors) |
-| Typecheck | `npm run typecheck` | Pass (all workspaces) |
-| Tests | `npm test` | 401/404 pass, 0 fail, 3 skipped |
-| State doc check | `python3 scripts/check_state_docs.py` | Pass |
-| Doc hygiene check | `python3 scripts/check_docs_hygiene.py` | Pass |
+| Check               | Command                                 | Result                          |
+| ------------------- | --------------------------------------- | ------------------------------- |
+| Git worktree        | `git status --short --branch`           | Clean, ahead 35                 |
+| Git HEAD            | `git rev-parse HEAD`                    | `403c5e2`                       |
+| Contract validation | `npm run validate`                      | Pass                            |
+| Prisma schema       | `npx prisma validate`                   | Valid                           |
+| Lint                | `npm run lint`                          | Pass (0 errors)                 |
+| Typecheck           | `npm run typecheck`                     | Pass (all workspaces)           |
+| Tests               | `npm test`                              | 401/404 pass, 0 fail, 3 skipped |
+| State doc check     | `python3 scripts/check_state_docs.py`   | Pass                            |
+| Doc hygiene check   | `python3 scripts/check_docs_hygiene.py` | Pass                            |
 
 ---
 

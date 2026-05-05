@@ -11,17 +11,21 @@ export class CredentialReferencesController {
     @Inject(InMemoryStore)
     private readonly store: Store,
     @Inject(CredentialReferencesService)
-    private readonly service: CredentialReferencesService
+    private readonly service: CredentialReferencesService,
   ) {}
 
   @Post()
-  async create(@Req() req: Request, @Body() body: {
-    connectorType: string;
-    displayName: string;
-    description?: string;
-    status?: string;
-    secretKind?: string;
-  }) {
+  async create(
+    @Req() req: Request,
+    @Body()
+    body: {
+      connectorType: string;
+      displayName: string;
+      description?: string;
+      status?: string;
+      secretKind?: string;
+    },
+  ) {
     const identity = getCurrentIdentity(req);
     return this.service.createCredentialReference(identity, body);
   }
@@ -42,12 +46,13 @@ export class CredentialReferencesController {
   async update(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: {
+    @Body()
+    body: {
       displayName?: string;
       description?: string;
       status?: string;
       secretKind?: string;
-    }
+    },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.updateCredentialReference(identity, id, body);

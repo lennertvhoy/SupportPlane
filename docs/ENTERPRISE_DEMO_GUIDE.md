@@ -44,14 +44,14 @@ To verify 10/10 demo readiness checks pass.
 Before evaluating the demo, reviewers should understand the product's
 architecture and its current capability boundaries:
 
-| Document | Why read it |
-|----------|-------------|
-| `docs/ARCHITECTURE.md` | Product architecture, authority chain (roles → policy → tool manifest → risk → approval → audit → execution), and what the AI may and must not do. |
-| `docs/BOUNDARY_MATRIX.md` | Capability-by-capability truth table: real, mock, sandbox, partial, blocked. Every integration mapped. |
-| `docs/WORKFLOW_TRUTH.md` | Current implementation truth for every capability, with acceptance status and known gaps. |
-| `docs/REALITY_MATRIX.md` | Detailed system-by-system status: REAL_LOCAL_NOW, SANDBOX_CODE_READY, MOCK_BY_POLICY, MOCK_BY_GAP, PARTIAL. |
-| `docs/BACKLOG_REAL_E2E_ROADMAP.md` | How current backlog items map to the full self-hosted sandbox vision. |
-| `docs/SANDBOX_INTEGRATION_ACCEPTANCE.md` | Acceptance gates and evidence requirements for every sandbox integration. |
+| Document                                 | Why read it                                                                                                                                        |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/ARCHITECTURE.md`                   | Product architecture, authority chain (roles → policy → tool manifest → risk → approval → audit → execution), and what the AI may and must not do. |
+| `docs/BOUNDARY_MATRIX.md`                | Capability-by-capability truth table: real, mock, sandbox, partial, blocked. Every integration mapped.                                             |
+| `docs/WORKFLOW_TRUTH.md`                 | Current implementation truth for every capability, with acceptance status and known gaps.                                                          |
+| `docs/REALITY_MATRIX.md`                 | Detailed system-by-system status: REAL_LOCAL_NOW, SANDBOX_CODE_READY, MOCK_BY_POLICY, MOCK_BY_GAP, PARTIAL.                                        |
+| `docs/BACKLOG_REAL_E2E_ROADMAP.md`       | How current backlog items map to the full self-hosted sandbox vision.                                                                              |
+| `docs/SANDBOX_INTEGRATION_ACCEPTANCE.md` | Acceptance gates and evidence requirements for every sandbox integration.                                                                          |
 
 These documents are the canonical source of truth for what is real, what is
 mock, and what is intentionally blocked.
@@ -100,28 +100,28 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:4110 npm run dev
 
 **What is real in Path A:**
 
-| Real | Status |
-|------|--------|
-| PostgreSQL persistence | Full ORM, 60+ tables, Prisma migrations and seed |
-| API runtime (NestJS) | Serves on localhost:4110; `/health` matches git HEAD |
-| Web UI (Next.js 15) | Serves on localhost:3200; full Support Cockpit |
-| RBAC and tenant scoping | CurrentIdentityMiddleware; admin/operator/viewer; cross-tenant denial |
-| Audit events | Persisted to PostgreSQL; all operations emit audit entries |
-| Redaction | Multi-layer: AI context, evidence bundles, telemetry, action errors |
-| Policy engine | Delivery policy evaluator; kill switch, approval gates, action allowlist |
-| Tool execution registry | 8 tools with integrity-validated manifests; idempotent upsert |
-| Tool execution safety | Arbitrary shell blocked; fixed command templates only; audit events |
-| Admin dashboard | `/admin` route; Policies, Users, Roles, Model Usage, Audit Explorer, GDPR, Connectors |
-| Endpoint agent (Linux) | Outbound registration, heartbeat, inventory, read-only diagnostics |
+| Real                    | Status                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| PostgreSQL persistence  | Full ORM, 60+ tables, Prisma migrations and seed                                      |
+| API runtime (NestJS)    | Serves on localhost:4110; `/health` matches git HEAD                                  |
+| Web UI (Next.js 15)     | Serves on localhost:3200; full Support Cockpit                                        |
+| RBAC and tenant scoping | CurrentIdentityMiddleware; admin/operator/viewer; cross-tenant denial                 |
+| Audit events            | Persisted to PostgreSQL; all operations emit audit entries                            |
+| Redaction               | Multi-layer: AI context, evidence bundles, telemetry, action errors                   |
+| Policy engine           | Delivery policy evaluator; kill switch, approval gates, action allowlist              |
+| Tool execution registry | 8 tools with integrity-validated manifests; idempotent upsert                         |
+| Tool execution safety   | Arbitrary shell blocked; fixed command templates only; audit events                   |
+| Admin dashboard         | `/admin` route; Policies, Users, Roles, Model Usage, Audit Explorer, GDPR, Connectors |
+| Endpoint agent (Linux)  | Outbound registration, heartbeat, inventory, read-only diagnostics                    |
 
 **What is mock in Path A:**
 
-| Mock | Reason |
-|------|--------|
+| Mock         | Reason                                                                                                                                   |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | AI providers | Mock provider is default. Ollama not configured locally (requires `OLLAMA_BASE_URL`). Honest `fallbackUsed` flag when mock path is used. |
-| Connectors | Zammad, GLPI, osTicket, MeshCentral, Fortinet all use mock/fixture adapters. Honest transport labels in connector status API. |
-| Writeback | Blocked by delivery policy. `writebackEnabled: false`, `realNetwork: false`. |
-| Cloud AI | Intentionally blocked; `configured: false` with honest reason per provider. |
+| Connectors   | Zammad, GLPI, osTicket, MeshCentral, Fortinet all use mock/fixture adapters. Honest transport labels in connector status API.            |
+| Writeback    | Blocked by delivery policy. `writebackEnabled: false`, `realNetwork: false`.                                                             |
+| Cloud AI     | Intentionally blocked; `configured: false` with honest reason per provider.                                                              |
 
 ### Path B: Full Sandbox Cluster (requires cluster startup)
 
@@ -163,27 +163,27 @@ kubectl port-forward -n supportplane-app svc/supportplane-web 3300:3200
 
 **What is real sandbox in Path B:**
 
-| Real Sandbox | Status |
-|--------------|--------|
-| Zammad ticket read | Real HTTP read from Zammad sandbox using server-side OpenBao-resolved credential. Seeded ticket 2 (TICKET-101/68002) and customer 5 (Acme BVBA). |
-| Zammad internal-note writeback | Real approval-gated writeback to sandbox ticket via NATS JetStream worker. Idempotency proven. Sandbox-only. |
-| Ollama local AI | Real model calls to `gemma4:e4b` via podman0 bridge (`10.88.0.1:11435`). `fallbackUsed: false`, `provider: ollama`, `providerMode: local`. Benchmarked 644 eval tokens at 79.91 tok/s. |
-| OpenBao credential resolver | Server-side secret resolution. Raw token never leaves the backend. `secretExposed: false` in all API responses. |
-| NATS JetStream worker bridge | PostgreSQL outbox remains canonical; NATS publishes and consumes durable product envelopes. Stream `SUPPORTPLANE_OUTBOX` survives pod restart. |
-| MinIO evidence persistence | Real S3 PutObject with SHA-256 checksum. Direct object read/verify via boto3. |
-| Mailpit notification capture | Real SMTP delivery to `mailpit:1025`. Subject: "SupportPlane sandbox writeback completed". Captured message with timestamp. |
-| Keycloak OIDC | Available but not default. Full browser redirect/callback/PKCE flow; realm role mapping; service account tokens with SHA-256 hashing. Default is local auth. |
-| Asterisk AMI bridge | Telephony event ingestion; caller matching; session auto-create. No PSTN. |
+| Real Sandbox                   | Status                                                                                                                                                                                 |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Zammad ticket read             | Real HTTP read from Zammad sandbox using server-side OpenBao-resolved credential. Seeded ticket 2 (TICKET-101/68002) and customer 5 (Acme BVBA).                                       |
+| Zammad internal-note writeback | Real approval-gated writeback to sandbox ticket via NATS JetStream worker. Idempotency proven. Sandbox-only.                                                                           |
+| Ollama local AI                | Real model calls to `gemma4:e4b` via podman0 bridge (`10.88.0.1:11435`). `fallbackUsed: false`, `provider: ollama`, `providerMode: local`. Benchmarked 644 eval tokens at 79.91 tok/s. |
+| OpenBao credential resolver    | Server-side secret resolution. Raw token never leaves the backend. `secretExposed: false` in all API responses.                                                                        |
+| NATS JetStream worker bridge   | PostgreSQL outbox remains canonical; NATS publishes and consumes durable product envelopes. Stream `SUPPORTPLANE_OUTBOX` survives pod restart.                                         |
+| MinIO evidence persistence     | Real S3 PutObject with SHA-256 checksum. Direct object read/verify via boto3.                                                                                                          |
+| Mailpit notification capture   | Real SMTP delivery to `mailpit:1025`. Subject: "SupportPlane sandbox writeback completed". Captured message with timestamp.                                                            |
+| Keycloak OIDC                  | Available but not default. Full browser redirect/callback/PKCE flow; realm role mapping; service account tokens with SHA-256 hashing. Default is local auth.                           |
+| Asterisk AMI bridge            | Telephony event ingestion; caller matching; session auto-create. No PSTN.                                                                                                              |
 
 **What is mock in Path B:**
 
-| Mock | Reason |
-|------|--------|
+| Mock                  | Reason                                                                                                                                                                      |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Non-Zammad connectors | GLPI: **accepted (BL-069)** — real sandbox read proven (Session 142). osTicket, MeshCentral, Fortinet remain fixture/unconfigured. Honest labels in connector status panel. |
-| Cloud AI providers | Intentionally blocked with `configured: false`. |
-| Production writeback | Blocked by delivery policy. Only sandbox Zammad internal notes allowed. |
-| Production telephony | No PSTN, SIP trunk, recording, or transcription. |
-| Windows endpoint | Fixed templates exist but no real Windows runner proof. |
+| Cloud AI providers    | Intentionally blocked with `configured: false`.                                                                                                                             |
+| Production writeback  | Blocked by delivery policy. Only sandbox Zammad internal notes allowed.                                                                                                     |
+| Production telephony  | No PSTN, SIP trunk, recording, or transcription.                                                                                                                            |
+| Windows endpoint      | Fixed templates exist but no real Windows runner proof.                                                                                                                     |
 
 ---
 
@@ -322,6 +322,7 @@ Mailpit SMTP notification capture (real SMTP delivery).
 **What's mocked:** Non-Zammad connectors (osTicket, MeshCentral, Fortinet). GLPI is now accepted real sandbox (BL-069).
 
 **Known limitations:**
+
 - Output requires human review before any action. The system never autonomously sends.
 - `gemma4:e4b` is an 8B parameter model (Q4_K_M quantized, ~9.6GB VRAM). Output quality
   varies with prompt complexity. Not production-grade AI.
@@ -425,6 +426,7 @@ chain for audit immutability. Evidence bundles are not cryptographically
 signed. Retention auto-purge is locked OFF (no scheduled deletion worker).
 
 **Known limitations:**
+
 - No production audit immutability. Hash-chain placeholder only.
 - Evidence bundles are unsigned JSON/Markdown with SHA-256 checksums, not
   compliance-grade digital signatures.
@@ -543,11 +545,12 @@ execution is not yet proven. Installed software inventory is partial even
 on Linux. Only one low-risk remediation path (flush DNS) is implemented.
 
 **Known limitations:**
+
 - Windows collectors have fixed templates but no real Windows runner proof.
 - The `remediation.clear_temp_preview` template is scaffolded but marked
   unsupported on Windows.
 - Only `flush_dns_cache` is a working remediation path (Linux: `resolvectl
-  flush-caches`). Broader remediation coverage is planned (BL-065 partial).
+flush-caches`). Broader remediation coverage is planned (BL-065 partial).
 - The endpoint agent is a dev-mode `tsx` runner, not a packaged binary.
   See `scripts/package_windows_endpoint_agent.ps1` for Windows packaging scaffold.
 
@@ -589,19 +592,19 @@ only and refuses to run against non-local databases.
 
 ## Port Reference
 
-| Service | Standalone (Path A) | Cluster (Path B) |
-|---------|---------------------|-------------------|
-| Web | `localhost:3200` | `localhost:3300` (port-forward) |
-| API | `localhost:4110` | `localhost:4210` (port-forward) |
-| PostgreSQL | `localhost:5434` | in-cluster, `supportplane-data` |
-| NATS | `localhost:4222` | in-cluster, `supportplane-integrations` |
-| MinIO API | `localhost:9000` | `localhost:9000` (port-forward) |
-| MinIO Console | `localhost:9001` | `localhost:9001` (port-forward) |
-| Zammad | — | `localhost:8080` (port-forward) |
-| OpenBao | — | `localhost:8200` (port-forward) |
-| Mailpit | — | `localhost:8025` (port-forward) |
-| Keycloak | — | `localhost:8081` (port-forward) |
-| Asterisk AMI | — | in-cluster, `supportplane-integrations` |
+| Service       | Standalone (Path A) | Cluster (Path B)                        |
+| ------------- | ------------------- | --------------------------------------- |
+| Web           | `localhost:3200`    | `localhost:3300` (port-forward)         |
+| API           | `localhost:4110`    | `localhost:4210` (port-forward)         |
+| PostgreSQL    | `localhost:5434`    | in-cluster, `supportplane-data`         |
+| NATS          | `localhost:4222`    | in-cluster, `supportplane-integrations` |
+| MinIO API     | `localhost:9000`    | `localhost:9000` (port-forward)         |
+| MinIO Console | `localhost:9001`    | `localhost:9001` (port-forward)         |
+| Zammad        | —                   | `localhost:8080` (port-forward)         |
+| OpenBao       | —                   | `localhost:8200` (port-forward)         |
+| Mailpit       | —                   | `localhost:8025` (port-forward)         |
+| Keycloak      | —                   | `localhost:8081` (port-forward)         |
+| Asterisk AMI  | —                   | in-cluster, `supportplane-integrations` |
 
 ## Validation Commands for Reviewers
 
@@ -683,11 +686,11 @@ SupportPlane codebase. Assertions to the contrary are false.
 
 ## Demo Credentials
 
-| Role | Email | Password | Tenant |
-|------|-------|----------|--------|
-| Admin | `admin@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| Role     | Email                         | Password            | Tenant       |
+| -------- | ----------------------------- | ------------------- | ------------ |
+| Admin    | `admin@supportplane.local`    | `supportplane-demo` | `dev-tenant` |
 | Operator | `operator@supportplane.local` | `supportplane-demo` | `dev-tenant` |
-| Viewer | `viewer@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| Viewer   | `viewer@supportplane.local`   | `supportplane-demo` | `dev-tenant` |
 
 **Cross-tenant test:** `admin@alt.supportplane.local` / `supportplane-demo` / `alt-tenant`
 
@@ -703,20 +706,20 @@ All claims in this guide are backed by verified evidence. The complete
 evidence inventory is maintained in `docs/EVIDENCE_LOG.md`. Key sessions
 referenced in this guide:
 
-| Session Folder | What It Proves |
-|----------------|----------------|
-| `session-108-bl107-zammad-sandbox-read-connector/` | Real Zammad sandbox read; sandbox labels; connector provenance |
-| `session-115-bl116-real-sandbox-acceptance-freeze/` | Full sandbox E2E freeze: read, writeback, Ollama AI, OpenBao, NATS, MinIO, Mailpit |
-| `session-126-governed-ai-vertical-closure/` | AI governance: model usage, audit explorer, GDPR panel, retention, draft repair |
-| `session-128-docs-governance-closure/` | Documentation governance infrastructure and doc hygiene |
-| `session-118-bl083-bl086-bl087-bl090-production-readiness/` | Rate limits, body limits, security headers, backup/restore, release packaging |
-| `session-120-endpoint-agent-diagnostics/` | Local endpoint agent registration, heartbeat, diagnostics |
-| `session-121-bl061-068-tool-execution-safety-foundation/` | Tool registry, safety rejection, approval lifecycle, audit events |
-| `session-122-windows-endpoint-foundation/` | Windows platform contracts, UI badges, fixture parsers |
-| `session-123-real-connectors-golden-workflow/` | Connector status unification, knowledge retrieval, tool note drafts |
-| `session-111-112-113-sandbox-writeback-closure-canonical/` | Sandbox writeback: Zammad article, MinIO artifact, Mailpit notification |
-| `session-144-user-testing-demo-readiness/` | One-command demo start, smoke test, user testing guide, GLPI setup |
-| `session-145-user-testing-operations/` | Tester onboarding pack, bug context capture, feedback triage, UI polish |
+| Session Folder                                              | What It Proves                                                                     |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `session-108-bl107-zammad-sandbox-read-connector/`          | Real Zammad sandbox read; sandbox labels; connector provenance                     |
+| `session-115-bl116-real-sandbox-acceptance-freeze/`         | Full sandbox E2E freeze: read, writeback, Ollama AI, OpenBao, NATS, MinIO, Mailpit |
+| `session-126-governed-ai-vertical-closure/`                 | AI governance: model usage, audit explorer, GDPR panel, retention, draft repair    |
+| `session-128-docs-governance-closure/`                      | Documentation governance infrastructure and doc hygiene                            |
+| `session-118-bl083-bl086-bl087-bl090-production-readiness/` | Rate limits, body limits, security headers, backup/restore, release packaging      |
+| `session-120-endpoint-agent-diagnostics/`                   | Local endpoint agent registration, heartbeat, diagnostics                          |
+| `session-121-bl061-068-tool-execution-safety-foundation/`   | Tool registry, safety rejection, approval lifecycle, audit events                  |
+| `session-122-windows-endpoint-foundation/`                  | Windows platform contracts, UI badges, fixture parsers                             |
+| `session-123-real-connectors-golden-workflow/`              | Connector status unification, knowledge retrieval, tool note drafts                |
+| `session-111-112-113-sandbox-writeback-closure-canonical/`  | Sandbox writeback: Zammad article, MinIO artifact, Mailpit notification            |
+| `session-144-user-testing-demo-readiness/`                  | One-command demo start, smoke test, user testing guide, GLPI setup                 |
+| `session-145-user-testing-operations/`                      | Tester onboarding pack, bug context capture, feedback triage, UI polish            |
 
 ## User Testing
 

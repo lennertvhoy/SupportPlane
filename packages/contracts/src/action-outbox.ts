@@ -160,7 +160,16 @@ export const SupportActionCreateRequest = z.object({
   body: z.string().min(1).max(8000),
   subject: z.string().max(240).optional(),
   idempotencyKey: z.string().min(8).max(160).optional(),
-  mockDeliveryScenario: z.enum(['success', 'retryable_failure_once', 'retryable_failure', 'non_retryable_failure', 'connector_unavailable', 'validation_failure']).optional(),
+  mockDeliveryScenario: z
+    .enum([
+      'success',
+      'retryable_failure_once',
+      'retryable_failure',
+      'non_retryable_failure',
+      'connector_unavailable',
+      'validation_failure',
+    ])
+    .optional(),
 });
 export type SupportActionCreateRequest = z.infer<typeof SupportActionCreateRequest>;
 

@@ -17,7 +17,12 @@ export class GlpiAdapterFactory implements TicketingAdapterFactory {
       properties: {
         baseUrl: { type: 'string', description: 'GLPI base URL' },
         apiToken: { type: 'string', description: 'GLPI API token' },
-        timeoutMs: { type: 'integer', minimum: 1000, maximum: 60000, description: 'Request timeout in milliseconds' },
+        timeoutMs: {
+          type: 'integer',
+          minimum: 1000,
+          maximum: 60000,
+          description: 'Request timeout in milliseconds',
+        },
         mockMode: { type: 'boolean', description: 'Mock mode flag' },
       },
       required: ['baseUrl'],

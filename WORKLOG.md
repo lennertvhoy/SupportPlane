@@ -2,6 +2,62 @@
 
 **Purpose:** Append-only history for completed work.
 
+## Session 161 — 2026-05-05 — BL-153 Automated Quality Gate & CI/CD Hardening Foundation (ACCEPTED)
+
+**Date:** 2026-05-05 09:45 CEST
+**Git HEAD:** f872229ee3cfa81dddbb71c709ccba4ddc4bb4d7 (starting), TBD (final)
+**Branch:** main
+
+### What changed
+
+- **`.github/workflows/ci.yml`:** Created CI quality gate with three parallel jobs:
+  - `quality` — format:check, lint, typecheck, build, Prisma generate/migrate/deploy, validate, test. Uses PostgreSQL 16-alpine service container. Runs on push to main, pull_request to main, and workflow_dispatch.
+  - `security-baseline` — `npm audit --audit-level=high` (blocking) + full `npm audit --audit-level=moderate` artifact upload.
+  - `docs-governance` — `scripts/check_state_docs.py` + `scripts/check_docs_hygiene.py`.
+- **`package.json` scripts:** Added `ci`, `ci:local`, `security:baseline`, `check:runtime-identity`, `check:evidence-hygiene`.
+- **`scripts/check_runtime_identity.sh` (BL-158 partial):** Compares API `/health` HEAD to `git rev-parse HEAD`. Supports `--allow-docs-only` with `--docs-only-commits` exception list. Fails with explicit messages.
+- **`scripts/check_evidence_hygiene.sh` (BL-158 partial):** Validates evidence folder is alphabetically last, file count ≤20, no .html wrappers on JSON/text artifacts, no duplicate screenshots via md5sum.
+- **`scripts/security-baseline.sh` (BL-155 partial):** Runs `npm audit` at configurable level, captures report to file.
+- **`apps/api/test/ai-services.test.ts` (BL-154 partial):** Added `// SKIP REASON:` and `// Owner:` comments to the 3 DB-dependent skipped tests.
+- **`PROJECT_STATE.yaml` bug fix:** Removed duplicate `evidence:` key and duplicate `updated_in_session_130:` key that caused Prettier YAML parse errors.
+- **Formatting drift fix:** Ran `npm run format` across the entire repo to fix accumulated Prettier drift, making `format:check` a real blocking gate.
+
+### Validation results
+
+| Command                                 | Result                                         |
+| --------------------------------------- | ---------------------------------------------- |
+| `npm run format:check`                  | PASS (0 errors)                                |
+| `npm run lint`                          | PASS (0 errors)                                |
+| `npm run typecheck`                     | PASS (all 10 workspaces)                       |
+| `npm run build`                         | PASS (all workspaces, Next.js 18 static pages) |
+| `npm run validate`                      | PASS (contracts + Prisma schema)               |
+| `npm test`                              | 401/404 pass, 0 fail, 3 skip (documented)      |
+| `npm run ci`                            | PASS (full local mirror)                       |
+| `python3 scripts/check_state_docs.py`   | PASS                                           |
+| `python3 scripts/check_docs_hygiene.py` | PASS                                           |
+| Workflow YAML syntax                    | PASS (Python yaml.safe_load)                   |
+| `scripts/check_evidence_hygiene.sh`     | PASS (session-161 folder compliant)            |
+| `scripts/security-baseline.sh`          | FINDINGS captured (10 pre-existing vulns)      |
+| `scripts/check_runtime_identity.sh`     | Correctly reports unreachable API (exit 2)     |
+
+### State docs updated
+
+- `BACKLOG.md` — BL-153 accepted, BL-154/155/158 partial, BL-157 planned
+- `NEXT_ACTIONS.md` — Removed BL-153 from active, updated BL-155/158 descriptions
+- `STATUS.md` — Added BL-153 accepted, updated automation track status
+- `PROJECT_STATE.yaml` — Added `ci` section under `current_product_truth`, added session 161 tracking, updated active queue and accepted slice
+- `docs/EVIDENCE_LOG.md` — Added EV-2026-05-05-183
+
+### Limitations and deferred work
+
+- Remote GitHub Actions run not yet verified (local validation only).
+- Branch protection rules must be configured in GitHub settings manually.
+- 10 pre-existing npm audit findings (2 high, 8 moderate) not fixed — deferred to BL-159.
+- Browser E2E not implemented — remains BL-157 planned.
+- Worker/UI/audit packages still have zero tests — remains BL-154 partial.
+
+---
+
 ## Session 154 — 2026-05-04 — BL-142 First Live Tester Round Execution & Feedback-to-Backlog Triage (ACCEPTED, CONSOLIDATED INTO SESSION-153)
 
 **Date:** 2026-05-04 13:55 CEST
@@ -564,6 +620,7 @@ Start BL-111: Sandbox-only Zammad internal note writeback.
 ### Why reconciliation was needed
 
 The BL-107 final handoff claimed acceptance, but:
+
 - `git-status-final.txt` showed a dirty worktree with modified source files and untracked evidence/scripts.
 - The cluster API was running a stale image (BL-106 head `6093cf0`) because the BL-107 image was not rebuilt and reloaded.
 - Local MVP regression was not run.
@@ -627,6 +684,7 @@ The BL-107 final handoff claimed acceptance, but:
 ### Why reconciliation was needed
 
 The BL-106 final handoff claimed a clean evidence folder, but two screenshots were mismatched:
+
 - `02-cluster-web-header.png` showed a failed login screen instead of the cluster web header.
 - `03-zammad-page-proof.png` showed a generic `Loading...` page without actual Zammad proof.
 
@@ -848,7 +906,6 @@ Start BL-106: Self-hosted service topology (Zammad, OpenBao, NATS JetStream, Mai
 - Browser proof shows honest mock-only boundary.
 - No production claims introduced.
 
-
 ## 2026-04-29 - BL-121: Local Model Runtime Upgrade to gemma4:e4b
 
 **Type:** implementation / closure
@@ -1064,7 +1121,6 @@ Close BL-114 before attempting BL-116. Add a local-only observability baseline a
 - **State docs updated:** BACKLOG.md, NEXT_ACTIONS.md, STATUS.md, PROJECT_STATE.yaml, WORKLOG.md, docs/ACCEPTANCE_FREEZES.md, docs/EVIDENCE_LOG.md
 - **Next recommended action:** P1 [BL-089] Threat-model review checkpoints and security regression tests.
 
-
 ## 2026-04-30 — BL-116 Closure Reconciliation
 
 **Type:** closure_repair
@@ -1077,6 +1133,7 @@ Close BL-114 before attempting BL-116. Add a local-only observability baseline a
 ### Why reconciliation was needed
 
 The BL-116 final handoff claimed acceptance, but three proof blockers prevented true closure-grade status:
+
 1. Final git status was not clean: evidence folder and verification script were untracked.
 2. Boundary matrix contradicted the freeze: Zammad internal-note writeback and evidence bundle were labeled "mock only" while the freeze claimed real sandbox behavior.
 3. MinIO proof was too weak: direct object read/checksum had failed with `UnknownError` / `SignatureDoesNotMatch`; only worker logs proved the write.
@@ -1119,6 +1176,7 @@ The BL-116 final handoff claimed acceptance, but three proof blockers prevented 
 ## 2026-04-30 12:30 CEST — BL-116 Verifier Script Fix (Root Cause & Repair)
 
 ### Context
+
 BL-116 closure reconciliation left the canonical verifier script `scripts/verify_bl116_real_sandbox_freeze.sh` failing at step 5 with exit code 1. The script was committed but not actually passing. This was the final blocker preventing BL-116 from being declared closure-grade.
 
 ### Root causes found
@@ -1191,8 +1249,6 @@ BL-116 closure reconciliation left the canonical verifier script `scripts/verify
 ### Commits
 
 - `ff8e271` feat(connectors,ai): BL-123/124/125/126 registry + resolver + threat model
-
-
 
 ## Session 2026-04-30 — BL-089/123/124/125/126/127 Registry Closure
 
@@ -1267,7 +1323,6 @@ Screenshots: 2 (no duplicates)
 - CTO lane: Decide whether to proceed with BL-117 (Asterisk/FreePBX bridge) or defer.
 - Future coding-agent: When osTicket test instance is available, verify BL-127 read path against real HTTP API.
 
-
 ## 2026-04-30 - BL-117: Local Asterisk AMI Call-Event Bridge (ACCEPTED)
 
 **Type:** implementation / closure
@@ -1340,7 +1395,6 @@ Screenshots: 2 (no duplicates)
 - BL-128: osTicket real integration test when instance is available.
 - Future: Full AMI persistent connection with event streaming (not stub).
 
-
 ## 2026-04-30 — BL-083/086/087/090 Production Readiness Hardening Wave
 
 **Type:** implementation / closure
@@ -1368,7 +1422,7 @@ Screenshots: 2 (no duplicates)
   - Created RateLimitGuard with in-memory per-IP limits (global 100/60s, auth 5/60s, etc.)
   - Created SecurityHeadersMiddleware (X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy)
   - Created validation guards (URL, adapter type, tenant context, telephony event)
-  - Created unsafe-field guard (__proto__, constructor, eval rejection)
+  - Created unsafe-field guard (**proto**, constructor, eval rejection)
   - Created SecurityAuditService with 8 denial event types
   - Integrated guards into auth, actions, telephony, connectors controllers
   - Created 19 security-hardening tests (all pass)
@@ -1425,7 +1479,6 @@ Screenshots: 2 (no duplicates)
 ### Next Recommended Action
 
 - P1 [BL-076] Policy editor for tools, risk levels, approvals, model policies, and retention settings
-
 
 ## 2026-04-30 — BL-118 Closure Reconciliation / BL-083 Gate
 
@@ -1531,6 +1584,7 @@ Screenshots: 2 (no duplicates)
 ### Next Recommended Action
 
 - P1 [BL-076] Policy editor foundation.
+
 ## 2026-05-01 — BL-055/056/058/059/060 Endpoint Agent Diagnostics Foundation
 
 **Type:** implementation / endpoint diagnostics foundation
@@ -1680,7 +1734,6 @@ Screenshots: 2 (no duplicates)
 
 - P1 [BL-130/BL-131/BL-132/BL-133] Windows diagnostics completion, tool-manifest compatibility, service packaging, verification strategy.
 
-
 ---
 
 ## Session 123 — 2026-05-01 — Real Connector Expansion + Golden Workflow Backbone
@@ -1689,7 +1742,7 @@ Screenshots: 2 (no duplicates)
 
 - BL-067 acceptance (browser proof — note draft from tool result)
 - BL-069 partial — GLPI connector scaffolding
-- BL-072 partial — Fortinet connector scaffolding  
+- BL-072 partial — Fortinet connector scaffolding
 - BL-073 partial — Knowledge source and article schema + CRUD API
 - BL-074 partial — Knowledge retrieval with honest lexical fallback
 - Connector status unification (`GET /connectors/status`)
@@ -1698,6 +1751,7 @@ Screenshots: 2 (no duplicates)
 ### Changes
 
 **Connector Scaffolding (BL-069/072 + MeshCentral)**
+
 - Added `GlpiAdapterFactory`, `MockGlpiAdapterFactory`, `createGlpiAdapterFactory`, `registerGlpiAdapter` in `packages/connectors/src/glpi-adapter-factory.ts`.
 - Added `GlpiHttpClient` with mock and real implementations; real adapter throws `CONFIG_MISSING` when unconfigured.
 - Added `MeshCentralService` and `FortinetService` with `registerConnector()` calls in `ConnectorsService.ensureRegistry()`.
@@ -1705,6 +1759,7 @@ Screenshots: 2 (no duplicates)
 - `GET /connectors/status` returns unified array: zammad (mock), osticket (fixture), glpi (mock), meshcentral (unconfigured), fortinet (unconfigured) — all with honest `transport` labels.
 
 **Knowledge Foundation (BL-073/074)**
+
 - Prisma schema: added `KnowledgeSource` and `KnowledgeArticle` models with tenant scoping, indexes, and CASCADE relations.
 - Migration `20260501101229_knowledge_source_foundation` applied successfully.
 - Seed data: added demo knowledge sources and articles to `prisma/seed.ts`.
@@ -1716,6 +1771,7 @@ Screenshots: 2 (no duplicates)
 - Web API client: added `listKnowledgeSources`, `getKnowledgeSource`, `createKnowledgeSource`, `listKnowledgeArticles`, `getKnowledgeArticle`, `createKnowledgeArticle`, `retrieveKnowledge`, `getAllConnectorStatus`.
 
 **UI Improvements**
+
 - Added `ConnectorStatusPanel` component showing all connectors with status badges, capability chips, transport labels, and error messages.
 - Updated `page.tsx` header: added "All writeback blocked" badge; fixed API port display from `4110` to `4100`.
 - `ConnectorStatusPanel` renders in cockpit grid below Call Simulator.
@@ -1756,7 +1812,6 @@ Screenshots: 2 (no duplicates)
 - P1 [BL-073/BL-074] pgvector extension + semantic knowledge retrieval, or explicit lexical fallback hardening if pgvector remains unavailable
 - P2 [BL-069/BL-071/BL-072/BL-127] Real GLPI, MeshCentral, Fortinet, or osTicket instance connection with credential references
 
-
 ---
 
 ## Session 123b — Real Connectors Golden Workflow Closure Repair
@@ -1764,7 +1819,7 @@ Screenshots: 2 (no duplicates)
 **Date:** 2026-05-01  
 **Type:** repair / closure  
 **Git HEAD before:** `ba97d90ed0723cb25b304cd29f26e676f984efb2`  
-**Git HEAD after:** pending commit (all Session 123 changes + migration fix)  
+**Git HEAD after:** pending commit (all Session 123 changes + migration fix)
 
 ### Summary
 
@@ -1824,15 +1879,15 @@ Repaired Session 123 to closure-grade status by fixing the critical Internal Ser
 
 ### Honest Partial Status Updated
 
-| BL | Status | Notes |
-|----|--------|-------|
-| BL-067 | ✅ Closed | Note draft from tool result working end-to-end |
-| BL-069 | 🟡 Partial | GLPI adapter mock/fixture registered |
-| BL-071 | 🟡 Partial | MeshCentral adapter registered (unconfigured) |
-| BL-072 | 🟡 Partial | Fortinet adapter registered (unconfigured) |
-| BL-073 | 🟡 Partial | Knowledge source/article schema + CRUD API |
+| BL     | Status     | Notes                                            |
+| ------ | ---------- | ------------------------------------------------ |
+| BL-067 | ✅ Closed  | Note draft from tool result working end-to-end   |
+| BL-069 | 🟡 Partial | GLPI adapter mock/fixture registered             |
+| BL-071 | 🟡 Partial | MeshCentral adapter registered (unconfigured)    |
+| BL-072 | 🟡 Partial | Fortinet adapter registered (unconfigured)       |
+| BL-073 | 🟡 Partial | Knowledge source/article schema + CRUD API       |
 | BL-074 | 🟡 Partial | Knowledge retrieval with honest lexical fallback |
-| BL-076 | ✅ Closed | Policy Editor working, 500 error fixed |
+| BL-076 | ✅ Closed  | Policy Editor working, 500 error fixed           |
 
 ### State Document Updates
 
@@ -1854,14 +1909,13 @@ Repaired Session 123 to closure-grade status by fixing the critical Internal Ser
 - P1 [BL-130/BL-131] Windows diagnostics collectors and tool-manifest compatibility completion
 - P2 [BL-069/BL-071/BL-072/BL-127] Real GLPI, MeshCentral, Fortinet, or osTicket instance connection with credential references
 
-
 ---
 
 ## Session 124 — Large Backlog Hardening Slice
 
 **Date:** 2026-05-01  
 **Type:** implementation / coordinated backlog slice  
-**Scope:** BL-065, BL-073/074, BL-069/071/072/127, BL-130/131/132, BL-133 truth  
+**Scope:** BL-065, BL-073/074, BL-069/071/072/127, BL-130/131/132, BL-133 truth
 
 ### Summary
 
@@ -1900,14 +1954,13 @@ Moved several high-value partial areas forward without claiming external proof t
 
 - P1 [BL-133] Run the endpoint agent and packaging scaffold on a real Windows host or Windows CI runner and capture registration, heartbeat, service/software diagnostics, policy denial, and remediation truth proof.
 
-
 ---
 
 ## Session 124B — Windows Endpoint Diagnostics Contracts And Packaging Scaffold
 
 **Date:** 2026-05-01  
 **Type:** implementation slice, Linux-tested only  
-**Scope:** BL-130/BL-131/BL-132 partial; BL-133 readiness only  
+**Scope:** BL-130/BL-131/BL-132 partial; BL-133 readiness only
 
 ### Changes
 
@@ -1934,7 +1987,6 @@ Moved several high-value partial areas forward without claiming external proof t
 
 - P1 [BL-133] Run the endpoint agent and packaging scaffold on a real Windows host or Windows CI runner and capture registration, heartbeat, service/software diagnostics, policy denial, and remediation truth proof.
 
-
 ---
 
 ## Session 123c — Final Closure Proof Repair
@@ -1942,11 +1994,12 @@ Moved several high-value partial areas forward without claiming external proof t
 **Date:** 2026-05-01  
 **Type:** closure proof repair only (no new features)  
 **Git HEAD:** `8803e5278108cf0c4320835bab49ea9cf7597c66`  
-**Worktree:** clean  
+**Worktree:** clean
 
 ### Problem
 
 Session 123b implementation was correct, but the final handoff contained contradictory evidence:
+
 - Claimed final commit: `b022c08` (later corrected to `0e39579`, then final commit `8803e52` after evidence recapture and doc updates)
 - Uploaded runtime identity proof (`07-runtime-identity-health.json`) showed `head: ba97d90...` — the pre-commit HEAD
 - Evidence index claimed "dirty worktree" and "Git HEAD: ba97d90 + pending changes"
@@ -2065,7 +2118,6 @@ Session 123b implementation was correct, but the final handoff contained contrad
 - P2 [BL-083] Full Store pattern refactor to eliminate direct PrismaClient usage
 - P3 [BL-084] Cloud AI provider real configuration and connection
 
-
 ## Session 129 — Real E2E Demo Readiness / Enterprise Review Packaging
 
 **Date:** 2026-05-02 20:45 CEST
@@ -2073,6 +2125,7 @@ Session 123b implementation was correct, but the final handoff contained contrad
 **Branch:** main
 
 ### What Changed
+
 - **New docs:** REALITY_MATRIX.md (23 systems classified), ENTERPRISE_DEMO_GUIDE.md (4 scenarios)
 - **Severe doc fix:** SANDBOX_INTEGRATION_ACCEPTANCE.md (was "future acceptance contract", now reflects BL-116 accepted plus gateway references)
 - **Moderate doc fixes:** DEMO_GUIDE.md (mock-only → standalone/cluster distinction, writeback truth), REAL_E2E_SANDBOX_FLOW.md (target→accepted, future→past tense), ZAMMAD_CONNECTOR.md (future→accepted, env var→OpenBao), IMPLEMENTATION_PHASES_REAL_E2E.md (roadmap→historical, added acceptance markers)
@@ -2080,6 +2133,7 @@ Session 123b implementation was correct, but the final handoff contained contrad
 - **Updated:** docs/README.md (added REALITY_MATRIX, ENTERPRISE_DEMO_GUIDE), all state docs
 
 ### Verification
+
 - typecheck: PASS (all workspaces)
 - lint: PASS (0 errors)
 - tests: 379 tests, 373 pass, 3 fail (pre-existing in apps/web), 3 skipped
@@ -2089,12 +2143,14 @@ Session 123b implementation was correct, but the final handoff contained contrad
 - Web: Next.js 15.5.15 on port 3202, HTTP 200
 
 ### Evidence
+
 - Folder: output/playwright/session-129-real-e2e-demo-readiness/ (7 files)
 - Screenshots: API health, Connector status (Playwright via 127.0.0.1:4110)
 - CLI artifacts: Validation gate, AI provider readiness JSON, baseline runtime
 - 0 duplicate screenshots (unique md5)
 
 ### Key Limitation
+
 K8s cluster was DOWN this session. All sandbox integrations marked SANDBOX_CODE_READY in REALITY_MATRIX.md were previously proven (BL-103–116 accepted), but could not be re-verified at runtime. The new docs accurately distinguish "real sandbox when cluster is up" from "standalone local MVP."
 
 ## 2026-05-02 - Session 130: BL-136 Real E2E Runtime Demo Verification (PARTIAL/RUNTIME-VERIFIED)
@@ -2220,7 +2276,6 @@ K8s cluster was DOWN this session. All sandbox integrations marked SANDBOX_CODE_
 - P1 [BL-130/BL-131/BL-133] Windows endpoint real-runner proof
 - P2 [BL-069/BL-071/BL-072/BL-127] Connect real connector instances
 
-
 ## Session 133 — 2026-05-03 — Windows Endpoint Enterprise Readiness (HARNESS-READY)
 
 **Date:** 2026-05-03 15:00 CEST
@@ -2311,7 +2366,6 @@ No real Windows host was available (Fedora Linux only). BL items remain partial/
 
 - P1 [BL-133] Trigger GitHub Actions workflow on windows-latest with live API, or manual Windows host verification per runbook. Capture real Windows agent registration, heartbeat, diagnostics, and policy denial proof.
 
-
 ## Session 140 — 2026-05-03 — GLPI Real Sandbox E2E Deployment
 
 **Date:** 2026-05-03 15:50 CEST
@@ -2359,7 +2413,6 @@ Deployed GLPI sandbox in K8s and proved real transport between SupportPlane API 
 
 Full authenticated end-to-end proof through SupportPlane session (requires session auth to access connector-status and session context endpoints).
 
-
 ## Session 138 — 2026-05-03 — GLPI Real Connector Enablement
 
 **Date:** 2026-05-03 15:30 CEST
@@ -2406,7 +2459,6 @@ Moved GLPI connector from mock-by-gap to sandbox-code-ready. Implemented real HT
 
 Deploy GLPI sandbox container in K8s and prove real ticket/customer read through SupportPlane API.
 
-
 ## Session 135 — 2026-05-03 — Session 134 Closure Repair + BL-132 Windows Service Packaging
 
 **Date:** 2026-05-03 15:10 CEST
@@ -2422,6 +2474,7 @@ Tailscale Funnel was still running from Session 134 (`https://ff-fedora.tail2dc9
 ### Part 1 — Evidence Mismatch Repair
 
 Session 134 final handoff claimed commit `4072920...` but workflow evidence showed up to `c1d1252...`. Resolution:
+
 - `c1d1252` = WORKFLOW-PROVEN HEAD (Windows runner executed against this commit)
 - `4072920` = FINAL CLOSURE HEAD (docs-only, zero code changes since c1d1252)
 - STATUS.md, WORKLOG.md, PROJECT_STATE.yaml updated to document both heads clearly.
@@ -2430,16 +2483,20 @@ Session 134 final handoff claimed commit `4072920...` but workflow evidence show
 ### Part 2 — BL-132 Windows Service Packaging
 
 #### Scripts Created
+
 - `scripts/windows/install_endpoint_agent_service.ps1` — uses sc.exe (built-in, no external deps), service name SupportPlaneEndpointAgentDev
 - `scripts/windows/uninstall_endpoint_agent_service.ps1` — stop/remove service
 - `scripts/windows/run_endpoint_agent_once.ps1` — run agent once for verification
 
 #### Workflow Job Added
+
 `windows-service-packaging` job (10 steps) in `.github/workflows/windows-endpoint-verification.yml`:
+
 - Triggered via `runServicePackaging=true` input
 - Steps: Checkout, Setup Node, Install, Build, Script validation, Service install attempt (continue-on-error), Service status check, Service uninstall (continue-on-error), No-secret scan, Artifact upload, Summary
 
 #### Workflow Result
+
 - **Run:** https://github.com/lennertvhoy/SupportPlane/actions/runs/25279858921
 - **Verification job:** SUCCESS (same as Session 134 — 44/44 tests)
 - **Service packaging job:** SUCCESS (with documented limitation)
@@ -2450,12 +2507,14 @@ Session 134 final handoff claimed commit `4072920...` but workflow evidence show
   - No secrets found in output files ✅
 
 #### BL-132 Status
+
 - Stays `partial/service-scripts-ready` (not accepted)
 - Credible packaging path exists: scripts validated, workflow job works
 - Real Windows host with admin required for service install/start/auto-start/uninstall proof
 - MSI/EXE installer remains future work
 
 ### Verification
+
 - `npm run lint`: PASS (0 errors)
 - `npm run typecheck --workspaces --if-present`: PASS
 - `npm test --workspace=apps/endpoint-agent`: PASS (44/44, 0 fail)
@@ -2467,19 +2526,21 @@ Session 134 final handoff claimed commit `4072920...` but workflow evidence show
 - GitHub Actions BL-132 packaging: SUCCESS (with documented admin limitation)
 
 ### Evidence
+
 - Repair: `output/playwright/session-135-session134-closure-safety-repair/` (6 files)
 - BL-132: `output/playwright/session-136-windows-service-packaging-proof/` (workflow log, summary, funnel-off, git truth)
 
 ### Known Limitations
+
 - BL-132 service install/uninstall not proven on real Windows (GH runner lacks admin)
 - Tailscale Funnel is OFF — must re-enable for future CI tests
 - No browser/computer-use tool available — CLI and GitHub evidence only
 - MSI/EXE installer not implemented
 
 ### Next Recommended Action
+
 P1 [BL-069/BL-071/BL-072/BL-127] Connector real-instance enablement
 P2 [BL-132] Run service scripts on real Windows host with admin
-
 
 ## Session 134 — 2026-05-03 — Windows Runner CI Reachability (BL-130/131/133 ACCEPTED)
 
@@ -2500,7 +2561,7 @@ Moved BL-130/131/133 from harness-ready toward real Windows runner proof. Create
 - **Enrollment token script:** Created `scripts/create_demo_endpoint_enrollment_token.sh` with redaction, apply-to-K8s option, and security notes.
 - **Workflow hardening:** Upgraded `.github/workflows/windows-endpoint-verification.yml` from 13 to 16 hardened steps:
   - OS identity check, Node version check
-  - Fixed env var mapping (SUPPORTPLANE_ENDPOINT_* instead of SUPPORTPLANE_*)
+  - Fixed env var mapping (SUPPORTPLANE*ENDPOINT*\_ instead of SUPPORTPLANE\_\_)
   - Token passed via env var (GitHub masks env vars; previously inline `${{ inputs }}` exposed raw token)
   - API health check (mandatory, fail if unreachable)
   - Separate diagnostic steps (inventory/status, then services/software/disk/network)
@@ -2580,7 +2641,6 @@ Moved BL-130/131/133 from harness-ready toward real Windows runner proof. Create
 
 P1 [BL-132] Windows service/install packaging (MSI/EXE, auto-start), or P2 [BL-069/BL-071/BL-072/BL-127] connector real-instance enablement.
 
-
 ## Session 134 — 2026-05-03 — Session 133 Closure Repair
 
 **Date:** 2026-05-03 15:30 CEST
@@ -2590,6 +2650,7 @@ P1 [BL-132] Windows service/install packaging (MSI/EXE, auto-start), or P2 [BL-0
 ### Why Repair Was Needed
 
 Session 133 handoff claimed closure-grade but uploaded evidence contained closure contradictions:
+
 - `15-git-status-precommit.txt` showed dirty worktree and ahead 8, not final clean/ahead 11.
 - `17-evidence-index.md` said Git HEAD was "fbaad1a... (to be updated after commit)" instead of actual final HEAD.
 - Final commits ec71fca and 8b7729a existed but evidence predated them.
@@ -2629,7 +2690,6 @@ Session 133 handoff claimed closure-grade but uploaded evidence contained closur
 
 - P1 [BL-133] Deploy SupportPlane API to a publicly reachable endpoint, provision enrollment token, then trigger the GitHub Actions workflow, OR execute the manual Windows verification runbook on a real Windows host.
 
-
 ## Session 141/142 — 2026-05-03 — GLPI Closure Repair + BL-069 Acceptance
 
 **Date:** 2026-05-03 16:00 CEST
@@ -2639,6 +2699,7 @@ Session 133 handoff claimed closure-grade but uploaded evidence contained closur
 ### Part 0 — Session 140 Closure Repair
 
 Repaired closure hygiene:
+
 1. Session 140 git evidence showed dirty worktree at HEAD 7dd4add; true final HEAD is b80e12f
 2. Session 140 lacked authenticated connector-status proof (401); Session 142 provides it
 3. Session 140 API /health returned branch=null, head=null; fixed by rebuilding with GIT_HEAD build arg
@@ -2689,14 +2750,13 @@ Proved GLPI real sandbox transport end-to-end through SupportPlane:
 ### What remains mock/fixture/unconfigured
 
 - MeshCentral: unconfigured (no real instance)
-- Fortinet: unconfigured (no real instance)  
+- Fortinet: unconfigured (no real instance)
 - osTicket: fixture (no real instance, blocked by upstream)
 - No browser/computer-use tool available; CLI/API evidence only
 
 ### Next Recommended Action
 
 P1 [BL-071/BL-072/BL-127] Connect remaining real connector instances
-
 
 ## Session 143 — 2026-05-03 — BL-069 Closure Hygiene Repair + Next Connector Decision
 
@@ -2715,6 +2775,7 @@ P1 [BL-071/BL-072/BL-127] Connect remaining real connector instances
 ### Part 1 — Next Connector Decision
 
 **osTicket (BL-127): BLOCKED** — 3 hard blockers documented in `docs/OSTICKET_TRIAGE.md`:
+
 - B1: No read API (ticket creation only)
 - B2: No PostgreSQL support (MySQL/MariaDB only)
 - B3: No official container image
@@ -2722,6 +2783,7 @@ P1 [BL-071/BL-072/BL-127] Connect remaining real connector instances
 `OsTicketAdapterFactory` remains as fixture-backed stub with honest labels.
 
 **MeshCentral (BL-071): SELECTED** as next real connector target. Current scaffolding:
+
 - `MeshCentralClient` interface (getDeviceByName, getDeviceById, listDevices)
 - `MockMeshCentralClient` fixture
 - `MeshCentralConnectorService` with health endpoint
@@ -2754,22 +2816,27 @@ P1 [BL-071] Deploy MeshCentral sandbox in K8s, implement FetchMeshCentralClient,
 ## Session 147 — BL-139 First User Testing Round & Triage (COMPLETED 2026-05-04)
 
 ### Date
+
 Started 2026-05-03 18:40 CEST — interrupted before commit. Completed 2026-05-04 11:00 CEST.
 
 ### Scope
+
 First real user-testing readiness/triage round. No new product scope unless P0/P1 demo blocker.
 
 ### Part 0 — BL-138 Closure Proof Repair
+
 - Verified commits 81320984c392281d375f6a5592ecea4ba97e3fe1 and b41b21a1c335fc008d5116195cc45d01b9d37430 both exist as git commit objects.
 - Worktree is clean at b41b21a (ahead 6).
 - Created `output/playwright/session-146-bl138-closure-proof/` (7 files) with clean git proof.
 - Session-145 bug-context git-head.txt at cb99feb was pre-final dirty state, now superseded by clean commits.
 
 ### Part 1 — Tester Packet Creation
+
 - Created `docs/user-testing/FIRST_TEST_ROUND.md` — tester packet with demo URL, login credentials, flow descriptions, known limitations, feedback instructions, persona assignments.
 - Created `docs/user-testing/TEST_ROUND_001_PLAN.md` — round plan with tester list placeholder, target personas, flows to validate, success criteria, stop-testing criteria, triage meeting checklist.
 
 ### Part 2 — Internal Dry Run
+
 - Logged into demo at `http://localhost:3300` as admin.
 - Followed test script flows in browser.
 - Identified key findings:
@@ -2781,10 +2848,12 @@ First real user-testing readiness/triage round. No new product scope unless P0/P
 - Created `docs/user-testing/TEST_ROUND_001_INTERNAL_DRY_RUN.md`.
 
 ### Part 3 — P0/P1 Fixes
+
 - **P1 fixed**: `apps/web/app/page.tsx:346` — changed hardcoded `API: localhost:4110` to dynamic `API: {NEXT_PUBLIC_API_BASE_URL.replace('http://', '') || 'localhost:4110'}`. K8s config already has `NEXT_PUBLIC_API_BASE_URL=http://localhost:4210`.
 - **P0 documented**: Pre-testing requirement to run `reset_demo_data.sh` before any tester session. Documented in dry run report and first test round packet.
 
 ### Completion Session (2026-05-04)
+
 - Fixed STATUS.md snapshot bullet count (8→6, max is 7 per AGENTS.md hygiene rule).
 - Updated docs/README.md to index 3 new user-testing docs.
 - Fixed PROJECT_STATE.yaml duplicate `worktree_status_at_state_update` key.
@@ -2792,6 +2861,7 @@ First real user-testing readiness/triage round. No new product scope unless P0/P
 - Re-established web port-forward (3300) after web pod restart killed the previous one.
 
 ### Verification
+
 - `npm run lint`: PASS (0 errors)
 - `npm run typecheck --workspaces --if-present`: PASS (all workspaces)
 - `npm test --workspace=apps/api`: 210 pass, 0 fail, 3 skipped
@@ -2807,10 +2877,12 @@ First real user-testing readiness/triage round. No new product scope unless P0/P
 - Authenticated connector-status: Zammad configured:real, GLPI configured:real
 
 ### Evidence
+
 - Session 146 (closure proof): `output/playwright/session-146-bl138-closure-proof/` (7 files)
 - Session 147 (first testing round): `output/playwright/session-147-first-user-testing-round/` (13 files, 4 screenshots)
 
 ### State Updates
+
 - BACKLOG.md: BL-139 added as accepted
 - NEXT_ACTIONS.md: BL-139 added to recently completed
 - STATUS.md: Updated to BL-139 accepted
@@ -2819,7 +2891,9 @@ First real user-testing readiness/triage round. No new product scope unless P0/P
 - docs/user-testing/FEEDBACK_LOG.md: Updated summary statistics for Round 1
 
 ### Next Recommended Action
+
 Send tester packet to first real testers. Before each tester:
+
 1. Run `bash scripts/reset_demo_data.sh`
 2. Run `bash scripts/verify_user_testing_demo.sh`
 3. Hand them `docs/user-testing/FIRST_TEST_ROUND.md`
@@ -2829,12 +2903,15 @@ Send tester packet to first real testers. Before each tester:
 ## Session 148 — BL-139 Closure Proof Repair (COMPLETED 2026-05-04)
 
 ### Date
+
 2026-05-04 11:40 CEST
 
 ### Scope
+
 Tiny closure repair. Session-147 evidence `08-git-status.txt` showed pre-commit dirty worktree. Add clean final proof.
 
 ### What Changed
+
 - Created `output/playwright/session-148-bl139-closure-proof/` (5 files, under 8 cap) with clean git proof, smoke test, state docs check, docs hygiene check.
 - Updated session-147 `12-evidence-index.md` to note pre-commit caveat on `08-git-status.txt`.
 - Tuned up `FIRST_TEST_ROUND.md`: added API URL, explicit reset requirement before testing.
@@ -2844,14 +2921,17 @@ Tiny closure repair. Session-147 evidence `08-git-status.txt` showed pre-commit 
 - Updated STATUS.md, PROJECT_STATE.yaml, WORKLOG.md.
 
 ### Verification
+
 - `bash scripts/verify_user_testing_demo.sh`: 10/10 PASS, 0 FAIL
 - `python3 scripts/check_state_docs.py`: PASS
 - `python3 scripts/check_docs_hygiene.py`: PASS
 - Worktree clean at final commit.
 
 ### Evidence
+
 - Session 148: `output/playwright/session-148-bl139-closure-proof/` (5 files)
 - 5 files: git-final-truth, smoke-test-report, state-docs-check, docs-hygiene-check, evidence-index
 
 ### Next Recommended Action
+
 Send the tester packet. Real testers can start immediately. Final clean proof exists.

@@ -1,14 +1,14 @@
 ## What changed
 
-- 
+-
 
 ## Verification
 
-- 
+-
 
 ## Evidence refs
 
-- 
+-
 
 ## Contract checks
 
@@ -18,4 +18,4 @@
 
 ## What remains unproven
 
-- 
+-

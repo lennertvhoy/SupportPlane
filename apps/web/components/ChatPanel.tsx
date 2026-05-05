@@ -100,7 +100,8 @@ export function ChatPanel({
       ) : !chatSession ? (
         <div className="space-y-3">
           <div className="text-xs text-cockpit-500">
-            Start a new AI chat session for <span className="text-cockpit-200">{session.title}</span>.
+            Start a new AI chat session for{' '}
+            <span className="text-cockpit-200">{session.title}</span>.
           </div>
           <button
             onClick={handleCreateSession}
@@ -147,9 +148,7 @@ export function ChatPanel({
                         {msg.role}
                       </span>
                       {msg.role === 'assistant' && (
-                        <span className="text-[10px] text-amber-300">
-                          {getProviderLabel(msg)}
-                        </span>
+                        <span className="text-[10px] text-amber-300">{getProviderLabel(msg)}</span>
                       )}
                     </div>
                     <div className="whitespace-pre-wrap">{msg.content}</div>

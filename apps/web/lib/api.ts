@@ -459,9 +459,20 @@ export interface ConnectorTestResult {
   metadata: Record<string, unknown>;
 }
 
-export type ConnectorReadinessMode = 'fixture' | 'mock' | 'configured' | 'live' | 'error' | 'unconfigured';
+export type ConnectorReadinessMode =
+  | 'fixture'
+  | 'mock'
+  | 'configured'
+  | 'live'
+  | 'error'
+  | 'unconfigured';
 export type ConnectorCredentialSource = 'none' | 'env' | 'vault' | 'local_dev_secret' | 'redacted';
-export type ConnectorStatusErrorCode = 'CONFIG_MISSING' | 'AUTH_FAILED' | 'NETWORK_FAILED' | 'UNSUPPORTED' | 'OK';
+export type ConnectorStatusErrorCode =
+  | 'CONFIG_MISSING'
+  | 'AUTH_FAILED'
+  | 'NETWORK_FAILED'
+  | 'UNSUPPORTED'
+  | 'OK';
 
 export interface BrowserConnectorStatus {
   id: string;
@@ -552,7 +563,12 @@ export interface TelephonyWebhookResponse {
     normalizedPhoneNumber?: string;
     callerDisplayName?: string;
     occurredAt: string;
-    verification: { status: string; checkedAt: string; signatureRequired: boolean; mockDevOnly: boolean };
+    verification: {
+      status: string;
+      checkedAt: string;
+      signatureRequired: boolean;
+      mockDevOnly: boolean;
+    };
     mockDevOnly: boolean;
   };
   callEvent: CallEvent;
@@ -626,13 +642,28 @@ export interface DeliveryPolicy {
   requireHumanReview: boolean;
   requireEvidenceBundleBeforeDelivery: boolean;
   requireConnectorValidationBeforeDelivery: boolean;
-  retryPolicy: { maxAttempts: number; baseDelaySeconds: number; maxDelaySeconds: number; backoffMultiplier: number };
-  deadLetterPolicy: { enabled: boolean; maxAttemptsBeforeDeadLetter: number; requireManualRetry: boolean };
+  retryPolicy: {
+    maxAttempts: number;
+    baseDelaySeconds: number;
+    maxDelaySeconds: number;
+    backoffMultiplier: number;
+  };
+  deadLetterPolicy: {
+    enabled: boolean;
+    maxAttemptsBeforeDeadLetter: number;
+    requireManualRetry: boolean;
+  };
   updatedBy: string | null;
   updatedAt: string;
   policyVersion: number;
   lastValidationStatus: 'valid' | 'invalid' | 'pending' | 'not_run';
-  safetyFlags: { realNetworkAllowed: boolean; writebackEnabled: boolean; externalWriteAllowed: boolean; mockOnly: boolean; localDevOnly: boolean };
+  safetyFlags: {
+    realNetworkAllowed: boolean;
+    writebackEnabled: boolean;
+    externalWriteAllowed: boolean;
+    mockOnly: boolean;
+    localDevOnly: boolean;
+  };
   createdAt: string;
 }
 
@@ -1315,7 +1346,7 @@ class ApiClientError extends Error {
   constructor(
     message: string,
     public readonly status: number,
-    public readonly body: ApiError | null
+    public readonly body: ApiError | null,
   ) {
     super(message);
     this.name = 'ApiClientError';
@@ -1325,7 +1356,7 @@ class ApiClientError extends Error {
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
-  identity: DevIdentity = DEFAULT_IDENTITY
+  identity: DevIdentity = DEFAULT_IDENTITY,
 ): Promise<T> {
   const url = `${API_BASE}${path}`;
   const headers = new Headers(options.headers);
@@ -1349,11 +1380,7 @@ async function apiFetch<T>(
     } catch {
       // ignore parse failure
     }
-    throw new ApiClientError(
-      body?.message ?? `HTTP ${res.status}`,
-      res.status,
-      body
-    );
+    throw new ApiClientError(body?.message ?? `HTTP ${res.status}`, res.status, body);
   }
 
   // Handle 204 No Content
@@ -1368,14 +1395,15 @@ export const api = {
   login: (body: { email: string; password: string; tenantSlug?: string }) =>
     apiFetch<{ identity: AuthIdentity; expiresAt: string; authMode: 'local' }>(
       '/auth/local/login',
-      { method: 'POST', body: JSON.stringify(body) }
+      { method: 'POST', body: JSON.stringify(body) },
     ),
 
-  logout: () =>
-    apiFetch<{ loggedOut: boolean }>('/auth/logout', { method: 'POST' }),
+  logout: () => apiFetch<{ loggedOut: boolean }>('/auth/logout', { method: 'POST' }),
 
   me: () =>
-    apiFetch<{ identity: AuthIdentity; authMode: 'dev' | 'local' | 'oidc' }>('/auth/me', { method: 'GET' }),
+    apiFetch<{ identity: AuthIdentity; authMode: 'dev' | 'local' | 'oidc' }>('/auth/me', {
+      method: 'GET',
+    }),
 
   getHealth: (identity?: DevIdentity) =>
     apiFetch<ApiHealthStatus>('/health', { method: 'GET' }, identity),
@@ -1389,48 +1417,52 @@ export const api = {
 
   createSession: (
     body: { title: string; description?: string; priority?: string },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
-    apiFetch<SupportSession>('/support-sessions', {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }, identity),
+    apiFetch<SupportSession>(
+      '/support-sessions',
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+      identity,
+    ),
 
   getSession: (id: string, identity?: DevIdentity) =>
     apiFetch<SupportSession>(`/support-sessions/${id}`, { method: 'GET' }, identity),
 
   // Ticket context
-  loadTicketContext: (
-    sessionId: string,
-    externalTicketId: string,
-    identity?: DevIdentity
-  ) =>
+  loadTicketContext: (sessionId: string, externalTicketId: string, identity?: DevIdentity) =>
     apiFetch<{
       ticketReference: TicketReference;
       contextPacket: AIContextPacket;
       session: SupportSession;
-    }>(`/support-sessions/${sessionId}/ticket-context`, {
-      method: 'POST',
-      body: JSON.stringify({ externalTicketId }),
-    }, identity),
+    }>(
+      `/support-sessions/${sessionId}/ticket-context`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ externalTicketId }),
+      },
+      identity,
+    ),
 
   // Context packets
   listContextPackets: (sessionId: string, identity?: DevIdentity) =>
     apiFetch<AIContextPacket[]>(
       `/support-sessions/${sessionId}/context-packets`,
       { method: 'GET' },
-      identity
+      identity,
     ),
 
   createContextPacket: (
     sessionId: string,
     body: { provenance: string; payload: Record<string, unknown> },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<AIContextPacket>(
       `/support-sessions/${sessionId}/context-packets`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   // Audit events
@@ -1438,7 +1470,7 @@ export const api = {
     apiFetch<AuditEvent[]>(
       `/support-sessions/${sessionId}/audit-events`,
       { method: 'GET' },
-      identity
+      identity,
     ),
 
   generateDraftSuggestion: (
@@ -1447,12 +1479,12 @@ export const api = {
       operatorInstructions?: string;
       modelSelection?: { provider?: 'mock' | 'ollama' | 'lmstudio'; model?: string };
     } = {},
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<DraftSuggestionResponse>(
       `/support-sessions/${sessionId}/draft-suggestion`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   generateGreetingSuggestion: (
@@ -1462,42 +1494,26 @@ export const api = {
       tone?: 'professional' | 'friendly' | 'concise';
       modelSelection?: { provider?: 'mock' | 'ollama' | 'lmstudio'; model?: string };
     } = {},
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<GreetingSuggestionResponse>(
       `/support-sessions/${sessionId}/greeting-suggestion`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   // Connector endpoints
   getConnectorStatus: (identity?: DevIdentity) =>
-    apiFetch<ConnectorStatus>(
-      '/connectors/zammad/status',
-      { method: 'GET' },
-      identity
-    ),
+    apiFetch<ConnectorStatus>('/connectors/zammad/status', { method: 'GET' }, identity),
 
   testConnector: (identity?: DevIdentity) =>
-    apiFetch<ConnectorTestResult>(
-      '/connectors/zammad/test',
-      { method: 'POST' },
-      identity
-    ),
+    apiFetch<ConnectorTestResult>('/connectors/zammad/test', { method: 'POST' }, identity),
 
   getTelephonyStatus: (identity?: DevIdentity) =>
-    apiFetch<TelephonyAdapterStatus>(
-      '/telephony/status',
-      { method: 'GET' },
-      identity
-    ),
+    apiFetch<TelephonyAdapterStatus>('/telephony/status', { method: 'GET' }, identity),
 
   testTelephonyBridge: (identity?: DevIdentity) =>
-    apiFetch<TelephonyAdapterStatus>(
-      '/telephony/test',
-      { method: 'POST' },
-      identity
-    ),
+    apiFetch<TelephonyAdapterStatus>('/telephony/test', { method: 'POST' }, identity),
 
   sendFakeProviderWebhook: (
     body: {
@@ -1509,107 +1525,132 @@ export const api = {
       autoCreateSession?: boolean;
       metadata?: Record<string, unknown>;
     },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<TelephonyWebhookResponse>(
       '/telephony/webhooks/fake-provider',
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   controlTelephonyCall: (
     callId: string,
     body: { action: string; reason?: string; target?: string },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<TelephonyCallControlResult>(
       `/telephony/calls/${callId}/control`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
-  loadZammadTicketContext: (
-    sessionId: string,
-    externalTicketId: string,
-    identity?: DevIdentity
-  ) =>
+  loadZammadTicketContext: (sessionId: string, externalTicketId: string, identity?: DevIdentity) =>
     apiFetch<{
       ticketReference: TicketReference;
       contextPacket: AIContextPacket;
       session: SupportSession;
-    }>(`/support-sessions/${sessionId}/zammad/ticket-context`, {
-      method: 'POST',
-      body: JSON.stringify({ externalTicketId }),
-    }, identity),
+    }>(
+      `/support-sessions/${sessionId}/zammad/ticket-context`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ externalTicketId }),
+      },
+      identity,
+    ),
 
-  loadGlpiTicketContext: (
-    sessionId: string,
-    externalTicketId: string,
-    identity?: DevIdentity
-  ) =>
+  loadGlpiTicketContext: (sessionId: string, externalTicketId: string, identity?: DevIdentity) =>
     apiFetch<{
       ticketReference: TicketReference;
       contextPacket: AIContextPacket;
       session: SupportSession;
-    }>(`/support-sessions/${sessionId}/glpi/ticket-context`, {
-      method: 'POST',
-      body: JSON.stringify({ externalTicketId }),
-    }, identity),
+    }>(
+      `/support-sessions/${sessionId}/glpi/ticket-context`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ externalTicketId }),
+      },
+      identity,
+    ),
 
   createInternalNoteDraft: (
     sessionId: string,
     body: { externalTicketId: string; body: string; subject?: string },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<InternalNoteDraft>(
       `/support-sessions/${sessionId}/zammad/internal-note-draft`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   writebackInternalNote: (
     sessionId: string,
     body: { draftId: string; externalTicketId: string; body: string },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<InternalNoteWritebackResult>(
       `/support-sessions/${sessionId}/zammad/internal-note-writeback`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   // Customers
   listCustomers: (identity?: DevIdentity) =>
-    apiFetch<{ customers: CustomerReference[] }>('/customers', { method: 'GET' }, identity).then(r => r.customers),
+    apiFetch<{ customers: CustomerReference[] }>('/customers', { method: 'GET' }, identity).then(
+      (r) => r.customers,
+    ),
 
   getCustomer: (id: string, identity?: DevIdentity) =>
-    apiFetch<{ customer: CustomerReference }>(`/customers/${id}`, { method: 'GET' }, identity).then(r => r.customer),
+    apiFetch<{ customer: CustomerReference }>(`/customers/${id}`, { method: 'GET' }, identity).then(
+      (r) => r.customer,
+    ),
 
   // Tickets
-  listTickets: (params?: { customerId?: string; email?: string; status?: string; priority?: string }, identity?: DevIdentity) =>
-    apiFetch<{ tickets: TicketReference[] }>(`/tickets?${new URLSearchParams(params ?? {}).toString()}`, { method: 'GET' }, identity).then(r => r.tickets),
+  listTickets: (
+    params?: { customerId?: string; email?: string; status?: string; priority?: string },
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<{ tickets: TicketReference[] }>(
+      `/tickets?${new URLSearchParams(params ?? {}).toString()}`,
+      { method: 'GET' },
+      identity,
+    ).then((r) => r.tickets),
 
   getTicket: (id: string, identity?: DevIdentity) =>
-    apiFetch<{ ticket: TicketReference }>(`/tickets/${id}`, { method: 'GET' }, identity).then(r => r.ticket),
+    apiFetch<{ ticket: TicketReference }>(`/tickets/${id}`, { method: 'GET' }, identity).then(
+      (r) => r.ticket,
+    ),
 
   // Case timeline
   getCaseTimeline: (sessionId: string, identity?: DevIdentity) =>
-    apiFetch<{ timeline: Array<{ id: string; type: string; timestamp: string; title: string; description?: string; metadata: Record<string, unknown> }>; generatedAt: string }>(
-      `/support-sessions/${sessionId}/case-timeline`,
-      { method: 'GET' },
-      identity
-    ),
+    apiFetch<{
+      timeline: Array<{
+        id: string;
+        type: string;
+        timestamp: string;
+        title: string;
+        description?: string;
+        metadata: Record<string, unknown>;
+      }>;
+      generatedAt: string;
+    }>(`/support-sessions/${sessionId}/case-timeline`, { method: 'GET' }, identity),
 
   // Support note drafts
   createSupportNoteDraft: (
     sessionId: string,
     body: { externalTicketId: string; operatorNotes?: string },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
-    apiFetch<{ draft: string; mockDevOnly: true; notSentToZammad: true; requiresHumanReview: true; generatedAt: string }>(
+    apiFetch<{
+      draft: string;
+      mockDevOnly: true;
+      notSentToZammad: true;
+      requiresHumanReview: true;
+      generatedAt: string;
+    }>(
       `/support-sessions/${sessionId}/support-note-drafts`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   // Durable actions and local outbox
@@ -1617,63 +1658,104 @@ export const api = {
     apiFetch<{ actions: SupportAction[]; outboxItems: ActionOutboxItem[] }>(
       `/support-sessions/${sessionId}/actions`,
       { method: 'GET' },
-      identity
+      identity,
     ),
 
   createSupportAction: (
     sessionId: string,
-    body: { actionType?: 'ticket_note'; externalTicketId?: string; ticketReferenceId?: string; body: string; subject?: string; idempotencyKey?: string; mockDeliveryScenario?: string },
-    identity?: DevIdentity
+    body: {
+      actionType?: 'ticket_note';
+      externalTicketId?: string;
+      ticketReferenceId?: string;
+      body: string;
+      subject?: string;
+      idempotencyKey?: string;
+      mockDeliveryScenario?: string;
+    },
+    identity?: DevIdentity,
   ) =>
     apiFetch<{ action: SupportAction; idempotentReplay: boolean }>(
       `/support-sessions/${sessionId}/actions`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   submitActionForReview: (actionId: string, identity?: DevIdentity) =>
-    apiFetch<{ action: SupportAction }>(`/actions/${actionId}/submit-for-review`, { method: 'POST' }, identity),
+    apiFetch<{ action: SupportAction }>(
+      `/actions/${actionId}/submit-for-review`,
+      { method: 'POST' },
+      identity,
+    ),
 
   approveAction: (actionId: string, reason?: string, identity?: DevIdentity) =>
-    apiFetch<{ action: SupportAction }>(`/actions/${actionId}/approve`, { method: 'POST', body: JSON.stringify({ reason }) }, identity),
+    apiFetch<{ action: SupportAction }>(
+      `/actions/${actionId}/approve`,
+      { method: 'POST', body: JSON.stringify({ reason }) },
+      identity,
+    ),
 
   rejectAction: (actionId: string, reason?: string, identity?: DevIdentity) =>
-    apiFetch<{ action: SupportAction }>(`/actions/${actionId}/reject`, { method: 'POST', body: JSON.stringify({ reason }) }, identity),
+    apiFetch<{ action: SupportAction }>(
+      `/actions/${actionId}/reject`,
+      { method: 'POST', body: JSON.stringify({ reason }) },
+      identity,
+    ),
 
   queueAction: (actionId: string, identity?: DevIdentity) =>
-    apiFetch<{ action: SupportAction; outboxItem: ActionOutboxItem; idempotentReplay: boolean }>(`/actions/${actionId}/queue`, { method: 'POST' }, identity),
+    apiFetch<{ action: SupportAction; outboxItem: ActionOutboxItem; idempotentReplay: boolean }>(
+      `/actions/${actionId}/queue`,
+      { method: 'POST' },
+      identity,
+    ),
 
   mockDeliverAction: (actionId: string, identity?: DevIdentity) =>
-    apiFetch<{ action: SupportAction; outboxItem: ActionOutboxItem; attempt: ActionOutboxAttempt; delivery: Record<string, unknown> }>(`/actions/${actionId}/mock-deliver`, { method: 'POST' }, identity),
+    apiFetch<{
+      action: SupportAction;
+      outboxItem: ActionOutboxItem;
+      attempt: ActionOutboxAttempt;
+      delivery: Record<string, unknown>;
+    }>(`/actions/${actionId}/mock-deliver`, { method: 'POST' }, identity),
 
   getOutboxItem: (outboxId: string, identity?: DevIdentity) =>
-    apiFetch<{ outboxItem: ActionOutboxItem; attempts: ActionOutboxAttempt[] }>(`/outbox/${outboxId}`, { method: 'GET' }, identity),
+    apiFetch<{ outboxItem: ActionOutboxItem; attempts: ActionOutboxAttempt[] }>(
+      `/outbox/${outboxId}`,
+      { method: 'GET' },
+      identity,
+    ),
 
   listOutbox: (identity?: DevIdentity) =>
-    apiFetch<{ outboxItems: ActionOutboxItem[]; summary: Record<string, number> }>('/outbox', { method: 'GET' }, identity),
+    apiFetch<{ outboxItems: ActionOutboxItem[]; summary: Record<string, number> }>(
+      '/outbox',
+      { method: 'GET' },
+      identity,
+    ),
 
   retryOutboxItem: (outboxId: string, identity?: DevIdentity) =>
-    apiFetch<{ outboxItem: ActionOutboxItem }>(`/outbox/${outboxId}/retry`, { method: 'POST' }, identity),
+    apiFetch<{ outboxItem: ActionOutboxItem }>(
+      `/outbox/${outboxId}/retry`,
+      { method: 'POST' },
+      identity,
+    ),
 
   cancelOutboxItem: (outboxId: string, reason?: string, identity?: DevIdentity) =>
     apiFetch<{ action: SupportAction; outboxItem: ActionOutboxItem }>(
       `/outbox/${outboxId}/cancel`,
       { method: 'POST', body: JSON.stringify({ reason }) },
-      identity
+      identity,
     ),
 
   deadLetterOutboxItem: (outboxId: string, reason?: string, identity?: DevIdentity) =>
     apiFetch<{ action: SupportAction; outboxItem: ActionOutboxItem }>(
       `/outbox/${outboxId}/dead-letter`,
       { method: 'POST', body: JSON.stringify({ reason }) },
-      identity
+      identity,
     ),
 
   processOutboxOnce: (outboxItemId?: string, identity?: DevIdentity) =>
     apiFetch<Record<string, unknown>>(
       '/outbox/process-once',
       { method: 'POST', body: JSON.stringify({ outboxItemId }) },
-      identity
+      identity,
     ),
 
   getOutboxWorkerStatus: (identity?: DevIdentity) =>
@@ -1681,10 +1763,18 @@ export const api = {
 
   // Connector installations
   listConnectorInstallations: (identity?: DevIdentity) =>
-    apiFetch<{ installations: ConnectorInstallation[] }>('/connector-installations', { method: 'GET' }, identity).then(r => r.installations),
+    apiFetch<{ installations: ConnectorInstallation[] }>(
+      '/connector-installations',
+      { method: 'GET' },
+      identity,
+    ).then((r) => r.installations),
 
   getConnectorInstallation: (id: string, identity?: DevIdentity) =>
-    apiFetch<{ installation: ConnectorInstallation }>(`/connector-installations/${id}`, { method: 'GET' }, identity).then(r => r.installation),
+    apiFetch<{ installation: ConnectorInstallation }>(
+      `/connector-installations/${id}`,
+      { method: 'GET' },
+      identity,
+    ).then((r) => r.installation),
 
   updateConnectorInstallation: (
     id: string,
@@ -1700,37 +1790,55 @@ export const api = {
       safetyFlags?: Record<string, unknown>;
       timeoutMs?: number;
     },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
-    apiFetch<{ installation: ConnectorInstallation }>(`/connector-installations/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, identity).then(r => r.installation),
+    apiFetch<{ installation: ConnectorInstallation }>(
+      `/connector-installations/${id}`,
+      { method: 'PATCH', body: JSON.stringify(body) },
+      identity,
+    ).then((r) => r.installation),
 
   validateConnectorInstallation: (id: string, identity?: DevIdentity) =>
-    apiFetch<{ installationId: string; result: { valid: boolean; mode: string; realNetwork: boolean; writebackEnabled: boolean; errors: string[]; warnings: string[]; timestamp: string } }>(
-      `/connector-installations/${id}/validate`,
-      { method: 'POST' },
-      identity
-    ),
+    apiFetch<{
+      installationId: string;
+      result: {
+        valid: boolean;
+        mode: string;
+        realNetwork: boolean;
+        writebackEnabled: boolean;
+        errors: string[];
+        warnings: string[];
+        timestamp: string;
+      };
+    }>(`/connector-installations/${id}/validate`, { method: 'POST' }, identity),
 
   testConnectorInstallation: (id: string, identity?: DevIdentity) =>
-    apiFetch<{ installationId: string; result: { success: boolean; mode: string; realNetwork: boolean; writebackEnabled: boolean; latencyMs: number; responseSummary: string; timestamp: string } }>(
-      `/connector-installations/${id}/test`,
-      { method: 'POST' },
-      identity
-    ),
+    apiFetch<{
+      installationId: string;
+      result: {
+        success: boolean;
+        mode: string;
+        realNetwork: boolean;
+        writebackEnabled: boolean;
+        latencyMs: number;
+        responseSummary: string;
+        timestamp: string;
+      };
+    }>(`/connector-installations/${id}/test`, { method: 'POST' }, identity),
 
   // Evidence bundle
   getEvidenceBundle: (sessionId: string, identity?: DevIdentity) =>
     apiFetch<EvidenceBundleExportResponse>(
       `/support-sessions/${sessionId}/evidence-bundle`,
       { method: 'GET' },
-      identity
+      identity,
     ),
 
   getEvidenceBundleJson: (sessionId: string, identity?: DevIdentity) =>
     apiFetch<EvidenceBundleExportResponse>(
       `/support-sessions/${sessionId}/evidence-bundle.json`,
       { method: 'GET' },
-      identity
+      identity,
     ),
 
   // Calls
@@ -1743,12 +1851,16 @@ export const api = {
       preferredSessionTitle?: string;
       preferredPriority?: string;
     },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
-    apiFetch<IncomingCallResponse>('/calls/fake-incoming', {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }, identity),
+    apiFetch<IncomingCallResponse>(
+      '/calls/fake-incoming',
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+      identity,
+    ),
 
   listRecentCalls: (identity?: DevIdentity) =>
     apiFetch<CallEvent[]>('/calls/recent', { method: 'GET' }, identity),
@@ -1756,27 +1868,24 @@ export const api = {
   getCall: (id: string, identity?: DevIdentity) =>
     apiFetch<CallEvent>(`/calls/${id}`, { method: 'GET' }, identity),
 
-  linkCallToSession: (
-    callId: string,
-    body: { sessionId: string },
-    identity?: DevIdentity
-  ) =>
+  linkCallToSession: (callId: string, body: { sessionId: string }, identity?: DevIdentity) =>
     apiFetch<{ callEvent: CallEvent; linkedAt: string }>(
       `/calls/${callId}/link-session`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   updateCallStatus: (
     callId: string,
     body: { status: string; reason?: string },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
-    apiFetch<{ callEvent: CallEvent; previousStatus: string; newStatus: string; changedAt: string }>(
-      `/calls/${callId}/status`,
-      { method: 'POST', body: JSON.stringify(body) },
-      identity
-    ),
+    apiFetch<{
+      callEvent: CallEvent;
+      previousStatus: string;
+      newStatus: string;
+      changedAt: string;
+    }>(`/calls/${callId}/status`, { method: 'POST', body: JSON.stringify(body) }, identity),
 
   getCallTimeline: (callId: string, identity?: DevIdentity) =>
     apiFetch<CallTimelineResponse>(`/calls/${callId}/timeline`, { method: 'GET' }, identity),
@@ -1784,36 +1893,32 @@ export const api = {
   attachMockRecording: (
     callId: string,
     body: { source?: string; durationSeconds?: number },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
-    apiFetch<CallRecordingAttachmentResponse>(`/calls/${callId}/recordings/mock`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }, identity),
+    apiFetch<CallRecordingAttachmentResponse>(
+      `/calls/${callId}/recordings/mock`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+      identity,
+    ),
 
   listCallRecordings: (callId: string, identity?: DevIdentity) =>
     apiFetch<CallRecording[]>(`/calls/${callId}/recordings`, { method: 'GET' }, identity),
 
-  reviewCallRecording: (
-    callId: string,
-    recordingId: string,
-    identity?: DevIdentity
-  ) =>
+  reviewCallRecording: (callId: string, recordingId: string, identity?: DevIdentity) =>
     apiFetch<CallRecordingReviewResponse>(
       `/calls/${callId}/recordings/${recordingId}/review`,
       { method: 'POST' },
-      identity
+      identity,
     ),
 
-  recordPlaybackOpened: (
-    callId: string,
-    recordingId: string,
-    identity?: DevIdentity
-  ) =>
+  recordPlaybackOpened: (callId: string, recordingId: string, identity?: DevIdentity) =>
     apiFetch<CallRecordingPlaybackResponse>(
       `/calls/${callId}/recordings/${recordingId}/playback`,
       { method: 'POST' },
-      identity
+      identity,
     ),
 
   // Screen observations
@@ -1827,12 +1932,12 @@ export const api = {
       windowLabel?: string;
       urlLabel?: string;
     },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<ScreenObservationCaptureResponse>(
       `/support-sessions/${sessionId}/screen-observations/mock`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   captureActiveWindowMockMetadata: (
@@ -1844,12 +1949,12 @@ export const api = {
       urlLabel?: string;
       rawInputPlaceholder?: string;
     },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<ScreenObservationCaptureResponse>(
       `/support-sessions/${sessionId}/screen-observations/active-window/mock`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   attachManualScreenshotMetadata: (
@@ -1862,12 +1967,12 @@ export const api = {
       rawInputPlaceholder?: string;
       fileNameHint?: string;
     },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<ScreenObservationCaptureResponse & { rawImageRetention: 'disabled' }>(
       `/support-sessions/${sessionId}/screen-observations/manual-screenshot`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   uploadStructuredScreenObservation: (
@@ -1880,57 +1985,57 @@ export const api = {
       urlLabel?: string;
       rawInputPlaceholder?: string;
     },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<ScreenObservationCaptureResponse & { redactionStatus: string }>(
       `/support-sessions/${sessionId}/screen-observations/structured-upload`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   getSharingState: (sessionId: string, identity?: DevIdentity) =>
     apiFetch<{ sessionId: string; state: string; mockDevOnly: boolean }>(
       `/support-sessions/${sessionId}/screen-observations/sharing-state`,
       { method: 'GET' },
-      identity
+      identity,
     ),
 
   updateSharingState: (sessionId: string, body: { state: string }, identity?: DevIdentity) =>
     apiFetch<{ sessionId: string; state: string; previousState?: string; mockDevOnly: boolean }>(
       `/support-sessions/${sessionId}/screen-observations/sharing-state`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   listScreenObservations: (sessionId: string, identity?: DevIdentity) =>
     apiFetch<ScreenObservation[]>(
       `/support-sessions/${sessionId}/screen-observations`,
       { method: 'GET' },
-      identity
+      identity,
     ),
 
   reviewScreenObservation: (
     sessionId: string,
     observationId: string,
     body: { status: 'approved' | 'discarded' },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<ScreenObservationReviewResponse>(
       `/support-sessions/${sessionId}/screen-observations/${observationId}/review`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   createContextPacketFromObservation: (
     sessionId: string,
     observationId: string,
     body?: { provenance?: string },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<ScreenObservationContextPacketResponse>(
       `/support-sessions/${sessionId}/screen-observations/${observationId}/context-packet`,
       { method: 'POST', body: JSON.stringify(body ?? {}) },
-      identity
+      identity,
     ),
 
   getEvidenceBundleMarkdown: async (sessionId: string, identity?: DevIdentity): Promise<string> => {
@@ -1949,11 +2054,7 @@ export const api = {
       } catch {
         // ignore
       }
-      throw new ApiClientError(
-        body?.message ?? `HTTP ${res.status}`,
-        res.status,
-        body
-      );
+      throw new ApiClientError(body?.message ?? `HTTP ${res.status}`, res.status, body);
     }
     return res.text();
   },
@@ -1966,10 +2067,18 @@ export const api = {
     apiFetch<{ policy: DeliveryPolicy }>(`/delivery-policies/${id}`, { method: 'GET' }, identity),
 
   updateDeliveryPolicy: (id: string, body: Partial<DeliveryPolicyUpdate>, identity?: DevIdentity) =>
-    apiFetch<{ policy: DeliveryPolicy }>(`/delivery-policies/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, identity),
+    apiFetch<{ policy: DeliveryPolicy }>(
+      `/delivery-policies/${id}`,
+      { method: 'PATCH', body: JSON.stringify(body) },
+      identity,
+    ),
 
   validateDeliveryPolicy: (id: string, identity?: DevIdentity) =>
-    apiFetch<{ policy: DeliveryPolicy; decision: DeliveryPolicyDecision }>(`/delivery-policies/${id}/validate`, { method: 'POST' }, identity),
+    apiFetch<{ policy: DeliveryPolicy; decision: DeliveryPolicyDecision }>(
+      `/delivery-policies/${id}/validate`,
+      { method: 'POST' },
+      identity,
+    ),
 
   // Admin Policies (BL-076)
   listAdminPolicies: (identity?: DevIdentity) =>
@@ -1978,26 +2087,54 @@ export const api = {
   getAdminPolicyAuditPreview: (identity?: DevIdentity) =>
     apiFetch<PolicyAuditPreview>('/admin/policies/audit-preview', { method: 'GET' }, identity),
 
-  updateAdminDeliveryPolicy: (id: string, body: Partial<DeliveryPolicyUpdate>, identity?: DevIdentity) =>
-    apiFetch<{ policy: DeliveryPolicy }>(`/admin/policies/delivery/${id}`, { method: 'PUT', body: JSON.stringify(body) }, identity),
+  updateAdminDeliveryPolicy: (
+    id: string,
+    body: Partial<DeliveryPolicyUpdate>,
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<{ policy: DeliveryPolicy }>(
+      `/admin/policies/delivery/${id}`,
+      { method: 'PUT', body: JSON.stringify(body) },
+      identity,
+    ),
 
   getAdminConnectorPolicy: (installationId: string, identity?: DevIdentity) =>
-    apiFetch<{ policy: ConnectorPolicy }>(`/admin/policies/connectors/${installationId}`, { method: 'GET' }, identity),
+    apiFetch<{ policy: ConnectorPolicy }>(
+      `/admin/policies/connectors/${installationId}`,
+      { method: 'GET' },
+      identity,
+    ),
 
-  updateAdminConnectorPolicy: (installationId: string, body: Partial<ConnectorPolicy>, identity?: DevIdentity) =>
-    apiFetch<{ policy: ConnectorPolicy }>(`/admin/policies/connectors/${installationId}`, { method: 'PUT', body: JSON.stringify(body) }, identity),
+  updateAdminConnectorPolicy: (
+    installationId: string,
+    body: Partial<ConnectorPolicy>,
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<{ policy: ConnectorPolicy }>(
+      `/admin/policies/connectors/${installationId}`,
+      { method: 'PUT', body: JSON.stringify(body) },
+      identity,
+    ),
 
   getAdminAiPolicy: (identity?: DevIdentity) =>
     apiFetch<{ policy: AiPolicy }>('/admin/policies/ai', { method: 'GET' }, identity),
 
   updateAdminAiPolicy: (body: Partial<AiPolicy>, identity?: DevIdentity) =>
-    apiFetch<{ policy: AiPolicy }>('/admin/policies/ai', { method: 'PUT', body: JSON.stringify(body) }, identity),
+    apiFetch<{ policy: AiPolicy }>(
+      '/admin/policies/ai',
+      { method: 'PUT', body: JSON.stringify(body) },
+      identity,
+    ),
 
   getAdminRetentionPolicy: (identity?: DevIdentity) =>
     apiFetch<{ policy: RetentionPolicy }>('/admin/policies/retention', { method: 'GET' }, identity),
 
   updateAdminRetentionPolicy: (body: Partial<RetentionPolicy>, identity?: DevIdentity) =>
-    apiFetch<{ policy: RetentionPolicy }>('/admin/policies/retention', { method: 'PUT', body: JSON.stringify(body) }, identity),
+    apiFetch<{ policy: RetentionPolicy }>(
+      '/admin/policies/retention',
+      { method: 'PUT', body: JSON.stringify(body) },
+      identity,
+    ),
 
   // GDPR (BL-082)
   gdprExportPreview: (body: { subjectType: string; subjectId: string }, identity?: DevIdentity) =>
@@ -2019,7 +2156,12 @@ export const api = {
       dryRun: true;
       wouldDeleteCounts: Record<string, number>;
       wouldAnonymizeCounts: Record<string, number>;
-      details: Array<{ entity: string; id: string; action: 'delete' | 'anonymize' | 'retain'; reason: string }>;
+      details: Array<{
+        entity: string;
+        id: string;
+        action: 'delete' | 'anonymize' | 'retain';
+        reason: string;
+      }>;
       generatedAt: string;
       warning: string;
     }>('/gdpr/delete-preview', { method: 'POST', body: JSON.stringify(body) }, identity),
@@ -2048,56 +2190,171 @@ export const api = {
     apiFetch<{ command: EndpointCommand; idempotentReplay: boolean }>(
       `/endpoint-devices/${id}/commands`,
       { method: 'POST', body: JSON.stringify({ commandKind }) },
-      identity
+      identity,
     ),
 
   checkConnectorReadiness: (installationId: string, identity?: DevIdentity) =>
-    apiFetch<ConnectorReadinessResult>(`/connector-installations/${installationId}/readiness`, { method: 'POST' }, identity),
+    apiFetch<ConnectorReadinessResult>(
+      `/connector-installations/${installationId}/readiness`,
+      { method: 'POST' },
+      identity,
+    ),
 
   getConnectorConfigSchema: (installationId: string, identity?: DevIdentity) =>
-    apiFetch<{ installationId: string; schema: Record<string, unknown>; safeFields: string[]; rejectedFields: string[]; mockOnly: true }>(`/connector-installations/${installationId}/config-schema`, { method: 'GET' }, identity),
+    apiFetch<{
+      installationId: string;
+      schema: Record<string, unknown>;
+      safeFields: string[];
+      rejectedFields: string[];
+      mockOnly: true;
+    }>(`/connector-installations/${installationId}/config-schema`, { method: 'GET' }, identity),
 
-  validateConnectorConfig: (installationId: string, config: Record<string, unknown>, identity?: DevIdentity) =>
-    apiFetch<{ installationId: string; result: { valid: boolean; mockMode: true; realNetwork: false; writebackEnabled: false; issues: Array<{ field: string; severity: string; message: string; code: string }>; warnings: string[]; timestamp: string } }>(`/connector-installations/${installationId}/validate-config`, { method: 'POST', body: JSON.stringify({ config }) }, identity),
+  validateConnectorConfig: (
+    installationId: string,
+    config: Record<string, unknown>,
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<{
+      installationId: string;
+      result: {
+        valid: boolean;
+        mockMode: true;
+        realNetwork: false;
+        writebackEnabled: false;
+        issues: Array<{ field: string; severity: string; message: string; code: string }>;
+        warnings: string[];
+        timestamp: string;
+      };
+    }>(
+      `/connector-installations/${installationId}/validate-config`,
+      { method: 'POST', body: JSON.stringify({ config }) },
+      identity,
+    ),
 
   checkConnectorRuntimeReadiness: (installationId: string, identity?: DevIdentity) =>
-    apiFetch<{ installationId: string; result: { mockReady: boolean; realReady: false; realNetwork: false; writebackEnabled: false; externalWriteAttempted: false; warnings: string[]; credentialReferencesLinked: boolean; linkedCredentialReferenceCount: number; timestamp: string } }>(`/connector-installations/${installationId}/runtime-readiness`, { method: 'POST' }, identity),
+    apiFetch<{
+      installationId: string;
+      result: {
+        mockReady: boolean;
+        realReady: false;
+        realNetwork: false;
+        writebackEnabled: false;
+        externalWriteAttempted: false;
+        warnings: string[];
+        credentialReferencesLinked: boolean;
+        linkedCredentialReferenceCount: number;
+        timestamp: string;
+      };
+    }>(
+      `/connector-installations/${installationId}/runtime-readiness`,
+      { method: 'POST' },
+      identity,
+    ),
 
   resolveConnectorRuntime: (connectorType: string, identity?: DevIdentity) =>
-    apiFetch<{ tenantId: string; connectorType: string; installationId: string; installationDisplayName: string; capabilities: string[]; credentialReferences: Array<{ id: string; displayName: string; kind: string; status: string; lastValidatedAt?: string; secretResolutionImplemented: false }>; mode: 'mock'; realNetwork: false; writebackEnabled: false; externalWriteAttempted: false; readiness: { mockReady: boolean; realReady: false; realNetwork: false; writebackEnabled: false; externalWriteAttempted: false; warnings: string[]; credentialReferencesLinked: boolean; linkedCredentialReferenceCount: number; timestamp: string } }>(`/connector-installations/runtime/resolve?connectorType=${encodeURIComponent(connectorType)}`, { method: 'GET' }, identity),
+    apiFetch<{
+      tenantId: string;
+      connectorType: string;
+      installationId: string;
+      installationDisplayName: string;
+      capabilities: string[];
+      credentialReferences: Array<{
+        id: string;
+        displayName: string;
+        kind: string;
+        status: string;
+        lastValidatedAt?: string;
+        secretResolutionImplemented: false;
+      }>;
+      mode: 'mock';
+      realNetwork: false;
+      writebackEnabled: false;
+      externalWriteAttempted: false;
+      readiness: {
+        mockReady: boolean;
+        realReady: false;
+        realNetwork: false;
+        writebackEnabled: false;
+        externalWriteAttempted: false;
+        warnings: string[];
+        credentialReferencesLinked: boolean;
+        linkedCredentialReferenceCount: number;
+        timestamp: string;
+      };
+    }>(
+      `/connector-installations/runtime/resolve?connectorType=${encodeURIComponent(connectorType)}`,
+      { method: 'GET' },
+      identity,
+    ),
 
   // Credential references
   listCredentialReferences: (identity?: DevIdentity) =>
-    apiFetch<{ credentialReferences: ConnectorCredentialReference[] }>('/credential-references', { method: 'GET' }, identity).then(r => r.credentialReferences),
+    apiFetch<{ credentialReferences: ConnectorCredentialReference[] }>(
+      '/credential-references',
+      { method: 'GET' },
+      identity,
+    ).then((r) => r.credentialReferences),
 
   getCredentialReference: (id: string, identity?: DevIdentity) =>
-    apiFetch<{ credentialReference: ConnectorCredentialReference }>(`/credential-references/${id}`, { method: 'GET' }, identity).then(r => r.credentialReference),
+    apiFetch<{ credentialReference: ConnectorCredentialReference }>(
+      `/credential-references/${id}`,
+      { method: 'GET' },
+      identity,
+    ).then((r) => r.credentialReference),
 
   createCredentialReference: (
-    body: { connectorType: string; displayName: string; description?: string; status?: string; secretKind?: string },
-    identity?: DevIdentity
+    body: {
+      connectorType: string;
+      displayName: string;
+      description?: string;
+      status?: string;
+      secretKind?: string;
+    },
+    identity?: DevIdentity,
   ) =>
-    apiFetch<{ credentialReference: ConnectorCredentialReference }>('/credential-references', { method: 'POST', body: JSON.stringify(body) }, identity).then(r => r.credentialReference),
+    apiFetch<{ credentialReference: ConnectorCredentialReference }>(
+      '/credential-references',
+      { method: 'POST', body: JSON.stringify(body) },
+      identity,
+    ).then((r) => r.credentialReference),
 
   updateCredentialReference: (
     id: string,
     body: { displayName?: string; description?: string; status?: string; secretKind?: string },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
-    apiFetch<{ credentialReference: ConnectorCredentialReference }>(`/credential-references/${id}`, { method: 'PATCH', body: JSON.stringify(body) }, identity).then(r => r.credentialReference),
+    apiFetch<{ credentialReference: ConnectorCredentialReference }>(
+      `/credential-references/${id}`,
+      { method: 'PATCH', body: JSON.stringify(body) },
+      identity,
+    ).then((r) => r.credentialReference),
 
-  linkCredentialReference: (installationId: string, credentialReferenceId: string, identity?: DevIdentity) =>
-    apiFetch<{ installation: ConnectorInstallation; credentialReference: { id: string; displayName: string } }>(
+  linkCredentialReference: (
+    installationId: string,
+    credentialReferenceId: string,
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<{
+      installation: ConnectorInstallation;
+      credentialReference: { id: string; displayName: string };
+    }>(
       `/connector-installations/${installationId}/link-credential`,
       { method: 'POST', body: JSON.stringify({ credentialReferenceId }) },
-      identity
+      identity,
     ),
 
-  unlinkCredentialReference: (installationId: string, credentialReferenceId: string, identity?: DevIdentity) =>
-    apiFetch<{ installation: ConnectorInstallation; credentialReference: { id: string; displayName: string } }>(
+  unlinkCredentialReference: (
+    installationId: string,
+    credentialReferenceId: string,
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<{
+      installation: ConnectorInstallation;
+      credentialReference: { id: string; displayName: string };
+    }>(
       `/connector-installations/${installationId}/unlink-credential`,
       { method: 'POST', body: JSON.stringify({ credentialReferenceId }) },
-      identity
+      identity,
     ),
 
   // Worker status
@@ -2111,40 +2368,100 @@ export const api = {
   getTool: (id: string, identity?: DevIdentity) =>
     apiFetch<{ tool: ToolDefinition | null }>(`/admin/tools/${id}`, { method: 'GET' }, identity),
 
-  invokeTool: (deviceId: string, toolKey: string, body: { requestedInput?: Record<string, unknown>; idempotencyKey?: string }, identity?: DevIdentity) =>
-    apiFetch<{ invocation: ToolInvocation; policyDecision: Record<string, unknown> }>(`/admin/devices/${deviceId}/tools/${toolKey}/invoke`, { method: 'POST', body: JSON.stringify(body) }, identity),
+  invokeTool: (
+    deviceId: string,
+    toolKey: string,
+    body: { requestedInput?: Record<string, unknown>; idempotencyKey?: string },
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<{ invocation: ToolInvocation; policyDecision: Record<string, unknown> }>(
+      `/admin/devices/${deviceId}/tools/${toolKey}/invoke`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity,
+    ),
 
   listToolInvocations: (identity?: DevIdentity) =>
-    apiFetch<{ invocations: ToolInvocation[] }>('/admin/tool-invocations', { method: 'GET' }, identity),
+    apiFetch<{ invocations: ToolInvocation[] }>(
+      '/admin/tool-invocations',
+      { method: 'GET' },
+      identity,
+    ),
 
   getToolInvocation: (id: string, identity?: DevIdentity) =>
-    apiFetch<{ invocation: ToolInvocation | null }>(`/admin/tool-invocations/${id}`, { method: 'GET' }, identity),
+    apiFetch<{ invocation: ToolInvocation | null }>(
+      `/admin/tool-invocations/${id}`,
+      { method: 'GET' },
+      identity,
+    ),
 
-  createToolNoteDraft: (invocationId: string, body: { ticketId?: string; title?: string }, identity?: DevIdentity) =>
-    apiFetch<{ draft: ToolResultNoteDraft }>(`/admin/tool-invocations/${invocationId}/note-draft`, { method: 'POST', body: JSON.stringify(body) }, identity),
+  createToolNoteDraft: (
+    invocationId: string,
+    body: { ticketId?: string; title?: string },
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<{ draft: ToolResultNoteDraft }>(
+      `/admin/tool-invocations/${invocationId}/note-draft`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity,
+    ),
 
   listToolApprovals: (identity?: DevIdentity) =>
     apiFetch<{ approvals: ToolApproval[] }>('/admin/tool-approvals', { method: 'GET' }, identity),
 
   approveTool: (id: string, body: { reason?: string }, identity?: DevIdentity) =>
-    apiFetch<{ approval: ToolApproval }>(`/admin/tool-approvals/${id}/approve`, { method: 'POST', body: JSON.stringify(body) }, identity),
+    apiFetch<{ approval: ToolApproval }>(
+      `/admin/tool-approvals/${id}/approve`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity,
+    ),
 
   denyTool: (id: string, body: { reason?: string }, identity?: DevIdentity) =>
-    apiFetch<{ approval: ToolApproval }>(`/admin/tool-approvals/${id}/deny`, { method: 'POST', body: JSON.stringify(body) }, identity),
+    apiFetch<{ approval: ToolApproval }>(
+      `/admin/tool-approvals/${id}/deny`,
+      { method: 'POST', body: JSON.stringify(body) },
+      identity,
+    ),
 
   // All connector statuses
   getAllConnectorStatus: (identity?: DevIdentity) =>
-    apiFetch<{ connectors: BrowserConnectorStatus[] }>('/connectors/status', { method: 'GET' }, identity).then(r => r.connectors),
+    apiFetch<{ connectors: BrowserConnectorStatus[] }>(
+      '/connectors/status',
+      { method: 'GET' },
+      identity,
+    ).then((r) => r.connectors),
 
   // Knowledge (BL-073/074)
   listKnowledgeSources: (identity?: DevIdentity) =>
-    apiFetch<{ sources: KnowledgeSource[] }>('/knowledge/sources', { method: 'GET' }, identity).then(r => r.sources),
+    apiFetch<{ sources: KnowledgeSource[] }>(
+      '/knowledge/sources',
+      { method: 'GET' },
+      identity,
+    ).then((r) => r.sources),
 
-  listKnowledgeArticles: (params?: { sourceId?: string; status?: string }, identity?: DevIdentity) =>
-    apiFetch<{ articles: KnowledgeArticle[] }>(`/knowledge/articles?${new URLSearchParams(params ?? {}).toString()}`, { method: 'GET' }, identity).then(r => r.articles),
+  listKnowledgeArticles: (
+    params?: { sourceId?: string; status?: string },
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<{ articles: KnowledgeArticle[] }>(
+      `/knowledge/articles?${new URLSearchParams(params ?? {}).toString()}`,
+      { method: 'GET' },
+      identity,
+    ).then((r) => r.articles),
 
-  retrieveKnowledge: (body: { query: string; sourceIds?: string[]; limit?: number; mode?: 'auto' | 'lexical' | 'semantic' | 'hybrid' }, identity?: DevIdentity) =>
-    apiFetch<KnowledgeRetrievalResponse>('/knowledge/retrieve', { method: 'POST', body: JSON.stringify(body) }, identity),
+  retrieveKnowledge: (
+    body: {
+      query: string;
+      sourceIds?: string[];
+      limit?: number;
+      mode?: 'auto' | 'lexical' | 'semantic' | 'hybrid';
+    },
+    identity?: DevIdentity,
+  ) =>
+    apiFetch<KnowledgeRetrievalResponse>(
+      '/knowledge/retrieve',
+      { method: 'POST', body: JSON.stringify(body) },
+      identity,
+    ),
 };
 
 export { ApiClientError };

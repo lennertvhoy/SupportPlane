@@ -52,7 +52,7 @@ export const MOCK_CUSTOMER_FIXTURES: Record<string, MockCustomer> = {
  * Returns a clear CallerMatch result. Never crashes.
  */
 export function matchCallerByPhone(
-  normalization: PhoneNumberNormalizationResultShape
+  normalization: PhoneNumberNormalizationResultShape,
 ): CallerMatchShape {
   if (!normalization.valid || !normalization.normalized) {
     return CallerMatch.parse({

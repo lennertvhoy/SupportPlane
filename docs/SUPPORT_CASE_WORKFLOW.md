@@ -19,10 +19,12 @@
 ## API Endpoints
 
 ### Tickets
+
 - `GET /tickets` — List tickets for tenant (requires `ticket:read`)
 - `GET /tickets/:id` — Get single ticket by ID (requires `ticket:read`)
 
 ### Connector Installations
+
 - `GET /connector-installations` — List installations (requires `connector_installation:read`)
 - `GET /connector-installations/:id` — Get single installation (requires `connector_installation:read`)
 - `PATCH /connector-installations/:id` — Update installation (requires `connector_installation:write`)
@@ -30,12 +32,14 @@
 - `POST /connector-installations/:id/test` — Test installation (requires `connector_installation:test`)
 
 ### Support Note Drafts
+
 - `POST /support-sessions/:id/support-note-drafts` — Create support note draft (requires `ticket:write`)
   - Body: `{ externalTicketId: string, operatorNotes?: string }`
   - Persists `InternalNoteDraft` record to PostgreSQL
   - Returns deterministic mock draft with ticket/customer context
 
 ### Evidence Bundle
+
 - `GET /support-sessions/:id/evidence-bundle` — JSON evidence bundle
 - `GET /support-sessions/:id/evidence-bundle.json` — JSON evidence bundle
 - `GET /support-sessions/:id/evidence-bundle.md` — Markdown evidence bundle
@@ -43,17 +47,18 @@
 
 ## RBAC Permissions
 
-| Permission | Operator | Support Agent | Viewer |
-|---|---|---|---|
-| `ticket:read` | ✓ | ✓ | ✓ |
-| `ticket:write` | ✓ | ✓ | ✗ |
-| `connector_installation:read` | ✓ | ✓ | ✓ |
-| `connector_installation:write` | ✓ | ✓ | ✗ |
-| `connector_installation:test` | ✓ | ✓ | ✗ |
+| Permission                     | Operator | Support Agent | Viewer |
+| ------------------------------ | -------- | ------------- | ------ |
+| `ticket:read`                  | ✓        | ✓             | ✓      |
+| `ticket:write`                 | ✓        | ✓             | ✗      |
+| `connector_installation:read`  | ✓        | ✓             | ✓      |
+| `connector_installation:write` | ✓        | ✓             | ✗      |
+| `connector_installation:test`  | ✓        | ✓             | ✗      |
 
 ## Mock Behavior and Honest Labels
 
 All new endpoints return explicit mock indicators:
+
 - Connector validate/test: `mode: "mock"`, `realNetwork: false`, `writebackEnabled: false`
 - Support note drafts: UI shows "Local mock only — not sent to Zammad — requires human review"
 - Evidence bundle: Includes `mockDevOnly: true`, `notSentToZammad: true`, `requiresHumanReview: true`

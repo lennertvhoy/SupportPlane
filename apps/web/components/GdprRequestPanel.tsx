@@ -15,7 +15,8 @@ export function GdprRequestPanel({ identity }: { identity: AuthIdentity }) {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
 
-  const canWrite = identity.permissions.includes('*') || identity.permissions.includes('audit:write');
+  const canWrite =
+    identity.permissions.includes('*') || identity.permissions.includes('audit:write');
 
   const handleSubmit = async () => {
     if (!subjectId.trim()) {
@@ -54,13 +55,20 @@ export function GdprRequestPanel({ identity }: { identity: AuthIdentity }) {
   ];
 
   return (
-    <Panel title="GDPR Request Panel (BL-082)" headerRight={<Badge variant="warning">Dry-Run</Badge>}>
+    <Panel
+      title="GDPR Request Panel (BL-082)"
+      headerRight={<Badge variant="warning">Dry-Run</Badge>}
+    >
       <div className="space-y-3">
         <div className="flex gap-1 border-b border-cockpit-700 pb-1">
           {tabs.map((t) => (
             <button
               key={t.key}
-              onClick={() => { setActiveTab(t.key); setResult(null); setError(null); }}
+              onClick={() => {
+                setActiveTab(t.key);
+                setResult(null);
+                setError(null);
+              }}
               className={`rounded px-2 py-1 text-[10px] font-medium ${
                 activeTab === t.key
                   ? 'bg-cockpit-600 text-white'
@@ -116,9 +124,7 @@ export function GdprRequestPanel({ identity }: { identity: AuthIdentity }) {
               </div>
             )}
             <div className="max-h-64 overflow-auto rounded border border-cockpit-700 bg-cockpit-950/50 p-2">
-              <pre className="text-[10px] text-cockpit-300">
-                {JSON.stringify(result, null, 2)}
-              </pre>
+              <pre className="text-[10px] text-cockpit-300">{JSON.stringify(result, null, 2)}</pre>
             </div>
           </div>
         )}

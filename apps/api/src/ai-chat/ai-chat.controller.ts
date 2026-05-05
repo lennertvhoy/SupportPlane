@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Param,
-  Body,
-  Inject,
-  Req,
-} from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Inject, Req } from '@nestjs/common';
 import type { Request } from 'express';
 import { AiChatService } from './ai-chat.service.js';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
@@ -15,14 +7,11 @@ import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 export class AiChatController {
   constructor(
     @Inject(AiChatService)
-    private readonly service: AiChatService
+    private readonly service: AiChatService,
   ) {}
 
   @Post('sessions')
-  createSession(
-    @Req() req: Request,
-    @Body() body: { sessionId?: string; title?: string }
-  ) {
+  createSession(@Req() req: Request, @Body() body: { sessionId?: string; title?: string }) {
     const identity = getCurrentIdentity(req);
     return this.service.createChatSession(identity, body);
   }
@@ -48,7 +37,7 @@ export class AiChatController {
       content: string;
       role?: string;
       modelSelection?: { provider?: string; model?: string };
-    }
+    },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.sendMessage(identity, id, body);

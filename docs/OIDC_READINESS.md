@@ -13,7 +13,7 @@
    - Kubernetes manifests for Keycloak 25.0 + Postgres 16-alpine.
    - ConfigMap, Secret, Deployment, Service, Postgres PVC/Deployment/Service.
    - Resource/probe settings support the local sandbox: 1Gi request, 1536Mi limit, startup probe, and management health probes on port 9000.
-   - Marked with honest comments: *Local sandbox only. Not production hardened.*
+   - Marked with honest comments: _Local sandbox only. Not production hardened._
 
 2. **OIDC Configuration Hooks**
    - `AuthService.getOidcConfig()` reads `OIDC_ISSUER_URL`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI`, `OIDC_SCOPES`.
@@ -41,16 +41,16 @@
 
 ## Production Gaps
 
-| Gap | Status |
-|-----|--------|
-| Passport OIDC strategy with browser redirect/callback | Not implemented |
-| OIDC session persistence (Prisma table + migration) | Not implemented |
-| Service account CRUD and token storage | Not implemented |
+| Gap                                                         | Status          |
+| ----------------------------------------------------------- | --------------- |
+| Passport OIDC strategy with browser redirect/callback       | Not implemented |
+| OIDC session persistence (Prisma table + migration)         | Not implemented |
+| Service account CRUD and token storage                      | Not implemented |
 | Short-lived token DB table, hashing, and expiry enforcement | Not implemented |
-| MFA enforcement logic (TOTP/WebAuthn verification) | Not implemented |
-| Keycloak realm bootstrap automation | Not implemented |
-| TLS/HTTPS for Keycloak and callback URLs | Not implemented |
-| Secret rotation and token revocation endpoints | Not implemented |
+| MFA enforcement logic (TOTP/WebAuthn verification)          | Not implemented |
+| Keycloak realm bootstrap automation                         | Not implemented |
+| TLS/HTTPS for Keycloak and callback URLs                    | Not implemented |
+| Secret rotation and token revocation endpoints              | Not implemented |
 
 ## Honest Summary
 

@@ -31,32 +31,33 @@ All tracked files are clean. Untracked files are workspace artifacts from the Ol
 
 ## 4. Verification
 
-| Command | Result |
-|---------|--------|
-| `npx tsc --noEmit -p packages/ai/tsconfig.json` | PASS (0 errors) |
-| `npx tsc --noEmit -p apps/web/tsconfig.json` | PASS (0 errors) |
-| `npx tsc --noEmit -p apps/api/tsconfig.json` | PASS (0 errors) |
-| `kubectl apply -f infra/kubernetes/local-podman/app/app-configmap.yaml` | configmap/app-config configured |
-| `kubectl rollout restart deployment/{api,web,worker} -n supportplane-app` | All rolled out successfully |
-| Cluster API draft-suggestion with `provider: ollama` | **PASS** — response: `provider: "ollama"`, `model: "gemma4:e4b"`, `fallbackUsed: false`, `runtime: "ollama"`, `noCloudCall: true`, `latencyMs: 13050` |
-| `bash scripts/bl121_benchmark_gemma4.sh` | **PASS** — `fallbackUsed: false`, latency: 8,611ms, 644 tokens, 79.91 tok/s |
-| `kubectl exec ... -- env \| grep OLLAMA` | `OLLAMA_BASE_URL=http://10.88.0.1:11435`, `OLLAMA_MODEL=gemma4:e4b` |
-| Screenshot MD5 duplicate check | All 5 unique — no duplicates |
+| Command                                                                   | Result                                                                                                                                                |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npx tsc --noEmit -p packages/ai/tsconfig.json`                           | PASS (0 errors)                                                                                                                                       |
+| `npx tsc --noEmit -p apps/web/tsconfig.json`                              | PASS (0 errors)                                                                                                                                       |
+| `npx tsc --noEmit -p apps/api/tsconfig.json`                              | PASS (0 errors)                                                                                                                                       |
+| `kubectl apply -f infra/kubernetes/local-podman/app/app-configmap.yaml`   | configmap/app-config configured                                                                                                                       |
+| `kubectl rollout restart deployment/{api,web,worker} -n supportplane-app` | All rolled out successfully                                                                                                                           |
+| Cluster API draft-suggestion with `provider: ollama`                      | **PASS** — response: `provider: "ollama"`, `model: "gemma4:e4b"`, `fallbackUsed: false`, `runtime: "ollama"`, `noCloudCall: true`, `latencyMs: 13050` |
+| `bash scripts/bl121_benchmark_gemma4.sh`                                  | **PASS** — `fallbackUsed: false`, latency: 8,611ms, 644 tokens, 79.91 tok/s                                                                           |
+| `kubectl exec ... -- env \| grep OLLAMA`                                  | `OLLAMA_BASE_URL=http://10.88.0.1:11435`, `OLLAMA_MODEL=gemma4:e4b`                                                                                   |
+| Screenshot MD5 duplicate check                                            | All 5 unique — no duplicates                                                                                                                          |
 
 ## 5. Evidence Inventory
 
 **Folder:** `output/playwright/session-111-bl121-local-model-runtime-upgrade/`
 **Screenshot count:** 5
 
-| # | File | Proves |
-|---|------|--------|
-| 01 | `01-api-response-evidence.png` | Cluster API returns `provider=ollama`, `model=gemma4:e4b`, `fallbackUsed=false` |
-| 02 | `02-pod-env-evidence.png` | Pod env has `OLLAMA_BASE_URL=10.88.0.1:11435` and `OLLAMA_MODEL=gemma4:e4b` |
-| 03 | `03-benchmark-evidence.png` | gemma4:e4b benchmark: 8.6s, 644 tokens, 79.91 tok/s |
-| 04 | `04-ollama-tags-evidence.png` | Ollama v0.22.0 lists gemma4:e4b as available model |
-| 05 | `05-draftnote-badges-evidence.png` | UI provider badge logic handles lmstudio/ollama/mock states |
+| #   | File                               | Proves                                                                          |
+| --- | ---------------------------------- | ------------------------------------------------------------------------------- |
+| 01  | `01-api-response-evidence.png`     | Cluster API returns `provider=ollama`, `model=gemma4:e4b`, `fallbackUsed=false` |
+| 02  | `02-pod-env-evidence.png`          | Pod env has `OLLAMA_BASE_URL=10.88.0.1:11435` and `OLLAMA_MODEL=gemma4:e4b`     |
+| 03  | `03-benchmark-evidence.png`        | gemma4:e4b benchmark: 8.6s, 644 tokens, 79.91 tok/s                             |
+| 04  | `04-ollama-tags-evidence.png`      | Ollama v0.22.0 lists gemma4:e4b as available model                              |
+| 05  | `05-draftnote-badges-evidence.png` | UI provider badge logic handles lmstudio/ollama/mock states                     |
 
 **Additional artifacts:**
+
 - `api-response-evidence.json` — Full API response JSON
 - `bl121-gemma4-benchmark.json` / `.txt` — Benchmark results
 - `ollama-tags.json` — Raw `/api/tags` response from Ollama v0.22.0

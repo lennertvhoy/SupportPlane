@@ -10,12 +10,12 @@ The connector runtime layer began as a mock-only, tenant-scoped, auditable bound
 
 ## Implemented Behavior (Local / Mock And Narrow Sandbox)
 
-| Endpoint | Method | RBAC | Implemented Behavior |
-|----------|--------|------|---------------------|
-| `/connector-installations/:id/config-schema` | GET | `connector_installation:read` | Returns hardcoded mock-only JSON schema with `mockMode: true` const, safe fields list, rejected fields list |
-| `/connector-installations/:id/validate-config` | POST | `connector_installation:test` | Validates config against mock-only safety rules: `mockMode` must be `true`, rejects secret-like keys, rejects real-network implying keys, warns on unknown fields |
-| `/connector-installations/:id/runtime-readiness` | POST | `connector_installation:test` | Returns mock readiness for mock installs and sandbox readiness fields for the accepted local Zammad sandbox path. Production readiness remains false. |
-| `/connector-installations/runtime/resolve` | GET | `connector_installation:read` | Returns tenant-scoped enabled installation with credential reference metadata only (no `secretRef`); mode may be `mock` or accepted local `sandbox`. |
+| Endpoint                                         | Method | RBAC                          | Implemented Behavior                                                                                                                                              |
+| ------------------------------------------------ | ------ | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/connector-installations/:id/config-schema`     | GET    | `connector_installation:read` | Returns hardcoded mock-only JSON schema with `mockMode: true` const, safe fields list, rejected fields list                                                       |
+| `/connector-installations/:id/validate-config`   | POST   | `connector_installation:test` | Validates config against mock-only safety rules: `mockMode` must be `true`, rejects secret-like keys, rejects real-network implying keys, warns on unknown fields |
+| `/connector-installations/:id/runtime-readiness` | POST   | `connector_installation:test` | Returns mock readiness for mock installs and sandbox readiness fields for the accepted local Zammad sandbox path. Production readiness remains false.             |
+| `/connector-installations/runtime/resolve`       | GET    | `connector_installation:read` | Returns tenant-scoped enabled installation with credential reference metadata only (no `secretRef`); mode may be `mock` or accepted local `sandbox`.              |
 
 ## Mock-Only Safety Rules
 
@@ -72,11 +72,11 @@ All audit events include `mockDevOnly: true` metadata.
 
 ## RBAC Boundaries
 
-| Role | Config Schema | Validate Config | Runtime Readiness | Runtime Resolve |
-|------|--------------|-----------------|-------------------|-----------------|
-| admin | read | test | test | read |
-| operator | read | test | test | read |
-| viewer | read | denied (403) | denied (403) | read |
+| Role     | Config Schema | Validate Config | Runtime Readiness | Runtime Resolve |
+| -------- | ------------- | --------------- | ----------------- | --------------- |
+| admin    | read          | test            | test              | read            |
+| operator | read          | test            | test              | read            |
+| viewer   | read          | denied (403)    | denied (403)      | read            |
 
 ## Not Implemented
 

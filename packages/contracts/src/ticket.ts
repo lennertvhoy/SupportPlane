@@ -1,20 +1,11 @@
 import { z } from 'zod';
 import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
 
-export const TicketingAdapterType = z.enum([
-  'zammad',
-  'glpi',
-  'osticket',
-  'custom',
-]);
+export const TicketingAdapterType = z.enum(['zammad', 'glpi', 'osticket', 'custom']);
 
 export type TicketingAdapterType = z.infer<typeof TicketingAdapterType>;
 
-export const TicketingAdapterStatus = z.enum([
-  'active',
-  'inactive',
-  'error',
-]);
+export const TicketingAdapterStatus = z.enum(['active', 'inactive', 'error']);
 
 export type TicketingAdapterStatus = z.infer<typeof TicketingAdapterStatus>;
 
@@ -26,9 +17,7 @@ export const TicketingAdapterCapability = z.enum([
   'search',
 ]);
 
-export type TicketingAdapterCapability = z.infer<
-  typeof TicketingAdapterCapability
->;
+export type TicketingAdapterCapability = z.infer<typeof TicketingAdapterCapability>;
 
 export const TicketingAdapterId = EntityId.brand<'TicketingAdapterId'>();
 export type TicketingAdapterId = z.infer<typeof TicketingAdapterId>;
@@ -52,23 +41,11 @@ export type TicketingAdapter = z.infer<typeof TicketingAdapter>;
 export const TicketReferenceId = EntityId.brand<'TicketReferenceId'>();
 export type TicketReferenceId = z.infer<typeof TicketReferenceId>;
 
-export const TicketPriority = z.enum([
-  'low',
-  'normal',
-  'high',
-  'critical',
-]);
+export const TicketPriority = z.enum(['low', 'normal', 'high', 'critical']);
 
 export type TicketPriority = z.infer<typeof TicketPriority>;
 
-export const TicketStatus = z.enum([
-  'new',
-  'open',
-  'pending',
-  'closed',
-  'merged',
-  'unknown',
-]);
+export const TicketStatus = z.enum(['new', 'open', 'pending', 'closed', 'merged', 'unknown']);
 
 export type TicketStatus = z.infer<typeof TicketStatus>;
 

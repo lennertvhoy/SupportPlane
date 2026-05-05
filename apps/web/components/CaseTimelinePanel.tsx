@@ -27,17 +27,21 @@ export function CaseTimelinePanel({ session }: { session?: SupportSession }) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    api.getCaseTimeline(session.id)
+    api
+      .getCaseTimeline(session.id)
       .then((res) => {
         if (!cancelled) setTimeline(res.timeline);
       })
       .catch((err) => {
-        if (!cancelled) setError(err instanceof ApiClientError ? err.message : 'Failed to load timeline');
+        if (!cancelled)
+          setError(err instanceof ApiClientError ? err.message : 'Failed to load timeline');
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [session?.id]);
 
   return (
@@ -59,7 +63,9 @@ export function CaseTimelinePanel({ session }: { session?: SupportSession }) {
             {item.description && (
               <div className="text-[11px] text-cockpit-400">{item.description}</div>
             )}
-            <div className="text-[10px] text-cockpit-500">{new Date(item.timestamp).toLocaleString()}</div>
+            <div className="text-[10px] text-cockpit-500">
+              {new Date(item.timestamp).toLocaleString()}
+            </div>
             {item.type.startsWith('audit:') && (
               <div className="text-[10px] text-cockpit-600">
                 {String(item.metadata.resourceType)} / {String(item.metadata.resourceId)}

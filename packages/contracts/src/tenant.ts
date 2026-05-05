@@ -1,11 +1,7 @@
 import { z } from 'zod';
 import { Timestamp, TenantId } from './base.js';
 
-export const TenantStatus = z.enum([
-  'active',
-  'suspended',
-  'pending_deletion',
-]);
+export const TenantStatus = z.enum(['active', 'suspended', 'pending_deletion']);
 
 export type TenantStatus = z.infer<typeof TenantStatus>;
 

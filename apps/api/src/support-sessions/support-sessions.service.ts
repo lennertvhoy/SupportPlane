@@ -1,4 +1,10 @@
-import { Injectable, Inject, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
@@ -30,7 +36,6 @@ import {
   ScreenObservationStatus,
   ScreenObservationSharingState,
   ScreenObservationRawImageRetention,
-
   type SupportSession as SupportSessionShape,
   type AIContextPacket as AIContextPacketShape,
   type AuditEvent as AuditEventShape,
@@ -45,7 +50,6 @@ import {
   type ScreenObservationId,
   type RetentionPolicy as RetentionPolicyShape,
   type ModelUsageLogEntry,
-
 } from '@supportplane/contracts';
 import { computeIntegrityHash } from '@supportplane/audit';
 import {
@@ -83,7 +87,7 @@ export class SupportSessionsService {
   private readonly modelGateway = createDefaultModelGateway();
   private readonly fallbackAdapter = createZammadAdapter(
     ConnectorMode.enum.mock,
-    'mock-adapter-001' as TicketingAdapterId
+    'mock-adapter-001' as TicketingAdapterId,
   );
   private readonly modelUsageService = new ModelUsageService();
 
@@ -93,19 +97,20 @@ export class SupportSessionsService {
     @Inject(CredentialResolverService)
     private readonly credentialResolver: CredentialResolverService,
     @Inject(InMemoryStore)
-    private readonly store: Store
+    private readonly store: Store,
   ) {}
 
   private async logModelUsage(
     identity: DevIdentity,
     sessionId: string | undefined,
     feature: ModelUsageLogEntry['feature'],
-    response: GenerateDraftResponseShape | GreetingSuggestionResponseShape
+    response: GenerateDraftResponseShape | GreetingSuggestionResponseShape,
   ): Promise<void> {
     const provider = response.provider;
     const isMock = provider === 'mock';
     const fallbackUsed = (response.usage as Record<string, unknown>).fallbackUsed === true;
-    const status: ModelUsageLogEntry['status'] = isMock || fallbackUsed ? 'fallback_mock' : 'succeeded';
+    const status: ModelUsageLogEntry['status'] =
+      isMock || fallbackUsed ? 'fallback_mock' : 'succeeded';
 
     try {
       await this.modelUsageService.logUsage({
@@ -139,7 +144,7 @@ export class SupportSessionsService {
     feature: ModelUsageLogEntry['feature'],
     provider: string,
     model: string,
-    errorCode: string
+    errorCode: string,
   ): Promise<void> {
     try {
       await this.modelUsageService.logUsage({
@@ -163,15 +168,22 @@ export class SupportSessionsService {
   }
 
   // ─── Retention enforcement (BL-081) — partial implementation ──────────────
-  private async getRetentionPolicy(identity: DevIdentity): Promise<RetentionPolicyShape | undefined> {
+  private async getRetentionPolicy(
+    identity: DevIdentity,
+  ): Promise<RetentionPolicyShape | undefined> {
     try {
-      return (await this.store.getTenantPolicy(identity.tenantId, 'retention', null)) as RetentionPolicyShape | undefined;
+      return (await this.store.getTenantPolicy(identity.tenantId, 'retention', null)) as
+        | RetentionPolicyShape
+        | undefined;
     } catch {
       return undefined;
     }
   }
 
-  private shouldStoreAiOutput(retention: RetentionPolicyShape | undefined): { store: boolean; metadataOnly: boolean } {
+  private shouldStoreAiOutput(retention: RetentionPolicyShape | undefined): {
+    store: boolean;
+    metadataOnly: boolean;
+  } {
     if (!retention || !retention.enabled) return { store: true, metadataOnly: false };
     const mode = retention.outputRetentionMode;
     if (mode === 'none') return { store: false, metadataOnly: false };
@@ -179,7 +191,10 @@ export class SupportSessionsService {
     return { store: true, metadataOnly: false };
   }
 
-  private shouldStoreAiPrompt(retention: RetentionPolicyShape | undefined): { store: boolean; metadataOnly: boolean } {
+  private shouldStoreAiPrompt(retention: RetentionPolicyShape | undefined): {
+    store: boolean;
+    metadataOnly: boolean;
+  } {
     if (!retention || !retention.enabled) return { store: true, metadataOnly: false };
     const mode = retention.promptRetentionMode;
     if (mode === 'none') return { store: false, metadataOnly: false };
@@ -187,7 +202,10 @@ export class SupportSessionsService {
     return { store: true, metadataOnly: false };
   }
 
-  private async getAdapter(identity: DevIdentity, installation?: { id: string; secretReferenceIds: string[]; config?: Record<string, unknown> }): Promise<{
+  private async getAdapter(
+    identity: DevIdentity,
+    installation?: { id: string; secretReferenceIds: string[]; config?: Record<string, unknown> },
+  ): Promise<{
     adapter: TicketingAdapterClient;
     credentialResolution?: Record<string, unknown>;
     egressDecision?: ReturnType<typeof evaluateEgressPolicy>;
@@ -195,7 +213,8 @@ export class SupportSessionsService {
   }> {
     const mode = this.connectorsService.getMode();
     // Registry path: prefer ConnectorInstallation config when available
-    const factory = getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
+    const factory =
+      getTicketingAdapterFactory('zammad') ?? getTicketingAdapterFactory('zammad-mock');
     if (!factory) {
       // Fallback to legacy hardcoded path
       if (mode !== ConnectorMode.enum.zammad) {
@@ -213,24 +232,41 @@ export class SupportSessionsService {
         throw new ForbiddenException({ message: egressDecision.reason, egressDecision });
       }
       if (!baseUrl || !installation) {
-        throw new BadRequestException('Zammad sandbox read is not configured with an active installation.');
+        throw new BadRequestException(
+          'Zammad sandbox read is not configured with an active installation.',
+        );
       }
-      const resolved = await this.credentialResolver.resolveZammadApiToken(identity.tenantId, installation as never);
-      const adapter = await this.connectorsService.createResolvedZammadAdapter({ baseUrl, apiToken: resolved.apiToken, timeoutMs: 10000 });
+      const resolved = await this.credentialResolver.resolveZammadApiToken(
+        identity.tenantId,
+        installation as never,
+      );
+      const adapter = await this.connectorsService.createResolvedZammadAdapter({
+        baseUrl,
+        apiToken: resolved.apiToken,
+        timeoutMs: 10000,
+      });
       return { adapter, credentialResolution: resolved.metadata, egressDecision };
     }
 
     // Registry-driven path
     const isMock = mode !== ConnectorMode.enum.zammad;
     if (isMock) {
-      const adapter = factory.createAdapter(resolveCanonicalAdapterId(factory.adapterType) as never);
-      if (typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> }).connect === 'function') {
-        await (adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }).connect({ mockMode: true });
+      const adapter = factory.createAdapter(
+        resolveCanonicalAdapterId(factory.adapterType) as never,
+      );
+      if (
+        typeof (adapter as unknown as { connect?: (c: Record<string, unknown>) => Promise<void> })
+          .connect === 'function'
+      ) {
+        await (
+          adapter as unknown as { connect: (c: Record<string, unknown>) => Promise<void> }
+        ).connect({ mockMode: true });
       }
       return { adapter, registryMetadata: { mode: 'mock', registryPattern: true } };
     }
 
-    const baseUrl = installation?.config?.baseUrl as string | undefined ?? process.env['ZAMMAD_BASE_URL'];
+    const baseUrl =
+      (installation?.config?.baseUrl as string | undefined) ?? process.env['ZAMMAD_BASE_URL'];
     const egressDecision = evaluateEgressPolicy({
       tenantId: identity.tenantId,
       connectorType: 'zammad',
@@ -242,10 +278,15 @@ export class SupportSessionsService {
     }
 
     if (!baseUrl || !installation) {
-      throw new BadRequestException('Zammad sandbox read is not configured with an active installation.');
+      throw new BadRequestException(
+        'Zammad sandbox read is not configured with an active installation.',
+      );
     }
 
-    const resolved = await this.credentialResolver.resolveZammadApiToken(identity.tenantId, installation as never);
+    const resolved = await this.credentialResolver.resolveZammadApiToken(
+      identity.tenantId,
+      installation as never,
+    );
     try {
       const runtimeResult = await resolveAdapterRuntime({
         adapterType: factory.adapterType,
@@ -280,7 +321,7 @@ export class SupportSessionsService {
 
   async createSession(
     identity: DevIdentity,
-    dto: { title: string; description?: string; priority?: string }
+    dto: { title: string; description?: string; priority?: string },
   ): Promise<SupportSessionShape> {
     requirePermission(identity, 'support_session:create');
     const now = new Date().toISOString();
@@ -314,12 +355,12 @@ export class SupportSessionsService {
       AuditEventType.enum.session_created,
       'session',
       session.id,
-      { title: session.title }
+      { title: session.title },
     );
     return session;
   }
 
-  async getSession(identity: DevIdentity, id: string): Promise<SupportSessionShape>{
+  async getSession(identity: DevIdentity, id: string): Promise<SupportSessionShape> {
     requirePermission(identity, 'support_session:read');
     const session = await this.store.getSession(identity.tenantId, id);
     if (!session) {
@@ -332,7 +373,7 @@ export class SupportSessionsService {
   async loadTicketContext(
     identity: DevIdentity,
     sessionId: string,
-    externalTicketId: string
+    externalTicketId: string,
   ): Promise<{
     ticketReference: unknown;
     contextPacket: AIContextPacketShape;
@@ -344,36 +385,39 @@ export class SupportSessionsService {
 
     // Resolve connector installation provenance
     const installations = await this.store.listConnectorInstallations(identity.tenantId);
-    const activeInstallation = installations.find(
-      (i) => i.adapterType === 'zammad' && i.enabled
-    ) ?? installations.find((i) => i.adapterType === 'zammad');
+    const activeInstallation =
+      installations.find((i) => i.adapterType === 'zammad' && i.enabled) ??
+      installations.find((i) => i.adapterType === 'zammad');
     const credentialRefs = activeInstallation
       ? await Promise.all(
           (activeInstallation.secretReferenceIds ?? []).map((cid) =>
-            this.store.getCredentialReference(identity.tenantId, cid)
-          )
+            this.store.getCredentialReference(identity.tenantId, cid),
+          ),
         )
       : [];
-    const linkedCredentialRefs = credentialRefs.filter((c): c is NonNullable<typeof c> => c != null);
-
-    const { adapter, credentialResolution, egressDecision } = await this.getAdapter(identity, activeInstallation);
-
-    const ticket = await adapter.getTicket(
-      identity.tenantId as TenantId,
-      externalTicketId
+    const linkedCredentialRefs = credentialRefs.filter(
+      (c): c is NonNullable<typeof c> => c != null,
     );
+
+    const { adapter, credentialResolution, egressDecision } = await this.getAdapter(
+      identity,
+      activeInstallation,
+    );
+
+    const ticket = await adapter.getTicket(identity.tenantId as TenantId, externalTicketId);
 
     const linkedSession: SupportSessionShape = {
       ...session,
-      linkedTicketIds: Array.from(new Set([...session.linkedTicketIds, (ticket as { id: string }).id])),
+      linkedTicketIds: Array.from(
+        new Set([...session.linkedTicketIds, (ticket as { id: string }).id]),
+      ),
       callEventIds: session.callEventIds,
       updatedAt: new Date().toISOString(),
     };
     await this.store.saveSession(linkedSession);
     await this.store.saveTicketReference(linkedSession.id, ticket as TicketReferenceShape);
 
-    const isRealNetwork =
-      mode === 'zammad' && activeInstallation?.mockMode === false;
+    const isRealNetwork = mode === 'zammad' && activeInstallation?.mockMode === false;
 
     const packet: AIContextPacketShape = {
       id: randomUUID() as AIContextPacketId,
@@ -416,9 +460,7 @@ export class SupportSessionsService {
     await this.store.saveContextPacket(packet);
     const updatedSession: SupportSessionShape = {
       ...linkedSession,
-      aiContextPacketIds: Array.from(
-        new Set([...linkedSession.aiContextPacketIds, packet.id])
-      ),
+      aiContextPacketIds: Array.from(new Set([...linkedSession.aiContextPacketIds, packet.id])),
       callEventIds: linkedSession.callEventIds,
       updatedAt: new Date().toISOString(),
     };
@@ -430,7 +472,12 @@ export class SupportSessionsService {
       AuditEventType.enum.ticket_linked,
       'ticket_reference',
       (ticket as { id: string }).id,
-      { externalTicketId, connectorMode: mode, connectorType: adapter.adapterType, connectorInstallationId: activeInstallation?.id }
+      {
+        externalTicketId,
+        connectorMode: mode,
+        connectorType: adapter.adapterType,
+        connectorInstallationId: activeInstallation?.id,
+      },
     );
     await this.appendAuditEvent(
       identity,
@@ -438,7 +485,11 @@ export class SupportSessionsService {
       AuditEventType.enum.ai_context_loaded,
       'ai_context_packet',
       packet.id,
-      { provenance: packet.provenance, connectorMode: mode, connectorInstallationId: activeInstallation?.id }
+      {
+        provenance: packet.provenance,
+        connectorMode: mode,
+        connectorInstallationId: activeInstallation?.id,
+      },
     );
     await this.appendAuditEvent(
       identity,
@@ -461,7 +512,7 @@ export class SupportSessionsService {
               secretExposed: false,
             }
           : undefined,
-      }
+      },
     );
 
     return { ticketReference: ticket, contextPacket: packet, session: updatedSession };
@@ -470,7 +521,7 @@ export class SupportSessionsService {
   async loadGlpiTicketContext(
     identity: DevIdentity,
     sessionId: string,
-    externalTicketId: string
+    externalTicketId: string,
   ): Promise<{
     ticketReference: unknown;
     contextPacket: AIContextPacketShape;
@@ -482,7 +533,9 @@ export class SupportSessionsService {
     const glpiApiToken = process.env['GLPI_API_TOKEN'];
 
     if (!glpiBaseUrl || !glpiApiToken) {
-      throw new BadRequestException('GLPI is not configured. Set GLPI_BASE_URL and GLPI_API_TOKEN.');
+      throw new BadRequestException(
+        'GLPI is not configured. Set GLPI_BASE_URL and GLPI_API_TOKEN.',
+      );
     }
 
     const egressDecision = evaluateEgressPolicy({
@@ -531,14 +584,13 @@ export class SupportSessionsService {
       throw err;
     }
 
-    const ticket = await adapter.getTicket(
-      identity.tenantId as TenantId,
-      externalTicketId
-    );
+    const ticket = await adapter.getTicket(identity.tenantId as TenantId, externalTicketId);
 
     const linkedSession: SupportSessionShape = {
       ...session,
-      linkedTicketIds: Array.from(new Set([...session.linkedTicketIds, (ticket as { id: string }).id])),
+      linkedTicketIds: Array.from(
+        new Set([...session.linkedTicketIds, (ticket as { id: string }).id]),
+      ),
       callEventIds: session.callEventIds,
       updatedAt: new Date().toISOString(),
     };
@@ -551,7 +603,9 @@ export class SupportSessionsService {
       sessionId,
       provenance: AIContextProvenance.enum.ticket,
       sourceTicketIds: [(ticket as { id: string }).id],
-      sourceAdapterId: (adapter.getAdapterMetadata?.() as Record<string, unknown>)?.id as string ?? 'glpi-adapter-001',
+      sourceAdapterId:
+        ((adapter.getAdapterMetadata?.() as Record<string, unknown>)?.id as string) ??
+        'glpi-adapter-001',
       payload: {
         ticketSubject: (ticket as { subject: string }).subject,
         ticketStatus: (ticket as { status: string }).status,
@@ -585,22 +639,26 @@ export class SupportSessionsService {
     await this.store.saveContextPacket(packet);
     const updatedSession: SupportSessionShape = {
       ...linkedSession,
-      aiContextPacketIds: Array.from(
-        new Set([...linkedSession.aiContextPacketIds, packet.id])
-      ),
+      aiContextPacketIds: Array.from(new Set([...linkedSession.aiContextPacketIds, packet.id])),
       callEventIds: linkedSession.callEventIds,
       updatedAt: new Date().toISOString(),
     };
     await this.store.saveSession(updatedSession);
 
-    const adapterMeta = adapter.getAdapterMetadata?.() as Record<string, unknown> ?? {};
+    const adapterMeta = (adapter.getAdapterMetadata?.() as Record<string, unknown>) ?? {};
     await this.appendAuditEvent(
       identity,
       sessionId,
       AuditEventType.enum.ticket_linked,
       'ticket_reference',
       (ticket as { id: string }).id,
-      { externalTicketId, connectorMode: 'glpi', connectorType: (adapterMeta.adapterType as string) ?? 'glpi', connectorInstallationId: 'glpi-dev-001', provenance: 'glpi_sandbox' }
+      {
+        externalTicketId,
+        connectorMode: 'glpi',
+        connectorType: (adapterMeta.adapterType as string) ?? 'glpi',
+        connectorInstallationId: 'glpi-dev-001',
+        provenance: 'glpi_sandbox',
+      },
     );
     await this.appendAuditEvent(
       identity,
@@ -608,13 +666,20 @@ export class SupportSessionsService {
       AuditEventType.enum.ai_context_loaded,
       'ai_context_packet',
       packet.id,
-      { provenance: packet.provenance, connectorMode: 'glpi', connectorInstallationId: 'glpi-dev-001', sourceAdapter: 'GLPI' }
+      {
+        provenance: packet.provenance,
+        connectorMode: 'glpi',
+        connectorInstallationId: 'glpi-dev-001',
+        sourceAdapter: 'GLPI',
+      },
     );
 
     return { ticketReference: ticket, contextPacket: packet, session: updatedSession };
   }
 
-  private safeParseModelSelection(dtoModelSelection: unknown): import('@supportplane/ai').ModelSelection | undefined {
+  private safeParseModelSelection(
+    dtoModelSelection: unknown,
+  ): import('@supportplane/ai').ModelSelection | undefined {
     if (!dtoModelSelection) return undefined;
     try {
       return ModelSelection.parse(dtoModelSelection);
@@ -628,20 +693,31 @@ export class SupportSessionsService {
     identity: DevIdentity,
     sessionId: string,
     feature: 'draft' | 'summary' | 'chat',
-    modelSelection?: import('@supportplane/ai').ModelSelection
-  ): Promise<{ allowed: true } | { allowed: false; reason: string; response: GenerateDraftResponseShape }> {
+    modelSelection?: import('@supportplane/ai').ModelSelection,
+  ): Promise<
+    { allowed: true } | { allowed: false; reason: string; response: GenerateDraftResponseShape }
+  > {
     const aiPolicy = await this.store.getTenantPolicy(identity.tenantId, 'ai');
     if (!aiPolicy || aiPolicy.policyType !== 'ai') return { allowed: true };
     const policy = aiPolicy as import('@supportplane/contracts').AiPolicy;
 
     const featureAllowed =
-      feature === 'draft' ? policy.allowDraftGeneration :
-      feature === 'summary' ? (policy as Record<string, unknown>).allowSummaryGeneration !== false :
-      (policy as Record<string, unknown>).allowChat !== false;
+      feature === 'draft'
+        ? policy.allowDraftGeneration
+        : feature === 'summary'
+          ? (policy as Record<string, unknown>).allowSummaryGeneration !== false
+          : (policy as Record<string, unknown>).allowChat !== false;
 
     if (!featureAllowed) {
       const errorCode = `${feature}_generation_disabled_by_policy`;
-      await this.logBlockedUsage(identity, sessionId, feature, modelSelection?.provider ?? 'mock', modelSelection?.model ?? 'mock-support-note-v1', errorCode);
+      await this.logBlockedUsage(
+        identity,
+        sessionId,
+        feature,
+        modelSelection?.provider ?? 'mock',
+        modelSelection?.model ?? 'mock-support-note-v1',
+        errorCode,
+      );
       return {
         allowed: false,
         reason: errorCode,
@@ -651,16 +727,45 @@ export class SupportSessionsService {
           model: modelSelection?.model ?? 'mock-support-note-v1',
           prompt: { id: 'blocked', version: 'blocked', purpose: `Blocked by tenant AI policy` },
           contextHash: 'blocked_by_policy',
-          usage: { latencyMs: 0, placeholder: true, providerMode: 'mock', runtime: 'mock', fallbackUsed: false, noCloudCall: true },
-          safety: { mockOnly: true, externalCallMade: false, cloudCallMade: false, localProviderCallMade: false, fallbackUsed: false, policyChecks: ['blocked_by_policy'], reviewRequired: true, writebackAllowed: false, autonomousSend: false, redactionApplied: true, runtime: 'mock' },
+          usage: {
+            latencyMs: 0,
+            placeholder: true,
+            providerMode: 'mock',
+            runtime: 'mock',
+            fallbackUsed: false,
+            noCloudCall: true,
+          },
+          safety: {
+            mockOnly: true,
+            externalCallMade: false,
+            cloudCallMade: false,
+            localProviderCallMade: false,
+            fallbackUsed: false,
+            policyChecks: ['blocked_by_policy'],
+            reviewRequired: true,
+            writebackAllowed: false,
+            autonomousSend: false,
+            redactionApplied: true,
+            runtime: 'mock',
+          },
           generatedAt: new Date().toISOString(),
         }),
       };
     }
 
-    if (modelSelection?.provider && !policy.allowedProviders.includes(modelSelection.provider as never)) {
+    if (
+      modelSelection?.provider &&
+      !policy.allowedProviders.includes(modelSelection.provider as never)
+    ) {
       const errorCode = 'provider_not_allowed_by_policy';
-      await this.logBlockedUsage(identity, sessionId, feature, modelSelection.provider, modelSelection.model ?? 'unknown', errorCode);
+      await this.logBlockedUsage(
+        identity,
+        sessionId,
+        feature,
+        modelSelection.provider,
+        modelSelection.model ?? 'unknown',
+        errorCode,
+      );
       return {
         allowed: false,
         reason: errorCode,
@@ -670,8 +775,27 @@ export class SupportSessionsService {
           model: modelSelection.model ?? 'unknown',
           prompt: { id: 'blocked', version: 'blocked', purpose: 'Blocked by tenant AI policy' },
           contextHash: 'blocked_by_policy',
-          usage: { latencyMs: 0, placeholder: true, providerMode: 'mock', runtime: 'mock', fallbackUsed: false, noCloudCall: true },
-          safety: { mockOnly: true, externalCallMade: false, cloudCallMade: false, localProviderCallMade: false, fallbackUsed: false, policyChecks: ['blocked_by_policy'], reviewRequired: true, writebackAllowed: false, autonomousSend: false, redactionApplied: true, runtime: 'mock' },
+          usage: {
+            latencyMs: 0,
+            placeholder: true,
+            providerMode: 'mock',
+            runtime: 'mock',
+            fallbackUsed: false,
+            noCloudCall: true,
+          },
+          safety: {
+            mockOnly: true,
+            externalCallMade: false,
+            cloudCallMade: false,
+            localProviderCallMade: false,
+            fallbackUsed: false,
+            policyChecks: ['blocked_by_policy'],
+            reviewRequired: true,
+            writebackAllowed: false,
+            autonomousSend: false,
+            redactionApplied: true,
+            runtime: 'mock',
+          },
           generatedAt: new Date().toISOString(),
         }),
       };
@@ -686,18 +810,12 @@ export class SupportSessionsService {
     dto: {
       operatorInstructions?: string;
       modelSelection?: { provider?: string; model?: string };
-    }
+    },
   ): Promise<GenerateDraftResponseShape> {
     requirePermission(identity, 'ai:generate');
     const session = await this.getSession(identity, sessionId);
-    const contextPackets = await this.store.getContextPackets(
-      identity.tenantId,
-      sessionId
-    );
-    const ticketReferences = await this.store.getTicketReferences(
-      identity.tenantId,
-      sessionId
-    );
+    const contextPackets = await this.store.getContextPackets(identity.tenantId, sessionId);
+    const ticketReferences = await this.store.getTicketReferences(identity.tenantId, sessionId);
     const modelSelection = this.safeParseModelSelection(dto.modelSelection);
 
     // BL-029: Check tenant AI policy before calling model gateway
@@ -717,7 +835,7 @@ export class SupportSessionsService {
           contextPackets,
           operatorInstructions: dto.operatorInstructions,
           modelSelection,
-        })
+        }),
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Draft generation failed';
@@ -764,7 +882,7 @@ export class SupportSessionsService {
         AuditEventType.enum.ai_draft_generated,
         'support_session',
         session.id,
-        metadata
+        metadata,
       );
     }
 
@@ -778,7 +896,7 @@ export class SupportSessionsService {
       callEventId?: string;
       tone?: string;
       modelSelection?: { provider?: string; model?: string };
-    }
+    },
   ): Promise<GreetingSuggestionResponseShape> {
     const session = await this.getSession(identity, sessionId);
     const tone = dto.tone
@@ -796,14 +914,13 @@ export class SupportSessionsService {
         throw new NotFoundException(`Call event ${dto.callEventId} not found`);
       }
       if (callEvent.sessionId && callEvent.sessionId !== sessionId) {
-        throw new ForbiddenException(`Call event ${dto.callEventId} is not linked to session ${sessionId}`);
+        throw new ForbiddenException(
+          `Call event ${dto.callEventId} is not linked to session ${sessionId}`,
+        );
       }
     }
 
-    const ticketReferences = await this.store.getTicketReferences(
-      identity.tenantId,
-      sessionId
-    );
+    const ticketReferences = await this.store.getTicketReferences(identity.tenantId, sessionId);
 
     const response = GreetingSuggestionResponse.parse(
       await this.modelGateway.generateGreeting({
@@ -814,11 +931,13 @@ export class SupportSessionsService {
         tone,
         callerName: callEvent?.caller?.displayName,
         normalizedPhoneNumber: callEvent?.caller?.normalizedNumber,
-        matchedTicketIds: callEvent?.callerMatch?.matchedTicketIds ?? ticketReferences.map((t) => t.externalTicketId),
+        matchedTicketIds:
+          callEvent?.callerMatch?.matchedTicketIds ??
+          ticketReferences.map((t) => t.externalTicketId),
         matchedCustomerName: callEvent?.callerMatch?.customerName,
         sessionTitle: session.title,
         modelSelection,
-      })
+      }),
     );
 
     await this.logModelUsage(identity, session.id, 'greeting', response);
@@ -855,7 +974,7 @@ export class SupportSessionsService {
         AuditEventType.enum.greeting_suggestion_generated,
         'support_session',
         session.id,
-        metadata
+        metadata,
       );
     }
 
@@ -868,18 +987,12 @@ export class SupportSessionsService {
     dto: {
       ticketReferenceId?: string;
       modelSelection?: { provider?: string; model?: string };
-    }
+    },
   ): Promise<GenerateSummaryResponseShape> {
     requirePermission(identity, 'ai:generate');
     const session = await this.getSession(identity, sessionId);
-    const contextPackets = await this.store.getContextPackets(
-      identity.tenantId,
-      sessionId
-    );
-    const ticketReferences = await this.store.getTicketReferences(
-      identity.tenantId,
-      sessionId
-    );
+    const contextPackets = await this.store.getContextPackets(identity.tenantId, sessionId);
+    const ticketReferences = await this.store.getTicketReferences(identity.tenantId, sessionId);
 
     const modelSelection = this.safeParseModelSelection(dto.modelSelection);
 
@@ -899,7 +1012,7 @@ export class SupportSessionsService {
           ticketReferences,
           contextPackets,
           modelSelection,
-        })
+        }),
       );
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Summary generation failed';
@@ -947,7 +1060,12 @@ export class SupportSessionsService {
       }
     }
 
-    await this.logModelUsage(identity, session.id, 'summary', response as unknown as GenerateDraftResponseShape);
+    await this.logModelUsage(
+      identity,
+      session.id,
+      'summary',
+      response as unknown as GenerateDraftResponseShape,
+    );
 
     const retention = await this.getRetentionPolicy(identity);
     const promptDecision = this.shouldStoreAiPrompt(retention);
@@ -981,7 +1099,7 @@ export class SupportSessionsService {
         AuditEventType.enum.ai_summary_generated,
         'support_session',
         session.id,
-        metadata
+        metadata,
       );
     }
 
@@ -991,7 +1109,7 @@ export class SupportSessionsService {
   async createInternalNoteDraft(
     identity: DevIdentity,
     sessionId: string,
-    dto: { externalTicketId: string; body: string; subject?: string }
+    dto: { externalTicketId: string; body: string; subject?: string },
   ): Promise<InternalNoteDraftShape> {
     requirePermission(identity, 'ticket:write');
     await this.getSession(identity, sessionId);
@@ -1020,7 +1138,7 @@ export class SupportSessionsService {
         externalTicketId: dto.externalTicketId,
         connectorMode: mode,
         draftLength: dto.body.length,
-      }
+      },
     );
 
     return draft;
@@ -1029,7 +1147,7 @@ export class SupportSessionsService {
   async writebackInternalNote(
     identity: DevIdentity,
     sessionId: string,
-    dto: { draftId: string; externalTicketId: string; body: string }
+    dto: { draftId: string; externalTicketId: string; body: string },
   ): Promise<unknown> {
     requirePermission(identity, 'ticket:write');
     await this.getSession(identity, sessionId);
@@ -1061,7 +1179,7 @@ export class SupportSessionsService {
         egressDecision: egressDecision.decision,
         writebackEnabled: false,
         externalWriteAttempted: false,
-      }
+      },
     );
 
     await this.appendAuditEvent(
@@ -1079,7 +1197,7 @@ export class SupportSessionsService {
         egressDecision: egressDecision.decision,
         writebackEnabled: false,
         externalWriteAttempted: false,
-      }
+      },
     );
 
     return InternalNoteWritebackResult.parse({
@@ -1102,7 +1220,7 @@ export class SupportSessionsService {
   async createContextPacket(
     identity: DevIdentity,
     sessionId: string,
-    dto: { provenance: string; payload: Record<string, unknown> }
+    dto: { provenance: string; payload: Record<string, unknown> },
   ): Promise<AIContextPacketShape> {
     requirePermission(identity, 'context_packet:create');
     const session = await this.getSession(identity, sessionId);
@@ -1120,9 +1238,7 @@ export class SupportSessionsService {
     await this.store.saveContextPacket(packet);
     await this.store.saveSession({
       ...session,
-      aiContextPacketIds: Array.from(
-        new Set([...session.aiContextPacketIds, packet.id])
-      ),
+      aiContextPacketIds: Array.from(new Set([...session.aiContextPacketIds, packet.id])),
       updatedAt: new Date().toISOString(),
     });
     await this.appendAuditEvent(
@@ -1131,15 +1247,15 @@ export class SupportSessionsService {
       AuditEventType.enum.ai_context_loaded,
       'ai_context_packet',
       packet.id,
-      { provenance: packet.provenance, source: 'manual' }
+      { provenance: packet.provenance, source: 'manual' },
     );
     return packet;
   }
 
   async getContextPackets(
     identity: DevIdentity,
-    sessionId: string
-  ): Promise<AIContextPacketShape[]>{
+    sessionId: string,
+  ): Promise<AIContextPacketShape[]> {
     requirePermission(identity, 'support_session:read');
     await this.getSession(identity, sessionId);
     return await this.store.getContextPackets(identity.tenantId, sessionId);
@@ -1148,7 +1264,7 @@ export class SupportSessionsService {
   async linkTicketToSession(
     identity: DevIdentity,
     sessionId: string,
-    dto: { ticketReferenceId: string }
+    dto: { ticketReferenceId: string },
   ): Promise<SupportSessionShape> {
     requirePermission(identity, 'ticket:link');
     const session = await this.getSession(identity, sessionId);
@@ -1169,7 +1285,7 @@ export class SupportSessionsService {
       AuditEventType.enum.ticket_linked_to_session,
       'support_session',
       sessionId,
-      { ticketReferenceId: dto.ticketReferenceId, externalTicketId: ticket.externalTicketId }
+      { ticketReferenceId: dto.ticketReferenceId, externalTicketId: ticket.externalTicketId },
     );
     return updated;
   }
@@ -1177,12 +1293,14 @@ export class SupportSessionsService {
   async unlinkTicketFromSession(
     identity: DevIdentity,
     sessionId: string,
-    dto: { ticketReferenceId: string }
+    dto: { ticketReferenceId: string },
   ): Promise<SupportSessionShape> {
     requirePermission(identity, 'ticket:unlink');
     const session = await this.getSession(identity, sessionId);
     if (!session.linkedTicketIds.includes(dto.ticketReferenceId)) {
-      throw new NotFoundException(`Ticket reference ${dto.ticketReferenceId} is not linked to session ${sessionId}`);
+      throw new NotFoundException(
+        `Ticket reference ${dto.ticketReferenceId} is not linked to session ${sessionId}`,
+      );
     }
     const updated: SupportSessionShape = {
       ...session,
@@ -1196,14 +1314,14 @@ export class SupportSessionsService {
       AuditEventType.enum.ticket_unlinked_from_session,
       'support_session',
       sessionId,
-      { ticketReferenceId: dto.ticketReferenceId }
+      { ticketReferenceId: dto.ticketReferenceId },
     );
     return updated;
   }
 
   async getCustomerReferencesForSession(
     identity: DevIdentity,
-    sessionId: string
+    sessionId: string,
   ): Promise<{ customers: unknown[] }> {
     requirePermission(identity, 'customer:read');
     await this.getSession(identity, sessionId);
@@ -1220,8 +1338,18 @@ export class SupportSessionsService {
 
   async getCaseTimeline(
     identity: DevIdentity,
-    sessionId: string
-  ): Promise<{ timeline: Array<{ id: string; type: string; timestamp: string; title: string; description?: string; metadata: Record<string, unknown> }>; generatedAt: string }> {
+    sessionId: string,
+  ): Promise<{
+    timeline: Array<{
+      id: string;
+      type: string;
+      timestamp: string;
+      title: string;
+      description?: string;
+      metadata: Record<string, unknown>;
+    }>;
+    generatedAt: string;
+  }> {
     requirePermission(identity, 'support_session:read');
     await this.getSession(identity, sessionId);
 
@@ -1231,7 +1359,14 @@ export class SupportSessionsService {
     const supportActions = await this.store.listSupportActions(identity.tenantId, { sessionId });
     const outboxItems = await this.store.listActionOutboxItems(identity.tenantId, { sessionId });
 
-    const timeline: Array<{ id: string; type: string; timestamp: string; title: string; description?: string; metadata: Record<string, unknown> }> = [];
+    const timeline: Array<{
+      id: string;
+      type: string;
+      timestamp: string;
+      title: string;
+      description?: string;
+      metadata: Record<string, unknown>;
+    }> = [];
 
     for (const event of auditEvents) {
       const titleMap: Record<string, string> = {
@@ -1243,7 +1378,8 @@ export class SupportSessionsService {
         [AuditEventType.enum.greeting_suggestion_generated]: 'Greeting suggestion generated',
         [AuditEventType.enum.screen_observation_captured]: 'Observation captured',
         [AuditEventType.enum.screen_observation_reviewed]: 'Observation reviewed',
-        [AuditEventType.enum.screen_observation_context_packet_created]: 'Context packet created from observation',
+        [AuditEventType.enum.screen_observation_context_packet_created]:
+          'Context packet created from observation',
         [AuditEventType.enum.internal_note_drafted]: 'Internal note drafted',
         [AuditEventType.enum.internal_note_writeback_attempted]: 'Writeback attempted',
         [AuditEventType.enum.internal_note_writeback_succeeded]: 'Writeback succeeded',
@@ -1290,7 +1426,12 @@ export class SupportSessionsService {
         type: `audit:${event.eventType}`,
         timestamp: event.createdAt,
         title: titleMap[event.eventType] ?? event.eventType,
-        metadata: { ...event.metadata, actorId: event.actorId, resourceType: event.resourceType, resourceId: event.resourceId },
+        metadata: {
+          ...event.metadata,
+          actorId: event.actorId,
+          resourceType: event.resourceType,
+          resourceId: event.resourceId,
+        },
       });
     }
 
@@ -1301,7 +1442,12 @@ export class SupportSessionsService {
         timestamp: call.createdAt,
         title: `Call ${call.direction} — ${call.status}`,
         description: call.caller?.displayName || call.externalCallId,
-        metadata: { externalCallId: call.externalCallId, provider: call.provider, status: call.status, callerMatch: call.callerMatch },
+        metadata: {
+          externalCallId: call.externalCallId,
+          provider: call.provider,
+          status: call.status,
+          callerMatch: call.callerMatch,
+        },
       });
     }
 
@@ -1312,7 +1458,11 @@ export class SupportSessionsService {
         timestamp: draft.createdAt,
         title: 'Support note draft',
         description: draft.reviewed ? 'Reviewed' : 'Pending review',
-        metadata: { externalTicketId: draft.externalTicketId, reviewed: draft.reviewed, draftLength: draft.body.length },
+        metadata: {
+          externalTicketId: draft.externalTicketId,
+          reviewed: draft.reviewed,
+          draftLength: draft.body.length,
+        },
       });
     }
 
@@ -1367,14 +1517,22 @@ export class SupportSessionsService {
   async createSupportNoteDraft(
     identity: DevIdentity,
     sessionId: string,
-    dto: { externalTicketId: string; operatorNotes?: string }
-  ): Promise<{ draft: string; mockDevOnly: true; notSentToZammad: true; requiresHumanReview: true; generatedAt: string }> {
+    dto: { externalTicketId: string; operatorNotes?: string },
+  ): Promise<{
+    draft: string;
+    mockDevOnly: true;
+    notSentToZammad: true;
+    requiresHumanReview: true;
+    generatedAt: string;
+  }> {
     requirePermission(identity, 'ticket:write');
     await this.getSession(identity, sessionId);
 
     const tickets = await this.store.getTicketReferences(identity.tenantId, sessionId);
     const ticket = tickets.find((t) => t.externalTicketId === dto.externalTicketId);
-    const customer = ticket?.customerId ? await this.store.getCustomerReference(identity.tenantId, ticket.customerId) : undefined;
+    const customer = ticket?.customerId
+      ? await this.store.getCustomerReference(identity.tenantId, ticket.customerId)
+      : undefined;
 
     const draftLines = [
       `[LOCAL MOCK SUPPORT NOTE DRAFT — NOT SENT TO ZAMMAD — REQUIRES HUMAN REVIEW]`,
@@ -1417,7 +1575,7 @@ export class SupportSessionsService {
         notSentToZammad: true,
         draftLength: draft.length,
         source: 'deterministic_local_mock',
-      }
+      },
     );
 
     return {
@@ -1429,16 +1587,13 @@ export class SupportSessionsService {
     };
   }
 
-  async getAuditEvents(
-    identity: DevIdentity,
-    sessionId: string
-  ): Promise<AuditEventShape[]>{
+  async getAuditEvents(identity: DevIdentity, sessionId: string): Promise<AuditEventShape[]> {
     requirePermission(identity, 'audit:read');
     await this.getSession(identity, sessionId);
     return await this.store.getAuditEvents(identity.tenantId, sessionId);
   }
 
-  async listSessions(identity: DevIdentity): Promise<SupportSessionShape[]>{
+  async listSessions(identity: DevIdentity): Promise<SupportSessionShape[]> {
     requirePermission(identity, 'support_session:read');
     return await this.store.listSessions(identity.tenantId);
   }
@@ -1453,14 +1608,16 @@ export class SupportSessionsService {
       appLabel?: string;
       windowLabel?: string;
       urlLabel?: string;
-    }
+    },
   ): Promise<ScreenObservationShape> {
     requirePermission(identity, 'screen_observation:create');
     const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
     const sharingState = await this.store.getSharingState(identity.tenantId, sessionId);
-    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
+    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(
+      dto.rawInputPlaceholder,
+    );
 
     const observation: ScreenObservationShape = {
       id: id as ScreenObservationId,
@@ -1517,7 +1674,7 @@ export class SupportSessionsService {
         noClipboard: true,
         sharingState: observation.sharingState,
         redactionStatus: observation.redactionStatus,
-      }
+      },
     );
 
     return observation;
@@ -1532,14 +1689,20 @@ export class SupportSessionsService {
       windowLabel?: string;
       urlLabel?: string;
       rawInputPlaceholder?: string;
-    }
-  ): Promise<{ observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean }> {
+    },
+  ): Promise<{
+    observation: ScreenObservationShape;
+    redactedSummary: string;
+    mockDevOnly: boolean;
+  }> {
     requirePermission(identity, 'screen_observation:create');
     const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
     const sharingState = await this.store.getSharingState(identity.tenantId, sessionId);
-    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
+    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(
+      dto.rawInputPlaceholder,
+    );
 
     const observation: ScreenObservationShape = {
       id: id as ScreenObservationId,
@@ -1596,7 +1759,7 @@ export class SupportSessionsService {
         noClipboard: true,
         sharingState: observation.sharingState,
         redactionStatus: observation.redactionStatus,
-      }
+      },
     );
 
     return { observation, redactedSummary, mockDevOnly: true };
@@ -1612,13 +1775,20 @@ export class SupportSessionsService {
       urlLabel?: string;
       rawInputPlaceholder?: string;
       fileNameHint?: string;
-    }
-  ): Promise<{ observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; rawImageRetention: 'disabled' }> {
+    },
+  ): Promise<{
+    observation: ScreenObservationShape;
+    redactedSummary: string;
+    mockDevOnly: boolean;
+    rawImageRetention: 'disabled';
+  }> {
     requirePermission(identity, 'screen_observation:create');
     const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
-    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
+    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(
+      dto.rawInputPlaceholder,
+    );
 
     const observation: ScreenObservationShape = {
       id: id as ScreenObservationId,
@@ -1676,7 +1846,7 @@ export class SupportSessionsService {
         sharingState: observation.sharingState,
         redactionStatus: observation.redactionStatus,
         fileNameHint: dto.fileNameHint,
-      }
+      },
     );
 
     return { observation, redactedSummary, mockDevOnly: true, rawImageRetention: 'disabled' };
@@ -1692,13 +1862,20 @@ export class SupportSessionsService {
       windowLabel?: string;
       urlLabel?: string;
       rawInputPlaceholder?: string;
-    }
-  ): Promise<{ observation: ScreenObservationShape; redactedSummary: string; mockDevOnly: boolean; redactionStatus: ScreenObservationShape['redactionStatus'] }> {
+    },
+  ): Promise<{
+    observation: ScreenObservationShape;
+    redactedSummary: string;
+    mockDevOnly: boolean;
+    redactionStatus: ScreenObservationShape['redactionStatus'];
+  }> {
     requirePermission(identity, 'screen_observation:create');
     const session = await this.getSession(identity, sessionId);
     const now = new Date().toISOString();
     const id = randomUUID();
-    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(dto.rawInputPlaceholder);
+    const { redacted: redactedSummary, redactionStatus } = redactPlaceholder(
+      dto.rawInputPlaceholder,
+    );
 
     const observation: ScreenObservationShape = {
       id: id as ScreenObservationId,
@@ -1755,16 +1932,13 @@ export class SupportSessionsService {
         noClipboard: true,
         sharingState: observation.sharingState,
         redactionStatus: observation.redactionStatus,
-      }
+      },
     );
 
     return { observation, redactedSummary, mockDevOnly: true, redactionStatus };
   }
 
-  async getSharingState(
-    identity: DevIdentity,
-    sessionId: string
-  ) {
+  async getSharingState(identity: DevIdentity, sessionId: string) {
     requirePermission(identity, 'support_session:read');
     await this.getSession(identity, sessionId);
     const sharingState = await this.store.getSharingState(identity.tenantId, sessionId);
@@ -1778,8 +1952,13 @@ export class SupportSessionsService {
   async updateSharingState(
     identity: DevIdentity,
     sessionId: string,
-    dto: { state: string }
-  ): Promise<{ sessionId: string; state: ScreenObservationShape['sharingState']; previousState: ScreenObservationShape['sharingState'] | undefined; mockDevOnly: boolean }> {
+    dto: { state: string },
+  ): Promise<{
+    sessionId: string;
+    state: ScreenObservationShape['sharingState'];
+    previousState: ScreenObservationShape['sharingState'] | undefined;
+    mockDevOnly: boolean;
+  }> {
     requirePermission(identity, 'screen_observation:create');
     await this.getSession(identity, sessionId);
     const newState = ScreenObservationSharingState.parse(dto.state);
@@ -1799,7 +1978,7 @@ export class SupportSessionsService {
     const allowed = allowedTransitions[previousState ?? 'inactive'] ?? [];
     if (!allowed.includes(newState)) {
       throw new BadRequestException(
-        `Invalid sharing state transition from '${previousState ?? 'inactive'}' to '${newState}'. Allowed: ${allowed.join(', ')}`
+        `Invalid sharing state transition from '${previousState ?? 'inactive'}' to '${newState}'. Allowed: ${allowed.join(', ')}`,
       );
     }
 
@@ -1829,16 +2008,21 @@ export class SupportSessionsService {
         previousState: previousState ?? 'inactive',
         newState,
         mockDevOnly: true,
-      }
+      },
     );
 
-    return { sessionId, state: newState, previousState: previousState ?? ScreenObservationSharingState.enum.inactive, mockDevOnly: true };
+    return {
+      sessionId,
+      state: newState,
+      previousState: previousState ?? ScreenObservationSharingState.enum.inactive,
+      mockDevOnly: true,
+    };
   }
 
   async listScreenObservations(
     identity: DevIdentity,
-    sessionId: string
-  ): Promise<ScreenObservationShape[]>{
+    sessionId: string,
+  ): Promise<ScreenObservationShape[]> {
     requirePermission(identity, 'support_session:read');
     await this.getSession(identity, sessionId);
     return await this.store.listScreenObservations(identity.tenantId, sessionId);
@@ -1848,7 +2032,7 @@ export class SupportSessionsService {
     identity: DevIdentity,
     sessionId: string,
     observationId: string,
-    dto: { status: 'approved' | 'discarded' }
+    dto: { status: 'approved' | 'discarded' },
   ): Promise<{ observation: ScreenObservationShape; previousStatus: string; newStatus: string }> {
     requirePermission(identity, 'screen_observation:review');
     await this.getSession(identity, sessionId);
@@ -1857,7 +2041,9 @@ export class SupportSessionsService {
       throw new NotFoundException(`Screen observation ${observationId} not found`);
     }
     if (observation.sessionId !== sessionId) {
-      throw new NotFoundException(`Screen observation ${observationId} does not belong to session ${sessionId}`);
+      throw new NotFoundException(
+        `Screen observation ${observationId} does not belong to session ${sessionId}`,
+      );
     }
 
     const previousStatus = observation.status;
@@ -1884,7 +2070,7 @@ export class SupportSessionsService {
         newStatus: dto.status,
         reviewedBy: identity.userId,
         mockDevOnly: true,
-      }
+      },
     );
 
     return { observation: updated, previousStatus, newStatus: dto.status };
@@ -1894,8 +2080,12 @@ export class SupportSessionsService {
     identity: DevIdentity,
     sessionId: string,
     observationId: string,
-    dto?: { provenance?: string }
-  ): Promise<{ observation: ScreenObservationShape; contextPacketId: string; mockDevOnly: boolean }> {
+    dto?: { provenance?: string },
+  ): Promise<{
+    observation: ScreenObservationShape;
+    contextPacketId: string;
+    mockDevOnly: boolean;
+  }> {
     requirePermission(identity, 'screen_observation:review');
     requirePermission(identity, 'context_packet:create');
     const session = await this.getSession(identity, sessionId);
@@ -1904,10 +2094,14 @@ export class SupportSessionsService {
       throw new NotFoundException(`Screen observation ${observationId} not found`);
     }
     if (observation.sessionId !== sessionId) {
-      throw new NotFoundException(`Screen observation ${observationId} does not belong to session ${sessionId}`);
+      throw new NotFoundException(
+        `Screen observation ${observationId} does not belong to session ${sessionId}`,
+      );
     }
     if (observation.status !== 'approved') {
-      throw new Error(`Screen observation ${observationId} must be approved before creating a context packet`);
+      throw new Error(
+        `Screen observation ${observationId} must be approved before creating a context packet`,
+      );
     }
 
     const provenance = dto?.provenance ?? 'screen_observation';
@@ -1958,7 +2152,7 @@ export class SupportSessionsService {
         contextPacketId: packet.id,
         provenance,
         mockDevOnly: true,
-      }
+      },
     );
 
     await this.appendAuditEvent(
@@ -1967,7 +2161,7 @@ export class SupportSessionsService {
       AuditEventType.enum.ai_context_loaded,
       'ai_context_packet',
       packet.id,
-      { provenance, source: 'screen_observation', observationId }
+      { provenance, source: 'screen_observation', observationId },
     );
 
     return { observation: updatedObservation, contextPacketId: packet.id, mockDevOnly: true };
@@ -1976,7 +2170,7 @@ export class SupportSessionsService {
   async generateEvidenceBundle(
     identity: DevIdentity,
     sessionId: string,
-    format: EvidenceBundleFormat
+    format: EvidenceBundleFormat,
   ) {
     requirePermission(identity, 'evidence_bundle:read');
     const session = await this.getSession(identity, sessionId);
@@ -1984,19 +2178,29 @@ export class SupportSessionsService {
     const contextPackets = await this.store.getContextPackets(identity.tenantId, sessionId);
     const callEvents = await this.store.listCallEventsForSession(identity.tenantId, sessionId);
     const callRecordingsNested = await Promise.all(
-      callEvents.map((call) => this.store.listCallRecordings(identity.tenantId, call.id))
+      callEvents.map((call) => this.store.listCallRecordings(identity.tenantId, call.id)),
     );
     const callRecordings = callRecordingsNested.flat();
-    const screenObservations = await this.store.listScreenObservations(identity.tenantId, sessionId);
+    const screenObservations = await this.store.listScreenObservations(
+      identity.tenantId,
+      sessionId,
+    );
     const customerRefsResult = await this.getCustomerReferencesForSession(identity, sessionId);
-    const customerReferences = customerRefsResult.customers as unknown as import('@supportplane/contracts').CustomerReference[];
+    const customerReferences =
+      customerRefsResult.customers as unknown as import('@supportplane/contracts').CustomerReference[];
     const connectorInstallations = await this.store.listConnectorInstallations(identity.tenantId);
     const credentialReferences = await this.store.listCredentialReferences(identity.tenantId);
     const supportNoteDrafts = await this.store.listInternalNoteDrafts(identity.tenantId, sessionId);
     const supportActions = await this.store.listSupportActions(identity.tenantId, { sessionId });
-    const actionOutboxItems = await this.store.listActionOutboxItems(identity.tenantId, { sessionId });
+    const actionOutboxItems = await this.store.listActionOutboxItems(identity.tenantId, {
+      sessionId,
+    });
     const actionOutboxAttempts = (
-      await Promise.all(actionOutboxItems.map((item) => this.store.listActionOutboxAttempts(identity.tenantId, item.id)))
+      await Promise.all(
+        actionOutboxItems.map((item) =>
+          this.store.listActionOutboxAttempts(identity.tenantId, item.id),
+        ),
+      )
     ).flat();
     const deliveryPolicies = await this.store.listDeliveryPolicies(identity.tenantId);
     const sessionAuditEvents = await this.store.getAuditEvents(identity.tenantId, sessionId);
@@ -2008,11 +2212,12 @@ export class SupportSessionsService {
       return (
         event.eventType === AuditEventType.enum.telephony_adapter_tested ||
         callEventIds.has(event.resourceId) ||
-        (typeof event.metadata.externalCallId === 'string' && externalCallIds.has(event.metadata.externalCallId))
+        (typeof event.metadata.externalCallId === 'string' &&
+          externalCallIds.has(event.metadata.externalCallId))
       );
     });
     const auditEvents = [...sessionAuditEvents, ...callAuditEvents].sort((a, b) =>
-      a.createdAt.localeCompare(b.createdAt)
+      a.createdAt.localeCompare(b.createdAt),
     );
 
     const storeType = process.env['SUPPORTPLANE_STORE'] ?? 'memory';
@@ -2046,7 +2251,7 @@ export class SupportSessionsService {
       AuditEventType.enum.evidence_bundle_generated,
       'evidence_bundle',
       bundle.bundleId,
-      { format, bundleId: bundle.bundleId, version: bundle.version }
+      { format, bundleId: bundle.bundleId, version: bundle.version },
     );
 
     if (format === EvidenceBundleFormat.enum.markdown) {
@@ -2056,7 +2261,7 @@ export class SupportSessionsService {
         AuditEventType.enum.evidence_bundle_exported,
         'evidence_bundle',
         bundle.bundleId,
-        { format: 'markdown', bundleId: bundle.bundleId }
+        { format: 'markdown', bundleId: bundle.bundleId },
       );
     } else {
       await this.appendAuditEvent(
@@ -2065,13 +2270,14 @@ export class SupportSessionsService {
         AuditEventType.enum.evidence_bundle_exported,
         'evidence_bundle',
         bundle.bundleId,
-        { format: 'json', bundleId: bundle.bundleId }
+        { format: 'json', bundleId: bundle.bundleId },
       );
     }
 
     return {
       bundle,
-      markdown: format === EvidenceBundleFormat.enum.markdown ? bundleToMarkdown(bundle) : undefined,
+      markdown:
+        format === EvidenceBundleFormat.enum.markdown ? bundleToMarkdown(bundle) : undefined,
     };
   }
 
@@ -2081,7 +2287,7 @@ export class SupportSessionsService {
     eventType: AuditEventType,
     resourceType: string,
     resourceId: string,
-    metadata: Record<string, unknown> = {}
+    metadata: Record<string, unknown> = {},
   ): Promise<void> {
     const now = new Date().toISOString();
     const event: AuditEventShape = {
@@ -2107,7 +2313,11 @@ export class SupportSessionsService {
     await this.store.saveAuditEvent(event);
   }
 
-  private async recordTenantBoundaryDenial(identity: DevIdentity, resourceType: string, resourceId: string): Promise<void> {
+  private async recordTenantBoundaryDenial(
+    identity: DevIdentity,
+    resourceType: string,
+    resourceId: string,
+  ): Promise<void> {
     const now = new Date().toISOString();
     const metadata = { reason: 'not_found_in_actor_tenant', authMode: identity.authMode };
     const event: AuditEventShape = {

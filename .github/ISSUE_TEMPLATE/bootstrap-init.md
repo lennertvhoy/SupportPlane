@@ -1,8 +1,8 @@
 ---
 name: Bootstrap / Init
 about: Initialize or re-baseline a new or inherited repo
-title: "[bootstrap] "
-labels: ["bootstrap"]
+title: '[bootstrap] '
+labels: ['bootstrap']
 ---
 
 ## Context

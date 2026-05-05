@@ -1,9 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import {
-  MockTelephonyAdapter,
-  redactTelephonySecrets,
-} from './telephony-adapter.js';
+import { MockTelephonyAdapter, redactTelephonySecrets } from './telephony-adapter.js';
 
 describe('MockTelephonyAdapter', () => {
   it('returns deterministic mock status and capabilities', () => {

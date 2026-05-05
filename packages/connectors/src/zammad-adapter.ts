@@ -25,18 +25,22 @@ function normalizeZammadState(state: string | number): TicketReferenceShape['sta
   const lower = String(state).toLowerCase();
   if (lower === 'new' || lower === '1') return TicketStatus.enum.new;
   if (lower === 'open' || lower === '2') return TicketStatus.enum.open;
-  if (lower === 'pending reminder' || lower === 'pending close' || lower === '3' || lower === '6') return TicketStatus.enum.pending;
+  if (lower === 'pending reminder' || lower === 'pending close' || lower === '3' || lower === '6')
+    return TicketStatus.enum.pending;
   if (lower === 'closed' || lower === '4') return TicketStatus.enum.closed;
   if (lower === 'merged' || lower === '5') return TicketStatus.enum.merged;
   return TicketStatus.enum.unknown;
 }
 
-function normalizeZammadPriority(priority: string | number | Record<string, unknown>): TicketReferenceShape['priority'] {
+function normalizeZammadPriority(
+  priority: string | number | Record<string, unknown>,
+): TicketReferenceShape['priority'] {
   const raw = typeof priority === 'string' ? priority : String(priority);
   const lower = raw.toLowerCase();
   if (lower.includes('1') || lower.includes('low')) return TicketPriority.enum.low;
   if (lower.includes('3') || lower.includes('high')) return TicketPriority.enum.high;
-  if (lower.includes('4') || lower.includes('critical') || lower.includes('very high')) return TicketPriority.enum.critical;
+  if (lower.includes('4') || lower.includes('critical') || lower.includes('very high'))
+    return TicketPriority.enum.critical;
   return TicketPriority.enum.normal;
 }
 
@@ -44,7 +48,7 @@ function buildConnectorError(
   code: ConnectorErrorCode,
   message: string,
   safeToDisplay = false,
-  metadata: Record<string, unknown> = {}
+  metadata: Record<string, unknown> = {},
 ): ConnectorError {
   return {
     code,
@@ -54,7 +58,10 @@ function buildConnectorError(
   };
 }
 
-function sanitizeErrorForPublic(error: Error, fallbackCode: ConnectorErrorCode = ConnectorErrorCode.enum.UNKNOWN): ConnectorError {
+function sanitizeErrorForPublic(
+  error: Error,
+  fallbackCode: ConnectorErrorCode = ConnectorErrorCode.enum.UNKNOWN,
+): ConnectorError {
   const message = error.message ?? 'Unknown connector error';
   // Never expose token-related details
   const safeMessage = message.replace(/token=[^\s&]+/gi, 'token=<redacted>');
@@ -75,7 +82,7 @@ export class ZammadConnectorAdapter implements TicketingAdapterDriver {
     const parsed = ZammadConfig.safeParse(inputConfig);
     if (!parsed.success) {
       return Promise.reject(
-        buildConnectorError(ConnectorErrorCode.enum.CONFIG_INVALID, 'Invalid Zammad configuration')
+        buildConnectorError(ConnectorErrorCode.enum.CONFIG_INVALID, 'Invalid Zammad configuration'),
       );
     }
     this.config = parsed.data;
@@ -85,7 +92,10 @@ export class ZammadConnectorAdapter implements TicketingAdapterDriver {
 
   async getTicket(tenantId: TenantId, externalTicketId: string): Promise<TicketReferenceShape> {
     if (!this.httpClient) {
-      throw buildConnectorError(ConnectorErrorCode.enum.CONFIG_MISSING, 'Zammad adapter not connected');
+      throw buildConnectorError(
+        ConnectorErrorCode.enum.CONFIG_MISSING,
+        'Zammad adapter not connected',
+      );
     }
 
     try {
@@ -123,9 +133,11 @@ export class ZammadConnectorAdapter implements TicketingAdapterDriver {
             ? data.state
             : typeof data.state_id === 'number'
               ? String(data.state_id)
-              : 'unknown'
+              : 'unknown',
         ),
-        priority: normalizeZammadPriority(data.priority as string | number | Record<string, unknown>),
+        priority: normalizeZammadPriority(
+          data.priority as string | number | Record<string, unknown>,
+        ),
         customerEmail,
         customerName,
         rawData: data as Record<string, unknown>,
@@ -138,17 +150,23 @@ export class ZammadConnectorAdapter implements TicketingAdapterDriver {
     } catch (err) {
       const connectorErr = sanitizeErrorForPublic(
         err instanceof Error ? err : new Error(String(err)),
-        ConnectorErrorCode.enum.TICKET_READ_FAILED
+        ConnectorErrorCode.enum.TICKET_READ_FAILED,
       );
       throw connectorErr;
     }
   }
 
-  async writeInternalNote(ticketId: string, body: string): Promise<{ success: boolean; externalArticleId?: string; error?: ConnectorError }> {
+  async writeInternalNote(
+    ticketId: string,
+    body: string,
+  ): Promise<{ success: boolean; externalArticleId?: string; error?: ConnectorError }> {
     if (!this.httpClient) {
       return {
         success: false,
-        error: buildConnectorError(ConnectorErrorCode.enum.CONFIG_MISSING, 'Zammad adapter not connected'),
+        error: buildConnectorError(
+          ConnectorErrorCode.enum.CONFIG_MISSING,
+          'Zammad adapter not connected',
+        ),
       };
     }
 
@@ -163,14 +181,15 @@ export class ZammadConnectorAdapter implements TicketingAdapterDriver {
       const data = raw as Record<string, unknown>;
       return {
         success: true,
-        externalArticleId: typeof data.id === 'number' || typeof data.id === 'string' ? String(data.id) : undefined,
+        externalArticleId:
+          typeof data.id === 'number' || typeof data.id === 'string' ? String(data.id) : undefined,
       };
     } catch (err) {
       return {
         success: false,
         error: sanitizeErrorForPublic(
           err instanceof Error ? err : new Error(String(err)),
-          ConnectorErrorCode.enum.NOTEBACK_WRITE_FAILED
+          ConnectorErrorCode.enum.NOTEBACK_WRITE_FAILED,
         ),
       };
     }
@@ -188,7 +207,9 @@ export class ZammadConnectorAdapter implements TicketingAdapterDriver {
         TicketingAdapterCapability.enum.read_customers,
         TicketingAdapterCapability.enum.write_notes,
       ],
-      status: this.httpClient ? TicketingAdapterStatus.enum.active : TicketingAdapterStatus.enum.inactive,
+      status: this.httpClient
+        ? TicketingAdapterStatus.enum.active
+        : TicketingAdapterStatus.enum.inactive,
       config: this.config ? { baseUrl: this.config.baseUrl, timeoutMs: this.config.timeoutMs } : {},
       secretReferenceIds: [],
       createdAt: now,
@@ -227,10 +248,12 @@ export class MockZammadConnectorAdapter implements TicketingAdapterDriver {
       tenantId,
       adapterId: this.adapterId,
       externalTicketId,
-      subject: typeof data.title === 'string' ? data.title : `Mock Zammad ticket ${externalTicketId}`,
+      subject:
+        typeof data.title === 'string' ? data.title : `Mock Zammad ticket ${externalTicketId}`,
       status: normalizeZammadState(String(data.state ?? 'open')),
       priority: normalizeZammadPriority(data.priority as string | number | Record<string, unknown>),
-      customerEmail: typeof user.email === 'string' ? user.email : `customer-${externalTicketId}@example.com`,
+      customerEmail:
+        typeof user.email === 'string' ? user.email : `customer-${externalTicketId}@example.com`,
       customerName: `${user.firstname ?? 'Customer'} ${user.lastname ?? externalTicketId}`.trim(),
       rawData: { mock: true, source: 'MockZammadConnectorAdapter', data },
       lastSyncedAt: now,
@@ -239,7 +262,10 @@ export class MockZammadConnectorAdapter implements TicketingAdapterDriver {
     };
   }
 
-  async writeInternalNote(ticketId: string, body: string): Promise<{ success: boolean; externalArticleId?: string }> {
+  async writeInternalNote(
+    ticketId: string,
+    body: string,
+  ): Promise<{ success: boolean; externalArticleId?: string }> {
     const raw = await this.httpClient.createArticle({
       ticket_id: ticketId,
       subject: 'Internal note',
@@ -250,7 +276,10 @@ export class MockZammadConnectorAdapter implements TicketingAdapterDriver {
     const data = raw as Record<string, unknown>;
     return {
       success: true,
-      externalArticleId: typeof data.id === 'number' || typeof data.id === 'string' ? String(data.id) : 'mock-article-001',
+      externalArticleId:
+        typeof data.id === 'number' || typeof data.id === 'string'
+          ? String(data.id)
+          : 'mock-article-001',
     };
   }
 
@@ -277,7 +306,7 @@ export class MockZammadConnectorAdapter implements TicketingAdapterDriver {
 
 export function createZammadAdapter(
   mode: ConnectorMode,
-  adapterId: TicketingAdapterId
+  adapterId: TicketingAdapterId,
 ): TicketingAdapterDriver {
   if (mode === 'zammad') {
     return new ZammadConnectorAdapter(adapterId);

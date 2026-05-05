@@ -92,7 +92,9 @@ export class EvidencePdfService {
           `Title: ${bundle.sessionSummary.title}`,
           `Status: ${bundle.sessionSummary.status}`,
           `Priority: ${bundle.sessionSummary.priority}`,
-          ...(bundle.sessionSummary.description ? [`Description: ${bundle.sessionSummary.description}`] : []),
+          ...(bundle.sessionSummary.description
+            ? [`Description: ${bundle.sessionSummary.description}`]
+            : []),
           `Started: ${bundle.sessionSummary.startedAt}`,
         ],
       },
@@ -104,10 +106,7 @@ export class EvidencePdfService {
             table: {
               headerRows: 1,
               widths: ['auto', 'auto', 'auto', 'auto'],
-              body: [
-                ['Timestamp', 'Event Type', 'Actor', 'Resource'],
-                ...timelineRows,
-              ],
+              body: [['Timestamp', 'Event Type', 'Actor', 'Resource'], ...timelineRows],
             },
             layout: 'lightHorizontalLines',
           }
@@ -120,10 +119,7 @@ export class EvidencePdfService {
             table: {
               headerRows: 1,
               widths: ['auto', 'auto', 'auto', 'auto'],
-              body: [
-                ['Provider', 'Model', 'Mode', 'Generated At'],
-                ...aiUsageRows,
-              ],
+              body: [['Provider', 'Model', 'Mode', 'Generated At'], ...aiUsageRows],
             },
             layout: 'lightHorizontalLines',
           }

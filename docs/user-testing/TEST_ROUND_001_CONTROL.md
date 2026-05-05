@@ -13,16 +13,17 @@ the first live tester round.
 ## Tester Slots
 
 | Slot | Tester ID | Assigned Persona | Invited | Scheduled | Completed | No-Show | Feedback Received | Bug Context Captured | Triage Status | Backlog Items |
-|------|-----------|-----------------|---------|-----------|-----------|---------|-------------------|----------------------|---------------|---------------|
-| 1 | TBD | (to assign) | No | No | No | No | No | No | Pending | — |
-| 2 | TBD | (to assign) | No | No | No | No | No | No | Pending | — |
-| 3 | TBD | (to assign) | No | No | No | No | No | No | Pending | — |
-| 4 | TBD | (to assign) | No | No | No | No | No | No | Pending | — |
-| 5 | TBD | (to assign) | No | No | No | No | No | No | Pending | — |
+| ---- | --------- | ---------------- | ------- | --------- | --------- | ------- | ----------------- | -------------------- | ------------- | ------------- |
+| 1    | TBD       | (to assign)      | No      | No        | No        | No      | No                | No                   | Pending       | —             |
+| 2    | TBD       | (to assign)      | No      | No        | No        | No      | No                | No                   | Pending       | —             |
+| 3    | TBD       | (to assign)      | No      | No        | No        | No      | No                | No                   | Pending       | —             |
+| 4    | TBD       | (to assign)      | No      | No        | No        | No      | No                | No                   | Pending       | —             |
+| 5    | TBD       | (to assign)      | No      | No        | No        | No      | No                | No                   | Pending       | —             |
 
 ## Persona Assignment Guidelines
 
 Assign each tester one of the 5 personas from `TESTER_PERSONAS.md`:
+
 1. **MSP Owner** — Business value, workflow fit, trust assessment
 2. **Helpdesk Operator** — Usability, speed, daily-task fit
 3. **Security Reviewer** — RBAC, audit, policy, safety
@@ -74,6 +75,7 @@ Rotate personas across slots to ensure full coverage.
 ## Stop-Testing Rules
 
 Stop the round immediately if:
+
 - Any tester encounters a P0 blocker that makes the demo unusable
 - API or Web becomes unreachable during a session
 - Any connector returns critical error (not just fixture/unconfigured)

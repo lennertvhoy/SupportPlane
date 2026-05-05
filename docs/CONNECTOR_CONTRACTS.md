@@ -8,7 +8,7 @@ against a real service or controlled fixture.
 
 ```ts
 interface TicketingAdapter {
-  provider: "zammad" | "glpi" | "jira" | "freshservice" | "mock";
+  provider: 'zammad' | 'glpi' | 'jira' | 'freshservice' | 'mock';
 
   findCustomerByPhone(phone: string): Promise<CustomerMatch[]>;
   findCustomerByEmail(email: string): Promise<CustomerMatch[]>;

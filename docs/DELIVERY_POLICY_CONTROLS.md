@@ -16,24 +16,24 @@ impossible.
 
 The `DeliveryPolicy` Prisma model stores tenant-scoped policy state:
 
-| Field | Default | Description |
-|-------|---------|-------------|
-| `enabled` | `true` | Master enable for this policy |
-| `killSwitch` | `false` | Emergency stop; blocks all delivery immediately |
-| `dryRunRequired` | `true` | Dry-run mode is required (structural placeholder) |
-| `mockOnlyEnforced` | `true` | All delivery is mock-only; cannot be disabled |
-| `allowRealNetworkCalls` | `false` | Real network calls are blocked; toggle requests return 400 |
-| `allowedActionTypes` | `["ticket_note"]` | Action-type allowlist |
-| `approvalRequired` | `true` | Actions must be approved before queueing |
-| `minimumApproverRole` | `"admin"` | Minimum role required for approval |
-| `requireHumanReview` | `true` | Human review gate before delivery |
-| `requireEvidenceBundleBeforeDelivery` | `false` | Evidence bundle gate |
-| `requireConnectorValidationBeforeDelivery` | `false` | Connector validation gate |
-| `retryPolicy` | `{ maxAttempts: 3, ... }` | Retry configuration |
-| `deadLetterPolicy` | `{ enabled: true, ... }` | Dead-letter configuration |
-| `policyVersion` | `1` | Incremented on every safe update |
-| `updatedBy` | `null` | Actor who last updated the policy |
-| `safetyFlags` | `{ realNetworkAllowed: false, ... }` | Immutable safety metadata |
+| Field                                      | Default                              | Description                                                |
+| ------------------------------------------ | ------------------------------------ | ---------------------------------------------------------- |
+| `enabled`                                  | `true`                               | Master enable for this policy                              |
+| `killSwitch`                               | `false`                              | Emergency stop; blocks all delivery immediately            |
+| `dryRunRequired`                           | `true`                               | Dry-run mode is required (structural placeholder)          |
+| `mockOnlyEnforced`                         | `true`                               | All delivery is mock-only; cannot be disabled              |
+| `allowRealNetworkCalls`                    | `false`                              | Real network calls are blocked; toggle requests return 400 |
+| `allowedActionTypes`                       | `["ticket_note"]`                    | Action-type allowlist                                      |
+| `approvalRequired`                         | `true`                               | Actions must be approved before queueing                   |
+| `minimumApproverRole`                      | `"admin"`                            | Minimum role required for approval                         |
+| `requireHumanReview`                       | `true`                               | Human review gate before delivery                          |
+| `requireEvidenceBundleBeforeDelivery`      | `false`                              | Evidence bundle gate                                       |
+| `requireConnectorValidationBeforeDelivery` | `false`                              | Connector validation gate                                  |
+| `retryPolicy`                              | `{ maxAttempts: 3, ... }`            | Retry configuration                                        |
+| `deadLetterPolicy`                         | `{ enabled: true, ... }`             | Dead-letter configuration                                  |
+| `policyVersion`                            | `1`                                  | Incremented on every safe update                           |
+| `updatedBy`                                | `null`                               | Actor who last updated the policy                          |
+| `safetyFlags`                              | `{ realNetworkAllowed: false, ... }` | Immutable safety metadata                                  |
 
 ## Policy Evaluation Gates (in order)
 
@@ -70,6 +70,7 @@ always `true`).
 ## Kill Switch Behavior
 
 When `killSwitch` is `true`:
+
 - All queue attempts return 403 with `blocked_by_kill_switch`
 - All process-once attempts result in `policy_blocked` dead-letter
 - Audit events include `delivery_policy_blocked` with full decision metadata
@@ -94,6 +95,7 @@ returns a hardcoded dev-mode fallback decision:
 - `safetyFlags.localDevOnly: true`
 
 **Constraints:**
+
 - This fallback is active only when the store returns no policy record.
 - In local auth + PostgreSQL mode, seeded policies ensure a DB policy always
   exists for seeded tenants (`dev-tenant`, `alt-tenant`).
@@ -155,7 +157,7 @@ scripts/verify_delivery_policy_controls.sh
 
 ## Environment Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
+| Variable             | Default  | Description                                         |
+| -------------------- | -------- | --------------------------------------------------- |
 | `SUPPORTPLANE_STORE` | `memory` | Use `postgres` for Prisma-backed policy persistence |
-| `DATABASE_URL` | — | Required when `SUPPORTPLANE_STORE=postgres` |
+| `DATABASE_URL`       | —        | Required when `SUPPORTPLANE_STORE=postgres`         |

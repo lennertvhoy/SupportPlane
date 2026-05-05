@@ -51,13 +51,21 @@ import {
   ApiClientError,
 } from '@/lib/api';
 
-function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logout: () => Promise<void> }) {
+function CallConsoleContent({
+  identity,
+  logout,
+}: {
+  identity: AuthIdentity;
+  logout: () => Promise<void>;
+}) {
   const router = useRouter();
   const [calls, setCalls] = useState<CallEvent[]>([]);
   const [selectedCall, setSelectedCall] = useState<CallEvent | undefined>(undefined);
   const [timeline, setTimeline] = useState<CallTimelineItem[]>([]);
   const [linkedSession, setLinkedSession] = useState<SupportSession | undefined>(undefined);
-  const [greetingSuggestion, setGreetingSuggestion] = useState<GreetingSuggestionResponse | undefined>(undefined);
+  const [greetingSuggestion, setGreetingSuggestion] = useState<
+    GreetingSuggestionResponse | undefined
+  >(undefined);
   const [callsLoading, setCallsLoading] = useState(false);
   const [callsError, setCallsError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -65,9 +73,15 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
   const [greetingError, setGreetingError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [tone, setTone] = useState<'professional' | 'friendly' | 'concise'>('professional');
-  const [telephonyStatus, setTelephonyStatus] = useState<TelephonyAdapterStatus | undefined>(undefined);
-  const [lastBridgeTest, setLastBridgeTest] = useState<TelephonyAdapterStatus | undefined>(undefined);
-  const [lastControlResult, setLastControlResult] = useState<TelephonyCallControlResult | undefined>(undefined);
+  const [telephonyStatus, setTelephonyStatus] = useState<TelephonyAdapterStatus | undefined>(
+    undefined,
+  );
+  const [lastBridgeTest, setLastBridgeTest] = useState<TelephonyAdapterStatus | undefined>(
+    undefined,
+  );
+  const [lastControlResult, setLastControlResult] = useState<
+    TelephonyCallControlResult | undefined
+  >(undefined);
   const [telephonyLoading, setTelephonyLoading] = useState(false);
   const [recordings, setRecordings] = useState<CallRecording[]>([]);
   const [recordingsLoading, setRecordingsLoading] = useState(false);
@@ -180,7 +194,8 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
   }, [fetchCalls]);
 
   useEffect(() => {
-    api.getTelephonyStatus()
+    api
+      .getTelephonyStatus()
       .then(setTelephonyStatus)
       .catch(() => setTelephonyStatus(undefined));
   }, []);
@@ -190,7 +205,7 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
       setSelectedCall(call);
       await fetchCallDetails(call);
     },
-    [fetchCallDetails]
+    [fetchCallDetails],
   );
 
   const handleStatusTransition = useCallback(
@@ -215,9 +230,7 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
         setLastControlResult(result);
         const updatedCall = result.callEvent ?? selectedCall;
         setSelectedCall(updatedCall);
-        setCalls((prev) =>
-          prev.map((c) => (c.id === updatedCall.id ? updatedCall : c))
-        );
+        setCalls((prev) => prev.map((c) => (c.id === updatedCall.id ? updatedCall : c)));
         await fetchCallDetails(updatedCall);
       } catch (err) {
         setCallsError(err instanceof ApiClientError ? err.message : 'Status transition failed');
@@ -225,7 +238,7 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
         setActionLoading(null);
       }
     },
-    [selectedCall, fetchCallDetails]
+    [selectedCall, fetchCallDetails],
   );
 
   const handleGenerateGreeting = useCallback(async () => {
@@ -309,35 +322,41 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
         await fetchCallDetails(selectedCall);
       }
     } catch (err) {
-      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to attach mock recording');
+      setCallsError(
+        err instanceof ApiClientError ? err.message : 'Failed to attach mock recording',
+      );
     } finally {
       setRecordingsLoading(false);
     }
   }, [selectedCall, fetchCallDetails]);
 
-  const handleReviewRecording = useCallback(async (recordingId: string) => {
-    if (!selectedCall) return;
-    setRecordingsLoading(true);
-    try {
-      const response = await api.reviewCallRecording(selectedCall.id, recordingId);
-      setRecordings((prev) =>
-        prev.map((r) => (r.id === recordingId ? response.recording : r))
-      );
-    } catch (err) {
-      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to review recording');
-    } finally {
-      setRecordingsLoading(false);
-    }
-  }, [selectedCall]);
+  const handleReviewRecording = useCallback(
+    async (recordingId: string) => {
+      if (!selectedCall) return;
+      setRecordingsLoading(true);
+      try {
+        const response = await api.reviewCallRecording(selectedCall.id, recordingId);
+        setRecordings((prev) => prev.map((r) => (r.id === recordingId ? response.recording : r)));
+      } catch (err) {
+        setCallsError(err instanceof ApiClientError ? err.message : 'Failed to review recording');
+      } finally {
+        setRecordingsLoading(false);
+      }
+    },
+    [selectedCall],
+  );
 
-  const handlePlaybackPlaceholder = useCallback(async (recordingId: string) => {
-    if (!selectedCall) return;
-    try {
-      await api.recordPlaybackOpened(selectedCall.id, recordingId);
-    } catch {
-      // Silently fail; playback is placeholder only
-    }
-  }, [selectedCall]);
+  const handlePlaybackPlaceholder = useCallback(
+    async (recordingId: string) => {
+      if (!selectedCall) return;
+      try {
+        await api.recordPlaybackOpened(selectedCall.id, recordingId);
+      } catch {
+        // Silently fail; playback is placeholder only
+      }
+    },
+    [selectedCall],
+  );
 
   const handleCaptureObservation = useCallback(async () => {
     if (!linkedSession) return;
@@ -361,52 +380,79 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
     } finally {
       setObservationsLoading(false);
     }
-  }, [linkedSession, selectedCall, observationKind, observationNote, observationApp, observationWindow, observationUrl]);
+  }, [
+    linkedSession,
+    selectedCall,
+    observationKind,
+    observationNote,
+    observationApp,
+    observationWindow,
+    observationUrl,
+  ]);
 
-  const handleReviewObservation = useCallback(async (observationId: string, status: 'approved' | 'discarded') => {
-    if (!linkedSession) return;
-    setObservationsLoading(true);
-    try {
-      const response = await api.reviewScreenObservation(linkedSession.id, observationId, { status });
-      setObservations((prev) =>
-        prev.map((o) => (o.id === observationId ? response.observation : o))
-      );
-    } catch (err) {
-      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to review observation');
-    } finally {
-      setObservationsLoading(false);
-    }
-  }, [linkedSession]);
+  const handleReviewObservation = useCallback(
+    async (observationId: string, status: 'approved' | 'discarded') => {
+      if (!linkedSession) return;
+      setObservationsLoading(true);
+      try {
+        const response = await api.reviewScreenObservation(linkedSession.id, observationId, {
+          status,
+        });
+        setObservations((prev) =>
+          prev.map((o) => (o.id === observationId ? response.observation : o)),
+        );
+      } catch (err) {
+        setCallsError(err instanceof ApiClientError ? err.message : 'Failed to review observation');
+      } finally {
+        setObservationsLoading(false);
+      }
+    },
+    [linkedSession],
+  );
 
-  const handleCreateContextPacketFromObservation = useCallback(async (observationId: string) => {
-    if (!linkedSession) return;
-    setObservationsLoading(true);
-    try {
-      const response = await api.createContextPacketFromObservation(linkedSession.id, observationId, {
-        provenance: 'screen_observation',
-      });
-      setObservations((prev) =>
-        prev.map((o) => (o.id === observationId ? response.observation : o))
-      );
-    } catch (err) {
-      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to create context packet');
-    } finally {
-      setObservationsLoading(false);
-    }
-  }, [linkedSession]);
+  const handleCreateContextPacketFromObservation = useCallback(
+    async (observationId: string) => {
+      if (!linkedSession) return;
+      setObservationsLoading(true);
+      try {
+        const response = await api.createContextPacketFromObservation(
+          linkedSession.id,
+          observationId,
+          {
+            provenance: 'screen_observation',
+          },
+        );
+        setObservations((prev) =>
+          prev.map((o) => (o.id === observationId ? response.observation : o)),
+        );
+      } catch (err) {
+        setCallsError(
+          err instanceof ApiClientError ? err.message : 'Failed to create context packet',
+        );
+      } finally {
+        setObservationsLoading(false);
+      }
+    },
+    [linkedSession],
+  );
 
-  const handleUpdateSharingState = useCallback(async (newState: 'inactive' | 'active' | 'paused') => {
-    if (!linkedSession) return;
-    setSharingLoading(true);
-    try {
-      const response = await api.updateSharingState(linkedSession.id, { state: newState });
-      setSharingState(response.state as 'inactive' | 'active' | 'paused');
-    } catch (err) {
-      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to update sharing state');
-    } finally {
-      setSharingLoading(false);
-    }
-  }, [linkedSession]);
+  const handleUpdateSharingState = useCallback(
+    async (newState: 'inactive' | 'active' | 'paused') => {
+      if (!linkedSession) return;
+      setSharingLoading(true);
+      try {
+        const response = await api.updateSharingState(linkedSession.id, { state: newState });
+        setSharingState(response.state as 'inactive' | 'active' | 'paused');
+      } catch (err) {
+        setCallsError(
+          err instanceof ApiClientError ? err.message : 'Failed to update sharing state',
+        );
+      } finally {
+        setSharingLoading(false);
+      }
+    },
+    [linkedSession],
+  );
 
   const handleCaptureActiveWindow = useCallback(async () => {
     if (!linkedSession) return;
@@ -425,11 +471,20 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
       setActiveWindowUrl('');
       setActiveWindowNote('');
     } catch (err) {
-      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to capture active window metadata');
+      setCallsError(
+        err instanceof ApiClientError ? err.message : 'Failed to capture active window metadata',
+      );
     } finally {
       setObservationsLoading(false);
     }
-  }, [linkedSession, selectedCall, activeWindowApp, activeWindowLabel, activeWindowUrl, activeWindowNote]);
+  }, [
+    linkedSession,
+    selectedCall,
+    activeWindowApp,
+    activeWindowLabel,
+    activeWindowUrl,
+    activeWindowNote,
+  ]);
 
   const handleAttachScreenshotMetadata = useCallback(async () => {
     if (!linkedSession) return;
@@ -448,11 +503,20 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
       setScreenshotWindow('');
       setScreenshotNote('');
     } catch (err) {
-      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to attach screenshot metadata');
+      setCallsError(
+        err instanceof ApiClientError ? err.message : 'Failed to attach screenshot metadata',
+      );
     } finally {
       setObservationsLoading(false);
     }
-  }, [linkedSession, selectedCall, screenshotFileName, screenshotApp, screenshotWindow, screenshotNote]);
+  }, [
+    linkedSession,
+    selectedCall,
+    screenshotFileName,
+    screenshotApp,
+    screenshotWindow,
+    screenshotNote,
+  ]);
 
   const handleStructuredUpload = useCallback(async () => {
     if (!linkedSession) return;
@@ -469,11 +533,21 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
       setObservations((prev) => [response.observation, ...prev]);
       setStructuredNote('');
     } catch (err) {
-      setCallsError(err instanceof ApiClientError ? err.message : 'Failed to upload structured observation');
+      setCallsError(
+        err instanceof ApiClientError ? err.message : 'Failed to upload structured observation',
+      );
     } finally {
       setObservationsLoading(false);
     }
-  }, [linkedSession, selectedCall, structuredKind, structuredApp, structuredWindow, structuredUrl, structuredNote]);
+  }, [
+    linkedSession,
+    selectedCall,
+    structuredKind,
+    structuredApp,
+    structuredWindow,
+    structuredUrl,
+    structuredNote,
+  ]);
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -622,7 +696,8 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
 
             {calls.length === 0 && !callsLoading && (
               <div className="rounded border border-cockpit-700 bg-cockpit-900/30 px-3 py-4 text-center text-xs text-cockpit-500">
-                No calls yet. Use the Call Simulator in the Support Cockpit to create a fake incoming call, or trigger an Asterisk AMI test event.
+                No calls yet. Use the Call Simulator in the Support Cockpit to create a fake
+                incoming call, or trigger an Asterisk AMI test event.
               </div>
             )}
           </div>
@@ -634,7 +709,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
             <div className="flex flex-1 items-center justify-center">
               <div className="text-center">
                 <Phone size={32} className="mx-auto text-cockpit-600" />
-                <p className="mt-2 text-sm text-cockpit-400">Select a call from the list to view details</p>
+                <p className="mt-2 text-sm text-cockpit-400">
+                  Select a call from the list to view details
+                </p>
               </div>
             </div>
           ) : (
@@ -646,14 +723,27 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                     <Phone size={16} className={statusColor(selectedCall.status)} />
                     <div>
                       <div className="text-sm font-semibold text-cockpit-100">
-                        {selectedCall.source === 'asterisk-ami' ? 'Asterisk AMI local event' : 'Fake incoming call'} — {selectedCall.externalCallId}
+                        {selectedCall.source === 'asterisk-ami'
+                          ? 'Asterisk AMI local event'
+                          : 'Fake incoming call'}{' '}
+                        — {selectedCall.externalCallId}
                       </div>
                       <div className="text-xs text-cockpit-400">
                         {selectedCall.caller.normalizedNumber ?? selectedCall.caller.rawNumber}
                       </div>
                     </div>
                   </div>
-                  <Badge variant={selectedCall.status === 'answered' ? 'success' : selectedCall.status === 'on_hold' ? 'info' : selectedCall.status === 'missed' ? 'danger' : 'warning'}>
+                  <Badge
+                    variant={
+                      selectedCall.status === 'answered'
+                        ? 'success'
+                        : selectedCall.status === 'on_hold'
+                          ? 'info'
+                          : selectedCall.status === 'missed'
+                            ? 'danger'
+                            : 'warning'
+                    }
+                  >
                     {selectedCall.status}
                   </Badge>
                 </div>
@@ -686,22 +776,39 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                       </div>
                       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                         <dt className="text-cockpit-500">Provider type</dt>
-                        <dd className="text-cockpit-100">{telephonyStatus?.providerType ?? 'mock'}</dd>
+                        <dd className="text-cockpit-100">
+                          {telephonyStatus?.providerType ?? 'mock'}
+                        </dd>
                         <dt className="text-cockpit-500">Adapter mode</dt>
                         <dd className="text-cockpit-100">{telephonyStatus?.mode ?? 'mock'}</dd>
                         <dt className="text-cockpit-500">Verification</dt>
-                        <dd className="text-cockpit-100">{telephonyStatus?.webhookVerification.status ?? 'not_required'}</dd>
+                        <dd className="text-cockpit-100">
+                          {telephonyStatus?.webhookVerification.status ?? 'not_required'}
+                        </dd>
                         <dt className="text-cockpit-500">Source</dt>
-                        <dd className="text-cockpit-100">{selectedCall.source === 'asterisk-ami' ? 'asterisk-ami' : (telephonyStatus?.providerType ?? 'mock')}</dd>
+                        <dd className="text-cockpit-100">
+                          {selectedCall.source === 'asterisk-ami'
+                            ? 'asterisk-ami'
+                            : (telephonyStatus?.providerType ?? 'mock')}
+                        </dd>
                         <dt className="text-cockpit-500">Mock/dev-only</dt>
-                        <dd className="text-cockpit-100">{selectedCall.source === 'asterisk-ami' ? 'No (local sandbox AMI)' : (telephonyStatus?.mockDevOnly === false ? 'No' : 'Yes')}</dd>
+                        <dd className="text-cockpit-100">
+                          {selectedCall.source === 'asterisk-ami'
+                            ? 'No (local sandbox AMI)'
+                            : telephonyStatus?.mockDevOnly === false
+                              ? 'No'
+                              : 'Yes'}
+                        </dd>
                       </dl>
                       <div className="flex flex-wrap gap-1">
                         {telephonyStatus &&
                           Object.entries(telephonyStatus.capabilities)
                             .filter(([, enabled]) => enabled)
                             .map(([name]) => (
-                              <span key={name} className="rounded border border-cockpit-700 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300">
+                              <span
+                                key={name}
+                                className="rounded border border-cockpit-700 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300"
+                              >
                                 {name}
                               </span>
                             ))}
@@ -728,16 +835,20 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                       </div>
                       {lastBridgeTest && (
                         <div className="rounded border border-emerald-700/30 bg-emerald-900/20 p-2 text-xs text-emerald-200">
-                          Last test result: {lastBridgeTest.health} / {lastBridgeTest.mode} / {lastBridgeTest.webhookVerification.status}
+                          Last test result: {lastBridgeTest.health} / {lastBridgeTest.mode} /{' '}
+                          {lastBridgeTest.webhookVerification.status}
                         </div>
                       )}
                       {lastControlResult && (
                         <div className="rounded border border-blue-700/30 bg-blue-900/20 p-2 text-xs text-blue-100">
-                          Call control intent/result: {lastControlResult.intent.action} → {lastControlResult.resultingStatus ?? 'none'} ({lastControlResult.success ? 'succeeded' : 'failed'}) · mock-only
+                          Call control intent/result: {lastControlResult.intent.action} →{' '}
+                          {lastControlResult.resultingStatus ?? 'none'} (
+                          {lastControlResult.success ? 'succeeded' : 'failed'}) · mock-only
                         </div>
                       )}
                       <div className="text-[10px] text-cockpit-500">
-                        No tokens, signatures, Authorization headers, env values, provider credentials, voice, recording, STT, or TTS are shown or connected.
+                        No tokens, signatures, Authorization headers, env values, provider
+                        credentials, voice, recording, STT, or TTS are shown or connected.
                       </div>
                     </div>
                   </div>
@@ -767,41 +878,60 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                       {selectedCall.caller.normalizedNumber && (
                         <div className="flex justify-between">
                           <span className="text-cockpit-500">Normalized</span>
-                          <span className="font-medium text-cockpit-200">{selectedCall.caller.normalizedNumber}</span>
+                          <span className="font-medium text-cockpit-200">
+                            {selectedCall.caller.normalizedNumber}
+                          </span>
                         </div>
                       )}
                       {selectedCall.caller.displayName && (
                         <div className="flex justify-between">
                           <span className="text-cockpit-500">Display name</span>
-                          <span className="text-cockpit-200">{selectedCall.caller.displayName}</span>
+                          <span className="text-cockpit-200">
+                            {selectedCall.caller.displayName}
+                          </span>
                         </div>
                       )}
                     </div>
 
                     {selectedCall.callerMatch && (
                       <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                        <div className="mb-1 text-[10px] font-medium text-cockpit-300">Match result</div>
+                        <div className="mb-1 text-[10px] font-medium text-cockpit-300">
+                          Match result
+                        </div>
                         <div className="space-y-1 text-xs">
                           <div className="flex justify-between">
                             <span className="text-cockpit-500">Status</span>
-                            <Badge variant={selectedCall.callerMatch.status === 'matched' ? 'success' : 'default'} className="text-[10px]">
+                            <Badge
+                              variant={
+                                selectedCall.callerMatch.status === 'matched'
+                                  ? 'success'
+                                  : 'default'
+                              }
+                              className="text-[10px]"
+                            >
                               {selectedCall.callerMatch.status}
                             </Badge>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-cockpit-500">Confidence</span>
-                            <span className="text-cockpit-200">{selectedCall.callerMatch.confidence}</span>
+                            <span className="text-cockpit-200">
+                              {selectedCall.callerMatch.confidence}
+                            </span>
                           </div>
                           {selectedCall.callerMatch.customerName && (
                             <div className="flex justify-between">
                               <span className="text-cockpit-500">Customer</span>
-                              <span className="text-cockpit-200">{selectedCall.callerMatch.customerName}</span>
+                              <span className="text-cockpit-200">
+                                {selectedCall.callerMatch.customerName}
+                              </span>
                             </div>
                           )}
                           {selectedCall.callerMatch.matchedTicketIds.length > 0 && (
                             <div className="flex justify-between">
                               <span className="text-cockpit-500">Recent tickets</span>
-                              <span className="text-cockpit-200">{selectedCall.callerMatch.matchedTicketIds.join(', ')}</span>
+                              <span className="text-cockpit-200">
+                                {selectedCall.callerMatch.matchedTicketIds.join(', ')}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -822,7 +952,8 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                         Mock controls only
                       </div>
                       <div className="mt-0.5 text-[10px] text-amber-400/80">
-                        These buttons update local state only. No real telephony, PBX, or call control is connected.
+                        These buttons update local state only. No real telephony, PBX, or call
+                        control is connected.
                       </div>
                     </div>
 
@@ -836,10 +967,10 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                             action.variant === 'success'
                               ? 'border-emerald-700/40 bg-emerald-900/30 text-emerald-300 hover:bg-emerald-900/50'
                               : action.variant === 'danger'
-                              ? 'border-red-700/40 bg-red-900/30 text-red-300 hover:bg-red-900/50'
-                              : action.variant === 'info'
-                              ? 'border-blue-700/40 bg-blue-900/30 text-blue-300 hover:bg-blue-900/50'
-                              : 'border-cockpit-600 bg-cockpit-800 text-cockpit-200 hover:bg-cockpit-700'
+                                ? 'border-red-700/40 bg-red-900/30 text-red-300 hover:bg-red-900/50'
+                                : action.variant === 'info'
+                                  ? 'border-blue-700/40 bg-blue-900/30 text-blue-300 hover:bg-blue-900/50'
+                                  : 'border-cockpit-600 bg-cockpit-800 text-cockpit-200 hover:bg-cockpit-700'
                           }`}
                         >
                           {actionLoading === action.key ? (
@@ -859,7 +990,8 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                     </div>
 
                     <div className="text-[10px] text-cockpit-500">
-                      Allowed transitions: ringing → answered/missed • answered → on_hold/ended • on_hold → answered/ended
+                      Allowed transitions: ringing → answered/missed • answered → on_hold/ended •
+                      on_hold → answered/ended
                     </div>
                   </div>
                 </Panel>
@@ -867,12 +999,19 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                 {/* Linked session */}
                 <Panel
                   title="Linked Support Session"
-                  headerRight={linkedSession ? <Badge variant="success">Linked</Badge> : <Badge variant="muted">None</Badge>}
+                  headerRight={
+                    linkedSession ? (
+                      <Badge variant="success">Linked</Badge>
+                    ) : (
+                      <Badge variant="muted">None</Badge>
+                    )
+                  }
                 >
                   <div className="space-y-2">
                     {!linkedSession ? (
                       <div className="text-xs text-cockpit-500">
-                        No support session is linked to this call. Use the Call Simulator in the Support Cockpit to auto-create or link a session.
+                        No support session is linked to this call. Use the Call Simulator in the
+                        Support Cockpit to auto-create or link a session.
                       </div>
                     ) : (
                       <>
@@ -889,7 +1028,10 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                           </div>
                           <div className="flex justify-between">
                             <span className="text-cockpit-500">Status</span>
-                            <Badge variant={linkedSession.status === 'open' ? 'success' : 'default'} className="text-[10px]">
+                            <Badge
+                              variant={linkedSession.status === 'open' ? 'success' : 'default'}
+                              className="text-[10px]"
+                            >
                               {linkedSession.status}
                             </Badge>
                           </div>
@@ -899,7 +1041,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                           </div>
                           <div className="flex justify-between">
                             <span className="text-cockpit-500">Tickets</span>
-                            <span className="text-cockpit-200">{linkedSession.linkedTicketIds.length}</span>
+                            <span className="text-cockpit-200">
+                              {linkedSession.linkedTicketIds.length}
+                            </span>
                           </div>
                         </div>
                         <button
@@ -937,10 +1081,14 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                     ) : (
                       <>
                         <div className="space-y-1">
-                          <label className="block text-[10px] font-medium text-cockpit-400">Tone</label>
+                          <label className="block text-[10px] font-medium text-cockpit-400">
+                            Tone
+                          </label>
                           <select
                             value={tone}
-                            onChange={(e) => setTone(e.target.value as 'professional' | 'friendly' | 'concise')}
+                            onChange={(e) =>
+                              setTone(e.target.value as 'professional' | 'friendly' | 'concise')
+                            }
                             className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 focus:border-accent focus:outline-none"
                           >
                             <option value="professional">Professional</option>
@@ -967,9 +1115,13 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                           <div className="space-y-2">
                             <div className="rounded border border-cockpit-700 bg-cockpit-900/50 p-3">
                               <div className="mb-2 flex items-center justify-between">
-                                <span className="text-xs font-semibold text-cockpit-200">Greeting text</span>
+                                <span className="text-xs font-semibold text-cockpit-200">
+                                  Greeting text
+                                </span>
                                 <button
-                                  onClick={() => handleCopy(greetingSuggestion.suggestion.greetingText)}
+                                  onClick={() =>
+                                    handleCopy(greetingSuggestion.suggestion.greetingText)
+                                  }
                                   className="inline-flex items-center gap-1 rounded bg-cockpit-700 px-2 py-0.5 text-[10px] text-cockpit-200 hover:bg-cockpit-600"
                                 >
                                   {copied ? <CheckCircle size={10} /> : <Copy size={10} />}
@@ -982,22 +1134,36 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                             </div>
 
                             <div className="rounded border border-amber-700/40 bg-amber-950/30 p-2 text-xs">
-                              <div className="mb-1 text-[10px] font-semibold text-amber-200">Model metadata</div>
+                              <div className="mb-1 text-[10px] font-semibold text-amber-200">
+                                Model metadata
+                              </div>
                               <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-cockpit-400">
                                 <dt>Provider</dt>
                                 <dd className="text-cockpit-100">{greetingSuggestion.provider}</dd>
                                 <dt>Model</dt>
-                                <dd className="break-all text-cockpit-100">{greetingSuggestion.model}</dd>
+                                <dd className="break-all text-cockpit-100">
+                                  {greetingSuggestion.model}
+                                </dd>
                                 <dt>Prompt</dt>
-                                <dd className="text-cockpit-100">{greetingSuggestion.prompt.version}</dd>
+                                <dd className="text-cockpit-100">
+                                  {greetingSuggestion.prompt.version}
+                                </dd>
                                 <dt>Context hash</dt>
-                                <dd className="break-all font-mono text-[10px] text-cockpit-100">{greetingSuggestion.contextHash}</dd>
+                                <dd className="break-all font-mono text-[10px] text-cockpit-100">
+                                  {greetingSuggestion.contextHash}
+                                </dd>
                                 <dt>Tone</dt>
-                                <dd className="text-cockpit-100">{greetingSuggestion.suggestion.tone}</dd>
+                                <dd className="text-cockpit-100">
+                                  {greetingSuggestion.suggestion.tone}
+                                </dd>
                                 <dt>Auto-send</dt>
-                                <dd className="text-cockpit-100">{greetingSuggestion.safety.autoSend ? 'Yes' : 'No'}</dd>
+                                <dd className="text-cockpit-100">
+                                  {greetingSuggestion.safety.autoSend ? 'Yes' : 'No'}
+                                </dd>
                                 <dt>Voice</dt>
-                                <dd className="text-cockpit-100">{greetingSuggestion.safety.voiceEnabled ? 'Yes' : 'No'}</dd>
+                                <dd className="text-cockpit-100">
+                                  {greetingSuggestion.safety.voiceEnabled ? 'Yes' : 'No'}
+                                </dd>
                               </dl>
                             </div>
                           </div>
@@ -1020,7 +1186,8 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                         Mock screen observation — no real screen capture
                       </div>
                       <div className="mt-0.5 text-[10px] text-amber-400/80">
-                        No raw pixels, clipboard access, or OCR. Review before AI context. Pattern redaction only.
+                        No raw pixels, clipboard access, or OCR. Review before AI context. Pattern
+                        redaction only.
                       </div>
                     </div>
 
@@ -1036,17 +1203,23 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                             {sharingState === 'active' ? (
                               <>
                                 <ShieldCheck size={14} className="text-emerald-400" />
-                                <span className="text-xs font-medium text-emerald-300">Sharing: active — Visible sharing indicator</span>
+                                <span className="text-xs font-medium text-emerald-300">
+                                  Sharing: active — Visible sharing indicator
+                                </span>
                               </>
                             ) : sharingState === 'paused' ? (
                               <>
                                 <ShieldAlert size={14} className="text-amber-400" />
-                                <span className="text-xs font-medium text-amber-300">Sharing: paused</span>
+                                <span className="text-xs font-medium text-amber-300">
+                                  Sharing: paused
+                                </span>
                               </>
                             ) : (
                               <>
                                 <Shield size={14} className="text-cockpit-500" />
-                                <span className="text-xs font-medium text-cockpit-400">Sharing: inactive</span>
+                                <span className="text-xs font-medium text-cockpit-400">
+                                  Sharing: inactive
+                                </span>
                               </>
                             )}
                           </div>
@@ -1113,7 +1286,10 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                             'Pattern/placeholder redaction only',
                             'Review before AI context',
                           ].map((label) => (
-                            <span key={label} className="inline-flex items-center gap-1 rounded border border-cockpit-700 bg-cockpit-900/40 px-2 py-0.5 text-[10px] text-cockpit-400">
+                            <span
+                              key={label}
+                              className="inline-flex items-center gap-1 rounded border border-cockpit-700 bg-cockpit-900/40 px-2 py-0.5 text-[10px] text-cockpit-400"
+                            >
                               <Shield size={8} />
                               {label}
                             </span>
@@ -1122,10 +1298,14 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
 
                         {/* Active Window Metadata */}
                         <div className="rounded border border-cockpit-700 bg-cockpit-900/20 p-2">
-                          <div className="mb-2 text-xs font-semibold text-cockpit-200">Active Window Metadata</div>
+                          <div className="mb-2 text-xs font-semibold text-cockpit-200">
+                            Active Window Metadata
+                          </div>
                           <div className="grid gap-2 sm:grid-cols-2">
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                App label
+                              </label>
                               <input
                                 type="text"
                                 value={activeWindowApp}
@@ -1135,7 +1315,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Window label
+                              </label>
                               <input
                                 type="text"
                                 value={activeWindowLabel}
@@ -1145,7 +1327,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">URL label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                URL label
+                              </label>
                               <input
                                 type="text"
                                 value={activeWindowUrl}
@@ -1155,7 +1339,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1 sm:col-span-2">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Note</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Note
+                              </label>
                               <textarea
                                 value={activeWindowNote}
                                 onChange={(e) => setActiveWindowNote(e.target.value)}
@@ -1171,7 +1357,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               disabled={observationsLoading}
                               className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
                             >
-                              {observationsLoading && <Loader2 size={10} className="animate-spin" />}
+                              {observationsLoading && (
+                                <Loader2 size={10} className="animate-spin" />
+                              )}
                               <Monitor size={10} />
                               Capture active window metadata
                             </button>
@@ -1181,12 +1369,18 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                         {/* Manual Screenshot Metadata */}
                         <div className="rounded border border-cockpit-700 bg-cockpit-900/20 p-2">
                           <div className="mb-2 flex items-center justify-between">
-                            <span className="text-xs font-semibold text-cockpit-200">Manual Screenshot Metadata</span>
-                            <Badge variant="danger" className="text-[10px]">Raw image retention disabled</Badge>
+                            <span className="text-xs font-semibold text-cockpit-200">
+                              Manual Screenshot Metadata
+                            </span>
+                            <Badge variant="danger" className="text-[10px]">
+                              Raw image retention disabled
+                            </Badge>
                           </div>
                           <div className="grid gap-2 sm:grid-cols-2">
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">File name hint</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                File name hint
+                              </label>
                               <input
                                 type="text"
                                 value={screenshotFileName}
@@ -1196,7 +1390,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                App label
+                              </label>
                               <input
                                 type="text"
                                 value={screenshotApp}
@@ -1206,7 +1402,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Window label
+                              </label>
                               <input
                                 type="text"
                                 value={screenshotWindow}
@@ -1216,7 +1414,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1 sm:col-span-2">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Note</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Note
+                              </label>
                               <textarea
                                 value={screenshotNote}
                                 onChange={(e) => setScreenshotNote(e.target.value)}
@@ -1232,7 +1432,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               disabled={observationsLoading}
                               className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
                             >
-                              {observationsLoading && <Loader2 size={10} className="animate-spin" />}
+                              {observationsLoading && (
+                                <Loader2 size={10} className="animate-spin" />
+                              )}
                               <Camera size={10} />
                               Attach screenshot metadata
                             </button>
@@ -1241,10 +1443,14 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
 
                         {/* Structured Upload */}
                         <div className="rounded border border-cockpit-700 bg-cockpit-900/20 p-2">
-                          <div className="mb-2 text-xs font-semibold text-cockpit-200">Structured Upload</div>
+                          <div className="mb-2 text-xs font-semibold text-cockpit-200">
+                            Structured Upload
+                          </div>
                           <div className="grid gap-2 sm:grid-cols-2">
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Kind</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Kind
+                              </label>
                               <select
                                 value={structuredKind}
                                 onChange={(e) => setStructuredKind(e.target.value)}
@@ -1259,7 +1465,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               </select>
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                App label
+                              </label>
                               <input
                                 type="text"
                                 value={structuredApp}
@@ -1269,7 +1477,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Window label
+                              </label>
                               <input
                                 type="text"
                                 value={structuredWindow}
@@ -1279,7 +1489,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">URL label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                URL label
+                              </label>
                               <input
                                 type="text"
                                 value={structuredUrl}
@@ -1289,7 +1501,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1 sm:col-span-2">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Note</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Note
+                              </label>
                               <textarea
                                 value={structuredNote}
                                 onChange={(e) => setStructuredNote(e.target.value)}
@@ -1305,7 +1519,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               disabled={observationsLoading}
                               className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
                             >
-                              {observationsLoading && <Loader2 size={10} className="animate-spin" />}
+                              {observationsLoading && (
+                                <Loader2 size={10} className="animate-spin" />
+                              )}
                               <Upload size={10} />
                               Upload structured observation
                             </button>
@@ -1314,10 +1530,14 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
 
                         {/* Legacy mock observation capture */}
                         <div className="rounded border border-cockpit-700 bg-cockpit-900/20 p-2">
-                          <div className="mb-2 text-xs font-semibold text-cockpit-200">Legacy Mock Observation</div>
+                          <div className="mb-2 text-xs font-semibold text-cockpit-200">
+                            Legacy Mock Observation
+                          </div>
                           <div className="grid gap-2 sm:grid-cols-2">
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Kind</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Kind
+                              </label>
                               <select
                                 value={observationKind}
                                 onChange={(e) => setObservationKind(e.target.value)}
@@ -1331,7 +1551,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               </select>
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">App label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                App label
+                              </label>
                               <input
                                 type="text"
                                 value={observationApp}
@@ -1341,7 +1563,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Window label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Window label
+                              </label>
                               <input
                                 type="text"
                                 value={observationWindow}
@@ -1351,7 +1575,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="block text-[10px] font-medium text-cockpit-400">URL label</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                URL label
+                              </label>
                               <input
                                 type="text"
                                 value={observationUrl}
@@ -1361,7 +1587,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               />
                             </div>
                             <div className="space-y-1 sm:col-span-2">
-                              <label className="block text-[10px] font-medium text-cockpit-400">Note / placeholder</label>
+                              <label className="block text-[10px] font-medium text-cockpit-400">
+                                Note / placeholder
+                              </label>
                               <textarea
                                 value={observationNote}
                                 onChange={(e) => setObservationNote(e.target.value)}
@@ -1377,7 +1605,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                               disabled={observationsLoading}
                               className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-[10px] font-medium text-white hover:bg-accent/90 disabled:opacity-50"
                             >
-                              {observationsLoading && <Loader2 size={10} className="animate-spin" />}
+                              {observationsLoading && (
+                                <Loader2 size={10} className="animate-spin" />
+                              )}
                               <Monitor size={10} />
                               Capture mock observation
                             </button>
@@ -1393,13 +1623,17 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
 
                         {observations.length === 0 && !observationsLoading && (
                           <div className="text-xs text-cockpit-500">
-                            No mock screen observations. Capture one above to add deterministic mock metadata.
+                            No mock screen observations. Capture one above to add deterministic mock
+                            metadata.
                           </div>
                         )}
 
                         <div className="space-y-2">
                           {observations.map((obs) => (
-                            <div key={obs.id} className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
+                            <div
+                              key={obs.id}
+                              className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2"
+                            >
                               <div className="flex items-center justify-between">
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   <Monitor size={12} className="text-cockpit-400" />
@@ -1414,10 +1648,10 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                                       obs.status === 'approved'
                                         ? 'success'
                                         : obs.status === 'discarded'
-                                        ? 'danger'
-                                        : obs.status === 'review_required'
-                                        ? 'warning'
-                                        : 'default'
+                                          ? 'danger'
+                                          : obs.status === 'review_required'
+                                            ? 'warning'
+                                            : 'default'
                                     }
                                     className="text-[10px]"
                                   >
@@ -1456,13 +1690,18 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                                 {obs.urlLabel && (
                                   <>
                                     <span>URL</span>
-                                    <span className="break-all text-cockpit-200">{obs.urlLabel}</span>
+                                    <span className="break-all text-cockpit-200">
+                                      {obs.urlLabel}
+                                    </span>
                                   </>
                                 )}
                                 {obs.rawInputPlaceholder && (
                                   <>
                                     <span>Note</span>
-                                    <span className="text-cockpit-200">{obs.rawInputPlaceholder.substring(0, 120)}{obs.rawInputPlaceholder.length > 120 ? '...' : ''}</span>
+                                    <span className="text-cockpit-200">
+                                      {obs.rawInputPlaceholder.substring(0, 120)}
+                                      {obs.rawInputPlaceholder.length > 120 ? '...' : ''}
+                                    </span>
                                   </>
                                 )}
                                 {obs.sharingState && (
@@ -1474,7 +1713,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                                 {obs.rawImageRetention && (
                                   <>
                                     <span>Retention</span>
-                                    <span className="text-cockpit-200">{obs.rawImageRetention}</span>
+                                    <span className="text-cockpit-200">
+                                      {obs.rawImageRetention}
+                                    </span>
                                   </>
                                 )}
                               </div>
@@ -1554,7 +1795,8 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                         Mock recording — no real audio captured
                       </div>
                       <div className="mt-0.5 text-[10px] text-amber-400/80">
-                        Playback placeholder only. Not compliance-grade. No object storage connected.
+                        Playback placeholder only. Not compliance-grade. No object storage
+                        connected.
                       </div>
                     </div>
 
@@ -1579,20 +1821,27 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
 
                     {recordings.length === 0 && !recordingsLoading && (
                       <div className="text-xs text-cockpit-500">
-                        No mock recordings attached. Click "Attach mock recording" to add deterministic mock metadata.
+                        No mock recordings attached. Click "Attach mock recording" to add
+                        deterministic mock metadata.
                       </div>
                     )}
 
                     <div className="space-y-2">
                       {recordings.map((rec) => (
-                        <div key={rec.id} className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
+                        <div
+                          key={rec.id}
+                          className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2"
+                        >
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-1.5">
                               <Mic size={12} className="text-cockpit-400" />
                               <span className="text-xs font-medium text-cockpit-200">
                                 {rec.placeholderReference ?? rec.id.slice(0, 8)}
                               </span>
-                              <Badge variant={rec.status === 'available' ? 'success' : 'default'} className="text-[10px]">
+                              <Badge
+                                variant={rec.status === 'available' ? 'success' : 'default'}
+                                className="text-[10px]"
+                              >
                                 {rec.status}
                               </Badge>
                             </div>
@@ -1607,7 +1856,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                             <span>Storage</span>
                             <span className="text-cockpit-200">{rec.storageType}</span>
                             <span>Checksum</span>
-                            <span className="break-all font-mono text-cockpit-200">{rec.checksumHash}</span>
+                            <span className="break-all font-mono text-cockpit-200">
+                              {rec.checksumHash}
+                            </span>
                           </div>
 
                           <div className="mt-2 flex flex-wrap gap-2">
@@ -1653,7 +1904,8 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                   <div className="space-y-2">
                     {timeline.length === 0 ? (
                       <div className="text-xs text-cockpit-500">
-                        No timeline events yet. Simulate a call and perform actions to build the timeline.
+                        No timeline events yet. Simulate a call and perform actions to build the
+                        timeline.
                       </div>
                     ) : (
                       <div className="relative space-y-3 pl-4">
@@ -1664,28 +1916,60 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
                             <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-1.5">
-                                  {item.type === 'call_received' && <PhoneIncoming size={12} className="text-accent" />}
-                                  {item.type === 'caller_matched' && <User size={12} className="text-emerald-400" />}
-                                  {item.type === 'caller_no_match' && <User size={12} className="text-cockpit-500" />}
-                                  {item.type === 'session_linked' && <Link2 size={12} className="text-emerald-400" />}
-                                  {item.type === 'session_auto_created' && <CheckCircle size={12} className="text-emerald-400" />}
-                                  {item.type === 'call_answered' && <PhoneIncoming size={12} className="text-emerald-400" />}
-                                  {item.type === 'call_held' && <Pause size={12} className="text-blue-400" />}
-                                  {item.type === 'call_resumed' && <Play size={12} className="text-emerald-400" />}
-                                  {item.type === 'call_ended' && <PhoneOff size={12} className="text-cockpit-400" />}
-                                  {item.type === 'call_missed' && <PhoneOff size={12} className="text-red-400" />}
-                                  {item.type === 'greeting_suggested' && <Bot size={12} className="text-accent" />}
-                                  {item.type === 'telephony_bridge_event' && <RadioTower size={12} className="text-blue-400" />}
-                                  {item.type === 'evidence_bundle_generated' && <Ticket size={12} className="text-cockpit-400" />}
-                                  {item.type === 'audit_event' && <Clock size={12} className="text-cockpit-500" />}
-                                  <span className="text-xs font-medium text-cockpit-200">{item.title}</span>
+                                  {item.type === 'call_received' && (
+                                    <PhoneIncoming size={12} className="text-accent" />
+                                  )}
+                                  {item.type === 'caller_matched' && (
+                                    <User size={12} className="text-emerald-400" />
+                                  )}
+                                  {item.type === 'caller_no_match' && (
+                                    <User size={12} className="text-cockpit-500" />
+                                  )}
+                                  {item.type === 'session_linked' && (
+                                    <Link2 size={12} className="text-emerald-400" />
+                                  )}
+                                  {item.type === 'session_auto_created' && (
+                                    <CheckCircle size={12} className="text-emerald-400" />
+                                  )}
+                                  {item.type === 'call_answered' && (
+                                    <PhoneIncoming size={12} className="text-emerald-400" />
+                                  )}
+                                  {item.type === 'call_held' && (
+                                    <Pause size={12} className="text-blue-400" />
+                                  )}
+                                  {item.type === 'call_resumed' && (
+                                    <Play size={12} className="text-emerald-400" />
+                                  )}
+                                  {item.type === 'call_ended' && (
+                                    <PhoneOff size={12} className="text-cockpit-400" />
+                                  )}
+                                  {item.type === 'call_missed' && (
+                                    <PhoneOff size={12} className="text-red-400" />
+                                  )}
+                                  {item.type === 'greeting_suggested' && (
+                                    <Bot size={12} className="text-accent" />
+                                  )}
+                                  {item.type === 'telephony_bridge_event' && (
+                                    <RadioTower size={12} className="text-blue-400" />
+                                  )}
+                                  {item.type === 'evidence_bundle_generated' && (
+                                    <Ticket size={12} className="text-cockpit-400" />
+                                  )}
+                                  {item.type === 'audit_event' && (
+                                    <Clock size={12} className="text-cockpit-500" />
+                                  )}
+                                  <span className="text-xs font-medium text-cockpit-200">
+                                    {item.title}
+                                  </span>
                                 </div>
                                 <span className="text-[10px] text-cockpit-500">
                                   {new Date(item.timestamp).toLocaleTimeString()}
                                 </span>
                               </div>
                               {item.description && (
-                                <div className="mt-0.5 text-[10px] text-cockpit-400">{item.description}</div>
+                                <div className="mt-0.5 text-[10px] text-cockpit-400">
+                                  {item.description}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -1704,5 +1988,9 @@ function CallConsoleContent({ identity, logout }: { identity: AuthIdentity; logo
 }
 
 export default function CallConsolePage() {
-  return <AuthGate>{(identity, logout) => <CallConsoleContent identity={identity} logout={logout} />}</AuthGate>;
+  return (
+    <AuthGate>
+      {(identity, logout) => <CallConsoleContent identity={identity} logout={logout} />}
+    </AuthGate>
+  );
 }

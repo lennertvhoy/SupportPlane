@@ -24,7 +24,9 @@ export function EvidenceBundlePanel({
   error,
   onGenerate,
 }: EvidenceBundlePanelProps) {
-  const [activeTab, setActiveTab] = useState<'summary' | 'json' | 'markdown' | 'timeline'>('summary');
+  const [activeTab, setActiveTab] = useState<'summary' | 'json' | 'markdown' | 'timeline'>(
+    'summary',
+  );
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async (text: string) => {
@@ -51,14 +53,17 @@ export function EvidenceBundlePanel({
             <button
               onClick={async () => {
                 try {
-                  const res = await fetch(`http://localhost:4110/support-sessions/${sessionId}/evidence-bundle.pdf`, {
-                    headers: {
-                      'x-tenant-id': 'dev-tenant',
-                      'x-user-id': 'dev-user',
-                      'x-user-role': 'support_agent',
+                  const res = await fetch(
+                    `http://localhost:4110/support-sessions/${sessionId}/evidence-bundle.pdf`,
+                    {
+                      headers: {
+                        'x-tenant-id': 'dev-tenant',
+                        'x-user-id': 'dev-user',
+                        'x-user-role': 'support_agent',
+                      },
+                      credentials: 'include',
                     },
-                    credentials: 'include',
-                  });
+                  );
                   if (!res.ok) {
                     const body = await res.json().catch(() => null);
                     alert(body?.message ?? `PDF download failed: HTTP ${res.status}`);
@@ -100,7 +105,8 @@ export function EvidenceBundlePanel({
           <div className="rounded border border-amber-700/30 bg-amber-900/20 p-2">
             <div className="text-[10px] font-medium text-amber-300">Local / Mock Export Only</div>
             <div className="mt-0.5 text-[10px] text-amber-400/80">
-              Evidence bundles are generated from local development data. No real compliance, legal evidence, cryptographic signing, or object storage is claimed.
+              Evidence bundles are generated from local development data. No real compliance, legal
+              evidence, cryptographic signing, or object storage is claimed.
             </div>
           </div>
         </div>
@@ -173,15 +179,21 @@ export function EvidenceBundlePanel({
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                   <div className="text-[10px] text-cockpit-500">Tickets</div>
-                  <div className="text-xs text-cockpit-200">{bundle.bundle.linkedTickets.length}</div>
+                  <div className="text-xs text-cockpit-200">
+                    {bundle.bundle.linkedTickets.length}
+                  </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                   <div className="text-[10px] text-cockpit-500">Packets</div>
-                  <div className="text-xs text-cockpit-200">{bundle.bundle.contextPackets.length}</div>
+                  <div className="text-xs text-cockpit-200">
+                    {bundle.bundle.contextPackets.length}
+                  </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                   <div className="text-[10px] text-cockpit-500">Audit Events</div>
-                  <div className="text-xs text-cockpit-200">{bundle.bundle.auditTimeline.length}</div>
+                  <div className="text-xs text-cockpit-200">
+                    {bundle.bundle.auditTimeline.length}
+                  </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                   <div className="text-[10px] text-cockpit-500">AI Usage</div>
@@ -189,27 +201,39 @@ export function EvidenceBundlePanel({
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                   <div className="text-[10px] text-cockpit-500">Call Events</div>
-                  <div className="text-xs text-cockpit-200">{bundle.bundle.callEvents?.length ?? 0}</div>
+                  <div className="text-xs text-cockpit-200">
+                    {bundle.bundle.callEvents?.length ?? 0}
+                  </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                   <div className="text-[10px] text-cockpit-500">Telephony Bridge</div>
-                  <div className="text-xs text-cockpit-200">{bundle.bundle.telephonyBridgeEvents?.length ?? 0}</div>
+                  <div className="text-xs text-cockpit-200">
+                    {bundle.bundle.telephonyBridgeEvents?.length ?? 0}
+                  </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                   <div className="text-[10px] text-cockpit-500">Customers</div>
-                  <div className="text-xs text-cockpit-200">{bundle.bundle.customerReferences?.length ?? 0}</div>
+                  <div className="text-xs text-cockpit-200">
+                    {bundle.bundle.customerReferences?.length ?? 0}
+                  </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                <div className="text-[10px] text-cockpit-500">Connectors</div>
-                <div className="text-xs text-cockpit-200">{bundle.bundle.connectorInstallations?.length ?? 0}</div>
-              </div>
+                  <div className="text-[10px] text-cockpit-500">Connectors</div>
+                  <div className="text-xs text-cockpit-200">
+                    {bundle.bundle.connectorInstallations?.length ?? 0}
+                  </div>
+                </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                   <div className="text-[10px] text-cockpit-500">Store</div>
-                  <div className="text-xs text-cockpit-200">{bundle.bundle.sourceProvenance.storeType}</div>
+                  <div className="text-xs text-cockpit-200">
+                    {bundle.bundle.sourceProvenance.storeType}
+                  </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
                   <div className="text-[10px] text-cockpit-500">Action Outbox</div>
-                  <div className="text-xs text-cockpit-200">{bundle.bundle.actionOutbox?.length ?? 0}</div>
+                  <div className="text-xs text-cockpit-200">
+                    {bundle.bundle.actionOutbox?.length ?? 0}
+                  </div>
                 </div>
               </div>
               <div className="rounded border border-amber-700/30 bg-amber-900/20 p-2">

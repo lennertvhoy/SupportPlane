@@ -21,6 +21,7 @@ bash scripts/reset_demo_data.sh --yes
 ```
 
 If `--yes` is not available on your version:
+
 ```bash
 echo "destroy-local-data" | bash scripts/reset_demo_data.sh --confirm
 ```
@@ -38,6 +39,7 @@ bash scripts/verify_user_testing_demo.sh
 **Required: 10/10 PASS, 0 FAIL.** If any check fails, stop. Do not proceed.
 
 Expected pass outputs:
+
 - API health ok
 - Web returns HTTP 200
 - Zammad: configured:real
@@ -72,13 +74,13 @@ curl -s http://localhost:4210/connectors/status | python3 -c "import json,sys; d
 
 Pick or let the tester self-select from:
 
-| Persona | Login as | Focus |
-|---------|----------|-------|
-| MSP Owner / IT Manager | Admin | Multi-tenancy, connectors, ROI signals |
-| Helpdesk Operator | Operator | Speed, usability, AI draft quality |
-| Security / Governance Reviewer | Admin, then Viewer | RBAC, audit, policy, secrets |
-| Technical Admin | Admin | Connector config, health, monitoring |
-| Skeptical Enterprise Buyer | Admin | Honesty labels, real vs mock, polish |
+| Persona                        | Login as           | Focus                                  |
+| ------------------------------ | ------------------ | -------------------------------------- |
+| MSP Owner / IT Manager         | Admin              | Multi-tenancy, connectors, ROI signals |
+| Helpdesk Operator              | Operator           | Speed, usability, AI draft quality     |
+| Security / Governance Reviewer | Admin, then Viewer | RBAC, audit, policy, secrets           |
+| Technical Admin                | Admin              | Connector config, health, monitoring   |
+| Skeptical Enterprise Buyer     | Admin              | Honesty labels, real vs mock, polish   |
 
 Write down: **Tester name, persona, start time.**
 
@@ -87,6 +89,7 @@ Write down: **Tester name, persona, start time.**
 Copy-paste the content from **[SEND_TO_TESTERS.md](./SEND_TO_TESTERS.md)** to the tester. Include the login credentials and URLs.
 
 Remind the tester:
+
 > "You cannot break anything. Honest feedback is the goal."
 
 Do NOT walk through flows with the tester. We want to see where they get stuck on their own.
@@ -112,6 +115,7 @@ Do NOT walk through flows with the tester. We want to see where they get stuck o
 ### 9. Capture Bug Context (if bugs found)
 
 For any P0 or P1 issue:
+
 ```bash
 bash scripts/capture_demo_bug_context.sh --bug-id ROUND-001-<tester-name>
 ```
@@ -121,6 +125,7 @@ This captures: API health, git HEAD, pod status, connector status, Zammad/GLPI c
 ### 10. Log Results
 
 Add an entry to **[FEEDBACK_LOG.md](./FEEDBACK_LOG.md)**:
+
 - Tester name, persona, date, round
 - Clarity score, usefulness score, trust score, speed score, polish score
 - Top issue found
@@ -131,6 +136,7 @@ Add an entry to **[FEEDBACK_LOG.md](./FEEDBACK_LOG.md)**:
 ### 11. Triage After Session
 
 Follow **[TRIAGE_WORKFLOW.md](./TRIAGE_WORKFLOW.md)**:
+
 1. Classify each item: bug / honesty-gap / feature / known-limitation
 2. Assign severity P0-P4
 3. Create BL items for non-trivial P1/P2 items
@@ -140,6 +146,7 @@ Follow **[TRIAGE_WORKFLOW.md](./TRIAGE_WORKFLOW.md)**:
 ### Reset for Next Tester
 
 If another tester follows:
+
 - Go back to step 2 (Reset Demo Data)
 - Pick a different persona if possible
 - Repeat the full checklist
@@ -149,6 +156,7 @@ If another tester follows:
 ## Stop-Testing Rules
 
 Stop immediately if:
+
 1. **Reset fails** — `reset_demo_data.sh` exits non-zero
 2. **Smoke test fails** — any FAIL in verify_user_testing_demo.sh
 3. **P0 demo-blocker found** — system crashes, unreachable, or shows wrong data
@@ -162,19 +170,19 @@ See [TRIAGE_WORKFLOW.md Section 6](./TRIAGE_WORKFLOW.md) for full escalation rul
 
 ## Quick Reference
 
-| Command | Purpose |
-|---------|---------|
-| `bash scripts/start_demo_mode.sh` | Start the demo stack |
-| `bash scripts/reset_demo_data.sh --yes` | Clear stale data (non-interactive) |
-| `bash scripts/verify_user_testing_demo.sh` | 10/10 smoke test |
-| `bash scripts/capture_demo_bug_context.sh --bug-id X` | Capture bug diagnostics |
-| `curl http://localhost:3300` | Web UI health |
-| `curl http://localhost:4210/health` | API health |
+| Command                                               | Purpose                            |
+| ----------------------------------------------------- | ---------------------------------- |
+| `bash scripts/start_demo_mode.sh`                     | Start the demo stack               |
+| `bash scripts/reset_demo_data.sh --yes`               | Clear stale data (non-interactive) |
+| `bash scripts/verify_user_testing_demo.sh`            | 10/10 smoke test                   |
+| `bash scripts/capture_demo_bug_context.sh --bug-id X` | Capture bug diagnostics            |
+| `curl http://localhost:3300`                          | Web UI health                      |
+| `curl http://localhost:4210/health`                   | API health                         |
 
 ## Login Credentials
 
-| Role | Email | Password | Tenant |
-|------|-------|----------|--------|
-| Admin | `admin@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| Role     | Email                         | Password            | Tenant       |
+| -------- | ----------------------------- | ------------------- | ------------ |
+| Admin    | `admin@supportplane.local`    | `supportplane-demo` | `dev-tenant` |
 | Operator | `operator@supportplane.local` | `supportplane-demo` | `dev-tenant` |
-| Viewer | `viewer@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| Viewer   | `viewer@supportplane.local`   | `supportplane-demo` | `dev-tenant` |

@@ -22,6 +22,7 @@ feels confusing, what you'd trust, and what you wouldn't. Your honest
 feedback (positive or negative) helps us prioritize what to build next.
 
 **What to expect:**
+
 - 20-30 minute guided test (see attached test script or paste it into your browser)
 - Open the demo URL and follow each step
 - Note anything confusing, impressive, or broken
@@ -31,6 +32,7 @@ feedback (positive or negative) helps us prioritize what to build next.
 **Demo URL:** http://localhost:3300
 
 **Login credentials:**
+
 - Email: `admin@supportplane.local`
 - Password: `supportplane-demo`
 - Tenant: `dev-tenant`

@@ -1,4 +1,11 @@
-import { BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { createHash, randomBytes, randomUUID } from 'crypto';
 import { ToolExecutionGatewayService } from '../tool-execution/tool-execution-gateway.service.js';
 import {
@@ -58,8 +65,16 @@ export class EndpointDevicesService {
     agentVersion?: string;
     inventory?: Record<string, unknown>;
   }): Promise<{ device: EndpointDevice; deviceToken: string; note: string }> {
-    if (!body.tenantId || !body.deviceKey || !body.hostname || !body.platform || !body.agentVersion) {
-      throw new BadRequestException('tenantId, deviceKey, hostname, platform, and agentVersion are required.');
+    if (
+      !body.tenantId ||
+      !body.deviceKey ||
+      !body.hostname ||
+      !body.platform ||
+      !body.agentVersion
+    ) {
+      throw new BadRequestException(
+        'tenantId, deviceKey, hostname, platform, and agentVersion are required.',
+      );
     }
     if (!body.enrollmentToken || body.enrollmentToken !== enrollmentToken()) {
       throw new UnauthorizedException('Invalid endpoint enrollment token.');
@@ -74,7 +89,8 @@ export class EndpointDevicesService {
       displayName: body.displayName ?? body.hostname,
       hostname: body.hostname,
       deviceKey: body.deviceKey,
-      fingerprint: existing?.fingerprint ?? makeFingerprint(body.tenantId, body.deviceKey, body.hostname),
+      fingerprint:
+        existing?.fingerprint ?? makeFingerprint(body.tenantId, body.deviceKey, body.hostname),
       platform: normalizePlatform(body.platform),
       agentVersion: body.agentVersion,
       status: EndpointDeviceStatus.enum.online,
@@ -84,12 +100,20 @@ export class EndpointDevicesService {
       updatedAt: at,
     };
     await this.store.saveEndpointDevice(device, sha256(deviceToken));
-    await this.audit(device.tenantId, 'endpoint-agent', AuditActorType.enum.system, AuditEventType.enum.endpoint_device_registered, 'endpoint_device', device.id, {
-      hostname: device.hostname,
-      platform: device.platform,
-      agentVersion: device.agentVersion,
-      outboundOnly: true,
-    });
+    await this.audit(
+      device.tenantId,
+      'endpoint-agent',
+      AuditActorType.enum.system,
+      AuditEventType.enum.endpoint_device_registered,
+      'endpoint_device',
+      device.id,
+      {
+        hostname: device.hostname,
+        platform: device.platform,
+        agentVersion: device.agentVersion,
+        outboundOnly: true,
+      },
+    );
     if (body.inventory) {
       await this.saveSnapshotForDevice(device, 'inventory', body.inventory);
     }
@@ -100,7 +124,11 @@ export class EndpointDevicesService {
     };
   }
 
-  async authenticateAgent(tenantId: string | undefined, deviceKey: string | undefined, token: string | undefined): Promise<EndpointDevice> {
+  async authenticateAgent(
+    tenantId: string | undefined,
+    deviceKey: string | undefined,
+    token: string | undefined,
+  ): Promise<EndpointDevice> {
     if (!tenantId || !deviceKey || !token) {
       throw new UnauthorizedException('Endpoint agent tenant, device key, and token are required.');
     }
@@ -111,9 +139,19 @@ export class EndpointDevicesService {
     return device;
   }
 
-  async heartbeat(device: EndpointDevice, body: { agentVersion?: string; status?: string; summary?: Record<string, unknown>; inventory?: Record<string, unknown> }) {
+  async heartbeat(
+    device: EndpointDevice,
+    body: {
+      agentVersion?: string;
+      status?: string;
+      summary?: Record<string, unknown>;
+      inventory?: Record<string, unknown>;
+    },
+  ) {
     const at = nowIso();
-    const status = EndpointDeviceStatus.safeParse(body.status ?? 'online').success ? body.status as EndpointDevice['status'] : EndpointDeviceStatus.enum.online;
+    const status = EndpointDeviceStatus.safeParse(body.status ?? 'online').success
+      ? (body.status as EndpointDevice['status'])
+      : EndpointDeviceStatus.enum.online;
     const heartbeat: EndpointHeartbeat = {
       id: randomUUID(),
       tenantId: device.tenantId,
@@ -124,63 +162,139 @@ export class EndpointDevicesService {
       summary: body.summary ?? {},
     };
     await this.store.saveEndpointHeartbeat(heartbeat);
-    await this.store.saveEndpointDevice({ ...device, status, agentVersion: heartbeat.agentVersion, lastSeenAt: at, updatedAt: at });
-    await this.audit(device.tenantId, device.id, AuditActorType.enum.system, AuditEventType.enum.endpoint_heartbeat_received, 'endpoint_device', device.id, {
+    await this.store.saveEndpointDevice({
+      ...device,
       status,
       agentVersion: heartbeat.agentVersion,
+      lastSeenAt: at,
+      updatedAt: at,
     });
+    await this.audit(
+      device.tenantId,
+      device.id,
+      AuditActorType.enum.system,
+      AuditEventType.enum.endpoint_heartbeat_received,
+      'endpoint_device',
+      device.id,
+      {
+        status,
+        agentVersion: heartbeat.agentVersion,
+      },
+    );
     if (body.inventory) {
-      await this.saveSnapshotForDevice({ ...device, agentVersion: heartbeat.agentVersion }, 'inventory', body.inventory);
+      await this.saveSnapshotForDevice(
+        { ...device, agentVersion: heartbeat.agentVersion },
+        'inventory',
+        body.inventory,
+      );
     }
     return { heartbeat };
   }
 
-  async submitSnapshot(device: EndpointDevice, body: { kind?: string; payload?: Record<string, unknown>; collectedAt?: string }) {
+  async submitSnapshot(
+    device: EndpointDevice,
+    body: { kind?: string; payload?: Record<string, unknown>; collectedAt?: string },
+  ) {
     const parsed = EndpointDiagnosticKind.safeParse(body.kind);
     if (!parsed.success || !readOnlyDiagnosticKinds.includes(parsed.data)) {
       throw new BadRequestException('Unsupported read-only diagnostic kind.');
     }
-    const snapshot = await this.saveSnapshotForDevice(device, parsed.data, body.payload ?? {}, body.collectedAt);
+    const snapshot = await this.saveSnapshotForDevice(
+      device,
+      parsed.data,
+      body.payload ?? {},
+      body.collectedAt,
+    );
     return { snapshot };
   }
 
   async claimNext(device: EndpointDevice) {
-    const command = await this.store.claimNextEndpointCommand(device.tenantId, device.id, { now: nowIso() });
+    const command = await this.store.claimNextEndpointCommand(device.tenantId, device.id, {
+      now: nowIso(),
+    });
     if (command) {
-      await this.audit(device.tenantId, device.id, AuditActorType.enum.system, AuditEventType.enum.endpoint_command_claimed, 'endpoint_command', command.id, {
-        commandKind: command.commandKind,
-        nonce: command.nonce,
-      });
+      await this.audit(
+        device.tenantId,
+        device.id,
+        AuditActorType.enum.system,
+        AuditEventType.enum.endpoint_command_claimed,
+        'endpoint_command',
+        command.id,
+        {
+          commandKind: command.commandKind,
+          nonce: command.nonce,
+        },
+      );
     }
     return { command: command ?? null };
   }
 
-  async submitResult(device: EndpointDevice, commandId: string, body: { nonce?: string; status?: string; payload?: Record<string, unknown>; errorCode?: string; errorMessage?: string }) {
+  async submitResult(
+    device: EndpointDevice,
+    commandId: string,
+    body: {
+      nonce?: string;
+      status?: string;
+      payload?: Record<string, unknown>;
+      errorCode?: string;
+      errorMessage?: string;
+    },
+  ) {
     const command = await this.store.getEndpointCommand(device.tenantId, commandId);
     if (!command || command.deviceId !== device.id) {
-      await this.audit(device.tenantId, device.id, AuditActorType.enum.system, AuditEventType.enum.endpoint_command_rejected, 'endpoint_command', commandId, {
-        reason: 'wrong_tenant_or_device',
-      });
+      await this.audit(
+        device.tenantId,
+        device.id,
+        AuditActorType.enum.system,
+        AuditEventType.enum.endpoint_command_rejected,
+        'endpoint_command',
+        commandId,
+        {
+          reason: 'wrong_tenant_or_device',
+        },
+      );
       throw new NotFoundException('Endpoint command not found for this device.');
     }
     if (command.nonce !== body.nonce) {
-      await this.audit(device.tenantId, device.id, AuditActorType.enum.system, AuditEventType.enum.endpoint_command_replay_rejected, 'endpoint_command', command.id, {
-        reason: 'nonce_mismatch',
-      });
+      await this.audit(
+        device.tenantId,
+        device.id,
+        AuditActorType.enum.system,
+        AuditEventType.enum.endpoint_command_replay_rejected,
+        'endpoint_command',
+        command.id,
+        {
+          reason: 'nonce_mismatch',
+        },
+      );
       throw new ForbiddenException('Command nonce mismatch.');
     }
     if (Date.parse(command.expiresAt) <= Date.now()) {
-      await this.store.saveEndpointCommand({ ...command, status: EndpointCommandStatus.enum.expired, updatedAt: nowIso() });
+      await this.store.saveEndpointCommand({
+        ...command,
+        status: EndpointCommandStatus.enum.expired,
+        updatedAt: nowIso(),
+      });
       throw new ForbiddenException('Endpoint command is expired.');
     }
     const existing = await this.store.getEndpointCommandResult(device.tenantId, command.id);
     if (existing) {
-      await this.audit(device.tenantId, device.id, AuditActorType.enum.system, AuditEventType.enum.endpoint_command_replay_rejected, 'endpoint_command', command.id, {
-        reason: 'duplicate_result',
-      });
+      await this.audit(
+        device.tenantId,
+        device.id,
+        AuditActorType.enum.system,
+        AuditEventType.enum.endpoint_command_replay_rejected,
+        'endpoint_command',
+        command.id,
+        {
+          reason: 'duplicate_result',
+        },
+      );
       throw new ForbiddenException('Endpoint command result was already accepted.');
     }
-    const status = EndpointCommandStatus.safeParse(body.status).success ? body.status as EndpointCommand['status'] : EndpointCommandStatus.enum.succeeded;
+    const status = EndpointCommandStatus.safeParse(body.status).success
+      ? (body.status as EndpointCommand['status'])
+      : EndpointCommandStatus.enum.succeeded;
     if (!['succeeded', 'failed'].includes(status)) {
       throw new BadRequestException('Command results may only be succeeded or failed.');
     }
@@ -206,11 +320,22 @@ export class EndpointDevicesService {
       errorCode: result.errorCode,
       errorMessage: result.errorMessage,
     });
-    await this.audit(device.tenantId, device.id, AuditActorType.enum.system, AuditEventType.enum.endpoint_command_result_received, 'endpoint_command', command.id, {
-      commandKind: command.commandKind,
-      status,
-      readOnly: command.commandKind.startsWith('collect_') || command.commandKind === 'ping_self' || command.commandKind === 'clear_temp_preview',
-    });
+    await this.audit(
+      device.tenantId,
+      device.id,
+      AuditActorType.enum.system,
+      AuditEventType.enum.endpoint_command_result_received,
+      'endpoint_command',
+      command.id,
+      {
+        commandKind: command.commandKind,
+        status,
+        readOnly:
+          command.commandKind.startsWith('collect_') ||
+          command.commandKind === 'ping_self' ||
+          command.commandKind === 'clear_temp_preview',
+      },
+    );
 
     // Notify tool execution gateway if this command was dispatched from a tool invocation
     try {
@@ -245,35 +370,84 @@ export class EndpointDevicesService {
     return { device, heartbeats, snapshots, commands };
   }
 
-  async requestCommand(identity: CurrentIdentity, deviceId: string, body: { commandKind?: string; idempotencyKey?: string }) {
+  async requestCommand(
+    identity: CurrentIdentity,
+    deviceId: string,
+    body: { commandKind?: string; idempotencyKey?: string },
+  ) {
     requirePermission(identity, 'endpoint_command:create');
-    const forbiddenExecutableFields = ['command', 'shell', 'script', 'argv', 'executable', 'program'];
-    const presentExecutableField = forbiddenExecutableFields.find((field) => Object.prototype.hasOwnProperty.call(body, field));
+    const forbiddenExecutableFields = [
+      'command',
+      'shell',
+      'script',
+      'argv',
+      'executable',
+      'program',
+    ];
+    const presentExecutableField = forbiddenExecutableFields.find((field) =>
+      Object.prototype.hasOwnProperty.call(body, field),
+    );
     if (presentExecutableField) {
-      await this.audit(identity.tenantId, identity.userId, AuditActorType.enum.user, AuditEventType.enum.endpoint_command_policy_denied, 'endpoint_device', deviceId, {
-        requestedCommandKind: body.commandKind,
-        reason: 'arbitrary_execution_field_rejected',
-        rejectedField: presentExecutableField,
-      });
-      throw new BadRequestException('Endpoint diagnostics accept fixed command kinds only. Arbitrary shell, script, argv, and executable fields are rejected.');
+      await this.audit(
+        identity.tenantId,
+        identity.userId,
+        AuditActorType.enum.user,
+        AuditEventType.enum.endpoint_command_policy_denied,
+        'endpoint_device',
+        deviceId,
+        {
+          requestedCommandKind: body.commandKind,
+          reason: 'arbitrary_execution_field_rejected',
+          rejectedField: presentExecutableField,
+        },
+      );
+      throw new BadRequestException(
+        'Endpoint diagnostics accept fixed command kinds only. Arbitrary shell, script, argv, and executable fields are rejected.',
+      );
     }
     const parsed = EndpointCommandKind.safeParse(body.commandKind);
     if (!parsed.success || !allowedCommandKinds.includes(parsed.data)) {
-      await this.audit(identity.tenantId, identity.userId, AuditActorType.enum.user, AuditEventType.enum.endpoint_command_policy_denied, 'endpoint_device', deviceId, {
-        requestedCommandKind: body.commandKind,
-        reason: 'unknown_or_unsupported_command',
-      });
-      throw new BadRequestException('Unsupported endpoint diagnostic command. Arbitrary shell and custom command bodies are not accepted.');
+      await this.audit(
+        identity.tenantId,
+        identity.userId,
+        AuditActorType.enum.user,
+        AuditEventType.enum.endpoint_command_policy_denied,
+        'endpoint_device',
+        deviceId,
+        {
+          requestedCommandKind: body.commandKind,
+          reason: 'unknown_or_unsupported_command',
+        },
+      );
+      throw new BadRequestException(
+        'Unsupported endpoint diagnostic command. Arbitrary shell and custom command bodies are not accepted.',
+      );
     }
     const device = await this.store.getEndpointDevice(identity.tenantId, deviceId);
     if (!device) throw new NotFoundException('Endpoint device not found.');
     const policyDecision = this.evaluateDiagnosticPolicy(identity, device, parsed.data);
     if (!policyDecision.allowed) {
-      await this.audit(identity.tenantId, identity.userId, AuditActorType.enum.user, AuditEventType.enum.endpoint_command_policy_denied, 'endpoint_device', deviceId, policyDecision);
-      throw new ForbiddenException({ message: 'Endpoint diagnostic policy denied the command.', policyDecision });
+      await this.audit(
+        identity.tenantId,
+        identity.userId,
+        AuditActorType.enum.user,
+        AuditEventType.enum.endpoint_command_policy_denied,
+        'endpoint_device',
+        deviceId,
+        policyDecision,
+      );
+      throw new ForbiddenException({
+        message: 'Endpoint diagnostic policy denied the command.',
+        policyDecision,
+      });
     }
-    const idempotencyKey = body.idempotencyKey ?? `${identity.tenantId}:${deviceId}:${parsed.data}:${new Date().toISOString().slice(0, 16)}`;
-    const existing = await this.store.getEndpointCommandByIdempotencyKey(identity.tenantId, idempotencyKey);
+    const idempotencyKey =
+      body.idempotencyKey ??
+      `${identity.tenantId}:${deviceId}:${parsed.data}:${new Date().toISOString().slice(0, 16)}`;
+    const existing = await this.store.getEndpointCommandByIdempotencyKey(
+      identity.tenantId,
+      idempotencyKey,
+    );
     if (existing) return { command: existing, idempotentReplay: true };
     const at = nowIso();
     const command: EndpointCommand = {
@@ -292,18 +466,32 @@ export class EndpointDevicesService {
       updatedAt: at,
     };
     await this.store.saveEndpointCommand(command);
-    await this.audit(identity.tenantId, identity.userId, AuditActorType.enum.user, AuditEventType.enum.endpoint_command_requested, 'endpoint_command', command.id, {
-      deviceId,
-      commandKind: command.commandKind,
-      nonce: command.nonce,
-      policyDecision,
-      readOnly: true,
-    });
+    await this.audit(
+      identity.tenantId,
+      identity.userId,
+      AuditActorType.enum.user,
+      AuditEventType.enum.endpoint_command_requested,
+      'endpoint_command',
+      command.id,
+      {
+        deviceId,
+        commandKind: command.commandKind,
+        nonce: command.nonce,
+        policyDecision,
+        readOnly: true,
+      },
+    );
     return { command, idempotentReplay: false };
   }
 
-  private evaluateDiagnosticPolicy(identity: CurrentIdentity, device: EndpointDevice, commandKind: string) {
-    const allowed = ['admin', 'owner', 'operator', 'support_agent'].some((role) => identity.roles.includes(role));
+  private evaluateDiagnosticPolicy(
+    identity: CurrentIdentity,
+    device: EndpointDevice,
+    commandKind: string,
+  ) {
+    const allowed = ['admin', 'owner', 'operator', 'support_agent'].some((role) =>
+      identity.roles.includes(role),
+    );
     return {
       allowed,
       decision: allowed ? 'read_only_diagnostic_allowed' : 'role_denied',
@@ -317,7 +505,12 @@ export class EndpointDevicesService {
     };
   }
 
-  private async saveSnapshotForDevice(device: EndpointDevice, kind: EndpointDiagnosticSnapshot['kind'], payload: Record<string, unknown>, collectedAt?: string) {
+  private async saveSnapshotForDevice(
+    device: EndpointDevice,
+    kind: EndpointDiagnosticSnapshot['kind'],
+    payload: Record<string, unknown>,
+    collectedAt?: string,
+  ) {
     const at = nowIso();
     const snapshot: EndpointDiagnosticSnapshot = {
       id: randomUUID() as EndpointDiagnosticSnapshot['id'],
@@ -330,14 +523,32 @@ export class EndpointDevicesService {
       createdAt: at,
     };
     await this.store.saveEndpointDiagnosticSnapshot(snapshot);
-    await this.audit(device.tenantId, device.id, AuditActorType.enum.system, kind === 'inventory' ? AuditEventType.enum.endpoint_inventory_received : AuditEventType.enum.endpoint_diagnostic_snapshot_received, 'endpoint_device', device.id, {
-      kind,
-      readOnly: true,
-    });
+    await this.audit(
+      device.tenantId,
+      device.id,
+      AuditActorType.enum.system,
+      kind === 'inventory'
+        ? AuditEventType.enum.endpoint_inventory_received
+        : AuditEventType.enum.endpoint_diagnostic_snapshot_received,
+      'endpoint_device',
+      device.id,
+      {
+        kind,
+        readOnly: true,
+      },
+    );
     return snapshot;
   }
 
-  private async audit(tenantId: string, actorId: string, actorType: AuditActorType, eventType: AuditEventType, resourceType: string, resourceId: string, metadata: Record<string, unknown>) {
+  private async audit(
+    tenantId: string,
+    actorId: string,
+    actorType: AuditActorType,
+    eventType: AuditEventType,
+    resourceType: string,
+    resourceId: string,
+    metadata: Record<string, unknown>,
+  ) {
     const auditActorId = actorType === AuditActorType.enum.user ? actorId : 'dev-admin';
     const event: AuditEvent = {
       id: randomUUID() as AuditEvent['id'],
@@ -348,7 +559,8 @@ export class EndpointDevicesService {
       action: eventType,
       resourceType,
       resourceId,
-      metadata: actorType === AuditActorType.enum.user ? metadata : { ...metadata, agentActorId: actorId },
+      metadata:
+        actorType === AuditActorType.enum.user ? metadata : { ...metadata, agentActorId: actorId },
       createdAt: nowIso(),
     };
     event.integrityHash = computeIntegrityHash(event);

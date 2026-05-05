@@ -49,16 +49,37 @@ export class GdprService {
   async deletePreview(identity: CurrentIdentity, subjectType: string, subjectId: string) {
     const tenantId = identity.tenantId;
     const records = await this.gatherSubjectRecords(tenantId, subjectType, subjectId);
-    const details: Array<{ entity: string; id: string; action: 'delete' | 'anonymize' | 'retain'; reason: string }> = [];
+    const details: Array<{
+      entity: string;
+      id: string;
+      action: 'delete' | 'anonymize' | 'retain';
+      reason: string;
+    }> = [];
 
     for (const [entity, items] of Object.entries(records)) {
       for (const item of items as Array<{ id: string }>) {
         if (entity === 'auditEvents') {
-          details.push({ entity, id: item.id, action: 'retain', reason: 'Audit events are retained for compliance; only metadata anonymization would occur' });
+          details.push({
+            entity,
+            id: item.id,
+            action: 'retain',
+            reason:
+              'Audit events are retained for compliance; only metadata anonymization would occur',
+          });
         } else if (entity === 'callRecordings') {
-          details.push({ entity, id: item.id, action: 'anonymize', reason: 'Recording metadata retained; media references removed' });
+          details.push({
+            entity,
+            id: item.id,
+            action: 'anonymize',
+            reason: 'Recording metadata retained; media references removed',
+          });
         } else {
-          details.push({ entity, id: item.id, action: 'delete', reason: 'Subject-scoped record would be deleted in real execution' });
+          details.push({
+            entity,
+            id: item.id,
+            action: 'delete',
+            reason: 'Subject-scoped record would be deleted in real execution',
+          });
         }
       }
     }
@@ -71,7 +92,8 @@ export class GdprService {
       wouldAnonymizeCounts: this.countByAction(details, 'anonymize'),
       details,
       generatedAt: nowIso(),
-      warning: 'DRY-RUN ONLY. No records were actually deleted or anonymized. Real deletion is not yet implemented.',
+      warning:
+        'DRY-RUN ONLY. No records were actually deleted or anonymized. Real deletion is not yet implemented.',
     };
   }
 
@@ -108,12 +130,17 @@ export class GdprService {
       redacted: true,
       generatedAt: nowIso(),
       status: 'completed',
-      warning: 'Export marked as completed, but this remains a dry-run implementation. Real data export delivery is not yet implemented.',
+      warning:
+        'Export marked as completed, but this remains a dry-run implementation. Real data export delivery is not yet implemented.',
     };
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
-  private async gatherSubjectRecords(tenantId: string, subjectType: string, subjectId: string): Promise<Record<string, unknown[]>> {
+  private async gatherSubjectRecords(
+    tenantId: string,
+    subjectType: string,
+    subjectId: string,
+  ): Promise<Record<string, unknown[]>> {
     const records: Record<string, unknown[]> = {
       sessions: [],
       tickets: [],
@@ -150,7 +177,10 @@ export class GdprService {
         take: 500,
       });
       const customerSessions = await this.prisma.supportSession.findMany({
-        where: { tenantId, linkedTicketIds: { hasSome: (records.tickets as Array<{ id: string }>).map((t) => t.id) } },
+        where: {
+          tenantId,
+          linkedTicketIds: { hasSome: (records.tickets as Array<{ id: string }>).map((t) => t.id) },
+        },
         select: { id: true },
         take: 500,
       });
@@ -238,7 +268,10 @@ export class GdprService {
     return counts;
   }
 
-  private countByAction(details: Array<{ entity: string; action: string }>, action: string): Record<string, number> {
+  private countByAction(
+    details: Array<{ entity: string; action: string }>,
+    action: string,
+  ): Record<string, number> {
     const counts: Record<string, number> = {};
     for (const d of details) {
       if (d.action === action) {

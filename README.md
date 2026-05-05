@@ -126,11 +126,11 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:4110 npm run dev
 
 Navigate to `http://localhost:3200` and log in with one of the demo accounts:
 
-| Role | Email | Password | Tenant |
-|------|-------|----------|--------|
-| Admin | `admin@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| Role     | Email                         | Password            | Tenant       |
+| -------- | ----------------------------- | ------------------- | ------------ |
+| Admin    | `admin@supportplane.local`    | `supportplane-demo` | `dev-tenant` |
 | Operator | `operator@supportplane.local` | `supportplane-demo` | `dev-tenant` |
-| Viewer | `viewer@supportplane.local` | `supportplane-demo` | `dev-tenant` |
+| Viewer   | `viewer@supportplane.local`   | `supportplane-demo` | `dev-tenant` |
 
 ### 6. Start the local endpoint agent
 

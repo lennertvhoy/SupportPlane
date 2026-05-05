@@ -15,13 +15,13 @@ operations and turn it into actionable work.
 
 Every issue found during testing must be assigned exactly one severity level.
 
-| Severity | Description | Action |
-|----------|-------------|--------|
-| P0 / Demo-Blocker | Demo is unusable, crashes, or shows wrong data that would mislead testers | Fix immediately, pause testing |
-| P1 / Major | Core flow broken or misleading, honest labels missing/contradictory | Fix within current testing round |
-| P2 / Minor | Cosmetic issue, confusing label, slow loading | Log for next iteration |
-| P3 / Enhancement | Feature request or nice-to-have | Backlog for future milestone |
-| P4 / Noted | Out of scope, intentional limitation, or expected mock behavior | Document in known limitations, no action |
+| Severity          | Description                                                               | Action                                   |
+| ----------------- | ------------------------------------------------------------------------- | ---------------------------------------- |
+| P0 / Demo-Blocker | Demo is unusable, crashes, or shows wrong data that would mislead testers | Fix immediately, pause testing           |
+| P1 / Major        | Core flow broken or misleading, honest labels missing/contradictory       | Fix within current testing round         |
+| P2 / Minor        | Cosmetic issue, confusing label, slow loading                             | Log for next iteration                   |
+| P3 / Enhancement  | Feature request or nice-to-have                                           | Backlog for future milestone             |
+| P4 / Noted        | Out of scope, intentional limitation, or expected mock behavior           | Document in known limitations, no action |
 
 **P0 override rule:** If a tester cannot complete a documented demo flow because of an
 unexpected error, missing feature, or contradictory label, it is P0 regardless of how
@@ -34,18 +34,18 @@ small the fix looks.
 Each issue may carry one or more tags. Tags help route work to the right person and
 track patterns across testing rounds.
 
-| Tag | Meaning |
-|-----|---------|
-| `demo-blocker` | Prevents testers from completing demo flows |
-| `UX-confusion` | Unclear labels, confusing navigation, missing context |
-| `trust-gap` | Honesty issue — something labeled wrong, mock presented as real, or real presented as mock |
-| `fake-feeling` | Feature feels simulated or placeholder (may be intentional) |
-| `performance` | Slow loading, timeouts, lag |
-| `docs` | Documentation is wrong, missing, or stale |
-| `backend` | API error, wrong response, missing endpoint |
-| `frontend` | UI bug, layout issue, broken interaction |
-| `connector` | Zammad/GLPI/osTicket connector issue |
-| `governance` | Policy, RBAC, audit, or safety enforcement issue |
+| Tag            | Meaning                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| `demo-blocker` | Prevents testers from completing demo flows                                                |
+| `UX-confusion` | Unclear labels, confusing navigation, missing context                                      |
+| `trust-gap`    | Honesty issue — something labeled wrong, mock presented as real, or real presented as mock |
+| `fake-feeling` | Feature feels simulated or placeholder (may be intentional)                                |
+| `performance`  | Slow loading, timeouts, lag                                                                |
+| `docs`         | Documentation is wrong, missing, or stale                                                  |
+| `backend`      | API error, wrong response, missing endpoint                                                |
+| `frontend`     | UI bug, layout issue, broken interaction                                                   |
+| `connector`    | Zammad/GLPI/osTicket connector issue                                                       |
+| `governance`   | Policy, RBAC, audit, or safety enforcement issue                                           |
 
 **Tagging rules:**
 
@@ -77,11 +77,11 @@ For each distinct piece of feedback, assign:
 
 ### Step 3: Determine Disposition
 
-| Type | Criteria | Action |
-|------|----------|--------|
-| **Bug** | Code behaves incorrectly — crashes, wrong data, broken interaction | Fix with verification, capture evidence |
-| **Honesty gap** | Label, badge, or status message contradicts actual behavior | Fix labels/docs; add honest unavailable response if feature is missing |
-| **Feature request** | A capability the tester wanted that does not exist | Backlog as `[planned]`, link to existing BL if it covers the scope |
+| Type                 | Criteria                                                                      | Action                                                                         |
+| -------------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Bug**              | Code behaves incorrectly — crashes, wrong data, broken interaction            | Fix with verification, capture evidence                                        |
+| **Honesty gap**      | Label, badge, or status message contradicts actual behavior                   | Fix labels/docs; add honest unavailable response if feature is missing         |
+| **Feature request**  | A capability the tester wanted that does not exist                            | Backlog as `[planned]`, link to existing BL if it covers the scope             |
 | **Known limitation** | Already documented in `KNOWN_DEMO_LIMITATIONS.md` or an accepted BL non-claim | Log as P4, no action; update `KNOWN_DEMO_LIMITATIONS.md` if not already listed |
 
 ### Step 4: Create Backlog Items
@@ -114,15 +114,15 @@ Backlog priority maps directly from severity:
 When triage results in a code change, the fix is not complete until all of the
 following are produced:
 
-| Requirement | Evidence |
-|-------------|----------|
-| Code change committed | Full commit hash in handoff |
-| Tests pass | Exact command and pass/fail count (e.g., `npm test --workspace apps/api — 210 pass, 0 fail`) |
-| Browser screenshot (if user-visible) | Screenshot in `output/playwright/session-NNN-.../` showing the fixed behavior |
-| No regression | `npm run lint`, `npm run typecheck`, and relevant verifier scripts all pass |
-| State docs updated | `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml` reflect the change honestly |
-| Clean worktree | `git status --short --branch` output shows zero modifications |
-| Evidence logged | New entry in `docs/EVIDENCE_LOG.md` |
+| Requirement                          | Evidence                                                                                       |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Code change committed                | Full commit hash in handoff                                                                    |
+| Tests pass                           | Exact command and pass/fail count (e.g., `npm test --workspace apps/api — 210 pass, 0 fail`)   |
+| Browser screenshot (if user-visible) | Screenshot in `output/playwright/session-NNN-.../` showing the fixed behavior                  |
+| No regression                        | `npm run lint`, `npm run typecheck`, and relevant verifier scripts all pass                    |
+| State docs updated                   | `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml` reflect the change honestly |
+| Clean worktree                       | `git status --short --branch` output shows zero modifications                                  |
+| Evidence logged                      | New entry in `docs/EVIDENCE_LOG.md`                                                            |
 
 **Trust-gap fix rule:** A fix for any `trust-gap` issue requires a **before** and
 **after** screenshot plus an audit of all similar labels/components to ensure the same
@@ -152,12 +152,12 @@ Run this checklist at the end of each testing round (or daily during active test
 Testing must pause under these conditions. Do not continue to the next tester until the
 blocker is resolved and re-verified.
 
-| Trigger | Action |
-|---------|--------|
-| ANY P0 demo-blocker found | Stop testing. Fix. Re-verify with evidence before continuing. |
-| 3+ P1 issues in the same flow | Stop testing for that flow only. Fix before next tester round. |
-| Honesty gap (wrong label) | Fix immediately. Re-capture evidence for the affected panel. |
-| Secret exposure | Stop everything. Redact. Fix root cause. Scan all evidence folders for the leaked pattern. |
+| Trigger                       | Action                                                                                     |
+| ----------------------------- | ------------------------------------------------------------------------------------------ |
+| ANY P0 demo-blocker found     | Stop testing. Fix. Re-verify with evidence before continuing.                              |
+| 3+ P1 issues in the same flow | Stop testing for that flow only. Fix before next tester round.                             |
+| Honesty gap (wrong label)     | Fix immediately. Re-capture evidence for the affected panel.                               |
+| Secret exposure               | Stop everything. Redact. Fix root cause. Scan all evidence folders for the leaked pattern. |
 
 **Secret exposure escalation:** If a raw secret, token, or password is found in any
 evidence file, API response, UI element, or log output:
@@ -176,8 +176,8 @@ evidence file, API response, UI element, or log output:
 The file `FEEDBACK_LOG.md` (same directory) tracks every piece of tester feedback with
 the following table structure:
 
-| ID | Date | Source | Severity | Tags | Description | Resolution | BL-XXX |
-|----|------|--------|----------|------|-------------|------------|--------|
+| ID     | Date       | Source      | Severity       | Tags       | Description              | Resolution                                | BL-XXX      |
+| ------ | ---------- | ----------- | -------------- | ---------- | ------------------------ | ----------------------------------------- | ----------- |
 | FB-001 | YYYY-MM-DD | Tester name | P0/P1/P2/P3/P4 | tag1, tag2 | What the tester reported | fix / documented / backlogged / no-action | BL-XXX or — |
 
 **Column rules:**

@@ -1,11 +1,11 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "state-driven-development-template-v2"
-schema_version: "1.0"
+version: 'state-driven-development-template-v2'
+schema_version: '1.0'
 
 product:
   name: Sample Project Fixture
-  one_sentence: "Minimal fixture to validate bootstrap initialization."
+  one_sentence: 'Minimal fixture to validate bootstrap initialization.'
 
 truth_rules:
   repo_modes:
@@ -15,7 +15,7 @@ truth_rules:
       purpose: steady-state human-in-the-loop delivery
 
 invariants:
-  - "STATUS.md stays short and current."
-  - "PROJECT_STATE.yaml stores structured live truth only."
-  - "NEXT_ACTIONS.md contains open work only."
-  - "WORKLOG.md is append-only."
+  - 'STATUS.md stays short and current.'
+  - 'PROJECT_STATE.yaml stores structured live truth only.'
+  - 'NEXT_ACTIONS.md contains open work only.'
+  - 'WORKLOG.md is append-only.'

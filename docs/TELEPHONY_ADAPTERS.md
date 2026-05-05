@@ -64,13 +64,13 @@ signature algorithms, and endpoint details are intentionally deferred.
 Browser controls send a `TelephonyCallControlIntent` to the SupportPlane API.
 The mock adapter maps supported intents to existing local lifecycle states:
 
-| Intent | Local mock state |
-|--------|------------------|
-| `answer` | `answered` |
-| `hold` | `on_hold` |
-| `resume` | `answered` |
-| `end` | `ended` |
-| `transfer` | unsupported |
+| Intent     | Local mock state |
+| ---------- | ---------------- |
+| `answer`   | `answered`       |
+| `hold`     | `on_hold`        |
+| `resume`   | `answered`       |
+| `end`      | `ended`          |
+| `transfer` | unsupported      |
 
 Controls update local mock state only. They do not control a PBX, SIP endpoint,
 WebRTC peer, call queue, or external provider.
@@ -87,12 +87,12 @@ WebRTC peer, call queue, or external provider.
 
 ## Supported operations
 
-| Operation | Endpoint | Status |
-|-----------|----------|--------|
-| Adapter status | `GET /telephony/status` | mock-only |
-| Adapter test | `POST /telephony/test` | mock-only |
+| Operation             | Endpoint                                 | Status    |
+| --------------------- | ---------------------------------------- | --------- |
+| Adapter status        | `GET /telephony/status`                  | mock-only |
+| Adapter test          | `POST /telephony/test`                   | mock-only |
 | Fake provider webhook | `POST /telephony/webhooks/fake-provider` | mock-only |
-| Call control intent | `POST /telephony/calls/:id/control` | mock-only |
+| Call control intent   | `POST /telephony/calls/:id/control`      | mock-only |
 
 All endpoints require local dev identity headers: `x-tenant-id` and `x-user-id`.
 

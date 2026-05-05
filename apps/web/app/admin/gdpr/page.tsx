@@ -5,9 +5,20 @@ import { AdminDashboardShell } from '@/components/AdminDashboardShell';
 import { GdprRequestPanel } from '@/components/GdprRequestPanel';
 import type { AuthIdentity } from '@/lib/api';
 
-function GdprAdminPageContent({ identity, logout }: { identity: AuthIdentity; logout: () => Promise<void> }) {
+function GdprAdminPageContent({
+  identity,
+  logout,
+}: {
+  identity: AuthIdentity;
+  logout: () => Promise<void>;
+}) {
   return (
-    <AdminDashboardShell identity={identity} logout={logout} title="GDPR" subtitle="Data subject export and delete dry-run.">
+    <AdminDashboardShell
+      identity={identity}
+      logout={logout}
+      title="GDPR"
+      subtitle="Data subject export and delete dry-run."
+    >
       <div className="mx-auto max-w-4xl">
         <GdprRequestPanel identity={identity} />
       </div>
@@ -16,5 +27,9 @@ function GdprAdminPageContent({ identity, logout }: { identity: AuthIdentity; lo
 }
 
 export default function GdprAdminPage() {
-  return <AuthGate>{(identity, logout) => <GdprAdminPageContent identity={identity} logout={logout} />}</AuthGate>;
+  return (
+    <AuthGate>
+      {(identity, logout) => <GdprAdminPageContent identity={identity} logout={logout} />}
+    </AuthGate>
+  );
 }

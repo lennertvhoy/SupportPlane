@@ -33,17 +33,25 @@ export const DeliveryPolicy = z.object({
   requireEvidenceBundleBeforeDelivery: z.boolean().default(false),
   requireConnectorValidationBeforeDelivery: z.boolean().default(false),
   retryPolicy: RetryPolicyConfig.default({}),
-  deadLetterPolicy: z.object({
-    enabled: z.boolean().default(true),
-    maxAttemptsBeforeDeadLetter: z.number().int().min(1).max(20).default(3),
-    requireManualRetry: z.boolean().default(true),
-  }).default({}),
+  deadLetterPolicy: z
+    .object({
+      enabled: z.boolean().default(true),
+      maxAttemptsBeforeDeadLetter: z.number().int().min(1).max(20).default(3),
+      requireManualRetry: z.boolean().default(true),
+    })
+    .default({}),
   updatedBy: z.string().nullable().default(null),
-  updatedAt: z.string().datetime().default(() => new Date().toISOString()),
+  updatedAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
   policyVersion: z.number().int().min(1).default(1),
   lastValidationStatus: z.enum(['valid', 'invalid', 'pending', 'not_run']).default('not_run'),
   safetyFlags: DeliveryPolicySafetyFlags.default({}),
-  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  createdAt: z
+    .string()
+    .datetime()
+    .default(() => new Date().toISOString()),
 });
 
 export type DeliveryPolicy = z.infer<typeof DeliveryPolicy>;
@@ -97,11 +105,13 @@ export const DeliveryPolicyUpdateRequest = z.object({
   requireEvidenceBundleBeforeDelivery: z.boolean().optional(),
   requireConnectorValidationBeforeDelivery: z.boolean().optional(),
   retryPolicy: RetryPolicyConfig.optional(),
-  deadLetterPolicy: z.object({
-    enabled: z.boolean().optional(),
-    maxAttemptsBeforeDeadLetter: z.number().int().min(1).max(20).optional(),
-    requireManualRetry: z.boolean().optional(),
-  }).optional(),
+  deadLetterPolicy: z
+    .object({
+      enabled: z.boolean().optional(),
+      maxAttemptsBeforeDeadLetter: z.number().int().min(1).max(20).optional(),
+      requireManualRetry: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 export type DeliveryPolicyUpdateRequest = z.infer<typeof DeliveryPolicyUpdateRequest>;

@@ -29,6 +29,7 @@ automatically via `instructions` in `.opencode/opencode.json`.
 ## Mandatory Behaviors
 
 ### Truth Discipline
+
 - Never claim completion from code changes alone.
 - User-facing behavior requires direct runtime verification.
 - Negative searches stay negative: use `not found`, `not currently locatable`,
@@ -37,6 +38,7 @@ automatically via `instructions` in `.opencode/opencode.json`.
   `observed`, `unknown`, `reported`, `blocked`, `assumed`, `stale`, `invalid`.
 
 ### Evidence Capture
+
 - Every user-visible change requires browser verification or test output.
 - Evidence is not optional. "I'll do it later" or "the user didn't ask" is not
   acceptable.
@@ -48,6 +50,7 @@ automatically via `instructions` in `.opencode/opencode.json`.
 - Delete superseded evidence folders for the same backlog item.
 
 ### Browser Verification
+
 - Use Playwright MCP for user-visible behavior verification.
 - Capture screenshots that show distinct states, interactions, or panels.
 - Viewport-only captures preferred; full-page only when vertical context matters.
@@ -56,6 +59,7 @@ automatically via `instructions` in `.opencode/opencode.json`.
 - Commit the reproducible screenshot script.
 
 ### Code Quality
+
 - Before closure, run relevant lint/typecheck/tests:
   - `npm run lint`
   - `npm run typecheck`
@@ -65,6 +69,7 @@ automatically via `instructions` in `.opencode/opencode.json`.
 - Follow existing code conventions (imports, naming, patterns).
 
 ### Docs Sync
+
 - Update state docs to match actual truth.
 - `BACKLOG.md` must have honest status markers for affected items.
 - `NEXT_ACTIONS.md` must remove closed items, add new items.
@@ -75,12 +80,15 @@ automatically via `instructions` in `.opencode/opencode.json`.
 - No stale claims, TODO drift, or contradicted states.
 
 ### Clean Worktree
+
 - Ensure `git status --short --branch` is clean before closure unless user
   explicitly asked not to commit.
 - Never commit secrets, `.env`, or output/ directories.
 
 ### Closure Gate
+
 Refuse closure if:
+
 - Runtime identity, docs, evidence, or tests contradict the claim.
 - Required browser-proof states from the prompt are missing.
 - Any `501 Not Implemented` stub is presented as complete without honest labeling.
@@ -91,6 +99,7 @@ Refuse closure if:
 ## Final Handoff Report Structure
 
 Every session must end with these 7 sections:
+
 1. **Commits** — full hashes for all commits in the slice
 2. **Worktree** — `git status --short --branch` output
 3. **What Changed** — concise bullet list
@@ -104,6 +113,7 @@ Use `prompts/FINAL_HANDOFF_TEMPLATE.md` for canonical shape.
 ## Services and Ports (SupportPlane)
 
 Keep these in mind during verification:
+
 - Web UI: `localhost:3200` (Next.js)
 - API: `localhost:4110` (NestJS)
 - Database: PostgreSQL on host port 5434

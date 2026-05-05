@@ -4,11 +4,7 @@ import { EntityId, Timestamp, TenantId, JsonValue } from './base.js';
 export const PolicyDecisionId = EntityId.brand<'PolicyDecisionId'>();
 export type PolicyDecisionId = z.infer<typeof PolicyDecisionId>;
 
-export const PolicyDecisionOutcome = z.enum([
-  'allow',
-  'deny',
-  'approve_required',
-]);
+export const PolicyDecisionOutcome = z.enum(['allow', 'deny', 'approve_required']);
 
 export type PolicyDecisionOutcome = z.infer<typeof PolicyDecisionOutcome>;
 

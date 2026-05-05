@@ -1,6 +1,10 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import type { Request, Response, NextFunction } from 'express';
-import { createCorrelationId, normalizeCorrelationId, runWithCorrelationId } from './correlation.js';
+import {
+  createCorrelationId,
+  normalizeCorrelationId,
+  runWithCorrelationId,
+} from './correlation.js';
 import { telemetry } from './telemetry.service.js';
 
 @Injectable()
@@ -25,7 +29,8 @@ export class CorrelationMiddleware implements NestMiddleware {
         telemetry.log({
           event: 'api_request_completed',
           correlationId,
-          tenantId: typeof req.headers['x-tenant-id'] === 'string' ? req.headers['x-tenant-id'] : undefined,
+          tenantId:
+            typeof req.headers['x-tenant-id'] === 'string' ? req.headers['x-tenant-id'] : undefined,
           result: String(res.statusCode),
           metadata: {
             method: req.method,

@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-05 09:20 CEST
+**Updated At:** 2026-05-05 09:45 CEST
 **Execution Mode:** operating
-**Project State:** session_159_bl148_149_150_151_152_runtime_security_assurance_accepted
+**Project State:** session_161_bl153_ci_quality_gate_foundation_accepted
 **Public URL:** not configured
 
 ## Snapshot
@@ -13,7 +13,7 @@
 - **First-Open UX Control Audit & Enterprise Readiness Pass [accepted]:** BL-143. Session 095: InfoTooltip/BoundaryLabel components, DemoGuidePanel with persistent Show/Hide, SandboxBoundaryPanel, main page reorganized with primary/secondary split, header Tools dropdown, ConnectorStatusPanel info tooltips, AuthGate sandbox warning. Ticket ID defaults fixed (TICKET-101→2). 17 evidence files. Web image rebuilt/deployed. TypeScript/lint/tests pass (0 errors). Deferred to BL-144/145/146/147: full control inventory, IA simplification, language audit, design-system consistency.
 - **Runtime/security assurance [accepted]:** BL-148/149/150/151/152. Session 158: BL-148 rebuilt API/Web/Worker images, loaded to Kind cluster, restarted deployments, verified `/health` HEAD matches git HEAD; BL-149 fixed ModelUsageService crash; BL-150 added Tool Registry RBAC; BL-151 added web error boundary & aria-labels; BL-152 created 8 compliance precheck docs.
 - **Blocked/planned items:** BL-127 [blocked] (osTicket), BL-071 [partial/planned-real-sandbox] (MeshCentral), BL-144/145/146/147 [planned] (full control inventory, IA simplification, language audit, design-system consistency).
-- **Automation/design/assurance track [planned]:** BL-153 (CI/CD hardening), BL-154 (test trustworthiness), BL-155 (DevSecOps audit foundation), BL-156 (accessibility/contrast pass), BL-157 (browser E2E smoke), BL-158 (release evidence hygiene gate), BL-159 (supply chain/SBOM/license). Session 160 completed coordinated backlog review with 5 parallel subagent audits.
+- **Automation/design/assurance track [partial]:** BL-153 `[accepted]` CI quality gate implemented with `ci.yml` (quality + security-baseline + docs-governance jobs), PostgreSQL service container, local validation passes. BL-154 `[partial]` skip reasons documented. BL-155 `[partial]` dependency audit in CI + `security-baseline.sh` scaffold. BL-156 `[planned]` accessibility/contrast pass. BL-157 `[planned]` browser E2E smoke. BL-158 `[partial]` runtime identity + evidence hygiene scripts created. BL-159 `[planned]` supply chain/SBOM/license.
 
 ## Active Blockers
 
@@ -33,5 +33,6 @@
 - Evidence BL-143: `output/playwright/session-157-bl143-first-open-ux-enterprise-readiness/` (17 files).
 - Evidence BL-141 + BL-142 (canonical): `output/playwright/session-156-final-tester-readiness-closure/` (20 files).
 - Evidence BL-148/149/150/151/152: `output/playwright/session-159-bl148-149-150-151-152-runtime-security-assurance/` (16 files).
+- Evidence BL-153: `output/playwright/session-161-ci-quality-gate-foundation/` (7 files).
 - Demo URL: `http://localhost:3300`, API: `http://localhost:4210`.
 - Tailscale Funnel: OFF.

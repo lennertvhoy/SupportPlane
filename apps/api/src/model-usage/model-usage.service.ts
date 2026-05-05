@@ -2,11 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
-import {
-  ModelUsageLogEntry,
-  ModelUsageQuery,
-  ModelUsageSummary,
-} from '@supportplane/contracts';
+import { ModelUsageLogEntry, ModelUsageQuery, ModelUsageSummary } from '@supportplane/contracts';
 
 function createPrismaClient(): PrismaClient {
   const databaseUrl = process.env['DATABASE_URL'];

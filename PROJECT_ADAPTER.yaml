@@ -1,6 +1,6 @@
 # PROJECT_ADAPTER.yaml - Project-specific adapter
 
-version: "statedd-template-v3"
+version: 'statedd-template-v3'
 
 project:
   name: SupportPlane
@@ -8,13 +8,13 @@ project:
   description: Governed AI support cockpit for IT support teams and MSPs.
 
 vocabulary:
-  support_session: "central support interaction timeline"
-  ai_context_packet: "explicit structured context passed to the AI orchestrator"
-  policy_engine: "deterministic allow/deny/approval evaluator"
-  execution_gateway: "server-side gateway that dispatches approved tool actions"
-  evidence_bundle: "exportable record of context, actions, approvals, and outputs"
-  operator_companion: "support-worker desktop app for active-window context"
-  endpoint_agent: "customer/device-side agent for diagnostics and approved actions"
+  support_session: 'central support interaction timeline'
+  ai_context_packet: 'explicit structured context passed to the AI orchestrator'
+  policy_engine: 'deterministic allow/deny/approval evaluator'
+  execution_gateway: 'server-side gateway that dispatches approved tool actions'
+  evidence_bundle: 'exportable record of context, actions, approvals, and outputs'
+  operator_companion: 'support-worker desktop app for active-window context'
+  endpoint_agent: 'customer/device-side agent for diagnostics and approved actions'
 
 runtime:
   execution_mode: operating
@@ -74,6 +74,6 @@ integrations:
     - Ollama_later
 
 notes:
-  - "MVP 1 starts with ticket-aware AI cockpit; no endpoint agent or operator companion yet."
-  - "Do not store raw sensitive prompts indefinitely unless tenant policy allows it."
-  - "Do not market MVP as fully compliant; market governance and evidence readiness only."
+  - 'MVP 1 starts with ticket-aware AI cockpit; no endpoint agent or operator companion yet.'
+  - 'Do not store raw sensitive prompts indefinitely unless tenant policy allows it.'
+  - 'Do not market MVP as fully compliant; market governance and evidence readiness only.'

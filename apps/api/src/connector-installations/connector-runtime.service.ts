@@ -50,11 +50,7 @@ const ALLOWED_CONFIG_KEYS_MOCK = [
   'linkedCredentialReferenceIds',
 ];
 
-const ALLOWED_CONFIG_KEYS_REAL = [
-  ...ALLOWED_CONFIG_KEYS_MOCK,
-  'baseUrl',
-  'apiToken',
-];
+const ALLOWED_CONFIG_KEYS_REAL = [...ALLOWED_CONFIG_KEYS_MOCK, 'baseUrl', 'apiToken'];
 
 @Injectable()
 export class ConnectorRuntimeService {
@@ -62,15 +58,18 @@ export class ConnectorRuntimeService {
     @Inject(InMemoryStore)
     private readonly store: Store,
     @Inject(CredentialResolverService)
-    private readonly credentialResolver: CredentialResolverService
+    private readonly credentialResolver: CredentialResolverService,
   ) {}
 
   async getConfigSchema(
     identity: DevIdentity,
-    installationId: string
+    installationId: string,
   ): Promise<ConnectorConfigSchemaResponse> {
     requirePermission(identity, 'connector_installation:read');
-    const installation = await this.store.getConnectorInstallation(identity.tenantId, installationId);
+    const installation = await this.store.getConnectorInstallation(
+      identity.tenantId,
+      installationId,
+    );
     if (!installation) {
       throw new NotFoundException(`Connector installation ${installationId} not found`);
     }
@@ -99,14 +98,38 @@ export class ConnectorRuntimeService {
           baseUrlPlaceholder: { type: 'string', description: 'Mock endpoint label or placeholder' },
           baseUrl: { type: 'string', description: 'Real Zammad base URL (required for real mode)' },
           apiToken: { type: 'string', description: 'Zammad API token (required for real mode)' },
-          timeoutMs: { type: 'integer', minimum: 1000, maximum: 60000, description: 'Request timeout in milliseconds' },
-          capabilities: { type: 'array', items: { type: 'string' }, description: 'Connector capabilities' },
-          validateBeforeWrite: { type: 'boolean', description: 'Require validation before write operations' },
-          maxRetries: { type: 'integer', minimum: 0, maximum: 10, description: 'Maximum retry attempts' },
-          mockMode: { type: 'boolean', description: 'Mock mode — true for mock, false for real Zammad' },
+          timeoutMs: {
+            type: 'integer',
+            minimum: 1000,
+            maximum: 60000,
+            description: 'Request timeout in milliseconds',
+          },
+          capabilities: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Connector capabilities',
+          },
+          validateBeforeWrite: {
+            type: 'boolean',
+            description: 'Require validation before write operations',
+          },
+          maxRetries: {
+            type: 'integer',
+            minimum: 0,
+            maximum: 10,
+            description: 'Maximum retry attempts',
+          },
+          mockMode: {
+            type: 'boolean',
+            description: 'Mock mode — true for mock, false for real Zammad',
+          },
           status: { type: 'string', enum: ['active', 'inactive', 'error'] },
           enabled: { type: 'boolean', description: 'Whether the connector is enabled' },
-          linkedCredentialReferenceIds: { type: 'array', items: { type: 'string' }, description: 'Linked credential reference IDs' },
+          linkedCredentialReferenceIds: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Linked credential reference IDs',
+          },
         },
         required: ['mockMode'],
         additionalProperties: false,
@@ -120,16 +143,24 @@ export class ConnectorRuntimeService {
   async validateConfig(
     identity: DevIdentity,
     installationId: string,
-    config: Record<string, unknown>
+    config: Record<string, unknown>,
   ): Promise<{ installationId: string; result: ConnectorRuntimeConfigValidationResult }> {
     requirePermission(identity, 'connector_installation:test');
-    const installation = await this.store.getConnectorInstallation(identity.tenantId, installationId);
+    const installation = await this.store.getConnectorInstallation(
+      identity.tenantId,
+      installationId,
+    );
     if (!installation) {
       throw new NotFoundException(`Connector installation ${installationId} not found`);
     }
 
     const isMock = config.mockMode === true;
-    const issues: Array<{ field: string; severity: 'error' | 'warning'; message: string; code: string }> = [];
+    const issues: Array<{
+      field: string;
+      severity: 'error' | 'warning';
+      message: string;
+      code: string;
+    }> = [];
     const warnings: string[] = [];
 
     // Check mockMode presence
@@ -175,7 +206,11 @@ export class ConnectorRuntimeService {
       const realNetworkImplyingKeys = ['baseUrl', 'endpoint', 'url', 'host', 'proxy'];
       for (const key of Object.keys(config)) {
         const lowerKey = key.toLowerCase();
-        if (realNetworkImplyingKeys.some((rk) => lowerKey.includes(rk) && lowerKey !== 'baseurlplaceholder')) {
+        if (
+          realNetworkImplyingKeys.some(
+            (rk) => lowerKey.includes(rk) && lowerKey !== 'baseurlplaceholder',
+          )
+        ) {
           issues.push({
             field: key,
             severity: 'error',
@@ -198,18 +233,26 @@ export class ConnectorRuntimeService {
       }
 
       if (!config.baseUrl && !process.env.ZAMMAD_BASE_URL) {
-        warnings.push('No baseUrl configured in installation config and ZAMMAD_BASE_URL env var is not set. Real connection may fail.');
+        warnings.push(
+          'No baseUrl configured in installation config and ZAMMAD_BASE_URL env var is not set. Real connection may fail.',
+        );
       }
       if (!config.apiToken && !process.env.ZAMMAD_API_TOKEN) {
-        warnings.push('No apiToken configured in installation config and ZAMMAD_API_TOKEN env var is not set. Real connection may fail.');
+        warnings.push(
+          'No apiToken configured in installation config and ZAMMAD_API_TOKEN env var is not set. Real connection may fail.',
+        );
       }
-      warnings.push('Real network mode is enabled. Connector will make actual HTTP calls to Zammad.');
+      warnings.push(
+        'Real network mode is enabled. Connector will make actual HTTP calls to Zammad.',
+      );
     }
 
     if (issues.length === 0) {
-      warnings.push(isMock
-        ? 'Config is valid for mock-only mode. No real network call will be made.'
-        : 'Config is valid for real Zammad mode. Actual network calls will be made.');
+      warnings.push(
+        isMock
+          ? 'Config is valid for mock-only mode. No real network call will be made.'
+          : 'Config is valid for real Zammad mode. Actual network calls will be made.',
+      );
     }
 
     const result: ConnectorRuntimeConfigValidationResult = {
@@ -222,24 +265,33 @@ export class ConnectorRuntimeService {
       timestamp: new Date().toISOString(),
     };
 
-    await this.appendAuditEvent(identity, AuditEventType.enum.connector_config_validated, 'connector_installation', installationId, {
-      valid: result.valid,
-      issueCount: issues.length,
-      warningCount: warnings.length,
-      mockMode: isMock,
-      realNetwork: result.realNetwork,
-      registryPattern: Boolean(factory),
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.connector_config_validated,
+      'connector_installation',
+      installationId,
+      {
+        valid: result.valid,
+        issueCount: issues.length,
+        warningCount: warnings.length,
+        mockMode: isMock,
+        realNetwork: result.realNetwork,
+        registryPattern: Boolean(factory),
+      },
+    );
 
     return { installationId, result };
   }
 
   async checkRuntimeReadiness(
     identity: DevIdentity,
-    installationId: string
+    installationId: string,
   ): Promise<{ installationId: string; result: ConnectorRuntimeReadinessResult }> {
     requirePermission(identity, 'connector_installation:test');
-    const installation = await this.store.getConnectorInstallation(identity.tenantId, installationId);
+    const installation = await this.store.getConnectorInstallation(
+      identity.tenantId,
+      installationId,
+    );
     if (!installation) {
       throw new NotFoundException(`Connector installation ${installationId} not found`);
     }
@@ -253,7 +305,13 @@ export class ConnectorRuntimeService {
     const hasWriteNotes = factory?.capabilities.includes('write_notes') ?? false;
     const sandboxEnabled = process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true';
     const openbaoEnabled = process.env['OPENBAO_RESOLVER_ENABLED'] === 'true';
-    const sandboxWritebackReady = !isMock && installation.enabled === true && hasWriteNotes && linkedCount > 0 && openbaoEnabled && sandboxEnabled;
+    const sandboxWritebackReady =
+      !isMock &&
+      installation.enabled === true &&
+      hasWriteNotes &&
+      linkedCount > 0 &&
+      openbaoEnabled &&
+      sandboxEnabled;
 
     const warnings: string[] = isMock
       ? [
@@ -266,7 +324,9 @@ export class ConnectorRuntimeService {
           sandboxWritebackReady
             ? 'Sandbox internal-note writeback is enabled; no public reply; no production writeback.'
             : 'Sandbox writeback is not ready (missing credentials, disabled, or missing write_notes capability).',
-          openbaoEnabled ? 'OpenBao sandbox resolver is active.' : 'Secret resolution is not implemented — env vars will be used.',
+          openbaoEnabled
+            ? 'OpenBao sandbox resolver is active.'
+            : 'Secret resolution is not implemented — env vars will be used.',
         ];
 
     if (linkedCount === 0) {
@@ -278,9 +338,13 @@ export class ConnectorRuntimeService {
     }
 
     if (factory) {
-      warnings.push(`Adapter '${factory.adapterType}' is registered with capabilities: ${factory.capabilities.join(', ')}.`);
+      warnings.push(
+        `Adapter '${factory.adapterType}' is registered with capabilities: ${factory.capabilities.join(', ')}.`,
+      );
     } else {
-      warnings.push(`Adapter '${installation.adapterType}' is not registered in the adapter registry.`);
+      warnings.push(
+        `Adapter '${installation.adapterType}' is not registered in the adapter registry.`,
+      );
     }
 
     const result: ConnectorRuntimeReadinessResult = {
@@ -298,26 +362,32 @@ export class ConnectorRuntimeService {
       timestamp: new Date().toISOString(),
     };
 
-    await this.appendAuditEvent(identity, AuditEventType.enum.connector_readiness_checked, 'connector_installation', installationId, {
-      mockReady: result.mockReady,
-      realReady: result.realReady,
-      credentialReferencesLinked: result.credentialReferencesLinked,
-      mockMode: isMock,
-      registryPattern: Boolean(factory),
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.connector_readiness_checked,
+      'connector_installation',
+      installationId,
+      {
+        mockReady: result.mockReady,
+        realReady: result.realReady,
+        credentialReferencesLinked: result.credentialReferencesLinked,
+        mockMode: isMock,
+        registryPattern: Boolean(factory),
+      },
+    );
 
     return { installationId, result };
   }
 
   async resolveRuntime(
     identity: DevIdentity,
-    connectorType: string
+    connectorType: string,
   ): Promise<ConnectorRuntimeResolverResult> {
     requirePermission(identity, 'connector_installation:read');
     const installations = await this.store.listConnectorInstallations(identity.tenantId);
-    const installation = installations.find(
-      (i) => i.adapterType === connectorType && i.enabled
-    ) ?? installations.find((i) => i.adapterType === connectorType);
+    const installation =
+      installations.find((i) => i.adapterType === connectorType && i.enabled) ??
+      installations.find((i) => i.adapterType === connectorType);
 
     if (!installation) {
       throw new NotFoundException(`No connector installation found for type ${connectorType}`);
@@ -331,8 +401,14 @@ export class ConnectorRuntimeService {
     const hasWriteNotes = factory?.capabilities.includes('write_notes') ?? false;
     const sandboxEnabled = process.env['SUPPORTPLANE_SANDBOX_WRITEBACK_ENABLED'] === 'true';
     const openbaoEnabled = process.env['OPENBAO_RESOLVER_ENABLED'] === 'true';
-    const sandboxWritebackReady = !isMock && installation.enabled === true && hasWriteNotes && credentialRefs.length > 0 && openbaoEnabled && sandboxEnabled;
-    const mode = isMock ? 'mock' : (sandboxWritebackReady ? 'sandbox' : 'zammad');
+    const sandboxWritebackReady =
+      !isMock &&
+      installation.enabled === true &&
+      hasWriteNotes &&
+      credentialRefs.length > 0 &&
+      openbaoEnabled &&
+      sandboxEnabled;
+    const mode = isMock ? 'mock' : sandboxWritebackReady ? 'sandbox' : 'zammad';
 
     const readiness: ConnectorRuntimeReadinessResult = {
       mockReady: isMock && installation.enabled === true,
@@ -355,7 +431,9 @@ export class ConnectorRuntimeService {
             sandboxWritebackReady
               ? 'Sandbox internal-note writeback is enabled; no public reply; no production writeback.'
               : 'Writeback is not ready (missing credentials, capability, or sandbox gates).',
-            openbaoEnabled ? 'OpenBao sandbox resolver is active.' : 'Secret resolution is not implemented — env vars will be used.',
+            openbaoEnabled
+              ? 'OpenBao sandbox resolver is active.'
+              : 'Secret resolution is not implemented — env vars will be used.',
           ],
       credentialReferencesLinked: credentialRefs.length > 0,
       linkedCredentialReferenceCount: credentialRefs.length,
@@ -379,15 +457,21 @@ export class ConnectorRuntimeService {
       readiness,
     };
 
-    await this.appendAuditEvent(identity, AuditEventType.enum.connector_runtime_resolved, 'connector_installation', installation.id, {
-      connectorType,
-      mode: result.mode,
-      realNetwork: result.realNetwork,
-      credentialReferenceCount: credentialRefs.length,
-      mockMode: isMock,
-      registryPattern: Boolean(factory),
-      registeredCapabilities: factory?.capabilities ?? [],
-    });
+    await this.appendAuditEvent(
+      identity,
+      AuditEventType.enum.connector_runtime_resolved,
+      'connector_installation',
+      installation.id,
+      {
+        connectorType,
+        mode: result.mode,
+        realNetwork: result.realNetwork,
+        credentialReferenceCount: credentialRefs.length,
+        mockMode: isMock,
+        registryPattern: Boolean(factory),
+        registeredCapabilities: factory?.capabilities ?? [],
+      },
+    );
 
     return result;
   }
@@ -420,7 +504,7 @@ export class ConnectorRuntimeService {
 
   private async resolveCredentialReferences(
     tenantId: string,
-    installation: ConnectorInstallationShape
+    installation: ConnectorInstallationShape,
   ): Promise<ConnectorRuntimeCredentialReferenceMetadata[]> {
     const refs: ConnectorRuntimeCredentialReferenceMetadata[] = [];
     for (const credId of installation.secretReferenceIds ?? []) {
@@ -434,7 +518,8 @@ export class ConnectorRuntimeService {
           lastValidatedAt: cred.lastValidatedAt,
           secretResolutionImplemented: process.env['OPENBAO_RESOLVER_ENABLED'] === 'true',
           resolver: process.env['OPENBAO_RESOLVER_ENABLED'] === 'true' ? 'openbao' : 'disabled',
-          resolverMode: process.env['OPENBAO_RESOLVER_ENABLED'] === 'true' ? 'local-sandbox' : 'disabled',
+          resolverMode:
+            process.env['OPENBAO_RESOLVER_ENABLED'] === 'true' ? 'local-sandbox' : 'disabled',
           resolved: process.env['OPENBAO_RESOLVER_ENABLED'] === 'true' && cred.status === 'active',
           secretExposed: false,
         });
@@ -448,7 +533,7 @@ export class ConnectorRuntimeService {
     eventType: AuditEventType,
     resourceType: string,
     resourceId: string,
-    metadata: Record<string, unknown> = {}
+    metadata: Record<string, unknown> = {},
   ): Promise<void> {
     const now = new Date().toISOString();
     const event: AuditEventShape = {

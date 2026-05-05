@@ -15,11 +15,11 @@ The local cluster is a development and proof environment. It is not a production
 
 ## Candidate Approaches
 
-| Candidate | Why it is a candidate | Verification status |
-|---|---|---|
-| Kind with Podman provider | Common local Kubernetes workflow; good local image-load ergonomics; can avoid Docker Desktop. | Verified in BL-103 with `kindest/node:v1.31.4`. |
-| Minikube with Podman driver | Explicit local-driver workflow; supports add-ons, ingress, storage classes, and local image strategies. | Not attempted in BL-103 because Kind/Podman succeeded; `minikube` was missing on the host. |
-| Kubernetes-in-Podman alternatives | Possible if Kind/Minikube fail with rootless Podman or host networking constraints. | To evaluate only if primary candidates fail. |
+| Candidate                         | Why it is a candidate                                                                                   | Verification status                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Kind with Podman provider         | Common local Kubernetes workflow; good local image-load ergonomics; can avoid Docker Desktop.           | Verified in BL-103 with `kindest/node:v1.31.4`.                                            |
+| Minikube with Podman driver       | Explicit local-driver workflow; supports add-ons, ingress, storage classes, and local image strategies. | Not attempted in BL-103 because Kind/Podman succeeded; `minikube` was missing on the host. |
+| Kubernetes-in-Podman alternatives | Possible if Kind/Minikube fail with rootless Podman or host networking constraints.                     | To evaluate only if primary candidates fail.                                               |
 
 ## Decision Criteria
 
@@ -46,19 +46,19 @@ Disposition: Kind v0.27.0's default `kindest/node:v1.32.2` started under Podman 
 
 ## Namespace Plan
 
-| Namespace | Purpose |
-|---|---|
-| `supportplane-app` | SupportPlane Web, API, Worker. |
-| `supportplane-data` | PostgreSQL and MinIO. |
-| `supportplane-integrations` | Zammad, Ollama, OpenBao, NATS JetStream, Mailpit. |
+| Namespace                    | Purpose                                             |
+| ---------------------------- | --------------------------------------------------- |
+| `supportplane-app`           | SupportPlane Web, API, Worker.                      |
+| `supportplane-data`          | PostgreSQL and MinIO.                               |
+| `supportplane-integrations`  | Zammad, Ollama, OpenBao, NATS JetStream, Mailpit.   |
 | `supportplane-observability` | OpenTelemetry collector, Grafana, Loki, Prometheus. |
 
 ## Local Image and Tag Strategy
 
-| Image | Suggested local tag | Load strategy |
-|---|---|---|
-| SupportPlane API | `localhost/supportplane-api:local-dev` | Podman build, `podman save`, then `kind load image-archive`; app image build remains BL-104. |
-| SupportPlane Web | `localhost/supportplane-web:local-dev` | Podman build, `podman save`, then `kind load image-archive`; app image build remains BL-104. |
+| Image               | Suggested local tag                       | Load strategy                                                                                |
+| ------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------- |
+| SupportPlane API    | `localhost/supportplane-api:local-dev`    | Podman build, `podman save`, then `kind load image-archive`; app image build remains BL-104. |
+| SupportPlane Web    | `localhost/supportplane-web:local-dev`    | Podman build, `podman save`, then `kind load image-archive`; app image build remains BL-104. |
 | SupportPlane Worker | `localhost/supportplane-worker:local-dev` | Podman build, `podman save`, then `kind load image-archive`; app image build remains BL-104. |
 
 BL-103 proved the archive load path with disposable image `localhost/supportplane-k8s-smoke:bl103`. The direct `kind load docker-image` command did not find the rootless Podman image and should not be the default for BL-104 unless reverified.
@@ -76,17 +76,17 @@ BL-103 proved the archive load path with disposable image `localhost/supportplan
 
 ## Storage Strategy
 
-| Component | Storage target | Status |
-|---|---|---|
-| PostgreSQL | PVC `postgres-data` 1Gi in `supportplane-data` | Bound, restart survival verified in BL-105. |
-| Zammad | PVC `zammad-storage` 512Mi in `supportplane-integrations`; PVC `zammad-postgres-data` 512Mi | Bound. |
-| Zammad search | Disabled (`ELASTICSEARCH_ENABLED=false`) | Database search used for sandbox. |
-| Keycloak PostgreSQL | PVC `keycloak-postgres-data` 256Mi in `supportplane-integrations` | Bound. |
-| OpenBao | PVC `openbao-data` 256Mi in `supportplane-integrations` | Bound. |
-| MinIO | PVC `minio-data` 1Gi in `supportplane-data` | Bound. |
-| NATS JetStream | PVC `nats-jetstream-data` 512Mi in `supportplane-integrations` | Bound. |
-| Mailpit | No PVC (ephemeral) | Acceptable for local sandbox. |
-| Observability | Ephemeral `emptyDir` only | BL-114 local-only baseline accepted: OTel Collector, Prometheus, Grafana, and Loki-ready stack. |
+| Component           | Storage target                                                                              | Status                                                                                          |
+| ------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| PostgreSQL          | PVC `postgres-data` 1Gi in `supportplane-data`                                              | Bound, restart survival verified in BL-105.                                                     |
+| Zammad              | PVC `zammad-storage` 512Mi in `supportplane-integrations`; PVC `zammad-postgres-data` 512Mi | Bound.                                                                                          |
+| Zammad search       | Disabled (`ELASTICSEARCH_ENABLED=false`)                                                    | Database search used for sandbox.                                                               |
+| Keycloak PostgreSQL | PVC `keycloak-postgres-data` 256Mi in `supportplane-integrations`                           | Bound.                                                                                          |
+| OpenBao             | PVC `openbao-data` 256Mi in `supportplane-integrations`                                     | Bound.                                                                                          |
+| MinIO               | PVC `minio-data` 1Gi in `supportplane-data`                                                 | Bound.                                                                                          |
+| NATS JetStream      | PVC `nats-jetstream-data` 512Mi in `supportplane-integrations`                              | Bound.                                                                                          |
+| Mailpit             | No PVC (ephemeral)                                                                          | Acceptable for local sandbox.                                                                   |
+| Observability       | Ephemeral `emptyDir` only                                                                   | BL-114 local-only baseline accepted: OTel Collector, Prometheus, Grafana, and Loki-ready stack. |
 
 ## Secret Strategy
 

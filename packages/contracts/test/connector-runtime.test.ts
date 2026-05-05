@@ -329,7 +329,7 @@ describe('connector runtime contracts', () => {
       assert.strictEqual(
         (parsed.data.credentialReferences[0] as Record<string, unknown>).secretRef,
         undefined,
-        'secretRef must be stripped or undefined'
+        'secretRef must be stripped or undefined',
       );
     }
   });

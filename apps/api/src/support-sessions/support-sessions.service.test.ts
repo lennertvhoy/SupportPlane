@@ -52,15 +52,14 @@ describe('SupportSessionsService — AI vertical', () => {
           service.generateDraftSuggestion(identity, sessionId, {
             modelSelection: { provider: 'openai', model: 'gpt-4' },
           }),
-        (err: unknown) => err instanceof BadRequestException
+        (err: unknown) => err instanceof BadRequestException,
       );
     });
 
     it('throws NotFoundException for unknown session', async () => {
       await assert.rejects(
-        async () =>
-          service.generateDraftSuggestion(identity, 'nonexistent-session', {}),
-        (err: unknown) => err instanceof NotFoundException
+        async () => service.generateDraftSuggestion(identity, 'nonexistent-session', {}),
+        (err: unknown) => err instanceof NotFoundException,
       );
     });
 
@@ -76,7 +75,7 @@ describe('SupportSessionsService — AI vertical', () => {
           allowedProviders: ['mock'],
           allowDraftGeneration: false,
         } as never,
-        'ai'
+        'ai',
       );
 
       await assert.rejects(
@@ -88,7 +87,7 @@ describe('SupportSessionsService — AI vertical', () => {
           if (!(err instanceof ForbiddenException)) return false;
           const response = (err as unknown as { response: Record<string, unknown> }).response;
           return response?.code === 'blocked_by_policy';
-        }
+        },
       );
     });
 
@@ -105,7 +104,7 @@ describe('SupportSessionsService — AI vertical', () => {
           allowDraftGeneration: true,
           safetyFlags: { mockOnly: true },
         } as never,
-        'ai'
+        'ai',
       );
 
       const response = await service.generateDraftSuggestion(identity, sessionId, {
@@ -124,7 +123,9 @@ describe('SupportSessionsService — AI vertical', () => {
 
       const auditEvents = store.getAuditEvents(identity.tenantId, sessionId);
       const writebackEvents = auditEvents.filter((e) =>
-        ['internal_note_writeback_attempted', 'internal_note_writeback_succeeded'].includes(e.eventType)
+        ['internal_note_writeback_attempted', 'internal_note_writeback_succeeded'].includes(
+          e.eventType,
+        ),
       );
       assert.strictEqual(writebackEvents.length, 0);
 
@@ -169,7 +170,7 @@ describe('SupportSessionsService — AI vertical', () => {
           allowedProviders: ['mock'],
           allowSummaryGeneration: false,
         } as never,
-        'ai'
+        'ai',
       );
 
       await assert.rejects(
@@ -181,7 +182,7 @@ describe('SupportSessionsService — AI vertical', () => {
           if (!(err instanceof ForbiddenException)) return false;
           const response = (err as unknown as { response: Record<string, unknown> }).response;
           return response?.code === 'blocked_by_policy';
-        }
+        },
       );
     });
   });
@@ -206,7 +207,9 @@ describe('SupportSessionsService — AI vertical', () => {
       });
 
       const auditEvents = store.getAuditEvents(identity.tenantId, sessionId);
-      const greetingEvent = auditEvents.find((e) => e.eventType === 'greeting_suggestion_generated');
+      const greetingEvent = auditEvents.find(
+        (e) => e.eventType === 'greeting_suggestion_generated',
+      );
       assert.ok(greetingEvent, 'expected greeting_suggestion_generated audit event');
     });
   });

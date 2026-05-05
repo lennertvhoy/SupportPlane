@@ -8,10 +8,13 @@
 **Worktree:** clean
 
 ### What changed
+
 - Created a minimal sample project fixture in bootstrap mode.
 
 ### Verification
+
 - Baseline docs created with explicit unknowns.
 
 ### Follow-up
+
 1. Transition the fixture to operating mode.

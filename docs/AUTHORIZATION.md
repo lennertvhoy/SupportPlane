@@ -7,10 +7,10 @@
 
 SupportPlane now has two explicit local auth modes:
 
-| Mode | Env var | Behavior |
-|------|---------|----------|
-| Dev headers | `SUPPORTPLANE_AUTH_MODE=dev` | Preserves old development headers: `x-tenant-id`, `x-user-id`, optional `x-user-role`. This is dev-only and not authenticated. |
-| Local auth | `SUPPORTPLANE_AUTH_MODE=local` | Requires login through `POST /auth/local/login` and resolves user, tenant, roles, and permissions from PostgreSQL. Arbitrary identity headers are ignored. |
+| Mode        | Env var                        | Behavior                                                                                                                                                   |
+| ----------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Dev headers | `SUPPORTPLANE_AUTH_MODE=dev`   | Preserves old development headers: `x-tenant-id`, `x-user-id`, optional `x-user-role`. This is dev-only and not authenticated.                             |
+| Local auth  | `SUPPORTPLANE_AUTH_MODE=local` | Requires login through `POST /auth/local/login` and resolves user, tenant, roles, and permissions from PostgreSQL. Arbitrary identity headers are ignored. |
 
 The PostgreSQL MVP browser proof uses:
 
@@ -29,12 +29,12 @@ supportplane-demo
 
 These are development credentials only.
 
-| Tenant slug | User | Role |
-|-------------|------|------|
-| `dev-tenant` | `admin@supportplane.local` | `admin` |
-| `dev-tenant` | `operator@supportplane.local` | `operator` |
-| `dev-tenant` | `viewer@supportplane.local` | `viewer` |
-| `alt-tenant` | `admin@alt.supportplane.local` | `admin` |
+| Tenant slug  | User                              | Role       |
+| ------------ | --------------------------------- | ---------- |
+| `dev-tenant` | `admin@supportplane.local`        | `admin`    |
+| `dev-tenant` | `operator@supportplane.local`     | `operator` |
+| `dev-tenant` | `viewer@supportplane.local`       | `viewer`   |
+| `alt-tenant` | `admin@alt.supportplane.local`    | `admin`    |
 | `alt-tenant` | `operator@alt.supportplane.local` | `operator` |
 
 ## Role model

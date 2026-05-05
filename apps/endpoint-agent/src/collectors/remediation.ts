@@ -33,13 +33,19 @@ export const LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE: FixedCommandTemplate = {
   args: ['flush-caches'],
 };
 
-export const defaultCommandRunner: CommandRunner = (file, args) => new Promise((resolve) => {
-  execFile(file, args, { windowsHide: true, timeout: 30_000, maxBuffer: 64 * 1024 }, (error, stdout, stderr) => {
-    const code = (error as NodeJS.ErrnoException | null)?.code;
-    const exitCode = typeof code === 'number' ? code : error ? 1 : 0;
-    resolve({ exitCode, stdout, stderr });
+export const defaultCommandRunner: CommandRunner = (file, args) =>
+  new Promise((resolve) => {
+    execFile(
+      file,
+      args,
+      { windowsHide: true, timeout: 30_000, maxBuffer: 64 * 1024 },
+      (error, stdout, stderr) => {
+        const code = (error as NodeJS.ErrnoException | null)?.code;
+        const exitCode = typeof code === 'number' ? code : error ? 1 : 0;
+        resolve({ exitCode, stdout, stderr });
+      },
+    );
   });
-});
 
 export function summarizeOutput(value: string): string {
   const normalized = value.replace(/\r\n/g, '\n').trim();
@@ -69,7 +75,10 @@ function formatResult(template: FixedCommandTemplate, result: CommandExecutionRe
   };
 }
 
-export async function executeFixedTemplate(template: FixedCommandTemplate, runner: CommandRunner = defaultCommandRunner) {
+export async function executeFixedTemplate(
+  template: FixedCommandTemplate,
+  runner: CommandRunner = defaultCommandRunner,
+) {
   const result = await runner(template.executable, [...template.args]);
   return formatResult(template, result);
 }
@@ -88,7 +97,9 @@ async function findExecutable(name: string): Promise<string | undefined> {
   return undefined;
 }
 
-export async function executeLinuxSystemdResolvedFlushDns(runner: CommandRunner = defaultCommandRunner) {
+export async function executeLinuxSystemdResolvedFlushDns(
+  runner: CommandRunner = defaultCommandRunner,
+) {
   const resolvectl = await findExecutable(LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE.executable);
   if (!resolvectl) {
     return {
@@ -101,5 +112,8 @@ export async function executeLinuxSystemdResolvedFlushDns(runner: CommandRunner 
       readOnly: false,
     };
   }
-  return executeFixedTemplate({ ...LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE, executable: resolvectl }, runner);
+  return executeFixedTemplate(
+    { ...LINUX_SYSTEMD_RESOLVED_FLUSH_DNS_TEMPLATE, executable: resolvectl },
+    runner,
+  );
 }

@@ -75,7 +75,7 @@ class ApiClientError extends Error {
   constructor(
     message: string,
     public readonly status: number,
-    public readonly body: unknown | null
+    public readonly body: unknown | null,
   ) {
     super(message);
     this.name = 'ApiClientError';
@@ -85,7 +85,7 @@ class ApiClientError extends Error {
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
-  identity: DevIdentity = DEFAULT_IDENTITY
+  identity: DevIdentity = DEFAULT_IDENTITY,
 ): Promise<T> {
   const url = `${API_BASE}${path}`;
   const headers = new Headers(options.headers);
@@ -112,7 +112,7 @@ async function apiFetch<T>(
     throw new ApiClientError(
       (body as { message?: string })?.message ?? `HTTP ${res.status}`,
       res.status,
-      body
+      body,
     );
   }
 
@@ -124,30 +124,30 @@ async function apiFetch<T>(
 }
 
 export const aiApi = {
-  createChatSession: (
-    sessionId: string,
-    body: { title?: string },
-    identity?: DevIdentity
-  ) =>
-    apiFetch<AiChatSession>(`/support-sessions/${sessionId}/ai-chat`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }, identity),
+  createChatSession: (sessionId: string, body: { title?: string }, identity?: DevIdentity) =>
+    apiFetch<AiChatSession>(
+      `/support-sessions/${sessionId}/ai-chat`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+      identity,
+    ),
 
   listChatSessions: (sessionId: string, identity?: DevIdentity) =>
-    apiFetch<AiChatSession[]>(`/support-sessions/${sessionId}/ai-chat`, {
-      method: 'GET',
-    }, identity),
+    apiFetch<AiChatSession[]>(
+      `/support-sessions/${sessionId}/ai-chat`,
+      {
+        method: 'GET',
+      },
+      identity,
+    ),
 
-  getChatSession: (
-    sessionId: string,
-    chatId: string,
-    identity?: DevIdentity
-  ) =>
+  getChatSession: (sessionId: string, chatId: string, identity?: DevIdentity) =>
     apiFetch<AiChatSession>(
       `/support-sessions/${sessionId}/ai-chat/${chatId}`,
       { method: 'GET' },
-      identity
+      identity,
     ),
 
   sendChatMessage: (
@@ -158,12 +158,12 @@ export const aiApi = {
       role?: string;
       modelSelection?: { provider?: string; model?: string };
     },
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<{ session: AiChatSession; assistantMessage?: AiChatMessage }>(
       `/support-sessions/${sessionId}/ai-chat/${chatId}/messages`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 
   generateTicketSummary: (
@@ -172,11 +172,11 @@ export const aiApi = {
       ticketReferenceId?: string;
       modelSelection?: { provider?: string; model?: string };
     } = {},
-    identity?: DevIdentity
+    identity?: DevIdentity,
   ) =>
     apiFetch<TicketSummaryResponse>(
       `/support-sessions/${sessionId}/ticket-summary`,
       { method: 'POST', body: JSON.stringify(body) },
-      identity
+      identity,
     ),
 };

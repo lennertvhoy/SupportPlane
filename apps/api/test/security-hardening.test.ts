@@ -1,12 +1,23 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
 import { NestFactory } from '@nestjs/core';
-import { Module, Controller, Post, Body, UseGuards, INestApplication, ExecutionContext } from '@nestjs/common';
+import {
+  Module,
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  INestApplication,
+  ExecutionContext,
+} from '@nestjs/common';
 import supertest from 'supertest';
 import type { Request, Response } from 'express';
 import { AppModule } from '../src/app.module.js';
 import { RateLimitGuard, RateLimitExceeded } from '../src/common/rate-limit.guard.js';
-import { ValidateAdapterTypeGuard, ValidateTelephonyEventGuard } from '../src/common/validation.guard.js';
+import {
+  ValidateAdapterTypeGuard,
+  ValidateTelephonyEventGuard,
+} from '../src/common/validation.guard.js';
 import { UnsafeFieldGuard } from '../src/common/unsafe-field.guard.js';
 import { BodyLimitGuard } from '../src/common/body-limit.guard.js';
 import { bodyLimitMiddleware } from '../src/common/body-limit.middleware.js';
@@ -43,12 +54,20 @@ describe('BL-086 Security Hardening', () => {
   describe('Request body size limits', () => {
     it('middleware returns 413 when Content-Length exceeds limit', () => {
       const middleware = bodyLimitMiddleware();
-      const req = { path: '/actions/test', headers: { 'content-length': String(1024 * 1024 * 2) } } as unknown as Request;
+      const req = {
+        path: '/actions/test',
+        headers: { 'content-length': String(1024 * 1024 * 2) },
+      } as unknown as Request;
       let statusCode = 0;
       let responseBody: unknown;
       const res = {
-        status: (code: number) => { statusCode = code; return res; },
-        json: (b: unknown) => { responseBody = b; },
+        status: (code: number) => {
+          statusCode = code;
+          return res;
+        },
+        json: (b: unknown) => {
+          responseBody = b;
+        },
       } as unknown as Response;
       const next = () => {};
       middleware(req, res, next);
@@ -59,7 +78,10 @@ describe('BL-086 Security Hardening', () => {
 
     it('guard returns false when Content-Length exceeds limit', () => {
       const guard = new BodyLimitGuard();
-      const req = { path: '/actions/test', headers: { 'content-length': String(1024 * 1024 * 2) } } as unknown as Request;
+      const req = {
+        path: '/actions/test',
+        headers: { 'content-length': String(1024 * 1024 * 2) },
+      } as unknown as Request;
       const res = { status: () => ({ json: () => {} }) } as unknown as Response;
       const context = {
         switchToHttp: () => ({ getRequest: () => req, getResponse: () => res }),
@@ -69,7 +91,10 @@ describe('BL-086 Security Hardening', () => {
 
     it('guard passes when Content-Length is within limit', () => {
       const guard = new BodyLimitGuard();
-      const req = { path: '/actions/test', headers: { 'content-length': String(1024) } } as unknown as Request;
+      const req = {
+        path: '/actions/test',
+        headers: { 'content-length': String(1024) },
+      } as unknown as Request;
       const res = { status: () => ({ json: () => {} }) } as unknown as Response;
       const context = {
         switchToHttp: () => ({ getRequest: () => req, getResponse: () => res }),
@@ -81,7 +106,11 @@ describe('BL-086 Security Hardening', () => {
   describe('Rate limiting', () => {
     it('guard allows requests within limit', () => {
       const guard = new RateLimitGuard();
-      const req = { path: '/api/test', headers: {}, socket: { remoteAddress: '127.0.0.1' } } as unknown as Request;
+      const req = {
+        path: '/api/test',
+        headers: {},
+        socket: { remoteAddress: '127.0.0.1' },
+      } as unknown as Request;
       const context = {
         switchToHttp: () => ({ getRequest: () => req }),
       } as unknown as ExecutionContext;
@@ -109,9 +138,12 @@ describe('BL-086 Security Hardening', () => {
       }
 
       // 6th request should be blocked
-      assert.throws(() => guard.canActivate(context), (err: unknown) => {
-        return err instanceof RateLimitExceeded;
-      });
+      assert.throws(
+        () => guard.canActivate(context),
+        (err: unknown) => {
+          return err instanceof RateLimitExceeded;
+        },
+      );
     });
   });
 
@@ -324,7 +356,12 @@ describe('BL-086 Security Hardening', () => {
     it('accepts valid telephony event', async () => {
       const res = await supertest(server)
         .post('/test-guards/telephony-event')
-        .send({ callerNumber: '123', calleeNumber: '456', eventType: 'newchannel', externalCallId: 'call-1' })
+        .send({
+          callerNumber: '123',
+          calleeNumber: '456',
+          eventType: 'newchannel',
+          externalCallId: 'call-1',
+        })
         .expect(201);
 
       assert.strictEqual(res.body.received, true);
@@ -354,9 +391,15 @@ describe('BL-086 Security Hardening', () => {
         switchToHttp: () => ({ getRequest: () => req }),
       } as unknown as ExecutionContext;
 
-      assert.throws(() => guard.canActivate(context), (err: unknown) => {
-        return (err as { response?: { error?: string; reason?: string } }).response?.error === 'validation_failed';
-      });
+      assert.throws(
+        () => guard.canActivate(context),
+        (err: unknown) => {
+          return (
+            (err as { response?: { error?: string; reason?: string } }).response?.error ===
+            'validation_failed'
+          );
+        },
+      );
     });
 
     it('rejects connector config with eval string', async () => {

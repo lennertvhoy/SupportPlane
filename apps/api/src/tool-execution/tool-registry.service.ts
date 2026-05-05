@@ -36,7 +36,10 @@ export class ToolRegistryService implements OnModuleInit {
     throw new Error('local-tool-manifest.json not found in any candidate path');
   }
 
-  async loadLocalManifest(): Promise<{ record: ToolManifestRecordShape; tools: ToolDefinitionShape[] }> {
+  async loadLocalManifest(): Promise<{
+    record: ToolManifestRecordShape;
+    tools: ToolDefinitionShape[];
+  }> {
     const manifest = this.loadLocalManifestJson();
     const validation = validateLocalManifest(manifest);
     if (!validation.valid) {
@@ -47,7 +50,7 @@ export class ToolRegistryService implements OnModuleInit {
     // Idempotent load: if a manifest with this integrity hash already exists, reuse it,
     // but still upsert definitions so a partial prior load can self-heal.
     const existingManifests = await this.store.listToolManifestRecords();
-    const existing = existingManifests.find(m => m.integrityHash === data.integrityHash);
+    const existing = existingManifests.find((m) => m.integrityHash === data.integrityHash);
 
     const now = new Date().toISOString();
     const record: ToolManifestRecordShape = existing ?? {
@@ -115,7 +118,11 @@ export class ToolRegistryService implements OnModuleInit {
     return this.store.getToolDefinitionByKey(toolKey);
   }
 
-  async listTools(options?: { manifestId?: string; enabled?: boolean; category?: string }): Promise<ToolDefinitionShape[]> {
+  async listTools(options?: {
+    manifestId?: string;
+    enabled?: boolean;
+    category?: string;
+  }): Promise<ToolDefinitionShape[]> {
     return this.store.listToolDefinitions(options);
   }
 }

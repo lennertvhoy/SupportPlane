@@ -4,11 +4,7 @@ import { EntityId, Timestamp, TenantId } from './base.js';
 export const ConnectorCredentialReferenceId = EntityId.brand<'ConnectorCredentialReferenceId'>();
 export type ConnectorCredentialReferenceId = z.infer<typeof ConnectorCredentialReferenceId>;
 
-export const ConnectorCredentialReferenceStatus = z.enum([
-  'active',
-  'inactive',
-  'error',
-]);
+export const ConnectorCredentialReferenceStatus = z.enum(['active', 'inactive', 'error']);
 export type ConnectorCredentialReferenceStatus = z.infer<typeof ConnectorCredentialReferenceStatus>;
 
 export const ConnectorCredentialReferenceSecretKind = z.enum([
@@ -19,7 +15,9 @@ export const ConnectorCredentialReferenceSecretKind = z.enum([
   'client_certificate_placeholder',
   'other_placeholder',
 ]);
-export type ConnectorCredentialReferenceSecretKind = z.infer<typeof ConnectorCredentialReferenceSecretKind>;
+export type ConnectorCredentialReferenceSecretKind = z.infer<
+  typeof ConnectorCredentialReferenceSecretKind
+>;
 
 export const ConnectorCredentialReference = z.object({
   id: ConnectorCredentialReferenceId,
@@ -46,7 +44,9 @@ export const ConnectorCredentialReferenceCreateRequest = z.object({
   status: ConnectorCredentialReferenceStatus.optional(),
   secretKind: ConnectorCredentialReferenceSecretKind.optional(),
 });
-export type ConnectorCredentialReferenceCreateRequest = z.infer<typeof ConnectorCredentialReferenceCreateRequest>;
+export type ConnectorCredentialReferenceCreateRequest = z.infer<
+  typeof ConnectorCredentialReferenceCreateRequest
+>;
 
 export const ConnectorCredentialReferenceUpdateRequest = z.object({
   displayName: z.string().min(1).max(256).optional(),
@@ -54,7 +54,9 @@ export const ConnectorCredentialReferenceUpdateRequest = z.object({
   status: ConnectorCredentialReferenceStatus.optional(),
   secretKind: ConnectorCredentialReferenceSecretKind.optional(),
 });
-export type ConnectorCredentialReferenceUpdateRequest = z.infer<typeof ConnectorCredentialReferenceUpdateRequest>;
+export type ConnectorCredentialReferenceUpdateRequest = z.infer<
+  typeof ConnectorCredentialReferenceUpdateRequest
+>;
 
 export const EvidenceBundleCredentialReferenceSummary = z.object({
   id: z.string(),
@@ -65,4 +67,6 @@ export const EvidenceBundleCredentialReferenceSummary = z.object({
   linked: z.boolean().optional(),
   lastValidatedAt: z.string().optional(),
 });
-export type EvidenceBundleCredentialReferenceSummary = z.infer<typeof EvidenceBundleCredentialReferenceSummary>;
+export type EvidenceBundleCredentialReferenceSummary = z.infer<
+  typeof EvidenceBundleCredentialReferenceSummary
+>;

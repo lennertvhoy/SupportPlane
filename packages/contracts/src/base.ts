@@ -31,17 +31,12 @@ export type TenantScopedBase = z.infer<typeof TenantScopedBase>;
 /**
  * Strict JSON scalar types for metadata fields.
  */
-export const JsonScalar = z.union([
-  z.string(),
-  z.number(),
-  z.boolean(),
-  z.null(),
-]);
+export const JsonScalar = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 
 export type JsonScalar = z.infer<typeof JsonScalar>;
 
 export const JsonValue: z.ZodType = z.lazy(() =>
-  z.union([JsonScalar, z.array(JsonValue), z.record(JsonValue)])
+  z.union([JsonScalar, z.array(JsonValue), z.record(JsonValue)]),
 );
 
 export type JsonValue = z.infer<typeof JsonValue>;

@@ -63,17 +63,17 @@ Persistent connector configuration with safety flags and validation state.
 
 ### Customers
 
-| Method | Endpoint | RBAC | Behavior |
-|--------|----------|------|----------|
-| GET | `/customers` | `customer:read` | List customer references for tenant |
-| GET | `/customers/:id` | `customer:read` | Get single customer reference |
+| Method | Endpoint         | RBAC            | Behavior                            |
+| ------ | ---------------- | --------------- | ----------------------------------- |
+| GET    | `/customers`     | `customer:read` | List customer references for tenant |
+| GET    | `/customers/:id` | `customer:read` | Get single customer reference       |
 
 ### Connector Installations
 
-| Method | Endpoint | RBAC | Behavior |
-|--------|----------|------|----------|
-| GET | `/connector-installations` | `connector_installation:read` | List installations for tenant |
-| GET | `/connector-installations/:id` | `connector_installation:read` | Get single installation |
+| Method | Endpoint                       | RBAC                          | Behavior                      |
+| ------ | ------------------------------ | ----------------------------- | ----------------------------- |
+| GET    | `/connector-installations`     | `connector_installation:read` | List installations for tenant |
+| GET    | `/connector-installations/:id` | `connector_installation:read` | Get single installation       |
 
 | POST | `/connector-installations` | `connector_installation:write` | Create installation with mock defaults |
 | PATCH | `/connector-installations/:id` | `connector_installation:write` | Update safe fields (displayName, description, status, enabled, timeout, capabilities, safetyFlags). Config secrets redacted in responses. |

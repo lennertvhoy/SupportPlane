@@ -4,22 +4,11 @@ import { EntityId, Timestamp, TenantId } from './base.js';
 export const SupportSessionId = EntityId.brand<'SupportSessionId'>();
 export type SupportSessionId = z.infer<typeof SupportSessionId>;
 
-export const SupportSessionStatus = z.enum([
-  'open',
-  'paused',
-  'resolved',
-  'closed',
-  'escalated',
-]);
+export const SupportSessionStatus = z.enum(['open', 'paused', 'resolved', 'closed', 'escalated']);
 
 export type SupportSessionStatus = z.infer<typeof SupportSessionStatus>;
 
-export const SupportSessionPriority = z.enum([
-  'low',
-  'normal',
-  'high',
-  'critical',
-]);
+export const SupportSessionPriority = z.enum(['low', 'normal', 'high', 'critical']);
 
 export type SupportSessionPriority = z.infer<typeof SupportSessionPriority>;
 

@@ -37,9 +37,7 @@ export function AuditTrailPanel({
               className="rounded border border-cockpit-700 bg-cockpit-900/40 px-3 py-2"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-cockpit-200">
-                  {e.eventType}
-                </span>
+                <span className="text-xs font-semibold text-cockpit-200">{e.eventType}</span>
                 <span className="shrink-0 text-[10px] text-cockpit-500">
                   {new Date(e.createdAt).toLocaleTimeString()}
                 </span>

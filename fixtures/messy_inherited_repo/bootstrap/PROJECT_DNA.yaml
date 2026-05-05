@@ -1,11 +1,11 @@
 # PROJECT_DNA.yaml - Canonical architecture blueprint
 
-version: "state-driven-development-template-v2"
-schema_version: "1.0"
+version: 'state-driven-development-template-v2'
+schema_version: '1.0'
 
 product:
   name: inherited_project_unknown
-  one_sentence: "Ambiguous inherited repo used to validate honest bootstrap under conflict."
+  one_sentence: 'Ambiguous inherited repo used to validate honest bootstrap under conflict.'
 
 truth_rules:
   repo_modes:
@@ -15,7 +15,7 @@ truth_rules:
       purpose: steady-state human-in-the-loop delivery
 
 invariants:
-  - "Unknowns are preserved when the repo does not prove otherwise."
-  - "Contradictions are recorded, not papered over."
-  - "State files stay concise."
-  - "The active queue stays short."
+  - 'Unknowns are preserved when the repo does not prove otherwise.'
+  - 'Contradictions are recorded, not papered over.'
+  - 'State files stay concise.'
+  - 'The active queue stays short.'

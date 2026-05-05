@@ -41,7 +41,10 @@ export function AdminDashboardShell({
   const router = useRouter();
   const pathname = usePathname();
 
-  const isAdmin = identity.permissions.includes('*') || identity.roles.includes('admin') || identity.roles.includes('owner');
+  const isAdmin =
+    identity.permissions.includes('*') ||
+    identity.roles.includes('admin') ||
+    identity.roles.includes('owner');
 
   return (
     <div className="flex h-screen flex-col bg-cockpit-950 text-cockpit-100">

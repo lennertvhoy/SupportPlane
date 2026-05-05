@@ -11,11 +11,13 @@
 This is a **local development sandbox**. Nothing here is production. No real customer data is at risk. All credentials are sandbox-only dev defaults.
 
 **What you need:**
+
 - A web browser (Chrome or Firefox recommended)
 - 15 minutes
 - This guide
 
 **What you do NOT need:**
+
 - Repo or code access
 - Kubernetes knowledge
 - Any credentials (we'll give you the demo login)
@@ -50,11 +52,11 @@ This brings up the K8s cluster services and port-forwards. When ready, you'll se
 
 Use these sandbox credentials:
 
-| Field    | Value                        |
-|----------|------------------------------|
-| Email    | `admin@supportplane.local`   |
-| Password | `supportplane-demo`          |
-| Tenant   | `dev-tenant`                 |
+| Field    | Value                      |
+| -------- | -------------------------- |
+| Email    | `admin@supportplane.local` |
+| Password | `supportplane-demo`        |
+| Tenant   | `dev-tenant`               |
 
 You'll land on the **Support Cockpit** — the main operator dashboard.
 

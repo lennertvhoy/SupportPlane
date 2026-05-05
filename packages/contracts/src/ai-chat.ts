@@ -31,10 +31,12 @@ export type AiChatSession = z.infer<typeof AiChatSession>;
 export const CreateChatMessageRequest = z.object({
   content: z.string().min(1).max(8000),
   role: ChatRole.default('user'),
-  modelSelection: z.object({
-    provider: z.enum(['mock', 'ollama', 'lmstudio']).optional(),
-    model: z.string().optional(),
-  }).optional(),
+  modelSelection: z
+    .object({
+      provider: z.enum(['mock', 'ollama', 'lmstudio']).optional(),
+      model: z.string().optional(),
+    })
+    .optional(),
 });
 export type CreateChatMessageRequest = z.infer<typeof CreateChatMessageRequest>;
 

@@ -44,43 +44,43 @@ Current states:
 
 Allowed transitions are intentionally narrow and enforced by the API:
 
-| From | To |
-|------|----|
-| `ringing` | `answered` |
-| `ringing` | `missed` |
-| `answered` | `on_hold` |
-| `answered` | `ended` |
-| `on_hold` | `answered` |
-| `on_hold` | `ended` |
+| From       | To         |
+| ---------- | ---------- |
+| `ringing`  | `answered` |
+| `ringing`  | `missed`   |
+| `answered` | `on_hold`  |
+| `answered` | `ended`    |
+| `on_hold`  | `answered` |
+| `on_hold`  | `ended`    |
 
 The `on_hold` to `answered` transition is displayed in the timeline as
 `call_resumed`.
 
 ## API endpoints
 
-| Endpoint | Method | Purpose |
-|----------|--------|---------|
-| `/calls/recent` | GET | List recent tenant-scoped fake calls |
-| `/calls/:id` | GET | Load one fake call |
-| `/calls/:id/status` | POST | Apply an allowed mock lifecycle status transition |
-| `/calls/:id/timeline` | GET | Return deterministic call timeline items |
-| `/calls/:id/link-session` | POST | Link a call to an existing SupportSession |
-| `/telephony/status` | GET | Return mock telephony bridge status/capabilities |
-| `/telephony/test` | POST | Run deterministic mock bridge test |
-| `/telephony/webhooks/fake-provider` | POST | Accept fake provider event and map to CallEvent |
-| `/telephony/calls/:id/control` | POST | Apply mock telephony control intent to local state |
-| `/support-sessions/:id/screen-observations/mock` | POST | Capture legacy mock screen observation |
-| `/support-sessions/:id/screen-observations/active-window/mock` | POST | Capture deterministic active-window metadata |
-| `/support-sessions/:id/screen-observations/manual-screenshot` | POST | Attach manual screenshot metadata |
-| `/support-sessions/:id/screen-observations/structured-upload` | POST | Upload structured observation |
-| `/support-sessions/:id/screen-observations/sharing-state` | GET | Read current sharing state |
-| `/support-sessions/:id/screen-observations/sharing-state` | POST | Transition sharing state |
-| `/support-sessions/:id/screen-observations` | GET | List observations for a session |
-| `/support-sessions/:id/screen-observations/:observationId/review` | POST | Approve or discard an observation |
-| `/support-sessions/:id/screen-observations/:observationId/context-packet` | POST | Create AI context packet from approved observation |
-| `/support-sessions/:id/greeting-suggestion` | POST | Generate mock AI greeting suggestion |
-| `/support-sessions/:id/evidence-bundle` | GET | Generate JSON evidence bundle |
-| `/support-sessions/:id/evidence-bundle.md` | GET | Generate Markdown evidence bundle |
+| Endpoint                                                                  | Method | Purpose                                            |
+| ------------------------------------------------------------------------- | ------ | -------------------------------------------------- |
+| `/calls/recent`                                                           | GET    | List recent tenant-scoped fake calls               |
+| `/calls/:id`                                                              | GET    | Load one fake call                                 |
+| `/calls/:id/status`                                                       | POST   | Apply an allowed mock lifecycle status transition  |
+| `/calls/:id/timeline`                                                     | GET    | Return deterministic call timeline items           |
+| `/calls/:id/link-session`                                                 | POST   | Link a call to an existing SupportSession          |
+| `/telephony/status`                                                       | GET    | Return mock telephony bridge status/capabilities   |
+| `/telephony/test`                                                         | POST   | Run deterministic mock bridge test                 |
+| `/telephony/webhooks/fake-provider`                                       | POST   | Accept fake provider event and map to CallEvent    |
+| `/telephony/calls/:id/control`                                            | POST   | Apply mock telephony control intent to local state |
+| `/support-sessions/:id/screen-observations/mock`                          | POST   | Capture legacy mock screen observation             |
+| `/support-sessions/:id/screen-observations/active-window/mock`            | POST   | Capture deterministic active-window metadata       |
+| `/support-sessions/:id/screen-observations/manual-screenshot`             | POST   | Attach manual screenshot metadata                  |
+| `/support-sessions/:id/screen-observations/structured-upload`             | POST   | Upload structured observation                      |
+| `/support-sessions/:id/screen-observations/sharing-state`                 | GET    | Read current sharing state                         |
+| `/support-sessions/:id/screen-observations/sharing-state`                 | POST   | Transition sharing state                           |
+| `/support-sessions/:id/screen-observations`                               | GET    | List observations for a session                    |
+| `/support-sessions/:id/screen-observations/:observationId/review`         | POST   | Approve or discard an observation                  |
+| `/support-sessions/:id/screen-observations/:observationId/context-packet` | POST   | Create AI context packet from approved observation |
+| `/support-sessions/:id/greeting-suggestion`                               | POST   | Generate mock AI greeting suggestion               |
+| `/support-sessions/:id/evidence-bundle`                                   | GET    | Generate JSON evidence bundle                      |
+| `/support-sessions/:id/evidence-bundle.md`                                | GET    | Generate Markdown evidence bundle                  |
 
 All endpoints require dev identity headers in local mode: `x-tenant-id` and
 `x-user-id`.

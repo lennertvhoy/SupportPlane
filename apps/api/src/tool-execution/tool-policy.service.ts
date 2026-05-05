@@ -27,10 +27,13 @@ export class ToolPolicyService {
       fixedImplementationOnly: true,
     };
 
-    const remediationEnabled = process.env['SUPPORTPLANE_REMEDIATION_ENABLED'] !== '0' && process.env['SUPPORTPLANE_REMEDIATION_ENABLED'] !== 'false';
+    const remediationEnabled =
+      process.env['SUPPORTPLANE_REMEDIATION_ENABLED'] !== '0' &&
+      process.env['SUPPORTPLANE_REMEDIATION_ENABLED'] !== 'false';
 
     // 1. Role permission check
-    const hasPermission = identity.permissions.includes('*') || identity.permissions.includes(tool.requiredPermission);
+    const hasPermission =
+      identity.permissions.includes('*') || identity.permissions.includes(tool.requiredPermission);
     if (!hasPermission) {
       return {
         allowed: false,
@@ -56,7 +59,12 @@ export class ToolPolicyService {
 
     // 3. Platform compatibility
     const canonicalPlatform = devicePlatform ? normalizePlatform(devicePlatform) : undefined;
-    if (canonicalPlatform && canonicalPlatform !== 'unknown' && tool.supportedPlatforms.length > 0 && !tool.supportedPlatforms.includes(canonicalPlatform)) {
+    if (
+      canonicalPlatform &&
+      canonicalPlatform !== 'unknown' &&
+      tool.supportedPlatforms.length > 0 &&
+      !tool.supportedPlatforms.includes(canonicalPlatform)
+    ) {
       return {
         allowed: false,
         decision: 'unsupported_platform',

@@ -5,6 +5,7 @@
 BL-095 Connector Installation Settings Foundation is **closure-grade complete** after repair.
 
 All prior blockers have been resolved:
+
 - Screenshot folder numbering corrected: old `session-095-connector-installation-settings/` deleted; canonical `session-096-bl095-connector-installation-settings-final-closure/` created with 14 unique screenshots.
 - Validation gate fully executed and all commands passed with exact results recorded.
 - Final handoff uses the required 18-section format.
@@ -124,54 +125,54 @@ SupportPlane is a multi-tenant, self-hostable AI support cockpit. BL-095 extends
 - **Count:** 14 screenshots (max 20, well within cap)
 - **Duplicate check:** 0 duplicates (all 14 MD5 hashes unique)
 
-| # | Filename | Proof state |
-|---|----------|-------------|
-| 1 | `01-admin-runtime-identity.png` | Admin runtime identity: user, tenant, role, API, auth/store/mock mode |
-| 2 | `02-connector-panel-visible.png` | Connector settings panel visible with installations list |
-| 3 | `03-settings-expanded-safe-fields.png` | Settings expanded showing safe editable fields |
-| 4 | `04-admin-saves-settings.png` | Admin saves display name/description/status/timeout and safe fields |
-| 5 | `05-settings-persist-after-reload.png` | Saved settings persist after page reload |
-| 6 | `06-connector-readiness-mock-only.png` | Connector readiness reflects installation settings and still says real writeback not ready |
-| 7 | `07-delivery-policy-real-writeback-denied.png` | Delivery policy still denies real writeback / real network remains locked off |
-| 8 | `08-credential-secret-placeholder.png` | Credential/secret placeholder visible without secret value |
-| 9 | `09-evidence-bundle-connector-provenance.png` | Evidence bundle JSON proves connector installation provenance without secrets |
-| 10 | `10-audit-connector-settings-update.png` | Audit trail showing connector-related events |
-| 11 | `11-viewer-readonly-and-denial.png` | Viewer read-only connector settings with view-only message and disabled controls |
-| 12 | `12-viewer-api-mutation-denied.png` | Server-side viewer mutation denial: API returns 403 with explicit role requirement message |
-| 13 | `13-cross-tenant-denied.png` | Cross-tenant connector access denied (404 on session access) |
-| 14 | `14-final-local-mock-proof.png` | Final local/mock/no-real-writeback proof with visible mock labels |
+| #   | Filename                                       | Proof state                                                                                |
+| --- | ---------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 1   | `01-admin-runtime-identity.png`                | Admin runtime identity: user, tenant, role, API, auth/store/mock mode                      |
+| 2   | `02-connector-panel-visible.png`               | Connector settings panel visible with installations list                                   |
+| 3   | `03-settings-expanded-safe-fields.png`         | Settings expanded showing safe editable fields                                             |
+| 4   | `04-admin-saves-settings.png`                  | Admin saves display name/description/status/timeout and safe fields                        |
+| 5   | `05-settings-persist-after-reload.png`         | Saved settings persist after page reload                                                   |
+| 6   | `06-connector-readiness-mock-only.png`         | Connector readiness reflects installation settings and still says real writeback not ready |
+| 7   | `07-delivery-policy-real-writeback-denied.png` | Delivery policy still denies real writeback / real network remains locked off              |
+| 8   | `08-credential-secret-placeholder.png`         | Credential/secret placeholder visible without secret value                                 |
+| 9   | `09-evidence-bundle-connector-provenance.png`  | Evidence bundle JSON proves connector installation provenance without secrets              |
+| 10  | `10-audit-connector-settings-update.png`       | Audit trail showing connector-related events                                               |
+| 11  | `11-viewer-readonly-and-denial.png`            | Viewer read-only connector settings with view-only message and disabled controls           |
+| 12  | `12-viewer-api-mutation-denied.png`            | Server-side viewer mutation denial: API returns 403 with explicit role requirement message |
+| 13  | `13-cross-tenant-denied.png`                   | Cross-tenant connector access denied (404 on session access)                               |
+| 14  | `14-final-local-mock-proof.png`                | Final local/mock/no-real-writeback proof with visible mock labels                          |
 
 ## 13. Validation gate results
 
-| Command | Result |
-|---------|--------|
-| `git status --short --branch` | clean |
-| `git log --oneline -10` | 6 BL-095 commits visible |
-| `git rev-parse HEAD` | `b9a01c45af42c435e7751dffd9aed91a700575e1` |
-| `npm install` | passed |
-| `npm run lint` | passed (0 errors) |
-| `npm run typecheck --workspaces --if-present` | passed (9/9 workspaces) |
-| `npm run validate` | passed (contracts + Prisma schema) |
-| `npm run health` | passed (valid JSON) |
-| `npx prisma validate` | passed |
-| `npx prisma generate` | passed |
-| `npx prisma migrate status` | passed (schema up to date) |
-| `npx prisma db seed` | passed |
-| `bash scripts/verify_delivery_policy_controls.sh` | passed (14/14 checks) |
-| `bash scripts/verify_ticket_context_connector.sh` | passed (14/14 checks) |
-| `bash scripts/verify_support_case_workflow.sh` | passed (15/15 checks) |
-| `cd apps/api && npm test` | passed (124/124 tests, 12 suites) |
-| `npm test --workspace @supportplane/contracts` | passed (29/29 tests) |
-| `npm test --workspace @supportplane/web` | passed (15/15 tests) |
-| `npm test --workspace @supportplane/connectors` | passed (16/16 tests) |
-| `python3 scripts/check_state_docs.py` | passed |
-| `python3 scripts/check_state_docs.py --bootstrap-gate` | passed |
-| `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` | passed |
-| `curl -s http://localhost:4110/health` | HTTP 200, JSON valid |
-| `curl -s http://localhost:3200/` | HTTP 200 |
-| `podman ps` | sp-postgres healthy (5434), sp-nats healthy, sp-minio healthy |
-| `md5sum output/playwright/session-096-bl095-connector-installation-settings-final-closure/*.png` | 14 unique hashes, 0 duplicates |
-| `npm audit` | 10 vulnerabilities (8 moderate, 2 high), pre-existing, none introduced by BL-095 |
+| Command                                                                                          | Result                                                                           |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `git status --short --branch`                                                                    | clean                                                                            |
+| `git log --oneline -10`                                                                          | 6 BL-095 commits visible                                                         |
+| `git rev-parse HEAD`                                                                             | `b9a01c45af42c435e7751dffd9aed91a700575e1`                                       |
+| `npm install`                                                                                    | passed                                                                           |
+| `npm run lint`                                                                                   | passed (0 errors)                                                                |
+| `npm run typecheck --workspaces --if-present`                                                    | passed (9/9 workspaces)                                                          |
+| `npm run validate`                                                                               | passed (contracts + Prisma schema)                                               |
+| `npm run health`                                                                                 | passed (valid JSON)                                                              |
+| `npx prisma validate`                                                                            | passed                                                                           |
+| `npx prisma generate`                                                                            | passed                                                                           |
+| `npx prisma migrate status`                                                                      | passed (schema up to date)                                                       |
+| `npx prisma db seed`                                                                             | passed                                                                           |
+| `bash scripts/verify_delivery_policy_controls.sh`                                                | passed (14/14 checks)                                                            |
+| `bash scripts/verify_ticket_context_connector.sh`                                                | passed (14/14 checks)                                                            |
+| `bash scripts/verify_support_case_workflow.sh`                                                   | passed (15/15 checks)                                                            |
+| `cd apps/api && npm test`                                                                        | passed (124/124 tests, 12 suites)                                                |
+| `npm test --workspace @supportplane/contracts`                                                   | passed (29/29 tests)                                                             |
+| `npm test --workspace @supportplane/web`                                                         | passed (15/15 tests)                                                             |
+| `npm test --workspace @supportplane/connectors`                                                  | passed (16/16 tests)                                                             |
+| `python3 scripts/check_state_docs.py`                                                            | passed                                                                           |
+| `python3 scripts/check_state_docs.py --bootstrap-gate`                                           | passed                                                                           |
+| `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py`                     | passed                                                                           |
+| `curl -s http://localhost:4110/health`                                                           | HTTP 200, JSON valid                                                             |
+| `curl -s http://localhost:3200/`                                                                 | HTTP 200                                                                         |
+| `podman ps`                                                                                      | sp-postgres healthy (5434), sp-nats healthy, sp-minio healthy                    |
+| `md5sum output/playwright/session-096-bl095-connector-installation-settings-final-closure/*.png` | 14 unique hashes, 0 duplicates                                                   |
+| `npm audit`                                                                                      | 10 vulnerabilities (8 moderate, 2 high), pre-existing, none introduced by BL-095 |
 
 ## 14. Runtime status
 
@@ -222,6 +223,7 @@ SupportPlane is a multi-tenant, self-hostable AI support cockpit. BL-095 extends
 ## 18. Next recommended backlog action
 
 Review BACKLOG.md for next slice. Candidates:
+
 - **BL-096:** Connector installation config editor with JSON schema validation
 - **BL-097:** Connector credential reference / secret broker foundation
 - Or any other backlog item prioritized by the CTO lane.

@@ -31,7 +31,7 @@ describe('telephony contracts', () => {
         mode: 'configured',
         signatureRequired: true,
         mockDevOnly: false,
-      })
+      }),
     );
   });
 
@@ -107,7 +107,7 @@ describe('telephony contracts', () => {
         externalCallId: 'CALL-1',
         action: 'mute',
         requestedAt: new Date().toISOString(),
-      })
+      }),
     );
   });
 });

@@ -32,6 +32,7 @@
 ## 4. AGENTS.md Governance Update
 
 Added sections:
+
 - **Backlog Currency Rule (mandatory):**
   - `BACKLOG.md` is live roadmap truth.
   - Closure handoff cannot claim complete if `BACKLOG.md` still shows the item as future/planned without a status marker.
@@ -46,32 +47,33 @@ Added sections:
 
 ## 5. Backlog Reconciliation Summary
 
-| Range | Status Applied | Notes |
-|-------|---------------|-------|
-| BL-001 – BL-009 | `[accepted]` | Bootstrap + early MVP implemented and closed |
-| BL-010 – BL-016 | `[accepted]` | Foundation implemented |
-| BL-017, BL-019, BL-021, BL-031–BL-035 | `[superseded by BL-091]` | Covered by support case workflow foundation |
-| BL-018 | `[accepted]` | Local auth/RBAC/tenant boundary |
-| BL-020 | `[accepted]` | Ticket/customer/connector safety |
-| BL-022 – BL-029 | `[partial/local-mock]` | Mock-only implementations, no real Zammad/AI writeback |
-| BL-030, BL-036, BL-037 | `[accepted]` | Audit writer, runtime identity, MVP 1 freeze |
-| BL-038 – BL-040 | `[superseded by BL-043/044/009/041]` | Call simulator items covered by later slices |
-| BL-041 – BL-045 | `[accepted]` | Call simulator MVP 2 closures |
-| BL-046 – BL-050 | `[accepted]` | Operator companion + PostgreSQL persistence |
-| BL-051 – BL-053 | `[partial/local-mock]` | AI screen summary, cockpit panel, privacy checks (limited) |
-| BL-054 – BL-068 | `[planned]` | Endpoint agent and approval-gated remediation not started |
-| BL-069 – BL-074 | `[planned]` | Post-MVP integrations not started |
-| BL-075, BL-078 | `[partial/local-mock]` | Basic admin/policy panel and evidence bundle viewer exist; full screens not built |
-| BL-076 – BL-077, BL-079 – BL-082 | `[planned]` | Governance/compliance evidence not started |
-| BL-083 – BL-090 | `[planned]` | Production hardening not started |
-| BL-091 | `[accepted]` | Support case workflow foundation |
-| BL-092 | `[accepted]` | Durable action/outbox workflow foundation |
-| BL-093 | `[accepted]` | Background outbox worker retry/dead-letter foundation |
-| BL-094 | `[accepted]` | Connector writeback readiness gates and delivery policy controls (max-20 closure) |
+| Range                                 | Status Applied                       | Notes                                                                             |
+| ------------------------------------- | ------------------------------------ | --------------------------------------------------------------------------------- |
+| BL-001 – BL-009                       | `[accepted]`                         | Bootstrap + early MVP implemented and closed                                      |
+| BL-010 – BL-016                       | `[accepted]`                         | Foundation implemented                                                            |
+| BL-017, BL-019, BL-021, BL-031–BL-035 | `[superseded by BL-091]`             | Covered by support case workflow foundation                                       |
+| BL-018                                | `[accepted]`                         | Local auth/RBAC/tenant boundary                                                   |
+| BL-020                                | `[accepted]`                         | Ticket/customer/connector safety                                                  |
+| BL-022 – BL-029                       | `[partial/local-mock]`               | Mock-only implementations, no real Zammad/AI writeback                            |
+| BL-030, BL-036, BL-037                | `[accepted]`                         | Audit writer, runtime identity, MVP 1 freeze                                      |
+| BL-038 – BL-040                       | `[superseded by BL-043/044/009/041]` | Call simulator items covered by later slices                                      |
+| BL-041 – BL-045                       | `[accepted]`                         | Call simulator MVP 2 closures                                                     |
+| BL-046 – BL-050                       | `[accepted]`                         | Operator companion + PostgreSQL persistence                                       |
+| BL-051 – BL-053                       | `[partial/local-mock]`               | AI screen summary, cockpit panel, privacy checks (limited)                        |
+| BL-054 – BL-068                       | `[planned]`                          | Endpoint agent and approval-gated remediation not started                         |
+| BL-069 – BL-074                       | `[planned]`                          | Post-MVP integrations not started                                                 |
+| BL-075, BL-078                        | `[partial/local-mock]`               | Basic admin/policy panel and evidence bundle viewer exist; full screens not built |
+| BL-076 – BL-077, BL-079 – BL-082      | `[planned]`                          | Governance/compliance evidence not started                                        |
+| BL-083 – BL-090                       | `[planned]`                          | Production hardening not started                                                  |
+| BL-091                                | `[accepted]`                         | Support case workflow foundation                                                  |
+| BL-092                                | `[accepted]`                         | Durable action/outbox workflow foundation                                         |
+| BL-093                                | `[accepted]`                         | Background outbox worker retry/dead-letter foundation                             |
+| BL-094                                | `[accepted]`                         | Connector writeback readiness gates and delivery policy controls (max-20 closure) |
 
 ## 6. Current Product Truth After Reconciliation
 
 SupportPlane is a multi-tenant, self-hostable AI support cockpit with:
+
 - PostgreSQL-backed local auth (dev-tenant, alt-tenant) with RBAC
 - SupportSession-centered workflow with ticket context, call events, screen observations
 - Mock-only AI gateway for draft suggestions and greeting generation
@@ -184,63 +186,63 @@ No real Zammad writeback, email sending, telephony/PBX integration, AI provider 
 **Count:** 20 screenshots
 **Duplicate Check:** 0 duplicate MD5 hashes
 
-| # | File | State Proven |
-|---|------|-------------|
-| 01 | `01-login-local-auth.png` | Login page in local auth mode |
-| 02 | `02-admin-cockpit-header.png` | Authenticated admin cockpit header showing user, tenant, role, API, auth/store/mock mode |
-| 03 | `03-delivery-policy-safe-defaults.png` | Delivery policy panel showing safe defaults, mock-only enforced, real network locked off |
-| 04 | `04-policy-update-saved.png` | Admin policy update + saved version/actor visible |
-| 05 | `05-connector-readiness-mock-only.png` | Connector readiness showing mock-ready and real-writeback-not-ready |
-| 06 | `06-queue-allowed-policy-decision.png` | Queue allowed path with policy decision visible |
-| 07 | `07-delivery-operations-worker-status.png` | Delivery operations/worker status showing mock mode, policy mode, queue stats |
-| 08 | `08-queue-blocked-killswitch.png` | Queue blocked by kill switch/policy |
-| 09 | `09-worker-deadlettered-policy.png` | Worker process blocked/dead-lettered by policy |
-| 10 | `10-worker-allowed-mock-detail.png` | Worker process allowed in mock mode with attempt detail, policy/version/safety flags |
-| 11 | `11-case-timeline-policy-events.png` | Case timeline showing policy/worker decision events |
-| 12 | `12-audit-trail-policy-events.png` | Audit trail showing policy updated, policy decision, blocked/allowed events |
-| 13 | `13-evidence-bundle-summary.png` | Evidence bundle summary showing delivery policy provenance |
-| 14 | `14-evidence-bundle-json-safety.png` | Evidence bundle JSON showing no secrets/tokens/password hashes/raw media and safety flags |
-| 15 | `15-viewer-readonly-policy.png` | Viewer role can inspect policy but controls are disabled/read-only |
-| 16 | `16-viewer-rbac-denial.png` | Direct forbidden mutation / viewer server-side RBAC denial, shown via UI evidence |
-| 17 | `17-cross-tenant-denied.png` | Cross-tenant access denied |
-| 18 | `18-logout-relogin-policy-preserved.png` | Logout and re-login proof, with preserved policy state |
-| 19 | `19-persistence-outbox-state.png` | API restart/persistence proof for policy/outbox state |
-| 20 | `20-final-mock-no-secret-proof.png` | Final no-real-writeback/no-secret/local-mock proof |
+| #   | File                                       | State Proven                                                                              |
+| --- | ------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| 01  | `01-login-local-auth.png`                  | Login page in local auth mode                                                             |
+| 02  | `02-admin-cockpit-header.png`              | Authenticated admin cockpit header showing user, tenant, role, API, auth/store/mock mode  |
+| 03  | `03-delivery-policy-safe-defaults.png`     | Delivery policy panel showing safe defaults, mock-only enforced, real network locked off  |
+| 04  | `04-policy-update-saved.png`               | Admin policy update + saved version/actor visible                                         |
+| 05  | `05-connector-readiness-mock-only.png`     | Connector readiness showing mock-ready and real-writeback-not-ready                       |
+| 06  | `06-queue-allowed-policy-decision.png`     | Queue allowed path with policy decision visible                                           |
+| 07  | `07-delivery-operations-worker-status.png` | Delivery operations/worker status showing mock mode, policy mode, queue stats             |
+| 08  | `08-queue-blocked-killswitch.png`          | Queue blocked by kill switch/policy                                                       |
+| 09  | `09-worker-deadlettered-policy.png`        | Worker process blocked/dead-lettered by policy                                            |
+| 10  | `10-worker-allowed-mock-detail.png`        | Worker process allowed in mock mode with attempt detail, policy/version/safety flags      |
+| 11  | `11-case-timeline-policy-events.png`       | Case timeline showing policy/worker decision events                                       |
+| 12  | `12-audit-trail-policy-events.png`         | Audit trail showing policy updated, policy decision, blocked/allowed events               |
+| 13  | `13-evidence-bundle-summary.png`           | Evidence bundle summary showing delivery policy provenance                                |
+| 14  | `14-evidence-bundle-json-safety.png`       | Evidence bundle JSON showing no secrets/tokens/password hashes/raw media and safety flags |
+| 15  | `15-viewer-readonly-policy.png`            | Viewer role can inspect policy but controls are disabled/read-only                        |
+| 16  | `16-viewer-rbac-denial.png`                | Direct forbidden mutation / viewer server-side RBAC denial, shown via UI evidence         |
+| 17  | `17-cross-tenant-denied.png`               | Cross-tenant access denied                                                                |
+| 18  | `18-logout-relogin-policy-preserved.png`   | Logout and re-login proof, with preserved policy state                                    |
+| 19  | `19-persistence-outbox-state.png`          | API restart/persistence proof for policy/outbox state                                     |
+| 20  | `20-final-mock-no-secret-proof.png`        | Final no-real-writeback/no-secret/local-mock proof                                        |
 
 ## 19. Validation Gate Results
 
-| Command | Result |
-|---------|--------|
-| `git status --short --branch` | clean on `main` |
-| `git log --oneline -10` | `0c22318`, `93afe78`, `f950a11`, `d59055a`, `66df562`, `8e67b30`, `b93061e`, `3919dce`, `7d5bcdc`, `94c9b71` |
-| `git rev-parse HEAD` | `0c22318ffbbf3fdb42114d97bdd40a05844ae2e5` |
-| `npm run lint` | pass (0 errors) |
-| `npm run typecheck --workspaces --if-present` | pass (all 9 workspaces) |
-| `npm run validate` | pass (contracts + Prisma schema) |
-| `npm run health` | pass (valid JSON, head matches) |
-| `scripts/verify_delivery_policy_controls.sh` | **14/14 checks passed** |
-| `npm test --workspace @supportplane/web` | **15/15 pass** |
-| `npm test --workspace @supportplane/contracts` | **29/29 pass** |
-| `cd apps/api && npm test` | **116/116 pass** (12 suites) |
-| `python3 scripts/check_state_docs.py` | **PASSED** |
-| `python3 scripts/check_state_docs.py --bootstrap-gate` | **PASSED** |
-| `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` | **PASSED** |
-| `curl -s http://localhost:4110/health` | HTTP 200, JSON OK |
-| `curl -s http://localhost:3200/ | head` | HTTP 200, HTML OK |
-| `md5sum output/playwright/session-095-bl094-final-closure-max20/*.png` | 20 unique hashes, 0 duplicates |
+| Command                                                                      | Result                                                                                                       |
+| ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------- |
+| `git status --short --branch`                                                | clean on `main`                                                                                              |
+| `git log --oneline -10`                                                      | `0c22318`, `93afe78`, `f950a11`, `d59055a`, `66df562`, `8e67b30`, `b93061e`, `3919dce`, `7d5bcdc`, `94c9b71` |
+| `git rev-parse HEAD`                                                         | `0c22318ffbbf3fdb42114d97bdd40a05844ae2e5`                                                                   |
+| `npm run lint`                                                               | pass (0 errors)                                                                                              |
+| `npm run typecheck --workspaces --if-present`                                | pass (all 9 workspaces)                                                                                      |
+| `npm run validate`                                                           | pass (contracts + Prisma schema)                                                                             |
+| `npm run health`                                                             | pass (valid JSON, head matches)                                                                              |
+| `scripts/verify_delivery_policy_controls.sh`                                 | **14/14 checks passed**                                                                                      |
+| `npm test --workspace @supportplane/web`                                     | **15/15 pass**                                                                                               |
+| `npm test --workspace @supportplane/contracts`                               | **29/29 pass**                                                                                               |
+| `cd apps/api && npm test`                                                    | **116/116 pass** (12 suites)                                                                                 |
+| `python3 scripts/check_state_docs.py`                                        | **PASSED**                                                                                                   |
+| `python3 scripts/check_state_docs.py --bootstrap-gate`                       | **PASSED**                                                                                                   |
+| `python3 -m py_compile scripts/check_state_docs.py scripts/init_template.py` | **PASSED**                                                                                                   |
+| `curl -s http://localhost:4110/health`                                       | HTTP 200, JSON OK                                                                                            |
+| `curl -s http://localhost:3200/                                              | head`                                                                                                        | HTTP 200, HTML OK |
+| `md5sum output/playwright/session-095-bl094-final-closure-max20/*.png`       | 20 unique hashes, 0 duplicates                                                                               |
 
 **npm audit:** 10 vulnerabilities (8 moderate, 2 high) — all pre-existing, unchanged by this slice.
 
 ## 20. Runtime Status
 
-| Service | Process/Container | Port | Status |
-|---------|------------------|------|--------|
-| API | Node (tsx src/main.ts) | 4110 | running |
-| Web | Node (next dev -p 3200) | 3200 | running |
-| PostgreSQL | Podman `sp-postgres` | 5434 | healthy |
-| NATS | Podman `sp-nats` | 4222/8222 | healthy |
-| MinIO | Podman `sp-minio` | 9000/9001 | healthy |
-| Worker | Podman `sp-worker` | — | running (placeholder) |
+| Service    | Process/Container       | Port      | Status                |
+| ---------- | ----------------------- | --------- | --------------------- |
+| API        | Node (tsx src/main.ts)  | 4110      | running               |
+| Web        | Node (next dev -p 3200) | 3200      | running               |
+| PostgreSQL | Podman `sp-postgres`    | 5434      | healthy               |
+| NATS       | Podman `sp-nats`        | 4222/8222 | healthy               |
+| MinIO      | Podman `sp-minio`       | 9000/9001 | healthy               |
+| Worker     | Podman `sp-worker`      | —         | running (placeholder) |
 
 - Store mode: `postgres`
 - Auth mode: `local`
@@ -282,6 +284,7 @@ No real Zammad writeback, email sending, telephony/PBX integration, AI provider 
 ## 24. Next Recommended Backlog Action
 
 Await CTO direction. Likely next slices:
+
 - Configurable connector installation settings (real credential management, network path validation)
 - Production readiness hardening (rate limits, request validation, secrets encryption)
 - Operator Companion AI screen summary completion (BL-051/052)

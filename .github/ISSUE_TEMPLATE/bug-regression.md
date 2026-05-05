@@ -1,8 +1,8 @@
 ---
 name: Bug / Regression
 about: Report a bug or regression
-title: "[bug] "
-labels: ["bug"]
+title: '[bug] '
+labels: ['bug']
 ---
 
 ## Problem

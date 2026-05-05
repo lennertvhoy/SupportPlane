@@ -4,27 +4,27 @@
 
 ## Round Info
 
-| Field | Value |
-|-------|-------|
-| **Round label** | `ROUND-001` |
-| **Date** | 2026-05-03 |
-| **Backlog ID** | BL-139 |
-| **Status** | In progress |
-| **Demo URL** | `http://localhost:3300` |
-| **API URL** | `http://localhost:4210` |
+| Field           | Value                   |
+| --------------- | ----------------------- |
+| **Round label** | `ROUND-001`             |
+| **Date**        | 2026-05-03              |
+| **Backlog ID**  | BL-139                  |
+| **Status**      | In progress             |
+| **Demo URL**    | `http://localhost:3300` |
+| **API URL**     | `http://localhost:4210` |
 
 ---
 
 ## Tester List
 
-| # | Name / ID | Role | Persona | Assigned flows | Status |
-|---|-----------|------|---------|---------------|--------|
-| 1 | `tester-001` | — | MSP Owner / IT Manager | A, B, C, D, E | Pending |
-| 2 | `tester-002` | — | Helpdesk Operator | A, B, E | Pending |
-| 3 | `tester-003` | — | Security / Governance Reviewer | A, C, D, E | Pending |
-| 4 | `tester-004` | — | Technical Admin | C, D, E | Pending |
-| 5 | `tester-005` | — | Skeptical Enterprise Buyer | A, B, C, D, E | Pending |
-| 0 | `internal-dry-run` | — | All personas | All flows | In progress |
+| #   | Name / ID          | Role | Persona                        | Assigned flows | Status      |
+| --- | ------------------ | ---- | ------------------------------ | -------------- | ----------- |
+| 1   | `tester-001`       | —    | MSP Owner / IT Manager         | A, B, C, D, E  | Pending     |
+| 2   | `tester-002`       | —    | Helpdesk Operator              | A, B, E        | Pending     |
+| 3   | `tester-003`       | —    | Security / Governance Reviewer | A, C, D, E     | Pending     |
+| 4   | `tester-004`       | —    | Technical Admin                | C, D, E        | Pending     |
+| 5   | `tester-005`       | —    | Skeptical Enterprise Buyer     | A, B, C, D, E  | Pending     |
+| 0   | `internal-dry-run` | —    | All personas                   | All flows      | In progress |
 
 ---
 
@@ -38,28 +38,28 @@ Each tester should be assigned exactly one persona from the table above before s
 
 ## Flows to Validate
 
-| Flow | Description | Target time | Key evidence |
-|------|-------------|-------------|-------------|
-| **Flow A** | First impressions & cockpit layout | 5 min | Header badge clarity, panel labels, honesty signals |
-| **Flow B** | Zammad real sandbox ticket | 5 min | Ticket context loads, provenance labels correct, transport=real |
-| **Flow C** | GLPI real sandbox ticket | 5 min | Second connector verified, labels distinct from Zammad |
-| **Flow D** | Governance, policy & audit | 5–8 min | Connector status panel, policy editor, audit explorer |
-| **Flow E** | What feels wrong? | 5 min | Unlabeled friction, confusing terms, trust gaps |
+| Flow       | Description                        | Target time | Key evidence                                                    |
+| ---------- | ---------------------------------- | ----------- | --------------------------------------------------------------- |
+| **Flow A** | First impressions & cockpit layout | 5 min       | Header badge clarity, panel labels, honesty signals             |
+| **Flow B** | Zammad real sandbox ticket         | 5 min       | Ticket context loads, provenance labels correct, transport=real |
+| **Flow C** | GLPI real sandbox ticket           | 5 min       | Second connector verified, labels distinct from Zammad          |
+| **Flow D** | Governance, policy & audit         | 5–8 min     | Connector status panel, policy editor, audit explorer           |
+| **Flow E** | What feels wrong?                  | 5 min       | Unlabeled friction, confusing terms, trust gaps                 |
 
 ---
 
 ## Success Criteria
 
-| # | Criterion | How measured |
-|---|-----------|--------------|
-| 1 | All testers can log in without help | Zero assistance requests for login |
-| 2 | All testers complete Flow B (Zammad) without hitting a dead-end | 100% completion rate |
-| 3 | All testers complete Flow C (GLPI) without hitting a dead-end | 100% completion rate |
-| 4 | 80%+ of testers correctly identify which connectors are real vs fixture | Post-test quiz or feedback form check |
-| 5 | No P0 demo-blockers found | Zero issues tagged P0 |
-| 6 | ≤ 3 P1 issues found | Small enough to fix this round |
-| 7 | All SEC/BUG reviewers confirm no secrets visible in UI/API | Explicit check in feedback form |
-| 8 | ≥ 3 testers rate Clarity ≥ 3/5 | Feedback form ratings table |
+| #   | Criterion                                                               | How measured                          |
+| --- | ----------------------------------------------------------------------- | ------------------------------------- |
+| 1   | All testers can log in without help                                     | Zero assistance requests for login    |
+| 2   | All testers complete Flow B (Zammad) without hitting a dead-end         | 100% completion rate                  |
+| 3   | All testers complete Flow C (GLPI) without hitting a dead-end           | 100% completion rate                  |
+| 4   | 80%+ of testers correctly identify which connectors are real vs fixture | Post-test quiz or feedback form check |
+| 5   | No P0 demo-blockers found                                               | Zero issues tagged P0                 |
+| 6   | ≤ 3 P1 issues found                                                     | Small enough to fix this round        |
+| 7   | All SEC/BUG reviewers confirm no secrets visible in UI/API              | Explicit check in feedback form       |
+| 8   | ≥ 3 testers rate Clarity ≥ 3/5                                          | Feedback form ratings table           |
 
 ---
 

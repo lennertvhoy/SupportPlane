@@ -8,7 +8,12 @@ function parseLimit(limit: string): number {
   if (!match) return 1024 * 1024;
   const value = parseFloat(match[1]);
   const unit = (match[2] || 'b').toLowerCase();
-  const multipliers: Record<string, number> = { b: 1, kb: 1024, mb: 1024 * 1024, gb: 1024 * 1024 * 1024 };
+  const multipliers: Record<string, number> = {
+    b: 1,
+    kb: 1024,
+    mb: 1024 * 1024,
+    gb: 1024 * 1024 * 1024,
+  };
   return value * (multipliers[unit] || 1);
 }
 

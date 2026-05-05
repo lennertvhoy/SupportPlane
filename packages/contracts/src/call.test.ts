@@ -34,7 +34,10 @@ describe('call contracts', () => {
   });
 
   it('CallStatusTransitionRequest validates with reason', () => {
-    const req = CallStatusTransitionRequest.parse({ status: 'on_hold', reason: 'Checking details' });
+    const req = CallStatusTransitionRequest.parse({
+      status: 'on_hold',
+      reason: 'Checking details',
+    });
     assert.strictEqual(req.status, 'on_hold');
     assert.strictEqual(req.reason, 'Checking details');
   });
@@ -117,7 +120,10 @@ describe('call contracts', () => {
   });
 
   it('CallStatusTransitionRequest rejects long reason', () => {
-    const parsed = CallStatusTransitionRequest.safeParse({ status: 'ended', reason: 'x'.repeat(600) });
+    const parsed = CallStatusTransitionRequest.safeParse({
+      status: 'ended',
+      reason: 'x'.repeat(600),
+    });
     assert.strictEqual(parsed.success, false);
   });
 });

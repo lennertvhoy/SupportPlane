@@ -3,7 +3,7 @@
 metadata:
   updated_at: 2026-05-05T09:20:00+02:00
   updated_by: agent
-  version: "statedd-template-v3"
+  version: 'statedd-template-v3'
   note: >
     Condensed during BL-102 because the previous state file was near the
     repository 900-line limit. Historical detail remains in WORKLOG.md,
@@ -150,6 +150,23 @@ current_state:
       dispositioned per SupportPlane closure rule: non-runtime doc corrections
       are acceptable when documented. Exception recorded in
       output/playwright/session-160-automation-design-assurance-backlog/00-EVIDENCE-INDEX.md.
+    head_before_session_161: f872229ee3cfa81dddbb71c709ccba4ddc4bb4d7
+    final_head_after_session_161: TBD_AT_COMMIT_TIME
+    note_session_161: >
+      Session 161: BL-153 Automated Quality Gate & CI/CD Hardening Foundation.
+      Created .github/workflows/ci.yml with quality, security-baseline, and
+      docs-governance jobs. Added PostgreSQL service container for DB-dependent
+      tests. Added root scripts: ci, ci:local, security:baseline,
+      check:runtime-identity, check:evidence-hygiene. Created BL-158 scripts:
+      scripts/check_runtime_identity.sh and scripts/check_evidence_hygiene.sh.
+      Created BL-155 partial script: scripts/security-baseline.sh. Fixed
+      PROJECT_STATE.yaml duplicate keys (evidence, updated_in_session_130)
+      that broke Prettier. Ran npm run format to fix repo-wide drift.
+      Added SKIP REASON comments to ai-services.test.ts skipped tests.
+      Local validation: format:check PASS, lint PASS, typecheck PASS,
+      build PASS, validate PASS, tests 401/404 pass + 3 skip.
+      Remote CI not yet proven. Evidence: output/playwright/
+      session-161-ci-quality-gate-foundation/.
     head_before_session_095: 61d52b018188c8fd0ef20c032a9adb7384f70622
     final_head_after_session_095: b9cd490af43a460e9b48679b5acf8466f7713ed6
     note_session_095: >
@@ -190,7 +207,7 @@ current_state:
       not_implemented: [OAuth, SAML, MFA_enforcement, password_reset, production_auth_hardening]
     connectors:
       current: real sandbox read + real sandbox writeback + expanded mock scaffolding (BL-111 accepted, BL-069/072 partial)
-      zammad: "real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient (verified Session 131 — transport=real, mode=zammad, credentialSource=vault, connected=true)"
+      zammad: 'real HTTP read and internal note writeback from sandbox Zammad via FetchZammadHttpClient (verified Session 131 — transport=real, mode=zammad, credentialSource=vault, connected=true)'
       writeback: sandbox-only internal notes; real network allowed for local Zammad sandbox only
       registry: zammad, osticket, glpi, meshcentral, fortinet, mock factories registered via AdapterRuntimeResolver
       canonical_ids: resolveCanonicalAdapterId() eliminates hardcoded IDs
@@ -199,7 +216,7 @@ current_state:
       production_writeback_ready: false (hardcoded)
       public_reply_enabled: false (hardcoded)
       osticket: partial/local-fixture (read-only adapter, no real instance)
-      glpi: "real sandbox - deployed in K8s, authenticated connector-status proven, GLPI session context proven"
+      glpi: 'real sandbox - deployed in K8s, authenticated connector-status proven, GLPI session context proven'
       meshcentral: partial/unconfigured (registered with read_devices capability; configured-but-unsupported real paths report error/UNSUPPORTED instead of fixture fallback)
       fortinet: partial/unconfigured (registered with read_firewall_context capability; configured-but-unsupported real paths report error/UNSUPPORTED)
       unified_status_endpoint: GET /connectors/status returns id, displayName, mode, transport, credentialSource, lastCheck, errorCode, fixtureWarning, and capabilities
@@ -212,7 +229,12 @@ current_state:
       pgvector_enabled: false
       semantic_retrieval_accepted: false
       fallback_truth: response includes pgvectorReason, embeddingProviderAvailable, semanticEligible, and fallbackReason
-      known_gaps: [external_ingestion_pipeline, pgvector_extension_and_vector_column, production_embedding_provider]
+      known_gaps:
+        [
+          external_ingestion_pipeline,
+          pgvector_extension_and_vector_column,
+          production_embedding_provider,
+        ]
     ai:
       current: real local ollama with governance logging and policy gating
       cloud_ai_calls: false
@@ -231,7 +253,13 @@ current_state:
         summary_api: GET /model-usage/summary
         admin_ui: ModelUsagePanel with filters and summary cards
       chat_api:
-        endpoints: [POST /ai-chat/sessions, GET /ai-chat/sessions, GET /ai-chat/sessions/:id, POST /ai-chat/sessions/:id/messages]
+        endpoints:
+          [
+            POST /ai-chat/sessions,
+            GET /ai-chat/sessions,
+            GET /ai-chat/sessions/:id,
+            POST /ai-chat/sessions/:id/messages,
+          ]
         status: runtime_proven_no_ui
         policy_gating: tenant_ai_policy_checked
         retention_enforcement: output_redaction_before_storage
@@ -283,7 +311,15 @@ current_state:
       outbound_only: true
       registration: tenant_enrollment_token_plus_device_token_local_sandbox
       heartbeat_inventory: true
-      fixed_commands: [collect_inventory, collect_disk, collect_network, collect_services, collect_software, ping_self]
+      fixed_commands:
+        [
+          collect_inventory,
+          collect_disk,
+          collect_network,
+          collect_services,
+          collect_software,
+          ping_self,
+        ]
       platform_aware_collectors: true
       platforms: [linux, win32, darwin]
       arbitrary_shell: false
@@ -291,7 +327,13 @@ current_state:
       device_console_route: /device-console
       accepted_items: [BL-055, BL-056, BL-058, BL-059, BL-060, BL-130, BL-131, BL-133]
       partial_items: [BL-057, BL-118, BL-129, BL-132]
-      known_gaps: [production_enrollment_hardening, deeper_consent_model, windows_service_install_admin_required, remediation_end_to_end_result]
+      known_gaps:
+        [
+          production_enrollment_hardening,
+          deeper_consent_model,
+          windows_service_install_admin_required,
+          remediation_end_to_end_result,
+        ]
     tool_execution:
       current: remote_tool_execution_safety_foundation_truth_repaired
       architecture_note: >
@@ -302,18 +344,56 @@ current_state:
         resolver tooling, and real Windows remediation proof is still pending.
       manifest: local_tool_manifest_json_with_integrity_hash
       registry_count: 8
-      registry_tools: [diagnostic.inventory, diagnostic.disk, diagnostic.network, diagnostic.services, diagnostic.software, diagnostic.status, remediation.flush_dns_cache, remediation.clear_temp_preview]
+      registry_tools:
+        [
+          diagnostic.inventory,
+          diagnostic.disk,
+          diagnostic.network,
+          diagnostic.services,
+          diagnostic.software,
+          diagnostic.status,
+          remediation.flush_dns_cache,
+          remediation.clear_temp_preview,
+        ]
       policy_engine: role_tenant_device_risk_allowlist_platform_aware
       read_only_auto_approval: true
       remediation_requires_approval: true
       arbitrary_shell_blocked: true
       fixed_implementation_only: true
-      endpoint_command_kind_allowlist: [collect_inventory, collect_disk, collect_network, collect_services, collect_software, ping_self, flush_dns_cache, clear_temp_preview]
-      audit_events: [tool_invocation_requested, tool_dispatch_created, tool_approval_requested, tool_approval_decided, tool_result_received, arbitrary_execution_rejected, tool_note_draft_created]
+      endpoint_command_kind_allowlist:
+        [
+          collect_inventory,
+          collect_disk,
+          collect_network,
+          collect_services,
+          collect_software,
+          ping_self,
+          flush_dns_cache,
+          clear_temp_preview,
+        ]
+      audit_events:
+        [
+          tool_invocation_requested,
+          tool_dispatch_created,
+          tool_approval_requested,
+          tool_approval_decided,
+          tool_result_received,
+          arbitrary_execution_rejected,
+          tool_note_draft_created,
+        ]
       accepted_items: [BL-061, BL-062, BL-063, BL-064, BL-066, BL-067, BL-068]
       partial_items: [BL-065]
       evidence_folder: output/playwright/session-123-real-connectors-golden-workflow/
-      known_gaps: [web_ui_tool_registry_page, web_ui_approval_queue, web_ui_device_console_tool_integration, tool_manifest_digital_signing, production_enrollment_hardening, broader_remediation_tool_coverage, real_windows_remediation_proof]
+      known_gaps:
+        [
+          web_ui_tool_registry_page,
+          web_ui_approval_queue,
+          web_ui_device_console_tool_integration,
+          tool_manifest_digital_signing,
+          production_enrollment_hardening,
+          broader_remediation_tool_coverage,
+          real_windows_remediation_proof,
+        ]
     windows_endpoint:
       current: real_runner_proof_achieved_bl130_bl131_bl133_accepted
       architecture_note: >
@@ -327,7 +407,15 @@ current_state:
       platform_enum: [linux, win32, darwin, unknown]
       platform_normalization: true
       agent_collectors: [inventory, disk, network, services, software, ping_self]
-      windows_collectors_safe: [inventory, disk, network, services_fixture_parser_and_fixed_sc_template, software_fixture_parser_and_fixed_reg_template, ping_self]
+      windows_collectors_safe:
+        [
+          inventory,
+          disk,
+          network,
+          services_fixture_parser_and_fixed_sc_template,
+          software_fixture_parser_and_fixed_reg_template,
+          ping_self,
+        ]
       windows_collectors_unsupported: [clear_temp_preview]
       windows_remediation_status: fixed_template_scaffolded_real_runner_proven_partial
       windows_runtime_proof: true
@@ -336,16 +424,25 @@ current_state:
       ui_unsupported_tool_state: true
       mocked_windows_seed: true
       real_windows_runner: true
-      service_scripts: [scripts/windows/install_endpoint_agent_service.ps1, scripts/windows/uninstall_endpoint_agent_service.ps1, scripts/windows/run_endpoint_agent_once.ps1]
+      service_scripts:
+        [
+          scripts/windows/install_endpoint_agent_service.ps1,
+          scripts/windows/uninstall_endpoint_agent_service.ps1,
+          scripts/windows/run_endpoint_agent_once.ps1,
+        ]
       service_install_proven: false
       service_install_blocker: github_hosted_runner_lacks_admin_privileges_for_sc_exe_create
       documentation: docs/WINDOWS_ENDPOINT_SUPPORT.md
-      tests: [platform_policy_api_tests, agent_collector_unit_tests, platform_normalization_tests, windows_parser_fixture_tests, manifest_compatibility_tests, no_shell_interpolation_tests]
+      tests:
+        [
+          platform_policy_api_tests,
+          agent_collector_unit_tests,
+          platform_normalization_tests,
+          windows_parser_fixture_tests,
+          manifest_compatibility_tests,
+          no_shell_interpolation_tests,
+        ]
       backlog_items: [BL-129, BL-130, BL-131, BL-132, BL-133]
-    evidence:
-      current: local sandbox JSON and Markdown bundle persisted to MinIO with direct read/checksum proof
-      object_storage_artifact_persistence: true (MinIO local sandbox, direct object read/checksum proven)
-      compliance_grade: false
     credentials:
       current: OpenBao local sandbox resolver for Zammad API token
       real_secret_resolution: true (local sandbox only)
@@ -362,6 +459,27 @@ current_state:
       - no production secrets
       - no production audit immutability
       - no compliance certification
+
+    ci:
+      status: bl_153_accepted_local_validation_only
+      workflows:
+        - .github/workflows/ci.yml
+        - .github/workflows/validate.yml
+        - .github/workflows/windows-endpoint-verification.yml
+      jobs:
+        quality: [format, lint, typecheck, build, prisma_migrate, validate, test]
+        security_baseline: [npm_audit_high_blocking, npm_audit_moderate_artifact]
+        docs_governance: [state_docs, docs_hygiene]
+      triggers: [push_main, pull_request_main, workflow_dispatch]
+      service_containers: [postgres_16_alpine]
+      local_mirror_command: npm run ci
+      format_check: enforced_after_session_161_drift_fix
+      remote_ci_proven: false
+      branch_protection_configured: false
+      notes: >
+        CI is locally validated (workflow syntax, script execution, gate passes).
+        Remote GitHub Actions execution not yet verified. Branch protection
+        rules must be configured manually in repository settings.
 
   local_mock_mvp_status:
     backlog_id: BL-101
@@ -572,13 +690,32 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-159
-    accepted_current_slice: BL-143_session_095_bl143_first_open_ux_enterprise_readiness_accepted
+    accepted_current_slice: BL-153_session_161_ci_quality_gate_foundation_accepted
     partial_current_slice: none
     planned_real_e2e_items:
       - BL-119
       - BL-120
     active_queue_source: NEXT_ACTIONS.md
-    active_queue_items: [BL-144, BL-145, BL-146, BL-147, BL-071, BL-072, BL-127, BL-065, BL-132, BL-135, BL-152, BL-153, BL-154, BL-155, BL-156, BL-157, BL-158, BL-159]
+    active_queue_items:
+      [
+        BL-144,
+        BL-145,
+        BL-146,
+        BL-147,
+        BL-071,
+        BL-072,
+        BL-127,
+        BL-065,
+        BL-132,
+        BL-135,
+        BL-152,
+        BL-154,
+        BL-155,
+        BL-156,
+        BL-157,
+        BL-158,
+        BL-159,
+      ]
 
   documentation:
     primary_user_guide: README.md
@@ -628,19 +765,7 @@ current_state:
       - apps/web/Containerfile.local
       - apps/worker/Containerfile.local
       - scripts/build_and_load_local_k8s_images.sh
-      - infra/kubernetes/local-podman/postgres/postgres-secret.yaml
-      - infra/kubernetes/local-podman/postgres/postgres-configmap.yaml
-      - infra/kubernetes/local-podman/postgres/postgres-service.yaml
-      - infra/kubernetes/local-podman/postgres/postgres-statefulset.yaml
-      - infra/kubernetes/local-podman/postgres/postgres-migrate-job.yaml
-      - infra/kubernetes/local-podman/postgres/postgres-seed-job.yaml
-      - infra/kubernetes/local-podman/app/app-configmap.yaml
-      - infra/kubernetes/local-podman/app/app-secret.local.yaml
-      - infra/kubernetes/local-podman/app/api-deployment.yaml
-      - infra/kubernetes/local-podman/app/api-service.yaml
-      - infra/kubernetes/local-podman/app/web-deployment.yaml
-      - infra/kubernetes/local-podman/app/web-service.yaml
-      - infra/kubernetes/local-podman/app/worker-deployment.yaml
+      - 14 Kubernetes manifests under infra/kubernetes/local-podman/ for postgres, app (api/web/worker deployments/services/configmaps)
       - scripts/bl104_bl105_screenshots.js
     updated_in_bl_104_bl_105:
       - infra/kubernetes/local-podman/kustomization.yaml
@@ -659,30 +784,7 @@ current_state:
       - docs/BACKLOG_REAL_E2E_ROADMAP.md
       - docs/IMPLEMENTATION_PHASES_REAL_E2E.md
     created_in_bl_106:
-      - infra/kubernetes/local-podman/data/minio/minio-secret.yaml
-      - infra/kubernetes/local-podman/data/minio/minio-pvc.yaml
-      - infra/kubernetes/local-podman/data/minio/minio-deployment.yaml
-      - infra/kubernetes/local-podman/data/minio/minio-service.yaml
-      - infra/kubernetes/local-podman/integrations/openbao/openbao-secret.yaml
-      - infra/kubernetes/local-podman/integrations/openbao/openbao-pvc.yaml
-      - infra/kubernetes/local-podman/integrations/openbao/openbao-deployment.yaml
-      - infra/kubernetes/local-podman/integrations/openbao/openbao-service.yaml
-      - infra/kubernetes/local-podman/integrations/nats/nats-configmap.yaml
-      - infra/kubernetes/local-podman/integrations/nats/nats-pvc.yaml
-      - infra/kubernetes/local-podman/integrations/nats/nats-statefulset.yaml
-      - infra/kubernetes/local-podman/integrations/nats/nats-service.yaml
-      - infra/kubernetes/local-podman/integrations/mailpit/mailpit-deployment.yaml
-      - infra/kubernetes/local-podman/integrations/mailpit/mailpit-service.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-postgres-secret.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-postgres-pvc.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-postgres-statefulset.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-postgres-service.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-redis-deployment.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-redis-service.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-configmap.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-secret.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-statefulset.yaml
-      - infra/kubernetes/local-podman/integrations/zammad/zammad-service.yaml
+      - 25 Kubernetes manifests under infra/kubernetes/local-podman/ for minio, openbao, nats, mailpit, zammad (postgres/redis/statefulset/configmap/secret/service/deployment)
       - scripts/bl106_screenshots.js
     updated_in_bl_106:
       - infra/kubernetes/local-podman/kustomization.yaml
@@ -737,7 +839,6 @@ current_state:
       - docs/LOCAL_DEVELOPMENT.md
       - README.md
       - docs/README.md
-    updated_in_session_130:
       - STATUS.md
       - BACKLOG.md
       - NEXT_ACTIONS.md

@@ -37,6 +37,7 @@ Real writeback to external ticketing systems (Zammad, GLPI, etc.) is blocked bec
 A server-side service that can resolve `secretRef` identifiers to actual secret values without exposing them to the API response layer, UI, or evidence bundles.
 
 Requirements:
+
 - Resolve `secretRef` → actual secret value only inside the connector runtime service.
 - Never return resolved secrets in API responses.
 - Never store resolved secrets in audit event metadata.
@@ -45,10 +46,12 @@ Requirements:
 ### 3.2 Encrypted Secret Storage or External Vault/KMS Boundary
 
 Either:
+
 - Encrypt `secretRef` values at rest in PostgreSQL using AES-256-GCM with a key from an external KMS.
 - Or integrate with HashiCorp Vault, AWS Secrets Manager, or Azure Key Vault.
 
 Requirements:
+
 - Encryption keys are not stored in the application database.
 - Key rotation is supported.
 - Secret values are decrypted only in memory at resolution time.
@@ -59,6 +62,7 @@ Requirements:
 A tenant-scoped admin UI and API for configuring real connector endpoints:
 
 Requirements:
+
 - Admin can set `baseUrl` (real Zammad URL) after explicit "enable real mode" opt-in.
 - Admin can link credential references to installations.
 - Admin can configure capabilities per installation.
@@ -68,6 +72,7 @@ Requirements:
 ### 3.4 Connector Runtime Resolver That Can Safely Resolve Secrets Server-Side
 
 The `ConnectorRuntimeService.resolveRuntime()` must be able to:
+
 - Look up the installation and its linked credential references.
 - Call the credential broker to resolve `secretRef` to actual values.
 - Construct a real `TicketingAdapterDriver` instance with resolved credentials.
@@ -76,6 +81,7 @@ The `ConnectorRuntimeService.resolveRuntime()` must be able to:
 ### 3.5 Network Egress Policy
 
 Requirements:
+
 - Allowlist of permitted external domains/IPs per tenant.
 - HTTPS-only for production.
 - Proxy support for corporate environments.
@@ -94,6 +100,7 @@ Extend the existing `DeliveryPolicy` model:
 ### 3.7 Approval / Human-Review Gates
 
 Real writeback must require:
+
 - Explicit approval by a user with `minimumApproverRole`.
 - Review of the draft content before queueing.
 - Optional second approval for high-risk actions (e.g., public replies, status changes).
@@ -101,6 +108,7 @@ Real writeback must require:
 ### 3.8 Audit / Evidence Bundle Requirements
 
 For real writeback:
+
 - Audit events must include real HTTP status codes, response times, and error messages (redacted if they contain secrets).
 - Evidence bundles must include real connector operation summaries with `realNetwork: true`.
 - Attempt history must include real HTTP response summaries.
@@ -116,6 +124,7 @@ For real writeback:
 ### 3.10 Dry-Run Mode
 
 Before real writeback, a dry-run mode must:
+
 - Validate the connector config against the real Zammad API (read-only health check).
 - Simulate the writeback without persisting changes (if Zammad supports drafts or preview).
 - Or at minimum, validate that the ticket exists and the credentials are valid.
@@ -123,6 +132,7 @@ Before real writeback, a dry-run mode must:
 ### 3.11 Kill Switch Behavior
 
 The existing kill switch must:
+
 - Block all real network calls immediately when toggled.
 - Not affect mock-only operations.
 - Be tenant-scoped.
@@ -200,15 +210,15 @@ Before any real writeback can be accepted:
 
 ## 7. Threat / Risk Table
 
-| Threat | Likelihood | Impact | Mitigation |
-|--------|-----------|--------|------------|
-| Secret leakage in API responses | Low | Critical | Zod schema rejects `secretRef` in runtime resolver output; redaction in evidence bundles |
-| Misconfigured connector writes to wrong tenant | Medium | High | Tenant isolation at store layer; blast-radius controls |
-| Credential broker compromise | Low | Critical | External Vault/KMS; keys not in app DB; short-lived tokens |
-| Real network calls without approval | Medium | High | Delivery policy gates; approval workflow; kill switch |
-| Replay attack on writeback | Low | High | Idempotency keys; hash-chain audit events |
-| DDoS of external ticketing system | Medium | Medium | Rate limiting; egress policy; timeout controls |
-| Evidence bundle contains real secrets | Low | Critical | Redaction layer; secret-free schema enforcement |
+| Threat                                         | Likelihood | Impact   | Mitigation                                                                               |
+| ---------------------------------------------- | ---------- | -------- | ---------------------------------------------------------------------------------------- |
+| Secret leakage in API responses                | Low        | Critical | Zod schema rejects `secretRef` in runtime resolver output; redaction in evidence bundles |
+| Misconfigured connector writes to wrong tenant | Medium     | High     | Tenant isolation at store layer; blast-radius controls                                   |
+| Credential broker compromise                   | Low        | Critical | External Vault/KMS; keys not in app DB; short-lived tokens                               |
+| Real network calls without approval            | Medium     | High     | Delivery policy gates; approval workflow; kill switch                                    |
+| Replay attack on writeback                     | Low        | High     | Idempotency keys; hash-chain audit events                                                |
+| DDoS of external ticketing system              | Medium     | Medium   | Rate limiting; egress policy; timeout controls                                           |
+| Evidence bundle contains real secrets          | Low        | Critical | Redaction layer; secret-free schema enforcement                                          |
 
 ## 8. Test Plan for Future Implementation
 

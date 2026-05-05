@@ -1,4 +1,10 @@
-import { Injectable, Inject, BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { randomBytes, randomUUID } from 'crypto';
 import {
   ToolInvocationStatus,
@@ -20,7 +26,16 @@ import { ToolRegistryService } from './tool-registry.service.js';
 import { ToolPolicyService } from './tool-policy.service.js';
 import { ToolApprovalService } from './tool-approval.service.js';
 
-const FORBIDDEN_EXECUTABLE_FIELDS = ['command', 'shell', 'script', 'argv', 'executable', 'program', 'powershell', 'cmd'];
+const FORBIDDEN_EXECUTABLE_FIELDS = [
+  'command',
+  'shell',
+  'script',
+  'argv',
+  'executable',
+  'program',
+  'powershell',
+  'cmd',
+];
 const IMPLEMENTATION_TO_ENDPOINT_COMMAND: Record<string, typeof EndpointCommandKind._type> = {
   collect_inventory: EndpointCommandKind.enum.collect_inventory,
   collect_disk: EndpointCommandKind.enum.collect_disk,
@@ -45,7 +60,11 @@ export class ToolExecutionGatewayService {
     identity: CurrentIdentity,
     deviceId: string,
     body: { toolKey?: string; requestedInput?: Record<string, unknown>; idempotencyKey?: string },
-  ): Promise<{ invocation: ToolInvocationShape; idempotentReplay?: boolean; policyDecision: ToolPolicyDecision }> {
+  ): Promise<{
+    invocation: ToolInvocationShape;
+    idempotentReplay?: boolean;
+    policyDecision: ToolPolicyDecision;
+  }> {
     // 1. Reject arbitrary execution fields at any depth in the payload
     const hasExecutableField = (obj: unknown): string | undefined => {
       if (!obj || typeof obj !== 'object') return undefined;
@@ -56,13 +75,24 @@ export class ToolExecutionGatewayService {
       }
       return undefined;
     };
-    const presentExecutableField = hasExecutableField(body) || hasExecutableField(body.requestedInput);
+    const presentExecutableField =
+      hasExecutableField(body) || hasExecutableField(body.requestedInput);
     if (presentExecutableField) {
-      await this.audit(identity.tenantId as AuditEvent['tenantId'], identity.userId, AuditActorType.enum.user, AuditEventType.enum.arbitrary_execution_rejected, 'tool_invocation', randomUUID() as AuditEvent['resourceId'], {
-        reason: 'arbitrary_execution_field_rejected',
-        rejectedField: presentExecutableField,
-      });
-      throw new BadRequestException('Tool invocations accept fixed tool keys only. Arbitrary shell, script, argv, and executable fields are rejected.');
+      await this.audit(
+        identity.tenantId as AuditEvent['tenantId'],
+        identity.userId,
+        AuditActorType.enum.user,
+        AuditEventType.enum.arbitrary_execution_rejected,
+        'tool_invocation',
+        randomUUID() as AuditEvent['resourceId'],
+        {
+          reason: 'arbitrary_execution_field_rejected',
+          rejectedField: presentExecutableField,
+        },
+      );
+      throw new BadRequestException(
+        'Tool invocations accept fixed tool keys only. Arbitrary shell, script, argv, and executable fields are rejected.',
+      );
     }
 
     if (!body.toolKey) {
@@ -72,9 +102,17 @@ export class ToolExecutionGatewayService {
     // 2. Look up tool definition
     const tool = await this.registry.getToolByKey(body.toolKey);
     if (!tool) {
-      await this.audit(identity.tenantId as AuditEvent['tenantId'], identity.userId, AuditActorType.enum.user, AuditEventType.enum.tool_invocation_policy_denied, 'tool_definition', body.toolKey as AuditEvent['resourceId'], {
-        reason: 'unknown_tool_key',
-      });
+      await this.audit(
+        identity.tenantId as AuditEvent['tenantId'],
+        identity.userId,
+        AuditActorType.enum.user,
+        AuditEventType.enum.tool_invocation_policy_denied,
+        'tool_definition',
+        body.toolKey as AuditEvent['resourceId'],
+        {
+          reason: 'unknown_tool_key',
+        },
+      );
       throw new NotFoundException(`Tool ${body.toolKey} not found in registry.`);
     }
 
@@ -83,13 +121,23 @@ export class ToolExecutionGatewayService {
     if (!device) throw new NotFoundException('Endpoint device not found.');
 
     // 4. Evaluate policy
-    const policyDecision = await this.policy.evaluateToolInvocation(identity, deviceId, tool, device.platform);
+    const policyDecision = await this.policy.evaluateToolInvocation(
+      identity,
+      deviceId,
+      tool,
+      device.platform,
+    );
 
     // 5. Create invocation record
     const now = new Date().toISOString();
     // Idempotency placeholder: body.idempotencyKey is accepted but simple per-minute dedup is used for this slice
     // Idempotency check placeholder: could return existing invocation if found within same minute
-    void (await this.store.listToolInvocations(identity.tenantId, { deviceId })).find((i) => i.toolKey === body.toolKey && i.requestedByUserId === identity.userId && i.createdAt.slice(0, 16) === now.slice(0, 16));
+    void (await this.store.listToolInvocations(identity.tenantId, { deviceId })).find(
+      (i) =>
+        i.toolKey === body.toolKey &&
+        i.requestedByUserId === identity.userId &&
+        i.createdAt.slice(0, 16) === now.slice(0, 16),
+    );
     // Note: simple idempotency check; not exact key matching for simplicity in this slice
 
     const invocation: ToolInvocationShape = {
@@ -99,7 +147,11 @@ export class ToolExecutionGatewayService {
       toolDefinitionId: tool.id,
       toolKey: tool.toolKey,
       requestedByUserId: identity.userId,
-      status: policyDecision.allowed ? ToolInvocationStatus.enum.queued : (policyDecision.approvalRequired ? ToolInvocationStatus.enum.approval_required : ToolInvocationStatus.enum.policy_denied),
+      status: policyDecision.allowed
+        ? ToolInvocationStatus.enum.queued
+        : policyDecision.approvalRequired
+          ? ToolInvocationStatus.enum.approval_required
+          : ToolInvocationStatus.enum.policy_denied,
       policyDecision: policyDecision as Record<string, unknown>,
       requestedInput: body.requestedInput ?? {},
       normalizedResult: {},
@@ -110,11 +162,19 @@ export class ToolExecutionGatewayService {
     await this.store.saveToolInvocation(invocation);
 
     if (policyDecision.allowed) {
-      await this.audit(identity.tenantId as AuditEvent['tenantId'], identity.userId, AuditActorType.enum.user, AuditEventType.enum.tool_invocation_policy_allowed, 'tool_invocation', invocation.id as AuditEvent['resourceId'], {
-        toolKey: tool.toolKey,
-        deviceId,
-        policyDecision,
-      });
+      await this.audit(
+        identity.tenantId as AuditEvent['tenantId'],
+        identity.userId,
+        AuditActorType.enum.user,
+        AuditEventType.enum.tool_invocation_policy_allowed,
+        'tool_invocation',
+        invocation.id as AuditEvent['resourceId'],
+        {
+          toolKey: tool.toolKey,
+          deviceId,
+          policyDecision,
+        },
+      );
 
       // Dispatch endpoint command immediately for read-only tools
       const command = await this.createEndpointCommand(invocation, tool);
@@ -126,20 +186,36 @@ export class ToolExecutionGatewayService {
       };
       await this.store.saveToolInvocation(updatedInvocation);
 
-      await this.audit(identity.tenantId as AuditEvent['tenantId'], identity.userId, AuditActorType.enum.user, AuditEventType.enum.tool_dispatch_created, 'tool_invocation', updatedInvocation.id as AuditEvent['resourceId'], {
-        commandId: command.id,
-        implementationId: tool.implementationId,
-      });
+      await this.audit(
+        identity.tenantId as AuditEvent['tenantId'],
+        identity.userId,
+        AuditActorType.enum.user,
+        AuditEventType.enum.tool_dispatch_created,
+        'tool_invocation',
+        updatedInvocation.id as AuditEvent['resourceId'],
+        {
+          commandId: command.id,
+          implementationId: tool.implementationId,
+        },
+      );
 
       return { invocation: updatedInvocation, policyDecision };
     }
 
     if (policyDecision.approvalRequired) {
-      await this.audit(identity.tenantId as AuditEvent['tenantId'], identity.userId, AuditActorType.enum.user, AuditEventType.enum.tool_approval_requested, 'tool_invocation', invocation.id as AuditEvent['resourceId'], {
-        toolKey: tool.toolKey,
-        deviceId,
-        policyDecision,
-      });
+      await this.audit(
+        identity.tenantId as AuditEvent['tenantId'],
+        identity.userId,
+        AuditActorType.enum.user,
+        AuditEventType.enum.tool_approval_requested,
+        'tool_invocation',
+        invocation.id as AuditEvent['resourceId'],
+        {
+          toolKey: tool.toolKey,
+          deviceId,
+          policyDecision,
+        },
+      );
 
       const approval = await this.approvalService.createApproval(invocation);
       const updatedInvocation: ToolInvocationShape = {
@@ -154,11 +230,19 @@ export class ToolExecutionGatewayService {
     }
 
     // Denied
-    await this.audit(identity.tenantId as AuditEvent['tenantId'], identity.userId, AuditActorType.enum.user, AuditEventType.enum.tool_invocation_policy_denied, 'tool_invocation', invocation.id as AuditEvent['resourceId'], {
-      toolKey: tool.toolKey,
-      deviceId,
-      policyDecision,
-    });
+    await this.audit(
+      identity.tenantId as AuditEvent['tenantId'],
+      identity.userId,
+      AuditActorType.enum.user,
+      AuditEventType.enum.tool_invocation_policy_denied,
+      'tool_invocation',
+      invocation.id as AuditEvent['resourceId'],
+      {
+        toolKey: tool.toolKey,
+        deviceId,
+        policyDecision,
+      },
+    );
 
     return { invocation, policyDecision };
   }
@@ -171,7 +255,10 @@ export class ToolExecutionGatewayService {
     if (!invocation) throw new NotFoundException('Tool invocation not found.');
     if (!invocation.approvalId) throw new BadRequestException('Invocation has no approval record.');
 
-    const approval = await this.approvalService.getApproval(identity.tenantId, invocation.approvalId);
+    const approval = await this.approvalService.getApproval(
+      identity.tenantId,
+      invocation.approvalId,
+    );
     if (!approval) throw new NotFoundException('Approval record not found.');
 
     const check = await this.approvalService.checkApprovalValid(approval);
@@ -184,13 +271,29 @@ export class ToolExecutionGatewayService {
 
     const device = await this.store.getEndpointDevice(identity.tenantId, invocation.deviceId);
     if (!device) throw new NotFoundException('Endpoint device not found.');
-    const policyDecision = await this.policy.evaluateToolInvocation(identity, invocation.deviceId, tool, device.platform);
+    const policyDecision = await this.policy.evaluateToolInvocation(
+      identity,
+      invocation.deviceId,
+      tool,
+      device.platform,
+    );
     if (policyDecision.decision !== 'approval_required' || !policyDecision.approvalRequired) {
-      throw new ForbiddenException(`Approval dispatch blocked by policy: ${policyDecision.reason ?? policyDecision.decision}`);
+      throw new ForbiddenException(
+        `Approval dispatch blocked by policy: ${policyDecision.reason ?? policyDecision.decision}`,
+      );
     }
 
-    const approvedPolicyDecision = { ...policyDecision, allowed: true, decision: 'approved_remediation_allowed', remediationAllowed: true, approved: true };
-    const command = await this.createEndpointCommand({ ...invocation, policyDecision: approvedPolicyDecision }, tool);
+    const approvedPolicyDecision = {
+      ...policyDecision,
+      allowed: true,
+      decision: 'approved_remediation_allowed',
+      remediationAllowed: true,
+      approved: true,
+    };
+    const command = await this.createEndpointCommand(
+      { ...invocation, policyDecision: approvedPolicyDecision },
+      tool,
+    );
     const updated: ToolInvocationShape = {
       ...invocation,
       status: ToolInvocationStatus.enum.queued,
@@ -201,11 +304,19 @@ export class ToolExecutionGatewayService {
     await this.store.saveToolInvocation(updated);
     await this.approvalService.markConsumed(approval);
 
-    await this.audit(identity.tenantId, approval.approvedByUserId || invocation.requestedByUserId, AuditActorType.enum.user, AuditEventType.enum.tool_dispatch_created, 'tool_invocation', updated.id, {
-      commandId: command.id,
-      implementationId: tool.implementationId,
-      approvedBy: approval.approvedByUserId,
-    });
+    await this.audit(
+      identity.tenantId,
+      approval.approvedByUserId || invocation.requestedByUserId,
+      AuditActorType.enum.user,
+      AuditEventType.enum.tool_dispatch_created,
+      'tool_invocation',
+      updated.id,
+      {
+        commandId: command.id,
+        implementationId: tool.implementationId,
+        approvedBy: approval.approvedByUserId,
+      },
+    );
 
     return updated;
   }
@@ -220,26 +331,40 @@ export class ToolExecutionGatewayService {
     const invocation = invocations.find((i) => i.endpointCommandId === commandId);
     if (!invocation) return; // Not a tool-governed command
 
-    const endpointStatus = typeof resultPayload.status === 'string' ? resultPayload.status : undefined;
+    const endpointStatus =
+      typeof resultPayload.status === 'string' ? resultPayload.status : undefined;
     const nestedPayload = resultPayload['payload'];
-    const nestedRecord = nestedPayload && typeof nestedPayload === 'object' && !Array.isArray(nestedPayload)
-      ? nestedPayload as Record<string, unknown>
-      : undefined;
-    const nestedInnerPayload = nestedRecord?.['payload'];
-    const nestedInnerRecord = nestedInnerPayload && typeof nestedInnerPayload === 'object' && !Array.isArray(nestedInnerPayload)
-      ? nestedInnerPayload as Record<string, unknown>
-      : undefined;
-    const reportedStatus = typeof nestedInnerRecord?.['resultStatus'] === 'string'
-      ? nestedInnerRecord['resultStatus']
-      : typeof nestedRecord?.['resultStatus'] === 'string'
-        ? nestedRecord['resultStatus']
-      : typeof resultPayload['resultStatus'] === 'string'
-        ? resultPayload['resultStatus']
+    const nestedRecord =
+      nestedPayload && typeof nestedPayload === 'object' && !Array.isArray(nestedPayload)
+        ? (nestedPayload as Record<string, unknown>)
         : undefined;
-    const unsupported = nestedInnerRecord?.['unsupported'] === true || nestedRecord?.['unsupported'] === true || resultPayload['unsupported'] === true;
-    const status = endpointStatus === 'failed' || resultPayload.errorCode || unsupported || reportedStatus === 'failed' || reportedStatus === 'unsupported'
-      ? ToolInvocationStatus.enum.failed
-      : ToolInvocationStatus.enum.succeeded;
+    const nestedInnerPayload = nestedRecord?.['payload'];
+    const nestedInnerRecord =
+      nestedInnerPayload &&
+      typeof nestedInnerPayload === 'object' &&
+      !Array.isArray(nestedInnerPayload)
+        ? (nestedInnerPayload as Record<string, unknown>)
+        : undefined;
+    const reportedStatus =
+      typeof nestedInnerRecord?.['resultStatus'] === 'string'
+        ? nestedInnerRecord['resultStatus']
+        : typeof nestedRecord?.['resultStatus'] === 'string'
+          ? nestedRecord['resultStatus']
+          : typeof resultPayload['resultStatus'] === 'string'
+            ? resultPayload['resultStatus']
+            : undefined;
+    const unsupported =
+      nestedInnerRecord?.['unsupported'] === true ||
+      nestedRecord?.['unsupported'] === true ||
+      resultPayload['unsupported'] === true;
+    const status =
+      endpointStatus === 'failed' ||
+      resultPayload.errorCode ||
+      unsupported ||
+      reportedStatus === 'failed' ||
+      reportedStatus === 'unsupported'
+        ? ToolInvocationStatus.enum.failed
+        : ToolInvocationStatus.enum.succeeded;
     const updated: ToolInvocationShape = {
       ...invocation,
       status,
@@ -249,20 +374,30 @@ export class ToolExecutionGatewayService {
     };
     await this.store.saveToolInvocation(updated);
 
-    await this.audit(tenantId as AuditEvent['tenantId'], invocation.requestedByUserId, AuditActorType.enum.user, AuditEventType.enum.tool_result_received, 'tool_invocation', updated.id as AuditEvent['resourceId'], {
-      commandId,
-      status,
-      readOnly: invocation.toolKey.startsWith('diagnostic.'),
-      resultStatus: reportedStatus,
-      unsupported,
-    });
+    await this.audit(
+      tenantId as AuditEvent['tenantId'],
+      invocation.requestedByUserId,
+      AuditActorType.enum.user,
+      AuditEventType.enum.tool_result_received,
+      'tool_invocation',
+      updated.id as AuditEvent['resourceId'],
+      {
+        commandId,
+        status,
+        readOnly: invocation.toolKey.startsWith('diagnostic.'),
+        resultStatus: reportedStatus,
+        unsupported,
+      },
+    );
   }
 
   private async createEndpointCommand(invocation: ToolInvocationShape, tool: ToolDefinitionShape) {
     const now = new Date().toISOString();
     const commandKind = IMPLEMENTATION_TO_ENDPOINT_COMMAND[tool.implementationId];
     if (!commandKind) {
-      throw new BadRequestException(`Unknown implementation ID: ${tool.implementationId}. Only fixed implementation IDs are accepted.`);
+      throw new BadRequestException(
+        `Unknown implementation ID: ${tool.implementationId}. Only fixed implementation IDs are accepted.`,
+      );
     }
 
     const idempotencyKey = `${invocation.tenantId}:${invocation.deviceId}:${commandKind}:${now.slice(0, 16)}:${invocation.id}`;

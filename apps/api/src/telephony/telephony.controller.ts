@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Headers, HttpCode, Inject, Param, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  Inject,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import type { Request } from 'express';
 import { getCurrentIdentity } from '../auth/current-identity.middleware.js';
 import { requirePermission } from '../auth/rbac.js';
@@ -10,7 +21,7 @@ import { ValidateTelephonyEventGuard } from '../common/validation.guard.js';
 export class TelephonyController {
   constructor(
     @Inject(TelephonyService)
-    private readonly service: TelephonyService
+    private readonly service: TelephonyService,
   ) {}
 
   @Get('status')
@@ -27,7 +38,7 @@ export class TelephonyController {
   receiveFakeProviderWebhook(
     @Req() req: Request,
     @Headers() headers: Record<string, string | string[] | undefined>,
-    @Body() body: FakeProviderWebhookBody
+    @Body() body: FakeProviderWebhookBody,
   ) {
     return this.service.receiveFakeProviderWebhook(getCurrentIdentity(req), body, headers);
   }
@@ -37,7 +48,7 @@ export class TelephonyController {
   controlCall(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { action: string; reason?: string; target?: string }
+    @Body() body: { action: string; reason?: string; target?: string },
   ) {
     return this.service.controlCall(getCurrentIdentity(req), id, body);
   }
@@ -47,7 +58,8 @@ export class TelephonyController {
   @UseGuards(ValidateTelephonyEventGuard)
   receiveAsteriskAmiEvent(
     @Req() req: Request,
-    @Body() body: {
+    @Body()
+    body: {
       tenantId?: string;
       externalCallId: string;
       eventType: string;
@@ -59,7 +71,7 @@ export class TelephonyController {
       autoCreateSession?: boolean;
       preferredSessionTitle?: string;
       preferredPriority?: string;
-    }
+    },
   ) {
     return this.service.receiveAsteriskAmiEvent(getCurrentIdentity(req), body);
   }

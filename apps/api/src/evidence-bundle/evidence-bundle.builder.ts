@@ -92,7 +92,9 @@ function toTicketSummaries(tickets: TicketReference[]): EvidenceBundleTicketSumm
   }));
 }
 
-function toCustomerSummaries(customers: CustomerReference[] | undefined): EvidenceBundleCustomerSummary[] {
+function toCustomerSummaries(
+  customers: CustomerReference[] | undefined,
+): EvidenceBundleCustomerSummary[] {
   if (!customers) return [];
   return customers.map((c) => ({
     id: c.id,
@@ -108,12 +110,14 @@ function toCustomerSummaries(customers: CustomerReference[] | undefined): Eviden
 
 function toConnectorInstallationSummaries(
   installations: import('@supportplane/contracts').ConnectorInstallation[] | undefined,
-  credentialRefs?: import('@supportplane/contracts').ConnectorCredentialReference[] | undefined
+  credentialRefs?: import('@supportplane/contracts').ConnectorCredentialReference[] | undefined,
 ): import('@supportplane/contracts').EvidenceBundleConnectorInstallationSummary[] {
   if (!installations) return [];
   const credMap = new Set((credentialRefs ?? []).map((c) => c.id as string));
   return installations.map((i) => {
-    const linkedCredCount = (i.secretReferenceIds ?? []).filter((id) => credMap.has(id as string)).length;
+    const linkedCredCount = (i.secretReferenceIds ?? []).filter((id) =>
+      credMap.has(id as string),
+    ).length;
     return {
       id: i.id,
       name: i.name,
@@ -123,7 +127,7 @@ function toConnectorInstallationSummaries(
       status: i.status,
       mockMode: i.mockMode,
       enabled: i.enabled,
-      safetyFlags: redactSecrets(i.safetyFlags as Record<string, unknown> ?? {}),
+      safetyFlags: redactSecrets((i.safetyFlags as Record<string, unknown>) ?? {}),
       timeoutMs: i.timeoutMs,
       lastVerifiedAt: i.lastVerifiedAt,
       lastError: i.lastError ? redactString(i.lastError) : undefined,
@@ -138,12 +142,10 @@ function toConnectorInstallationSummaries(
 
 function toCredentialReferenceSummaries(
   refs: import('@supportplane/contracts').ConnectorCredentialReference[] | undefined,
-  installations: import('@supportplane/contracts').ConnectorInstallation[] | undefined
+  installations: import('@supportplane/contracts').ConnectorInstallation[] | undefined,
 ): EvidenceBundleCredentialReferenceSummary[] {
   if (!refs) return [];
-  const linkedIds = new Set(
-    (installations ?? []).flatMap((i) => i.secretReferenceIds ?? [])
-  );
+  const linkedIds = new Set((installations ?? []).flatMap((i) => i.secretReferenceIds ?? []));
   return refs.map((r) => ({
     id: r.id,
     displayName: r.displayName,
@@ -155,7 +157,9 @@ function toCredentialReferenceSummaries(
   }));
 }
 
-function toContextPacketSummaries(packets: AIContextPacket[]): EvidenceBundleContextPacketSummary[] {
+function toContextPacketSummaries(
+  packets: AIContextPacket[],
+): EvidenceBundleContextPacketSummary[] {
   return packets.map((p) => ({
     id: p.id,
     provenance: p.provenance,
@@ -167,7 +171,9 @@ function toContextPacketSummaries(packets: AIContextPacket[]): EvidenceBundleCon
   }));
 }
 
-function toConnectorOperationSummaries(auditEvents: AuditEvent[]): EvidenceBundleConnectorOperationSummary[] {
+function toConnectorOperationSummaries(
+  auditEvents: AuditEvent[],
+): EvidenceBundleConnectorOperationSummary[] {
   return auditEvents
     .filter((e) =>
       [
@@ -176,14 +182,19 @@ function toConnectorOperationSummaries(auditEvents: AuditEvent[]): EvidenceBundl
         'internal_note_writeback_attempted',
         'internal_note_writeback_succeeded',
         'internal_note_writeback_failed',
-      ].includes(e.eventType)
+      ].includes(e.eventType),
     )
     .map((e) => ({
       operationType: e.eventType,
       connectorType: (e.metadata.connectorType as string) ?? 'unknown',
       connectorMode: (e.metadata.connectorMode as string) ?? 'unknown',
       externalTicketId: (e.metadata.externalTicketId as string) ?? undefined,
-      success: e.eventType === 'internal_note_writeback_succeeded' ? true : e.eventType === 'internal_note_writeback_failed' ? false : undefined,
+      success:
+        e.eventType === 'internal_note_writeback_succeeded'
+          ? true
+          : e.eventType === 'internal_note_writeback_failed'
+            ? false
+            : undefined,
       externalArticleId: (e.metadata.externalArticleId as string) ?? undefined,
       errorCode: (e.metadata.errorCode as string) ?? undefined,
       errorMessage: (e.metadata.errorMessage as string) ?? undefined,
@@ -191,7 +202,9 @@ function toConnectorOperationSummaries(auditEvents: AuditEvent[]): EvidenceBundl
     }));
 }
 
-function toTelephonyBridgeSummaries(auditEvents: AuditEvent[]): EvidenceBundleTelephonyBridgeSummary[] {
+function toTelephonyBridgeSummaries(
+  auditEvents: AuditEvent[],
+): EvidenceBundleTelephonyBridgeSummary[] {
   return auditEvents
     .filter((e) =>
       [
@@ -201,7 +214,7 @@ function toTelephonyBridgeSummaries(auditEvents: AuditEvent[]): EvidenceBundleTe
         'telephony_call_control_requested',
         'telephony_call_control_succeeded',
         'telephony_call_control_failed',
-      ].includes(e.eventType)
+      ].includes(e.eventType),
     )
     .map((e) => ({
       operationType: e.eventType,
@@ -212,8 +225,10 @@ function toTelephonyBridgeSummaries(auditEvents: AuditEvent[]): EvidenceBundleTe
       controlIntent: (e.metadata.controlIntent as string) ?? undefined,
       verificationStatus: (e.metadata.verificationStatus as string) ?? undefined,
       success: (e.metadata.success as boolean) ?? undefined,
-      errorCode: ((e.metadata.error as Record<string, unknown> | undefined)?.code as string) ?? undefined,
-      errorMessage: ((e.metadata.error as Record<string, unknown> | undefined)?.message as string) ?? undefined,
+      errorCode:
+        ((e.metadata.error as Record<string, unknown> | undefined)?.code as string) ?? undefined,
+      errorMessage:
+        ((e.metadata.error as Record<string, unknown> | undefined)?.message as string) ?? undefined,
       mockDevOnly: (e.metadata.mockDevOnly as boolean) ?? true,
       occurredAt: e.createdAt,
     }));
@@ -241,7 +256,9 @@ function toAiUsageSummaries(auditEvents: AuditEvent[]): EvidenceBundleAiUsageSum
     }));
 }
 
-function toCallRecordingSummaries(recordings: CallRecording[] | undefined): EvidenceBundleCallRecordingSummary[] {
+function toCallRecordingSummaries(
+  recordings: CallRecording[] | undefined,
+): EvidenceBundleCallRecordingSummary[] {
   if (!recordings) return [];
   return recordings.map((r) => ({
     recordingId: r.id,
@@ -260,14 +277,17 @@ function toCallRecordingSummaries(recordings: CallRecording[] | undefined): Evid
   }));
 }
 
-function toScreenObservationSummaries(observations: ScreenObservation[] | undefined): EvidenceBundleScreenObservationSummary[] {
+function toScreenObservationSummaries(
+  observations: ScreenObservation[] | undefined,
+): EvidenceBundleScreenObservationSummary[] {
   if (!observations) return [];
   return observations.map((o) => {
     const parts: string[] = [];
     if (o.appLabel) parts.push(`App: ${o.appLabel}`);
     if (o.windowLabel) parts.push(`Window: ${o.windowLabel}`);
     if (o.urlLabel) parts.push(`URL: ${o.urlLabel}`);
-    if (o.rawInputPlaceholder) parts.push(`Note: ${redactString(o.rawInputPlaceholder).substring(0, 200)}`);
+    if (o.rawInputPlaceholder)
+      parts.push(`Note: ${redactString(o.rawInputPlaceholder).substring(0, 200)}`);
     const description = parts.join(' | ') || `[${o.kind}]`;
     return {
       observationId: o.id,
@@ -284,7 +304,8 @@ function toScreenObservationSummaries(observations: ScreenObservation[] | undefi
       noRealScreenCapture: o.noRawPixels,
       noRawPixels: o.noRawPixels,
       noClipboardAccess: o.noClipboard,
-      complianceDisclaimer: 'Mock screen observation only. No real screen capture, raw pixels, clipboard access, or OCR was performed.',
+      complianceDisclaimer:
+        'Mock screen observation only. No real screen capture, raw pixels, clipboard access, or OCR was performed.',
       sharingState: o.sharingState,
       rawImageRetention: o.rawImageRetention,
       redactionStatus: o.redactionStatus,
@@ -293,7 +314,9 @@ function toScreenObservationSummaries(observations: ScreenObservation[] | undefi
   });
 }
 
-function toSupportNoteDraftSummaries(drafts: InternalNoteDraft[] | undefined): EvidenceBundleSupportNoteDraftSummary[] {
+function toSupportNoteDraftSummaries(
+  drafts: InternalNoteDraft[] | undefined,
+): EvidenceBundleSupportNoteDraftSummary[] {
   if (!drafts) return [];
   return drafts.map((d) => ({
     draftId: d.id,
@@ -308,7 +331,9 @@ function toSupportNoteDraftSummaries(drafts: InternalNoteDraft[] | undefined): E
   }));
 }
 
-function toDeliveryPolicySummaries(policies: DeliveryPolicy[] | undefined): EvidenceBundleDeliveryPolicySummary[] {
+function toDeliveryPolicySummaries(
+  policies: DeliveryPolicy[] | undefined,
+): EvidenceBundleDeliveryPolicySummary[] {
   if (!policies) return [];
   return policies.map((p) => ({
     policyId: p.id,
@@ -332,7 +357,7 @@ function toDeliveryPolicySummaries(policies: DeliveryPolicy[] | undefined): Evid
 function toActionOutboxSummaries(
   actions: SupportAction[] | undefined,
   outboxItems: ActionOutboxItem[] | undefined,
-  attempts: ActionOutboxAttempt[] | undefined
+  attempts: ActionOutboxAttempt[] | undefined,
 ): EvidenceBundleActionOutboxSummary[] {
   if (!actions) return [];
   return actions.map((action) => {
@@ -379,7 +404,9 @@ function toActionOutboxSummaries(
             }))
         : [],
       payloadSummary: redactSecrets(action.payloadSummary as Record<string, unknown>),
-      deliveryIntent: item ? redactSecrets(item.deliveryIntent as Record<string, unknown>) : undefined,
+      deliveryIntent: item
+        ? redactSecrets(item.deliveryIntent as Record<string, unknown>)
+        : undefined,
       safetyFlags: {
         ...(item ? redactSecrets(item.safetyFlags as Record<string, unknown>) : {}),
         noSecrets: true,
@@ -394,7 +421,9 @@ function toActionOutboxSummaries(
   });
 }
 
-function toGreetingSuggestionSummaries(auditEvents: AuditEvent[]): EvidenceBundleGreetingSuggestionSummary[] {
+function toGreetingSuggestionSummaries(
+  auditEvents: AuditEvent[],
+): EvidenceBundleGreetingSuggestionSummary[] {
   return auditEvents
     .filter((e) => e.eventType === 'greeting_suggestion_generated')
     .map((e) => ({
@@ -427,7 +456,9 @@ function toAuditSummaries(auditEvents: AuditEvent[]): EvidenceBundleAuditSummary
   }));
 }
 
-function toCallEventSummaries(callEvents: CallEvent[] | undefined): EvidenceBundleCallEventSummary[] {
+function toCallEventSummaries(
+  callEvents: CallEvent[] | undefined,
+): EvidenceBundleCallEventSummary[] {
   if (!callEvents) return [];
   return callEvents.map((c) => ({
     callEventId: c.id,
@@ -471,10 +502,20 @@ export function buildEvidenceBundle(input: BuildEvidenceBundleInput): EvidenceBu
     callRecordings: toCallRecordingSummaries(input.callRecordings),
     screenObservations: toScreenObservationSummaries(input.screenObservations),
     customerReferences: toCustomerSummaries(input.customerReferences),
-    connectorInstallations: toConnectorInstallationSummaries(input.connectorInstallations, input.credentialReferences),
-    credentialReferences: toCredentialReferenceSummaries(input.credentialReferences, input.connectorInstallations),
+    connectorInstallations: toConnectorInstallationSummaries(
+      input.connectorInstallations,
+      input.credentialReferences,
+    ),
+    credentialReferences: toCredentialReferenceSummaries(
+      input.credentialReferences,
+      input.connectorInstallations,
+    ),
     supportNoteDrafts: toSupportNoteDraftSummaries(input.supportNoteDrafts),
-    actionOutbox: toActionOutboxSummaries(input.supportActions, input.actionOutboxItems, input.actionOutboxAttempts),
+    actionOutbox: toActionOutboxSummaries(
+      input.supportActions,
+      input.actionOutboxItems,
+      input.actionOutboxAttempts,
+    ),
     deliveryPolicies: toDeliveryPolicySummaries(input.deliveryPolicies),
     greetingSuggestions: toGreetingSuggestionSummaries(input.auditEvents),
     auditTimeline: toAuditSummaries(input.auditEvents),
@@ -648,7 +689,8 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       if (c.displayName) lines.push(`- **Display Name:** ${c.displayName}`);
       lines.push(`- **Match Status:** ${c.matchStatus} (confidence: ${c.matchConfidence})`);
       if (c.customerName) lines.push(`- **Matched Customer:** ${c.customerName}`);
-      if (c.matchedTicketIds.length > 0) lines.push(`- **Matched Tickets:** ${c.matchedTicketIds.join(', ')}`);
+      if (c.matchedTicketIds.length > 0)
+        lines.push(`- **Matched Tickets:** ${c.matchedTicketIds.join(', ')}`);
       if (c.linkedSessionId) lines.push(`- **Linked Session:** ${c.linkedSessionId}`);
       lines.push(`- **Mock/Dev-Only:** ${c.mockDevOnly}`);
       lines.push(`- **Started:** ${c.startedAt}`);
@@ -669,7 +711,8 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       if (event.controlIntent) lines.push(`  - Control Intent: ${event.controlIntent}`);
       if (event.verificationStatus) lines.push(`  - Verification: ${event.verificationStatus}`);
       if (event.success !== undefined) lines.push(`  - Success: ${event.success}`);
-      if (event.errorCode) lines.push(`  - Error: ${event.errorCode} — ${event.errorMessage ?? ''}`);
+      if (event.errorCode)
+        lines.push(`  - Error: ${event.errorCode} — ${event.errorMessage ?? ''}`);
       lines.push(`  - Mock/Dev-Only: ${event.mockDevOnly}`);
       lines.push(`  - At: ${event.occurredAt}`);
       lines.push(``);
@@ -687,7 +730,8 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       lines.push(`- **Source:** ${o.source}`);
       lines.push(`- **Status:** ${o.status}`);
       lines.push(`- **Description:** ${o.description}`);
-      if (o.reviewedAt) lines.push(`- **Reviewed At:** ${o.reviewedAt} by ${o.reviewedBy ?? 'unknown'}`);
+      if (o.reviewedAt)
+        lines.push(`- **Reviewed At:** ${o.reviewedAt} by ${o.reviewedBy ?? 'unknown'}`);
       if (o.redactedSummary) lines.push(`- **Redacted Summary:** ${o.redactedSummary}`);
       lines.push(`- **Mock/Dev-Only:** ${o.mockDevOnly}`);
       lines.push(`- **No Real Screen Capture:** ${o.noRealScreenCapture}`);
@@ -738,7 +782,8 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       lines.push(`- **Writeback Enabled:** ${inst.writebackEnabled ?? false}`);
       lines.push(`- **External Write Attempted:** ${inst.externalWriteAttempted ?? false}`);
       lines.push(`- **Linked Credentials:** ${inst.credentialReferenceCount ?? 0}`);
-      if (inst.runtimeReadinessSummary) lines.push(`- **Runtime Readiness:** ${inst.runtimeReadinessSummary}`);
+      if (inst.runtimeReadinessSummary)
+        lines.push(`- **Runtime Readiness:** ${inst.runtimeReadinessSummary}`);
       lines.push(``);
     }
   }
@@ -779,7 +824,9 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       lines.push(`- **Min Approver Role:** ${p.minimumApproverRole}`);
       lines.push(`- **Require Human Review:** ${p.requireHumanReview}`);
       lines.push(`- **Require Evidence Bundle:** ${p.requireEvidenceBundleBeforeDelivery}`);
-      lines.push(`- **Require Connector Validation:** ${p.requireConnectorValidationBeforeDelivery}`);
+      lines.push(
+        `- **Require Connector Validation:** ${p.requireConnectorValidationBeforeDelivery}`,
+      );
       lines.push(`- **Updated At:** ${p.updatedAt ?? 'never'}`);
       lines.push(``);
     }
@@ -797,14 +844,19 @@ export function bundleToMarkdown(bundle: EvidenceBundle): string {
       lines.push(`- **Status:** ${action.status}`);
       if (action.outboxItemId) lines.push(`- **Outbox Item:** ${action.outboxItemId}`);
       lines.push(`- **Attempts:** ${action.attemptCount}/${action.maxAttempts ?? 'unknown'}`);
-      if (action.latestAttemptState) lines.push(`- **Latest Attempt:** ${action.latestAttemptState}`);
+      if (action.latestAttemptState)
+        lines.push(`- **Latest Attempt:** ${action.latestAttemptState}`);
       if (action.nextAttemptAt) lines.push(`- **Next Attempt At:** ${action.nextAttemptAt}`);
       if (action.deadLetteredAt) lines.push(`- **Dead-Lettered At:** ${action.deadLetteredAt}`);
-      if (action.deadLetterReason) lines.push(`- **Dead-Letter Reason:** ${action.deadLetterReason}`);
+      if (action.deadLetterReason)
+        lines.push(`- **Dead-Letter Reason:** ${action.deadLetterReason}`);
       if (action.lastErrorCode) lines.push(`- **Last Error Code:** ${action.lastErrorCode}`);
-      if (action.lastErrorMessage) lines.push(`- **Last Error Message:** ${action.lastErrorMessage}`);
+      if (action.lastErrorMessage)
+        lines.push(`- **Last Error Message:** ${action.lastErrorMessage}`);
       for (const attempt of action.attempts) {
-        lines.push(`  - Attempt #${attempt.attemptNumber}: ${attempt.state}, code ${attempt.errorCode ?? 'none'}, realNetwork ${attempt.realNetwork}, writebackEnabled ${attempt.writebackEnabled}`);
+        lines.push(
+          `  - Attempt #${attempt.attemptNumber}: ${attempt.state}, code ${attempt.errorCode ?? 'none'}, realNetwork ${attempt.realNetwork}, writebackEnabled ${attempt.writebackEnabled}`,
+        );
       }
       lines.push(`- **Real Network:** ${action.realNetwork}`);
       lines.push(`- **External Write Attempted:** ${action.externalWriteAttempted}`);

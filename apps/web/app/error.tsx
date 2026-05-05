@@ -17,17 +17,13 @@ export default function RootErrorBoundary({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-cockpit-950 px-4 text-center">
       <div className="max-w-md rounded-lg border border-cockpit-700 bg-cockpit-900 p-6 shadow-lg">
-        <h1 className="mb-2 text-2xl font-semibold text-cockpit-100">
-          Something went wrong
-        </h1>
+        <h1 className="mb-2 text-2xl font-semibold text-cockpit-100">Something went wrong</h1>
         <p className="mb-4 text-sm text-cockpit-300">
-          SupportPlane encountered an unexpected error. This is a local sandbox
-          build — no production data is at risk.
+          SupportPlane encountered an unexpected error. This is a local sandbox build — no
+          production data is at risk.
         </p>
         {error.digest && (
-          <p className="mb-4 font-mono text-xs text-cockpit-500">
-            Error ID: {error.digest}
-          </p>
+          <p className="mb-4 font-mono text-xs text-cockpit-500">Error ID: {error.digest}</p>
         )}
         <button
           onClick={reset}

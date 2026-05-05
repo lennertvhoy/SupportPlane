@@ -96,7 +96,7 @@ export class FetchGlpiHttpClient implements GlpiHttpClient {
         throw new Error(`GLPI initSession failed HTTP ${response.status}: ${text}`);
       }
 
-      const data = await response.json() as Record<string, unknown>;
+      const data = (await response.json()) as Record<string, unknown>;
       this.sessionToken = data['session_token'] as string;
       if (!this.sessionToken) {
         throw new Error('GLPI initSession did not return a session_token');

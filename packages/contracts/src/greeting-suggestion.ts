@@ -1,11 +1,7 @@
 import { z } from 'zod';
 import { EntityId, Timestamp, TenantId } from './base.js';
 
-export const GreetingSuggestionTone = z.enum([
-  'professional',
-  'friendly',
-  'concise',
-]);
+export const GreetingSuggestionTone = z.enum(['professional', 'friendly', 'concise']);
 export type GreetingSuggestionTone = z.infer<typeof GreetingSuggestionTone>;
 
 export const GreetingSuggestionContextSummary = z.object({
@@ -15,9 +11,7 @@ export const GreetingSuggestionContextSummary = z.object({
   matchedCustomerName: z.string().optional(),
   sessionTitle: z.string().optional(),
 });
-export type GreetingSuggestionContextSummary = z.infer<
-  typeof GreetingSuggestionContextSummary
->;
+export type GreetingSuggestionContextSummary = z.infer<typeof GreetingSuggestionContextSummary>;
 
 export const GreetingSuggestionMetadata = z.object({
   provider: z.string().min(1),
@@ -29,9 +23,7 @@ export const GreetingSuggestionMetadata = z.object({
   reviewRequired: z.literal(true),
   generatedAt: Timestamp,
 });
-export type GreetingSuggestionMetadata = z.infer<
-  typeof GreetingSuggestionMetadata
->;
+export type GreetingSuggestionMetadata = z.infer<typeof GreetingSuggestionMetadata>;
 
 export const GreetingSuggestion = z.object({
   id: EntityId.brand<'GreetingSuggestionId'>(),
@@ -63,9 +55,7 @@ export const GreetingSuggestionRequest = z.object({
     })
     .optional(),
 });
-export type GreetingSuggestionRequest = z.infer<
-  typeof GreetingSuggestionRequest
->;
+export type GreetingSuggestionRequest = z.infer<typeof GreetingSuggestionRequest>;
 
 export const GreetingSuggestionResponse = z.object({
   suggestion: GreetingSuggestion,
@@ -95,6 +85,4 @@ export const GreetingSuggestionResponse = z.object({
   }),
   generatedAt: z.string().datetime(),
 });
-export type GreetingSuggestionResponse = z.infer<
-  typeof GreetingSuggestionResponse
->;
+export type GreetingSuggestionResponse = z.infer<typeof GreetingSuggestionResponse>;

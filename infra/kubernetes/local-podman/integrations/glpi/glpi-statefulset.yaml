@@ -29,14 +29,14 @@ spec:
                 name: glpi-db
           env:
             - name: MARIADB_ROOT_HOST
-              value: "%"
+              value: '%'
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: '256Mi'
+              cpu: '100m'
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
 
         - name: glpi
           image: elestio/glpi:latest
@@ -50,9 +50,9 @@ spec:
                 name: glpi-db
           env:
             - name: GLPI_DB_HOST
-              value: "127.0.0.1"
+              value: '127.0.0.1'
             - name: GLPI_DB_PORT
-              value: "3306"
+              value: '3306'
             - name: GLPI_DB_NAME
               valueFrom:
                 secretKeyRef:
@@ -70,11 +70,11 @@ spec:
                   key: MARIADB_PASSWORD
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "100m"
+              memory: '256Mi'
+              cpu: '100m'
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
           readinessProbe:
             httpGet:
               path: /

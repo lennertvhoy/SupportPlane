@@ -36,23 +36,23 @@ spec:
               name: postgres
           livenessProbe:
             exec:
-              command: ["pg_isready", "-U", "zammad"]
+              command: ['pg_isready', '-U', 'zammad']
             initialDelaySeconds: 15
             periodSeconds: 15
             failureThreshold: 5
           readinessProbe:
             exec:
-              command: ["pg_isready", "-U", "zammad"]
+              command: ['pg_isready', '-U', 'zammad']
             initialDelaySeconds: 5
             periodSeconds: 10
             failureThreshold: 3
           resources:
             requests:
-              memory: "64Mi"
-              cpu: "50m"
+              memory: '64Mi'
+              cpu: '50m'
             limits:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: '256Mi'
+              cpu: '200m'
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data

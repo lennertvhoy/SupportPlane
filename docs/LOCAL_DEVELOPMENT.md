@@ -28,15 +28,15 @@
 
 ## Port map
 
-| Service        | Host Port | Container Port | Notes                                    |
-|----------------|-----------|----------------|------------------------------------------|
-| API (host)     | 4110      | —              | NestJS dev server                        |
-| Web (host)     | 3200      | —              | Next.js dev server                       |
-| PostgreSQL     | 5434      | 5432           | Mapped to 5434 to avoid host conflicts   |
-| NATS client    | 4222      | 4222           | Messaging/queue                          |
-| NATS HTTP mon  | 8222      | 8222           | Health and monitoring endpoint           |
-| MinIO API      | 9000      | 9000           | S3-compatible object storage API         |
-| MinIO Console  | 9001      | 9001           | Web-based MinIO admin UI                 |
+| Service       | Host Port | Container Port | Notes                                  |
+| ------------- | --------- | -------------- | -------------------------------------- |
+| API (host)    | 4110      | —              | NestJS dev server                      |
+| Web (host)    | 3200      | —              | Next.js dev server                     |
+| PostgreSQL    | 5434      | 5432           | Mapped to 5434 to avoid host conflicts |
+| NATS client   | 4222      | 4222           | Messaging/queue                        |
+| NATS HTTP mon | 8222      | 8222           | Health and monitoring endpoint         |
+| MinIO API     | 9000      | 9000           | S3-compatible object storage API       |
+| MinIO Console | 9001      | 9001           | Web-based MinIO admin UI               |
 
 ## Environment setup
 
@@ -71,6 +71,7 @@ bash scripts/check_local_topology.sh
 ```
 
 Expected output:
+
 - PostgreSQL port 5434 listening and accepting connections
 - NATS ports 4222 and 8222 listening, health endpoint returns HTTP 200
 - MinIO ports 9000 and 9001 listening, health endpoint returns HTTP 200
@@ -147,13 +148,13 @@ podman compose -f infra/docker-compose/compose.yaml down -v
 
 ## Health checks
 
-| Service     | Check method                                           |
-|-------------|--------------------------------------------------------|
-| PostgreSQL  | `pg_isready` via compose healthcheck; or `psql`        |
-| NATS        | `wget http://localhost:8222/healthz`                   |
-| MinIO       | `curl http://localhost:9000/minio/health/live`         |
-| API         | `curl http://localhost:4110/health`                    |
-| Web         | `curl http://localhost:3200/`                          |
+| Service    | Check method                                    |
+| ---------- | ----------------------------------------------- |
+| PostgreSQL | `pg_isready` via compose healthcheck; or `psql` |
+| NATS       | `wget http://localhost:8222/healthz`            |
+| MinIO      | `curl http://localhost:9000/minio/health/live`  |
+| API        | `curl http://localhost:4110/health`             |
+| Web        | `curl http://localhost:3200/`                   |
 
 ## Known limitations
 
@@ -184,12 +185,12 @@ supportplane-demo
 
 Seeded users:
 
-| Tenant slug | Email | Role |
-|-------------|-------|------|
-| `dev-tenant` | `admin@supportplane.local` | `admin` |
-| `dev-tenant` | `operator@supportplane.local` | `operator` |
-| `dev-tenant` | `viewer@supportplane.local` | `viewer` |
-| `alt-tenant` | `admin@alt.supportplane.local` | `admin` |
+| Tenant slug  | Email                             | Role       |
+| ------------ | --------------------------------- | ---------- |
+| `dev-tenant` | `admin@supportplane.local`        | `admin`    |
+| `dev-tenant` | `operator@supportplane.local`     | `operator` |
+| `dev-tenant` | `viewer@supportplane.local`       | `viewer`   |
+| `alt-tenant` | `admin@alt.supportplane.local`    | `admin`    |
 | `alt-tenant` | `operator@alt.supportplane.local` | `operator` |
 
 Use `scripts/verify_local_auth_rbac.sh` with API running in local auth mode to verify login/logout, RBAC denial, tenant-boundary denial, forged-header resistance, and no auth secret leakage in evidence output.
@@ -215,6 +216,7 @@ resistance, cross-tenant denial, and no secret leakage.
 ## User testing
 
 For the full K8s sandbox demo (real Zammad/GLPI connectors), see:
+
 - `docs/ENTERPRISE_DEMO_GUIDE.md` — Demo scenarios and quick start
 - `docs/user-testing/README.md` — Tester onboarding pack
 - `docs/user-testing/TEST_SCRIPT.md` — 20-30 min guided test script

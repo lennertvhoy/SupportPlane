@@ -6,13 +6,13 @@
 
 ## Session Info
 
-| Field | Your Answer |
-|-------|-------------|
-| **Date** | |
-| **Your role** | (e.g., IT support, MSP owner, security reviewer, helpdesk operator, technical admin, curious observer) |
-| **Demo flows tried** | Flow A (Zammad) / Flow B (GLPI) / Flow C (Governance) / Flow D (What Felt Wrong) |
-| **Duration** | minutes |
-| **Browser used** | (e.g., Chrome 124, Firefox 126) |
+| Field                | Your Answer                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Date**             |                                                                                                        |
+| **Your role**        | (e.g., IT support, MSP owner, security reviewer, helpdesk operator, technical admin, curious observer) |
+| **Demo flows tried** | Flow A (Zammad) / Flow B (GLPI) / Flow C (Governance) / Flow D (What Felt Wrong)                       |
+| **Duration**         | minutes                                                                                                |
+| **Browser used**     | (e.g., Chrome 124, Firefox 126)                                                                        |
 
 ---
 
@@ -35,6 +35,7 @@ Which parts of the UI made immediate sense? Which labels, panels, or flows were 
 ## What Confused You?
 
 Which labels, terms, or concepts were unclear? Examples:
+
 - "Connector Runtime Provenance"
 - "Evidence Bundle"
 - "Delivery Policy"
@@ -73,12 +74,14 @@ Which features, panels, or data would help your daily work?
 Did anything error out, fail to load, or behave unexpectedly? For each issue:
 
 ### Issue 1
+
 - **What were you trying to do?**
 - **What page were you on?**
 - **What happened instead?**
 - **Can you reproduce it?** (If yes — steps to trigger it again)
 
 ### Issue 2
+
 - **What were you trying to do?**
 - **What page were you on?**
 - **What happened instead?**
@@ -91,17 +94,21 @@ Did anything error out, fail to load, or behave unexpectedly? For each issue:
 Be honest. What would you need before trusting SupportPlane in a real support workflow?
 
 ### AI Trust
+
 - What proof would you need that the AI isn't hallucinating or making things up?
 - Would you want to see the AI's sources? Its confidence level? Its reasoning?
 
 ### Safety Guarantees
+
 - What safety guarantees matter to you?
 - Is "real-network locked off" convincing? What would make it more so?
 
 ### Connectors Needed
+
 - What ticketing/IT systems would you need connected? (Zammad, GLPI, ServiceNow, Jira, Freshdesk, other?)
 
 ### Compliance & Audit
+
 - What compliance or audit requirements apply in your environment?
 - What would an auditor need to see to be satisfied?
 
@@ -111,13 +118,13 @@ Be honest. What would you need before trusting SupportPlane in a real support wo
 
 For each category, score 1 (worst) to 5 (best) and briefly explain why.
 
-| Category | Score (1–5) | Why? |
-|----------|-------------|------|
-| **Clarity** — Is it clear what's happening? | | |
-| **Usefulness** — Would this help your team? | | |
-| **Trust** — Do you trust what the system reports? | | |
-| **Speed** — Did it feel fast enough? | | |
-| **Polish** — Does it feel production-ready? | | |
+| Category                                          | Score (1–5) | Why? |
+| ------------------------------------------------- | ----------- | ---- |
+| **Clarity** — Is it clear what's happening?       |             |      |
+| **Usefulness** — Would this help your team?       |             |      |
+| **Trust** — Do you trust what the system reports? |             |      |
+| **Speed** — Did it feel fast enough?              |             |      |
+| **Polish** — Does it feel production-ready?       |             |      |
 
 ---
 

@@ -53,14 +53,8 @@ export {
   MockZammadHttpClient,
   type ZammadHttpClient,
 } from './zammad-http-client.js';
-export {
-  MockGlpiHttpClient,
-  type GlpiHttpClient,
-} from './glpi-http-client.js';
-export {
-  GlpiConnectorAdapter,
-  MockGlpiConnectorAdapter,
-} from './glpi-adapter.js';
+export { MockGlpiHttpClient, type GlpiHttpClient } from './glpi-http-client.js';
+export { GlpiConnectorAdapter, MockGlpiConnectorAdapter } from './glpi-adapter.js';
 export {
   MeshCentralConnectorService,
   createMeshCentralService,
@@ -130,10 +124,7 @@ export {
   type CanonicalCallEvent,
   type RegisteredTelephonyAdapterSummary,
 } from './telephony-registry.js';
-export {
-  resolveAdapterRuntime,
-  AdapterRuntimeResolverError,
-} from './runtime-resolver.js';
+export { resolveAdapterRuntime, AdapterRuntimeResolverError } from './runtime-resolver.js';
 export {
   ZammadAdapterFactory,
   MockZammadAdapterFactory,

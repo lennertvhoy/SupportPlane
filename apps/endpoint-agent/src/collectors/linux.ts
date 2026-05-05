@@ -27,7 +27,10 @@ export async function collectServices() {
   const pids = procEntries.filter((entry) => /^\d+$/.test(entry)).slice(0, 30);
   const processes = [];
   for (const pid of pids) {
-    const comm = await fs.readFile(`/proc/${pid}/comm`, 'utf8').then((v) => v.trim()).catch(() => undefined);
+    const comm = await fs
+      .readFile(`/proc/${pid}/comm`, 'utf8')
+      .then((v) => v.trim())
+      .catch(() => undefined);
     const status = await fs.readFile(`/proc/${pid}/status`, 'utf8').catch(() => '');
     const state = status.match(/^State:\s+(.+)$/m)?.[1];
     if (comm) processes.push({ pid: Number(pid), name: comm, state });

@@ -16,14 +16,14 @@ Hi! Thanks for testing SupportPlane. Here's what you need:
 
 ### Access
 
-| What | Detail |
-|------|--------|
-| **Web UI** | `http://localhost:3300` |
-| **Login** | `admin@supportplane.local` / `supportplane-demo` / `dev-tenant` |
-| **Duration** | 20–30 minutes |
-| **Test script** | [TEST_SCRIPT.md](./TEST_SCRIPT.md) — follow step-by-step |
-| **Feedback form** | [FEEDBACK_FORM.md](./FEEDBACK_FORM.md) — fill out after testing |
-| **Bug report** | [BUG_REPORT_TEMPLATE.md](./BUG_REPORT_TEMPLATE.md) — if something breaks |
+| What              | Detail                                                                   |
+| ----------------- | ------------------------------------------------------------------------ |
+| **Web UI**        | `http://localhost:3300`                                                  |
+| **Login**         | `admin@supportplane.local` / `supportplane-demo` / `dev-tenant`          |
+| **Duration**      | 20–30 minutes                                                            |
+| **Test script**   | [TEST_SCRIPT.md](./TEST_SCRIPT.md) — follow step-by-step                 |
+| **Feedback form** | [FEEDBACK_FORM.md](./FEEDBACK_FORM.md) — fill out after testing          |
+| **Bug report**    | [BUG_REPORT_TEMPLATE.md](./BUG_REPORT_TEMPLATE.md) — if something breaks |
 
 ### What to Test
 
@@ -42,15 +42,15 @@ Hi! Thanks for testing SupportPlane. Here's what you need:
 
 ### Known Limitations
 
-| System | Status |
-|--------|--------|
-| Zammad | Real sandbox read. Writeback is sandbox-only. |
-| GLPI | Real sandbox read. |
-| osTicket | Fixture only. |
-| MeshCentral | Unconfigured. |
-| Fortinet | Unconfigured. |
-| AI | Local Ollama only. |
-| Secrets | In-memory, lost on restart. |
+| System      | Status                                        |
+| ----------- | --------------------------------------------- |
+| Zammad      | Real sandbox read. Writeback is sandbox-only. |
+| GLPI        | Real sandbox read.                            |
+| osTicket    | Fixture only.                                 |
+| MeshCentral | Unconfigured.                                 |
+| Fortinet    | Unconfigured.                                 |
+| AI          | Local Ollama only.                            |
+| Secrets     | In-memory, lost on restart.                   |
 
 ### Important Warnings
 
@@ -60,6 +60,7 @@ Hi! Thanks for testing SupportPlane. Here's what you need:
 ### Contact / Escalation
 
 If the demo breaks or you hit a blocker:
+
 1. Stop testing.
 2. Record the step you were on.
 3. Take a screenshot if possible.

@@ -8,7 +8,9 @@ export class ServiceAccountGuard implements CanActivate {
   constructor(private readonly authService: AuthService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req = context.switchToHttp().getRequest<Request & { currentIdentity?: CurrentIdentity }>();
+    const req = context
+      .switchToHttp()
+      .getRequest<Request & { currentIdentity?: CurrentIdentity }>();
     const token = req.headers['x-service-token'];
 
     // Reject missing, suspicious, or short tokens

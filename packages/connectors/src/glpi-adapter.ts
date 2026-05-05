@@ -30,12 +30,15 @@ function normalizeGlpiState(state: string | number): TicketReferenceShape['statu
   return TicketStatus.enum.unknown;
 }
 
-function normalizeGlpiPriority(priority: string | number | Record<string, unknown>): TicketReferenceShape['priority'] {
+function normalizeGlpiPriority(
+  priority: string | number | Record<string, unknown>,
+): TicketReferenceShape['priority'] {
   const raw = typeof priority === 'string' ? priority : String(priority);
   const lower = raw.toLowerCase();
   if (lower.includes('1') || lower.includes('low')) return TicketPriority.enum.low;
   if (lower.includes('3') || lower.includes('high')) return TicketPriority.enum.high;
-  if (lower.includes('4') || lower.includes('critical') || lower.includes('very high')) return TicketPriority.enum.critical;
+  if (lower.includes('4') || lower.includes('critical') || lower.includes('very high'))
+    return TicketPriority.enum.critical;
   return TicketPriority.enum.normal;
 }
 
@@ -43,7 +46,7 @@ function buildConnectorError(
   code: ConnectorErrorCode,
   message: string,
   safeToDisplay = false,
-  metadata: Record<string, unknown> = {}
+  metadata: Record<string, unknown> = {},
 ): ConnectorError {
   return {
     code,
@@ -67,7 +70,7 @@ export class GlpiConnectorAdapter implements TicketingAdapterClient {
     const parsed = GlpiConfig.safeParse(inputConfig);
     if (!parsed.success) {
       return Promise.reject(
-        buildConnectorError(ConnectorErrorCode.enum.CONFIG_INVALID, 'Invalid GLPI configuration')
+        buildConnectorError(ConnectorErrorCode.enum.CONFIG_INVALID, 'Invalid GLPI configuration'),
       );
     }
     this.config = parsed.data;
@@ -77,7 +80,10 @@ export class GlpiConnectorAdapter implements TicketingAdapterClient {
 
   async getTicket(tenantId: TenantId, externalTicketId: string): Promise<TicketReferenceShape> {
     if (!this.httpClient) {
-      throw buildConnectorError(ConnectorErrorCode.enum.CONFIG_MISSING, 'GLPI adapter not connected');
+      throw buildConnectorError(
+        ConnectorErrorCode.enum.CONFIG_MISSING,
+        'GLPI adapter not connected',
+      );
     }
 
     const raw = await this.httpClient.getTicket(externalTicketId);
@@ -95,7 +101,8 @@ export class GlpiConnectorAdapter implements TicketingAdapterClient {
         customerEmail = typeof user.email === 'string' ? user.email : undefined;
         const first = typeof user.firstname === 'string' ? user.firstname : '';
         const last = typeof user.lastname === 'string' ? user.lastname : '';
-        customerName = `${first} ${last}`.trim() || (typeof user.name === 'string' ? user.name : undefined);
+        customerName =
+          `${first} ${last}`.trim() || (typeof user.name === 'string' ? user.name : undefined);
       } catch {
         customerEmail = undefined;
         customerName = undefined;
@@ -107,10 +114,18 @@ export class GlpiConnectorAdapter implements TicketingAdapterClient {
       tenantId,
       adapterId: this.adapterId,
       externalTicketId,
-      subject: typeof data.subject === 'string' ? data.subject : typeof data.name === 'string' ? data.name : `GLPI Ticket ${externalTicketId}`,
+      subject:
+        typeof data.subject === 'string'
+          ? data.subject
+          : typeof data.name === 'string'
+            ? data.name
+            : `GLPI Ticket ${externalTicketId}`,
       status: normalizeGlpiState(
-        data.status != null ? String(data.status) :
-        typeof data.state === 'string' ? data.state : 'unknown'
+        data.status != null
+          ? String(data.status)
+          : typeof data.state === 'string'
+            ? data.state
+            : 'unknown',
       ),
       priority: normalizeGlpiPriority(data.priority as string | number | Record<string, unknown>),
       customerEmail,
@@ -122,16 +137,25 @@ export class GlpiConnectorAdapter implements TicketingAdapterClient {
     };
   }
 
-  async writeInternalNote(_ticketId: string, _body: string): Promise<InternalNoteWritebackResultShape> {
+  async writeInternalNote(
+    _ticketId: string,
+    _body: string,
+  ): Promise<InternalNoteWritebackResultShape> {
     if (!this.httpClient) {
       return {
         success: false,
-        error: buildConnectorError(ConnectorErrorCode.enum.CONFIG_MISSING, 'GLPI adapter not connected'),
+        error: buildConnectorError(
+          ConnectorErrorCode.enum.CONFIG_MISSING,
+          'GLPI adapter not connected',
+        ),
       };
     }
     return {
       success: false,
-      error: buildConnectorError(ConnectorErrorCode.enum.NOTEBACK_WRITE_FAILED, 'GLPI adapter is read-only in this slice'),
+      error: buildConnectorError(
+        ConnectorErrorCode.enum.NOTEBACK_WRITE_FAILED,
+        'GLPI adapter is read-only in this slice',
+      ),
     };
   }
 
@@ -146,7 +170,9 @@ export class GlpiConnectorAdapter implements TicketingAdapterClient {
         TicketingAdapterCapability.enum.read_tickets,
         TicketingAdapterCapability.enum.read_customers,
       ],
-      status: this.httpClient ? TicketingAdapterStatus.enum.active : TicketingAdapterStatus.enum.inactive,
+      status: this.httpClient
+        ? TicketingAdapterStatus.enum.active
+        : TicketingAdapterStatus.enum.inactive,
       config: this.config ? { baseUrl: this.config.baseUrl, timeoutMs: this.config.timeoutMs } : {},
       secretReferenceIds: [],
       createdAt: now,
@@ -181,7 +207,8 @@ export class MockGlpiConnectorAdapter implements TicketingAdapterClient {
       tenantId,
       adapterId: this.adapterId,
       externalTicketId,
-      subject: typeof data.subject === 'string' ? data.subject : `Mock GLPI ticket ${externalTicketId}`,
+      subject:
+        typeof data.subject === 'string' ? data.subject : `Mock GLPI ticket ${externalTicketId}`,
       status: normalizeGlpiState(String(data.status ?? 'new')),
       priority: normalizeGlpiPriority(data.priority as string | number | Record<string, unknown>),
       customerEmail: typeof user.email === 'string' ? user.email : 'support@acme.example',
@@ -193,10 +220,16 @@ export class MockGlpiConnectorAdapter implements TicketingAdapterClient {
     };
   }
 
-  async writeInternalNote(_ticketId: string, _body: string): Promise<InternalNoteWritebackResultShape> {
+  async writeInternalNote(
+    _ticketId: string,
+    _body: string,
+  ): Promise<InternalNoteWritebackResultShape> {
     return {
       success: false,
-      error: buildConnectorError(ConnectorErrorCode.enum.NOTEBACK_WRITE_FAILED, 'Mock GLPI adapter is read-only'),
+      error: buildConnectorError(
+        ConnectorErrorCode.enum.NOTEBACK_WRITE_FAILED,
+        'Mock GLPI adapter is read-only',
+      ),
     };
   }
 

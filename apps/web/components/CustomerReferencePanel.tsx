@@ -51,7 +51,9 @@ export function CustomerReferencePanel() {
         )}
 
         {customers.length === 0 && !loading && !error && (
-          <div className="text-xs text-cockpit-500">No customer references found for this tenant.</div>
+          <div className="text-xs text-cockpit-500">
+            No customer references found for this tenant.
+          </div>
         )}
 
         <div className="space-y-2">

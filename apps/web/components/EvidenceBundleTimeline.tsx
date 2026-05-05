@@ -9,9 +9,11 @@ interface EvidenceBundleTimelineProps {
 
 function eventIcon(eventType: string) {
   if (eventType.includes('call') || eventType.includes('telephony')) return Phone;
-  if (eventType.includes('ai_') || eventType.includes('draft') || eventType.includes('greeting')) return Bot;
+  if (eventType.includes('ai_') || eventType.includes('draft') || eventType.includes('greeting'))
+    return Bot;
   if (eventType.includes('screen')) return Settings;
-  if (eventType.includes('login') || eventType.includes('logout') || eventType.includes('user')) return User;
+  if (eventType.includes('login') || eventType.includes('logout') || eventType.includes('user'))
+    return User;
   if (eventType.includes('policy') || eventType.includes('boundary')) return Shield;
   if (eventType.includes('evidence')) return FileText;
   return AlertTriangle;
@@ -38,7 +40,7 @@ export function EvidenceBundleTimeline({ bundle }: EvidenceBundleTimelineProps) 
   }
 
   const sorted = [...bundle.auditTimeline].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
   );
 
   return (
@@ -49,9 +51,7 @@ export function EvidenceBundleTimeline({ bundle }: EvidenceBundleTimelineProps) 
         return (
           <div key={event.id} className="relative flex gap-3">
             {/* Timeline line */}
-            {!isLast && (
-              <div className="absolute left-[11px] top-6 h-full w-px bg-cockpit-700" />
-            )}
+            {!isLast && <div className="absolute left-[11px] top-6 h-full w-px bg-cockpit-700" />}
 
             {/* Icon dot */}
             <div className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cockpit-800 border border-cockpit-600">
@@ -61,9 +61,7 @@ export function EvidenceBundleTimeline({ bundle }: EvidenceBundleTimelineProps) 
             {/* Content */}
             <div className="pb-4">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-cockpit-200">
-                  {event.eventType}
-                </span>
+                <span className="text-xs font-semibold text-cockpit-200">{event.eventType}</span>
                 <span className="rounded bg-cockpit-800 px-1.5 py-0.5 text-[10px] text-cockpit-400">
                   {provenanceLabel(event.eventType)}
                 </span>

@@ -32,9 +32,13 @@ x-user-id: dev-user
 
 ```json
 {
-  "callEvent": { /* CallEvent object */ },
+  "callEvent": {
+    /* CallEvent object */
+  },
   "autoCreateResult": "auto_created",
-  "createdSession": { /* SupportSession object, if auto-created */ },
+  "createdSession": {
+    /* SupportSession object, if auto-created */
+  },
   "mockDevOnly": true,
   "receivedAt": "2026-04-26T20:51:47.933Z"
 }
@@ -42,12 +46,12 @@ x-user-id: dev-user
 
 ### Auto-create results
 
-| Result | Condition |
-|--------|-----------|
-| `not_requested` | `autoCreateSession` is missing or `false` |
-| `auto_created` | `autoCreateSession: true` and caller matched with strong confidence |
-| `skipped_no_match` | `autoCreateSession: true` but caller not in fixtures |
-| `skipped_invalid_phone` | `autoCreateSession: true` but phone number failed normalization |
+| Result                  | Condition                                                           |
+| ----------------------- | ------------------------------------------------------------------- |
+| `not_requested`         | `autoCreateSession` is missing or `false`                           |
+| `auto_created`          | `autoCreateSession: true` and caller matched with strong confidence |
+| `skipped_no_match`      | `autoCreateSession: true` but caller not in fixtures                |
+| `skipped_invalid_phone` | `autoCreateSession: true` but phone number failed normalization     |
 
 ### Matched caller behavior
 

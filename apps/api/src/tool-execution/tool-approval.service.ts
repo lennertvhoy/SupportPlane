@@ -1,4 +1,10 @@
-import { Injectable, Inject, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import {
   ToolApprovalStatus,
@@ -13,9 +19,7 @@ import type { CurrentIdentity } from '../auth/auth.types.js';
 export class ToolApprovalService {
   constructor(@Inject(InMemoryStore) private readonly store: Store) {}
 
-  async createApproval(
-    invocation: ToolInvocationShape,
-  ): Promise<ToolApprovalShape> {
+  async createApproval(invocation: ToolInvocationShape): Promise<ToolApprovalShape> {
     const now = new Date().toISOString();
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 minutes
     const approval: ToolApprovalShape = {
@@ -43,7 +47,9 @@ export class ToolApprovalService {
 
     // Authorized approver roles
     const allowedApproverRoles = ['admin', 'owner'];
-    const canApprove = identity.roles.some((r) => allowedApproverRoles.includes(r)) || identity.permissions.includes('*');
+    const canApprove =
+      identity.roles.some((r) => allowedApproverRoles.includes(r)) ||
+      identity.permissions.includes('*');
     if (!canApprove) {
       throw new ForbiddenException('Only admin or owner roles can approve tool executions.');
     }
@@ -55,7 +61,11 @@ export class ToolApprovalService {
     }
 
     if (Date.parse(approval.expiresAt) <= Date.now()) {
-      const expired: ToolApprovalShape = { ...approval, status: ToolApprovalStatus.enum.expired, updatedAt: now };
+      const expired: ToolApprovalShape = {
+        ...approval,
+        status: ToolApprovalStatus.enum.expired,
+        updatedAt: now,
+      };
       await this.store.saveToolApproval(expired);
       throw new BadRequestException('Approval request has expired.');
     }
@@ -63,7 +73,8 @@ export class ToolApprovalService {
     const updated: ToolApprovalShape = {
       ...approval,
       approvedByUserId: identity.userId,
-      status: decision === 'approve' ? ToolApprovalStatus.enum.approved : ToolApprovalStatus.enum.denied,
+      status:
+        decision === 'approve' ? ToolApprovalStatus.enum.approved : ToolApprovalStatus.enum.denied,
       reason: decision === 'deny' ? (reason ?? 'No reason provided') : reason,
       decidedAt: now,
       updatedAt: now,
@@ -76,11 +87,16 @@ export class ToolApprovalService {
     return this.store.getToolApproval(tenantId, id);
   }
 
-  async listApprovals(tenantId: string, options?: { status?: string }): Promise<ToolApprovalShape[]> {
+  async listApprovals(
+    tenantId: string,
+    options?: { status?: string },
+  ): Promise<ToolApprovalShape[]> {
     return this.store.listToolApprovals(tenantId, options);
   }
 
-  async checkApprovalValid(approval: ToolApprovalShape): Promise<{ valid: boolean; reason?: string }> {
+  async checkApprovalValid(
+    approval: ToolApprovalShape,
+  ): Promise<{ valid: boolean; reason?: string }> {
     if (approval.status !== 'approved') {
       return { valid: false, reason: `Approval status is ${approval.status}` };
     }

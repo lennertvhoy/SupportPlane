@@ -54,7 +54,9 @@ export const EvidenceBundleConnectorInstallationSummary = z.object({
   credentialReferenceCount: z.number().int().min(0).optional(),
   runtimeReadinessSummary: z.string().optional(),
 });
-export type EvidenceBundleConnectorInstallationSummary = z.infer<typeof EvidenceBundleConnectorInstallationSummary>;
+export type EvidenceBundleConnectorInstallationSummary = z.infer<
+  typeof EvidenceBundleConnectorInstallationSummary
+>;
 
 export const EvidenceBundleTicketSummary = z.object({
   id: EntityId,
@@ -81,7 +83,7 @@ export const EvidenceBundleContextPacketSummary = z.object({
       field: z.string(),
       reason: z.string(),
       method: z.string(),
-    })
+    }),
   ),
   createdAt: Timestamp,
 });
@@ -98,7 +100,9 @@ export const EvidenceBundleConnectorOperationSummary = z.object({
   errorMessage: z.string().optional(),
   occurredAt: Timestamp,
 });
-export type EvidenceBundleConnectorOperationSummary = z.infer<typeof EvidenceBundleConnectorOperationSummary>;
+export type EvidenceBundleConnectorOperationSummary = z.infer<
+  typeof EvidenceBundleConnectorOperationSummary
+>;
 
 export const EvidenceBundleTelephonyBridgeSummary = z.object({
   operationType: z.string(),
@@ -174,7 +178,9 @@ export const EvidenceBundleScreenObservationSummary = z.object({
   redactionStatus: z.string().optional(),
   safetyFlags: z.record(z.unknown()).optional(),
 });
-export type EvidenceBundleScreenObservationSummary = z.infer<typeof EvidenceBundleScreenObservationSummary>;
+export type EvidenceBundleScreenObservationSummary = z.infer<
+  typeof EvidenceBundleScreenObservationSummary
+>;
 
 export const EvidenceBundleGreetingSuggestionSummary = z.object({
   greetingText: z.string(),
@@ -189,7 +195,9 @@ export const EvidenceBundleGreetingSuggestionSummary = z.object({
   voiceEnabled: z.boolean(),
   generatedAt: Timestamp.optional(),
 });
-export type EvidenceBundleGreetingSuggestionSummary = z.infer<typeof EvidenceBundleGreetingSuggestionSummary>;
+export type EvidenceBundleGreetingSuggestionSummary = z.infer<
+  typeof EvidenceBundleGreetingSuggestionSummary
+>;
 
 export const EvidenceBundleSupportNoteDraftSummary = z.object({
   draftId: z.string(),
@@ -202,7 +210,9 @@ export const EvidenceBundleSupportNoteDraftSummary = z.object({
   requiresHumanReview: z.boolean(),
   generatedAt: Timestamp.optional(),
 });
-export type EvidenceBundleSupportNoteDraftSummary = z.infer<typeof EvidenceBundleSupportNoteDraftSummary>;
+export type EvidenceBundleSupportNoteDraftSummary = z.infer<
+  typeof EvidenceBundleSupportNoteDraftSummary
+>;
 
 export const EvidenceBundleActionOutboxSummary = z.object({
   actionId: z.string(),
@@ -228,19 +238,23 @@ export const EvidenceBundleActionOutboxSummary = z.object({
   lastErrorMessage: z.string().optional(),
   lastErrorRedacted: z.boolean().optional(),
   deadLetterReason: z.string().optional(),
-  attempts: z.array(z.object({
-    attemptNumber: z.number().int().min(1),
-    state: z.string(),
-    errorCode: z.string().optional(),
-    errorMessage: z.string().optional(),
-    errorRedacted: z.boolean().optional(),
-    attemptedAt: Timestamp,
-    completedAt: Timestamp.optional(),
-    deliveryResult: z.record(JsonValue),
-    realNetwork: z.literal(false),
-    externalWriteAttempted: z.literal(false),
-    writebackEnabled: z.literal(false),
-  })).default([]),
+  attempts: z
+    .array(
+      z.object({
+        attemptNumber: z.number().int().min(1),
+        state: z.string(),
+        errorCode: z.string().optional(),
+        errorMessage: z.string().optional(),
+        errorRedacted: z.boolean().optional(),
+        attemptedAt: Timestamp,
+        completedAt: Timestamp.optional(),
+        deliveryResult: z.record(JsonValue),
+        realNetwork: z.literal(false),
+        externalWriteAttempted: z.literal(false),
+        writebackEnabled: z.literal(false),
+      }),
+    )
+    .default([]),
   payloadSummary: z.record(JsonValue),
   deliveryIntent: z.record(JsonValue).optional(),
   safetyFlags: z.record(JsonValue),
@@ -268,7 +282,9 @@ export const EvidenceBundleDeliveryPolicySummary = z.object({
   safetyFlags: z.record(JsonValue),
   updatedAt: Timestamp.optional(),
 });
-export type EvidenceBundleDeliveryPolicySummary = z.infer<typeof EvidenceBundleDeliveryPolicySummary>;
+export type EvidenceBundleDeliveryPolicySummary = z.infer<
+  typeof EvidenceBundleDeliveryPolicySummary
+>;
 
 export const EvidenceBundleAuditSummary = z.object({
   id: EntityId,

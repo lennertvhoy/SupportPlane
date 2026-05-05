@@ -43,9 +43,9 @@ export function DemoGuidePanel() {
       </div>
 
       <p className="text-xs text-cockpit-300 mb-3 leading-relaxed">
-        <strong>SupportPlane</strong> is a governed AI support cockpit for IT teams and MSPs.
-        This demo runs in a local Kubernetes sandbox. AI suggests; policy decides.
-        Nothing here is production data.
+        <strong>SupportPlane</strong> is a governed AI support cockpit for IT teams and MSPs. This
+        demo runs in a local Kubernetes sandbox. AI suggests; policy decides. Nothing here is
+        production data.
       </p>
 
       <div className="grid grid-cols-1 gap-2 text-xs mb-3">
@@ -86,11 +86,20 @@ export function DemoGuidePanel() {
       <div className="text-xs text-cockpit-300 space-y-1">
         <p className="font-medium text-cockpit-200">Recommended first-time path:</p>
         <ol className="list-decimal list-inside space-y-0.5">
-          <li>Review the <strong>Demo Boundaries & Safety</strong> panel below</li>
-          <li>Check <strong>Connector Status</strong> to see what is real vs. fixture vs. unconfigured</li>
-          <li>Create a <strong>Session</strong> in the sidebar and load Zammad ticket <strong>#2</strong></li>
+          <li>
+            Review the <strong>Demo Boundaries & Safety</strong> panel below
+          </li>
+          <li>
+            Check <strong>Connector Status</strong> to see what is real vs. fixture vs. unconfigured
+          </li>
+          <li>
+            Create a <strong>Session</strong> in the sidebar and load Zammad ticket{' '}
+            <strong>#2</strong>
+          </li>
           <li>Load GLPI ticket context via the GLPI flow</li>
-          <li>Explore <strong>Admin</strong> → governance, policies, audit trail</li>
+          <li>
+            Explore <strong>Admin</strong> → governance, policies, audit trail
+          </li>
         </ol>
         <p className="mt-1 text-cockpit-500">
           For the full 20-30 minute guided test, see{' '}

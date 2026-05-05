@@ -33,11 +33,7 @@ export const ScreenObservationStatus = z.enum([
 ]);
 export type ScreenObservationStatus = z.infer<typeof ScreenObservationStatus>;
 
-export const ScreenObservationSharingState = z.enum([
-  'inactive',
-  'active',
-  'paused',
-]);
+export const ScreenObservationSharingState = z.enum(['inactive', 'active', 'paused']);
 export type ScreenObservationSharingState = z.infer<typeof ScreenObservationSharingState>;
 
 export const ScreenObservationRawImageRetention = z.enum([
@@ -157,7 +153,9 @@ export const ScreenObservationContextPacketRequest = z.object({
   provenance: z.string().min(1).max(128).optional(),
 });
 
-export type ScreenObservationContextPacketRequest = z.infer<typeof ScreenObservationContextPacketRequest>;
+export type ScreenObservationContextPacketRequest = z.infer<
+  typeof ScreenObservationContextPacketRequest
+>;
 
 export const ScreenObservationContextPacketResponse = z.object({
   observation: ScreenObservation,
@@ -165,7 +163,9 @@ export const ScreenObservationContextPacketResponse = z.object({
   mockDevOnly: z.boolean(),
 });
 
-export type ScreenObservationContextPacketResponse = z.infer<typeof ScreenObservationContextPacketResponse>;
+export type ScreenObservationContextPacketResponse = z.infer<
+  typeof ScreenObservationContextPacketResponse
+>;
 
 // BL-047: Active window metadata capture
 export const ActiveWindowMetadataCaptureRequest = z.object({
@@ -182,7 +182,9 @@ export const ActiveWindowMetadataCaptureResponse = z.object({
   redactedSummary: z.string(),
   mockDevOnly: z.boolean(),
 });
-export type ActiveWindowMetadataCaptureResponse = z.infer<typeof ActiveWindowMetadataCaptureResponse>;
+export type ActiveWindowMetadataCaptureResponse = z.infer<
+  typeof ActiveWindowMetadataCaptureResponse
+>;
 
 // BL-048: Manual screenshot metadata
 export const ManualScreenshotMetadataRequest = z.object({
@@ -212,7 +214,9 @@ export const StructuredScreenObservationUploadRequest = z.object({
   urlLabel: z.string().max(2048).optional(),
   rawInputPlaceholder: z.string().max(4096).optional(),
 });
-export type StructuredScreenObservationUploadRequest = z.infer<typeof StructuredScreenObservationUploadRequest>;
+export type StructuredScreenObservationUploadRequest = z.infer<
+  typeof StructuredScreenObservationUploadRequest
+>;
 
 export const StructuredScreenObservationUploadResponse = z.object({
   observation: ScreenObservation,
@@ -220,13 +224,17 @@ export const StructuredScreenObservationUploadResponse = z.object({
   mockDevOnly: z.boolean(),
   redactionStatus: ScreenObservationRedactionStatus,
 });
-export type StructuredScreenObservationUploadResponse = z.infer<typeof StructuredScreenObservationUploadResponse>;
+export type StructuredScreenObservationUploadResponse = z.infer<
+  typeof StructuredScreenObservationUploadResponse
+>;
 
 // Sharing state
 export const ScreenObservationSharingStateRequest = z.object({
   state: ScreenObservationSharingState,
 });
-export type ScreenObservationSharingStateRequest = z.infer<typeof ScreenObservationSharingStateRequest>;
+export type ScreenObservationSharingStateRequest = z.infer<
+  typeof ScreenObservationSharingStateRequest
+>;
 
 export const ScreenObservationSharingStateResponse = z.object({
   sessionId: EntityId,
@@ -234,7 +242,9 @@ export const ScreenObservationSharingStateResponse = z.object({
   previousState: ScreenObservationSharingState.optional(),
   mockDevOnly: z.boolean(),
 });
-export type ScreenObservationSharingStateResponse = z.infer<typeof ScreenObservationSharingStateResponse>;
+export type ScreenObservationSharingStateResponse = z.infer<
+  typeof ScreenObservationSharingStateResponse
+>;
 
 export const ScreenObservationEvidenceSummary = z.object({
   observationId: ScreenObservationId,

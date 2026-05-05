@@ -45,8 +45,16 @@ async function login(): Promise<string> {
   return cookie;
 }
 
-async function apiPost<T>(path: string, _cookie: string, body?: Record<string, unknown>, tenantId?: string): Promise<T> {
-  const headers = getHeaders(tenantId, typeof body?.['correlationId'] === 'string' ? body['correlationId'] : undefined);
+async function apiPost<T>(
+  path: string,
+  _cookie: string,
+  body?: Record<string, unknown>,
+  tenantId?: string,
+): Promise<T> {
+  const headers = getHeaders(
+    tenantId,
+    typeof body?.['correlationId'] === 'string' ? body['correlationId'] : undefined,
+  );
   if (!_cookie.startsWith('service-token-auth')) {
     headers['cookie'] = _cookie;
   }
@@ -72,11 +80,22 @@ async function apiGet<T>(path: string, _cookie: string, tenantId?: string): Prom
 }
 
 async function processOnce(cookie: string): Promise<Record<string, unknown>> {
-  return apiPost('/outbox/process-once', cookie, { workerId: WORKER_ID, correlationId: createCorrelationId() });
+  return apiPost('/outbox/process-once', cookie, {
+    workerId: WORKER_ID,
+    correlationId: createCorrelationId(),
+  });
 }
 
-async function processSpecific(cookie: string, outboxItemId: string, correlationId?: string): Promise<Record<string, unknown>> {
-  return apiPost('/outbox/process-once', cookie, { workerId: WORKER_ID, outboxItemId, correlationId: correlationId ?? createCorrelationId() });
+async function processSpecific(
+  cookie: string,
+  outboxItemId: string,
+  correlationId?: string,
+): Promise<Record<string, unknown>> {
+  return apiPost('/outbox/process-once', cookie, {
+    workerId: WORKER_ID,
+    outboxItemId,
+    correlationId: correlationId ?? createCorrelationId(),
+  });
 }
 
 async function status(cookie: string): Promise<Record<string, unknown>> {
@@ -111,7 +130,14 @@ async function main() {
   process.on('SIGTERM', () => {
     shuttingDown = true;
   });
-  console.log(JSON.stringify({ workerId: WORKER_ID, mode: 'local_mock_worker', queueBackend: 'postgres-local-outbox', apiUrl: API_URL }));
+  console.log(
+    JSON.stringify({
+      workerId: WORKER_ID,
+      mode: 'local_mock_worker',
+      queueBackend: 'postgres-local-outbox',
+      apiUrl: API_URL,
+    }),
+  );
   while (!shuttingDown) {
     const result = await processOnce(cookie);
     console.log(JSON.stringify(result));
@@ -128,15 +154,17 @@ async function loopNats(cookie: string) {
   process.on('SIGTERM', () => {
     shuttingDown = true;
   });
-  console.log(JSON.stringify({
-    workerId: WORKER_ID,
-    mode: 'local_sandbox_worker',
-    queueBackend: 'nats-jetstream',
-    fallbackQueueBackend: 'postgres-local-outbox',
-    stream: NATS_STREAM,
-    consumer: NATS_CONSUMER,
-    apiUrl: API_URL,
-  }));
+  console.log(
+    JSON.stringify({
+      workerId: WORKER_ID,
+      mode: 'local_sandbox_worker',
+      queueBackend: 'nats-jetstream',
+      fallbackQueueBackend: 'postgres-local-outbox',
+      stream: NATS_STREAM,
+      consumer: NATS_CONSUMER,
+      apiUrl: API_URL,
+    }),
+  );
 
   const nc = await connect({ servers: process.env['NATS_URL'] });
   const sc = StringCodec();
@@ -168,29 +196,37 @@ async function loopNats(cookie: string) {
       let processedAny = false;
       for await (const message of messages) {
         processedAny = true;
-        const envelope = JSON.parse(sc.decode(message.data)) as { outboxItemId?: string; idempotencyKey?: string; telemetry?: { correlationId?: string } };
+        const envelope = JSON.parse(sc.decode(message.data)) as {
+          outboxItemId?: string;
+          idempotencyKey?: string;
+          telemetry?: { correlationId?: string };
+        };
         if (!envelope.outboxItemId) {
           message.ack();
           continue;
         }
         const correlationId = envelope.telemetry?.correlationId ?? createCorrelationId();
         const result = await processSpecific(cookie, envelope.outboxItemId, correlationId);
-        console.log(JSON.stringify({
-          service: 'supportplane-worker',
-          event: 'nats_outbox_message_processed',
-          correlationId,
-          queueBackend: 'nats-jetstream',
-          stream: NATS_STREAM,
-          consumer: NATS_CONSUMER,
-          outboxItemId: envelope.outboxItemId,
-          idempotencyKey: envelope.idempotencyKey,
-          result,
-        }));
+        console.log(
+          JSON.stringify({
+            service: 'supportplane-worker',
+            event: 'nats_outbox_message_processed',
+            correlationId,
+            queueBackend: 'nats-jetstream',
+            stream: NATS_STREAM,
+            consumer: NATS_CONSUMER,
+            outboxItemId: envelope.outboxItemId,
+            idempotencyKey: envelope.idempotencyKey,
+            result,
+          }),
+        );
         message.ack();
       }
       if (!processedAny) {
         const fallback = await processOnce(cookie);
-        console.log(JSON.stringify({ queueBackend: 'fallback-postgres-local-outbox', result: fallback }));
+        console.log(
+          JSON.stringify({ queueBackend: 'fallback-postgres-local-outbox', result: fallback }),
+        );
         await new Promise((resolve) => setTimeout(resolve, intervalMs));
       }
     }

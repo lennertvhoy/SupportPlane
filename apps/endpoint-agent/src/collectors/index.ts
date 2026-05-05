@@ -22,9 +22,24 @@ const platformCollectors: Record<
   unknown: {
     collectDisk: async () => ({ volumes: [], error: 'Unknown platform', readOnly: true }),
     collectServices: async () => ({ processes: [], error: 'Unknown platform', readOnly: true }),
-    collectSoftware: async () => ({ software: [], error: 'Unknown platform', unsupported: true, readOnly: true }),
-    flushDnsCache: async () => ({ ok: false, error: 'Unknown platform', unsupported: true, readOnly: false }),
-    clearTempPreview: async () => ({ ok: false, error: 'Unknown platform', unsupported: true, readOnly: true }),
+    collectSoftware: async () => ({
+      software: [],
+      error: 'Unknown platform',
+      unsupported: true,
+      readOnly: true,
+    }),
+    flushDnsCache: async () => ({
+      ok: false,
+      error: 'Unknown platform',
+      unsupported: true,
+      readOnly: false,
+    }),
+    clearTempPreview: async () => ({
+      ok: false,
+      error: 'Unknown platform',
+      unsupported: true,
+      readOnly: true,
+    }),
   },
 };
 

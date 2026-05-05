@@ -20,7 +20,9 @@ export const ConnectorRuntimeConfigValidationIssue = z.object({
   message: z.string(),
   code: z.string(),
 });
-export type ConnectorRuntimeConfigValidationIssue = z.infer<typeof ConnectorRuntimeConfigValidationIssue>;
+export type ConnectorRuntimeConfigValidationIssue = z.infer<
+  typeof ConnectorRuntimeConfigValidationIssue
+>;
 
 export const ConnectorRuntimeConfigValidationResult = z.object({
   valid: z.boolean(),
@@ -31,7 +33,9 @@ export const ConnectorRuntimeConfigValidationResult = z.object({
   warnings: z.array(z.string()).default([]),
   timestamp: z.string(),
 });
-export type ConnectorRuntimeConfigValidationResult = z.infer<typeof ConnectorRuntimeConfigValidationResult>;
+export type ConnectorRuntimeConfigValidationResult = z.infer<
+  typeof ConnectorRuntimeConfigValidationResult
+>;
 
 export const ConnectorRuntimeReadinessResult = z.object({
   mockReady: z.boolean(),
@@ -61,7 +65,9 @@ export const ConnectorRuntimeCredentialReferenceMetadata = z.object({
   resolved: z.boolean().optional(),
   secretExposed: z.literal(false).optional(),
 });
-export type ConnectorRuntimeCredentialReferenceMetadata = z.infer<typeof ConnectorRuntimeCredentialReferenceMetadata>;
+export type ConnectorRuntimeCredentialReferenceMetadata = z.infer<
+  typeof ConnectorRuntimeCredentialReferenceMetadata
+>;
 
 export const ConnectorRuntimeResolverResult = z.object({
   tenantId: z.string(),

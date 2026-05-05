@@ -19,7 +19,8 @@ export function TicketSummaryGenerator({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canGenerate = identity.permissions.includes('*') || identity.permissions.includes('ai:generate');
+  const canGenerate =
+    identity.permissions.includes('*') || identity.permissions.includes('ai:generate');
 
   const handleGenerate = useCallback(async () => {
     if (!session || !canGenerate) return;
@@ -72,7 +73,8 @@ export function TicketSummaryGenerator({
           {!summary && (
             <div className="space-y-2">
               <div className="text-xs text-cockpit-500">
-                Generate an AI summary for <span className="text-cockpit-200">{session.title}</span>.
+                Generate an AI summary for <span className="text-cockpit-200">{session.title}</span>
+                .
               </div>
               <button
                 onClick={handleGenerate}
@@ -117,7 +119,15 @@ export function TicketSummaryGenerator({
               {summary.sentiment && (
                 <div className="flex items-center gap-2 text-xs text-cockpit-400">
                   <span>Sentiment:</span>
-                  <Badge variant={summary.sentiment === 'positive' ? 'success' : summary.sentiment === 'negative' ? 'danger' : 'default'}>
+                  <Badge
+                    variant={
+                      summary.sentiment === 'positive'
+                        ? 'success'
+                        : summary.sentiment === 'negative'
+                          ? 'danger'
+                          : 'default'
+                    }
+                  >
                     {summary.sentiment}
                   </Badge>
                 </div>
@@ -142,7 +152,9 @@ export function TicketSummaryGenerator({
                   <dt>Latency</dt>
                   <dd className="text-cockpit-100">{summary.usage.latencyMs ?? 0}ms</dd>
                   <dt>Fallback used</dt>
-                  <dd className="text-cockpit-100">{String(summary.usage.fallbackUsed ?? false)}</dd>
+                  <dd className="text-cockpit-100">
+                    {String(summary.usage.fallbackUsed ?? false)}
+                  </dd>
                 </dl>
               </div>
 

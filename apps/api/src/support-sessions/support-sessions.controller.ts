@@ -33,7 +33,7 @@ export class SupportSessionsController {
     @Inject(SupportSessionsService)
     private readonly service: SupportSessionsService,
     @Inject(AiChatService)
-    private readonly aiChatService: AiChatService
+    private readonly aiChatService: AiChatService,
   ) {}
 
   @Get()
@@ -45,7 +45,7 @@ export class SupportSessionsController {
   @Post()
   create(
     @Req() req: Request,
-    @Body() body: { title: string; description?: string; priority?: string }
+    @Body() body: { title: string; description?: string; priority?: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.createSession(identity, body);
@@ -61,7 +61,7 @@ export class SupportSessionsController {
   linkTicket(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { ticketReferenceId: string }
+    @Body() body: { ticketReferenceId: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.linkTicketToSession(identity, id, body);
@@ -71,7 +71,7 @@ export class SupportSessionsController {
   unlinkTicket(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { ticketReferenceId: string }
+    @Body() body: { ticketReferenceId: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.unlinkTicketFromSession(identity, id, body);
@@ -93,7 +93,7 @@ export class SupportSessionsController {
   async loadTicketContext(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { externalTicketId: string }
+    @Body() body: { externalTicketId: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.loadTicketContext(identity, id, body.externalTicketId);
@@ -103,7 +103,7 @@ export class SupportSessionsController {
   async loadZammadTicketContext(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { externalTicketId: string }
+    @Body() body: { externalTicketId: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.loadTicketContext(identity, id, body.externalTicketId);
@@ -113,7 +113,7 @@ export class SupportSessionsController {
   async loadGlpiTicketContext(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { externalTicketId: string }
+    @Body() body: { externalTicketId: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.loadGlpiTicketContext(identity, id, body.externalTicketId);
@@ -123,7 +123,7 @@ export class SupportSessionsController {
   createInternalNoteDraft(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { externalTicketId: string; body: string; subject?: string }
+    @Body() body: { externalTicketId: string; body: string; subject?: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.createInternalNoteDraft(identity, id, body);
@@ -133,7 +133,7 @@ export class SupportSessionsController {
   async writebackInternalNote(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { draftId: string; externalTicketId: string; body: string }
+    @Body() body: { draftId: string; externalTicketId: string; body: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.writebackInternalNote(identity, id, body);
@@ -143,7 +143,7 @@ export class SupportSessionsController {
   createContextPacket(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { provenance: string; payload: Record<string, unknown> }
+    @Body() body: { provenance: string; payload: Record<string, unknown> },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.createContextPacket(identity, id, body);
@@ -163,7 +163,7 @@ export class SupportSessionsController {
     body: {
       operatorInstructions?: string;
       modelSelection?: { provider?: string; model?: string };
-    }
+    },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.generateDraftSuggestion(identity, id, body);
@@ -178,7 +178,7 @@ export class SupportSessionsController {
       callEventId?: string;
       tone?: string;
       modelSelection?: { provider?: string; model?: string };
-    }
+    },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.generateGreetingSuggestion(identity, id, body);
@@ -188,7 +188,7 @@ export class SupportSessionsController {
   createSupportNoteDraft(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { externalTicketId: string; operatorNotes?: string }
+    @Body() body: { externalTicketId: string; operatorNotes?: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.createSupportNoteDraft(identity, id, body);
@@ -216,23 +216,27 @@ export class SupportSessionsController {
   async getEvidenceBundleMarkdown(
     @Req() req: Request,
     @Res() res: Response,
-    @Param('id') id: string
+    @Param('id') id: string,
   ) {
     const identity = getCurrentIdentity(req);
-    const result = await this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.markdown);
+    const result = await this.service.generateEvidenceBundle(
+      identity,
+      id,
+      EvidenceBundleFormat.enum.markdown,
+    );
     res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
     res.send(result.markdown);
     return;
   }
 
   @Get(':id/evidence-bundle.pdf')
-  async getEvidenceBundlePdf(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Param('id') id: string
-  ) {
+  async getEvidenceBundlePdf(@Req() req: Request, @Res() res: Response, @Param('id') id: string) {
     const identity = getCurrentIdentity(req);
-    const result = await this.service.generateEvidenceBundle(identity, id, EvidenceBundleFormat.enum.json);
+    const result = await this.service.generateEvidenceBundle(
+      identity,
+      id,
+      EvidenceBundleFormat.enum.json,
+    );
     const pdfService = new EvidencePdfService();
     try {
       const pdfBuffer = await pdfService.generatePdf(result.bundle);
@@ -241,15 +245,14 @@ export class SupportSessionsController {
       res.send(pdfBuffer);
       return;
     } catch {
-      throw new NotImplementedException('PDF generation is not available — pdfmake or fonts failed to load. Use .json or .md export instead.');
+      throw new NotImplementedException(
+        'PDF generation is not available — pdfmake or fonts failed to load. Use .json or .md export instead.',
+      );
     }
   }
 
   @Get('audit-events')
-  async auditEvents(
-    @Req() req: Request,
-    @Query() query: Record<string, string>
-  ) {
+  async auditEvents(@Req() req: Request, @Query() query: Record<string, string>) {
     const identity = getCurrentIdentity(req);
     const auditService = new AuditExplorerService();
     return auditService.queryAuditEvents({
@@ -270,7 +273,7 @@ export class SupportSessionsController {
   async captureMockScreenObservation(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: ScreenObservationCaptureRequest
+    @Body() body: ScreenObservationCaptureRequest,
   ) {
     const identity = getCurrentIdentity(req);
     const observation = await this.service.captureMockScreenObservation(identity, id, body);
@@ -285,7 +288,7 @@ export class SupportSessionsController {
   captureActiveWindowMockMetadata(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: ActiveWindowMetadataCaptureRequest
+    @Body() body: ActiveWindowMetadataCaptureRequest,
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.captureActiveWindowMockMetadata(identity, id, body);
@@ -295,7 +298,7 @@ export class SupportSessionsController {
   attachManualScreenshotMetadata(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: ManualScreenshotMetadataRequest
+    @Body() body: ManualScreenshotMetadataRequest,
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.attachManualScreenshotMetadata(identity, id, body);
@@ -305,7 +308,7 @@ export class SupportSessionsController {
   uploadStructuredScreenObservation(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: StructuredScreenObservationUploadRequest
+    @Body() body: StructuredScreenObservationUploadRequest,
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.uploadStructuredScreenObservation(identity, id, body);
@@ -321,7 +324,7 @@ export class SupportSessionsController {
   updateSharingState(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: ScreenObservationSharingStateRequest
+    @Body() body: ScreenObservationSharingStateRequest,
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.updateSharingState(identity, id, body);
@@ -338,7 +341,7 @@ export class SupportSessionsController {
     @Req() req: Request,
     @Param('id') id: string,
     @Param('observationId') observationId: string,
-    @Body() body: ScreenObservationReviewRequest
+    @Body() body: ScreenObservationReviewRequest,
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.reviewScreenObservation(identity, id, observationId, body);
@@ -349,7 +352,7 @@ export class SupportSessionsController {
     @Req() req: Request,
     @Param('id') id: string,
     @Param('observationId') observationId: string,
-    @Body() body: ScreenObservationContextPacketRequest
+    @Body() body: ScreenObservationContextPacketRequest,
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.createContextPacketFromObservation(identity, id, observationId, body);
@@ -363,7 +366,7 @@ export class SupportSessionsController {
     body: {
       ticketReferenceId?: string;
       modelSelection?: { provider?: string; model?: string };
-    } = {}
+    } = {},
   ) {
     const identity = getCurrentIdentity(req);
     return this.service.generateTicketSummary(identity, id, body);
@@ -373,7 +376,7 @@ export class SupportSessionsController {
   createAiChatSession(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() body: { title?: string }
+    @Body() body: { title?: string },
   ) {
     const identity = getCurrentIdentity(req);
     return this.aiChatService.createChatSession(identity, { sessionId: id, title: body.title });
@@ -386,11 +389,7 @@ export class SupportSessionsController {
   }
 
   @Get(':id/ai-chat/:chatId')
-  getAiChatSession(
-    @Req() req: Request,
-    @Param('id') id: string,
-    @Param('chatId') chatId: string
-  ) {
+  getAiChatSession(@Req() req: Request, @Param('id') id: string, @Param('chatId') chatId: string) {
     const identity = getCurrentIdentity(req);
     return this.aiChatService.getChatSession(identity, chatId);
   }
@@ -405,7 +404,7 @@ export class SupportSessionsController {
       content: string;
       role?: string;
       modelSelection?: { provider?: string; model?: string };
-    }
+    },
   ) {
     const identity = getCurrentIdentity(req);
     return this.aiChatService.sendMessage(identity, chatId, body);
