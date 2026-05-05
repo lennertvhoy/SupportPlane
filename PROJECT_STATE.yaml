@@ -151,7 +151,7 @@ current_state:
       are acceptable when documented. Exception recorded in
       output/playwright/session-160-automation-design-assurance-backlog/00-EVIDENCE-INDEX.md.
     head_before_session_161: f872229ee3cfa81dddbb71c709ccba4ddc4bb4d7
-    final_head_after_session_161: TBD_AT_COMMIT_TIME
+    final_head_after_session_161: 30dc76768792e33f124e4277cbf1b250b1207d6b
     note_session_161: >
       Session 161: BL-153 Automated Quality Gate & CI/CD Hardening Foundation.
       Created .github/workflows/ci.yml with quality, security-baseline, and
