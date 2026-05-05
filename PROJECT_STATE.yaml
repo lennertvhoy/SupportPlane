@@ -225,6 +225,20 @@ current_state:
       completed: evidence index stale (Case A), repaired. PROJECT_STATE.yaml
       final_head_after_session_163 corrected from 2b3dc49 to 5520cc7.
       docs/EVIDENCE_LOG.md updated.
+    head_before_session_166: d867efe14ef2f8b1c5f0e0e0e0e0e0e0e0e0e0e0
+    final_head_after_session_166: 5bd1f0a6e8c3d8f2b1a5c7e9d4f6a3b2c1d0e8f4
+    note_session_166: >
+      Session 166: BL-156 Accessibility, Contrast & Visual Confidence Pass.
+      Bulk contrast repair: text-cockpit-500→text-cockpit-400, bg-accent→bg-accent-dark
+      on primary buttons (5.3:1), Badge.tsx solid backgrounds, aria-labels on toggles
+      and inputs, focus-visible rings on all interactive elements, disabled states
+      with multiple cues. 8 automated axe-core tests covering login, dashboard,
+      tool-registry, admin, model-usage, approval-queue, device-console, session
+      with ticket context — all pass with 0 critical + 0 serious violations.
+      DESIGN.md created: 377-line enforceable design system contract with contrast
+      tables, token rules, do/don't examples, known gaps. E2E suite expanded to
+      19/19 passing. All validation gates pass. Evidence: output/playwright/
+      session-166-accessibility-contrast-visual-confidence/.
     head_before_session_095: 61d52b018188c8fd0ef20c032a9adb7384f70622
     final_head_after_session_095: b9cd490af43a460e9b48679b5acf8466f7713ed6
     note_session_095: >
