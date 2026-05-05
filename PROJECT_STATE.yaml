@@ -186,7 +186,7 @@ current_state:
       (2f5b61e state update, de34661 style format) advanced HEAD without
       runtime code changes. Actual final HEAD: de34661.
     head_before_session_163: de34661ff9858d361eb60a21ff592870202f8bca
-    final_head_after_session_163: 2b3dc4935eb43d1cf415e6a87564e33e9728f140
+    final_head_after_session_163: 5520cc77f40e20c612b3e31722de3471a5d2ccef
     note_session_163: >
       Session 163: DevSecOps Automated Audit Foundation (BL-155 partial/advanced,
       BL-159 partial, BL-158 partial). Added gitleaks secret scan with
@@ -206,6 +206,9 @@ current_state:
       Container scanning deferred (Trivy/Grype not installed). Remote CI
       still not proven. Evidence: output/playwright/
       session-163-devsecops-automation-foundation/.
+      Actual code/security commit: 2b3dc49. Final Session 163 closure docs commit:
+      5520cc7 (PROJECT_STATE.yaml update only). Evidence index in session-163
+      folder incorrectly lists 2b3dc49 as final HEAD; repaired in Session 164.
     head_before_session_095: 61d52b018188c8fd0ef20c032a9adb7384f70622
     final_head_after_session_095: b9cd490af43a460e9b48679b5acf8466f7713ed6
     note_session_095: >

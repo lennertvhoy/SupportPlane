@@ -58,3 +58,5 @@ release/
 
 # Session evidence (preserved on disk, not in git)
 output/
+playwright-report/
+test-results/
