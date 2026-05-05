@@ -267,9 +267,10 @@ Status markers:
   - Why it matters: Manual screenshots are slow and skip accessibility/keyboard/interaction validation. First-tester-facing bugs will not be caught by unit tests.
   - Scope: Create formal Playwright E2E suite with `playwright.config.ts`. Smoke tests for: (1) Login → Dashboard load, (2) Create session, (3) Admin dashboard navigation, (4) Tool registry denied/allowed (viewer vs admin), (5) Device console load, (6) Approval queue load. Console error monitoring with expected 401/403 filters.
   - Non-goals: Cover every panel and edge case. Replace manual screenshot scripts entirely. `@axe-core/playwright` scans deferred to BL-156.
-  - Acceptance: `npm run e2e` runs locally and passes (11 tests, 6 spec files). CI workflow created (`.github/workflows/e2e.yml`). Deterministic seed data via isolated `supportplane_e2e` DB.
-  - Evidence: `output/playwright/session-164-browser-e2e-smoke-gate/`. Playwright report screenshot. 8 UI state screenshots (login, operator dashboard, admin dashboard, device console, approval queue, tool registry admin, tool registry viewer denied, model usage).
-  - Risk notes: Remote CI unproven (requires GitHub Actions runner with PostgreSQL service). Ticket context loading skipped in smoke test because OpenBao resolver is disabled in E2E env.
+  - Acceptance: `npm run e2e` runs locally and passes (14 tests, 7 spec files). CI workflow created (`.github/workflows/e2e.yml`). Deterministic seed data via isolated `supportplane_e2e` DB.
+  - Evidence: `output/playwright/session-165-e2e-ci-ticket-accessibility-hardening/`. 8 UI state screenshots. All 14 E2E tests pass locally.
+  - Session 165 progress: Fixed `session-ticket.spec.ts` 500 by seeding `zammad-mock-adapter-001` to match mock adapter canonical ID. Fixed strict mode violations in `admin`, `approval-queue`, `tool-registry-rbac` specs. Added `accessibility.spec.ts` with axe-core scans (3 tests). E2E env now forces `ZAMMAD_CONNECTOR_MODE=mock` to bypass OpenBao.
+  - Risk notes: Remote CI unproven (requires GitHub Actions runner with PostgreSQL service).
 
 - [BL-158] `[partial/scripts-created]` Release Evidence Hygiene & Runtime Identity Gate.
   - Problem: Runtime identity checks are manual. Evidence folders can become stale. Screenshot budget (max 20) is not automatically enforced.

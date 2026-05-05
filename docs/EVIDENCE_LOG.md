@@ -3237,3 +3237,30 @@
   - Worktree clean at `e23466a`
 - Type: browser-e2e-smoke-and-governance-repair
 - as_of: 2026-05-05T10:05:00+02:00
+
+## EV-2026-05-05-187: Session 165 — BL-157 E2E Closure Hardening (14/14 Passing)
+
+- Evidence folder: `output/playwright/session-165-e2e-ci-ticket-accessibility-hardening/` (9 files)
+- Source/System: Local E2E run against isolated `supportplane_e2e` DB on localhost:5434
+- Action: Fixed remaining 5 Playwright test failures. Root cause of session-ticket 500:
+  `MockZammadConnectorAdapter.getTicket()` returns `adapterId: 'zammad-mock-adapter-001'`,
+  but `TicketingAdapter` table had no matching row. Added seed record
+  `zammad-mock-adapter-001` to `prisma/seed.ts`. Fixed strict mode violations in
+  `admin.spec.ts`, `approval-queue.spec.ts`, `tool-registry-rbac.spec.ts` by adding
+  `.first()` to `or()` locator chains. Fixed `session-ticket.spec.ts` assertion text
+  to match actual mock subject (`Zammad ticket TICKET-101`). Removed overly broad
+  `text=Error` not-to-be-visible assertion that matched legitimate connector config
+  error labels (e.g. "Error: CONFIG_MISSING"). Added `accessibility.spec.ts` with
+  `@axe-core/playwright` scans on login, dashboard, and tool-registry viewer-denied
+  pages (3 tests passing).
+- Proves:
+  - `npm run e2e`: 14 passed, 0 failed (12.5s)
+  - session-ticket.spec.ts: mock ticket context loads without 500, shows "Mock Connector Data" badge
+  - admin.spec.ts: navigates to Model Usage, governance cards visible
+  - approval-queue.spec.ts: loads without crash, empty state visible
+  - tool-registry-rbac.spec.ts: admin sees tools, viewer gets forbidden state
+  - accessibility.spec.ts: login, dashboard, viewer-denied pages have 0 critical axe violations
+  - format:check PASS, lint 0 errors/79 warnings, typecheck PASS, validate PASS
+  - Worktree clean at `6292375`
+- Type: browser-e2e-closure-hardening
+- as_of: 2026-05-05T13:30:00+02:00

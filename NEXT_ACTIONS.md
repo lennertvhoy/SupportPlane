@@ -51,7 +51,7 @@
 
 ## Recently Completed
 
-- [BL-157] `[accepted]` Browser E2E Smoke Gate (Session 164). 11 Playwright tests green. Local E2E infra proven. CI workflow created. Remote CI unproven.
+- [BL-157] `[accepted]` Browser E2E Smoke Gate (Sessions 164–165). 14 Playwright tests green (7 spec files). Local E2E infra proven. CI workflow created. Session-ticket mock adapter 500 fixed by seeding `zammad-mock-adapter-001`. Strict mode violations fixed. Accessibility axe-core scans added. Remote CI unproven.
 
 - [BL-148] `[accepted]` Runtime Identity Truth Repair & Cluster Redeploy (Session 158).
 - [BL-149] `[accepted]` Model-Usage Crash Fix & Admin Dashboard Repair (Session 158).
