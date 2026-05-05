@@ -128,27 +128,27 @@ export function OutboxMonitorPanel({
         {worker && (
           <div className="grid grid-cols-2 gap-2 text-[11px] text-cockpit-300 md:grid-cols-6">
             <div>
-              <span className="text-cockpit-500">Worker</span>
+              <span className="text-cockpit-400">Worker</span>
               <div>{worker.status}</div>
             </div>
             <div>
-              <span className="text-cockpit-500">Mode</span>
+              <span className="text-cockpit-400">Mode</span>
               <div>{worker.mode}</div>
             </div>
             <div>
-              <span className="text-cockpit-500">Queue</span>
+              <span className="text-cockpit-400">Queue</span>
               <div>{worker.queueBackend}</div>
             </div>
             <div>
-              <span className="text-cockpit-500">Store</span>
+              <span className="text-cockpit-400">Store</span>
               <div>{worker.storeMode}</div>
             </div>
             <div>
-              <span className="text-cockpit-500">Auth</span>
+              <span className="text-cockpit-400">Auth</span>
               <div>{identity.authMode}</div>
             </div>
             <div>
-              <span className="text-cockpit-500">Safety</span>
+              <span className="text-cockpit-400">Safety</span>
               <div>
                 realNetwork: {String(worker?.realNetwork ?? false)} / writeback:{' '}
                 {String(worker?.writebackEnabled ?? false)}
@@ -180,7 +180,7 @@ export function OutboxMonitorPanel({
             'total',
           ].map((key) => (
             <div key={key} className="rounded border border-cockpit-700 px-2 py-1">
-              <div className="text-cockpit-500">{key}</div>
+              <div className="text-cockpit-400">{key}</div>
               <div className="text-cockpit-100">{summary[key] ?? 0}</div>
             </div>
           ))}
@@ -235,7 +235,7 @@ export function OutboxMonitorPanel({
             </button>
           ))}
           {items.length === 0 && (
-            <div className="text-xs text-cockpit-500">No outbox items for this tenant.</div>
+            <div className="text-xs text-cockpit-400">No outbox items for this tenant.</div>
           )}
         </div>
 
@@ -318,7 +318,7 @@ export function OutboxMonitorPanel({
               </button>
             </div>
             <div className="space-y-1">
-              <div className="text-cockpit-500">Attempt history for selected item</div>
+              <div className="text-cockpit-400">Attempt history for selected item</div>
               {attempts.map((attempt) => (
                 <div key={attempt.id} className="rounded border border-cockpit-700 px-2 py-1">
                   #{attempt.attemptNumber} {attempt.state} code {attempt.errorCode ?? 'none'} /{' '}

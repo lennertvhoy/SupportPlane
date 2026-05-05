@@ -615,7 +615,7 @@ function CallConsoleContent({
           </div>
           <div>
             <h1 className="text-sm font-bold text-cockpit-100">SupportPlane</h1>
-            <p className="text-[10px] text-cockpit-500">Mock Call Console</p>
+            <p className="text-[10px] text-cockpit-400">Mock Call Console</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -643,7 +643,7 @@ function CallConsoleContent({
           </div>
 
           {callsLoading && (
-            <div className="flex items-center gap-2 py-4 text-xs text-cockpit-500">
+            <div className="flex items-center gap-2 py-4 text-xs text-cockpit-400">
               <Loader2 size={12} className="animate-spin" />
               Loading calls...
             </div>
@@ -673,7 +673,7 @@ function CallConsoleContent({
                       {call.status}
                     </span>
                   </div>
-                  <span className="text-[10px] text-cockpit-500">
+                  <span className="text-[10px] text-cockpit-400">
                     {new Date(call.createdAt).toLocaleTimeString()}
                   </span>
                 </div>
@@ -695,7 +695,7 @@ function CallConsoleContent({
             ))}
 
             {calls.length === 0 && !callsLoading && (
-              <div className="rounded border border-cockpit-700 bg-cockpit-900/30 px-3 py-4 text-center text-xs text-cockpit-500">
+              <div className="rounded border border-cockpit-700 bg-cockpit-900/30 px-3 py-4 text-center text-xs text-cockpit-400">
                 No calls yet. Use the Call Simulator in the Support Cockpit to create a fake
                 incoming call, or trigger an Asterisk AMI test event.
               </div>
@@ -747,7 +747,7 @@ function CallConsoleContent({
                     {selectedCall.status}
                   </Badge>
                 </div>
-                <div className="mt-2 text-[10px] text-cockpit-500">
+                <div className="mt-2 text-[10px] text-cockpit-400">
                   {selectedCall.source === 'asterisk-ami'
                     ? 'Asterisk AMI local sandbox • No PSTN • No recording • No transcription • Caller matched from local sandbox data'
                     : 'Mock caller matching • No real PBX connected • Not spoken or sent automatically'}
@@ -775,23 +775,23 @@ function CallConsoleContent({
                         </div>
                       </div>
                       <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-                        <dt className="text-cockpit-500">Provider type</dt>
+                        <dt className="text-cockpit-400">Provider type</dt>
                         <dd className="text-cockpit-100">
                           {telephonyStatus?.providerType ?? 'mock'}
                         </dd>
-                        <dt className="text-cockpit-500">Adapter mode</dt>
+                        <dt className="text-cockpit-400">Adapter mode</dt>
                         <dd className="text-cockpit-100">{telephonyStatus?.mode ?? 'mock'}</dd>
-                        <dt className="text-cockpit-500">Verification</dt>
+                        <dt className="text-cockpit-400">Verification</dt>
                         <dd className="text-cockpit-100">
                           {telephonyStatus?.webhookVerification.status ?? 'not_required'}
                         </dd>
-                        <dt className="text-cockpit-500">Source</dt>
+                        <dt className="text-cockpit-400">Source</dt>
                         <dd className="text-cockpit-100">
                           {selectedCall.source === 'asterisk-ami'
                             ? 'asterisk-ami'
                             : (telephonyStatus?.providerType ?? 'mock')}
                         </dd>
-                        <dt className="text-cockpit-500">Mock/dev-only</dt>
+                        <dt className="text-cockpit-400">Mock/dev-only</dt>
                         <dd className="text-cockpit-100">
                           {selectedCall.source === 'asterisk-ami'
                             ? 'No (local sandbox AMI)'
@@ -846,7 +846,7 @@ function CallConsoleContent({
                           {lastControlResult.success ? 'succeeded' : 'failed'}) · mock-only
                         </div>
                       )}
-                      <div className="text-[10px] text-cockpit-500">
+                      <div className="text-[10px] text-cockpit-400">
                         No tokens, signatures, Authorization headers, env values, provider
                         credentials, voice, recording, STT, or TTS are shown or connected.
                       </div>
@@ -872,12 +872,12 @@ function CallConsoleContent({
 
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-cockpit-500">Raw number</span>
+                        <span className="text-cockpit-400">Raw number</span>
                         <span className="text-cockpit-200">{selectedCall.caller.rawNumber}</span>
                       </div>
                       {selectedCall.caller.normalizedNumber && (
                         <div className="flex justify-between">
-                          <span className="text-cockpit-500">Normalized</span>
+                          <span className="text-cockpit-400">Normalized</span>
                           <span className="font-medium text-cockpit-200">
                             {selectedCall.caller.normalizedNumber}
                           </span>
@@ -885,7 +885,7 @@ function CallConsoleContent({
                       )}
                       {selectedCall.caller.displayName && (
                         <div className="flex justify-between">
-                          <span className="text-cockpit-500">Display name</span>
+                          <span className="text-cockpit-400">Display name</span>
                           <span className="text-cockpit-200">
                             {selectedCall.caller.displayName}
                           </span>
@@ -900,7 +900,7 @@ function CallConsoleContent({
                         </div>
                         <div className="space-y-1 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-cockpit-500">Status</span>
+                            <span className="text-cockpit-400">Status</span>
                             <Badge
                               variant={
                                 selectedCall.callerMatch.status === 'matched'
@@ -913,14 +913,14 @@ function CallConsoleContent({
                             </Badge>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-cockpit-500">Confidence</span>
+                            <span className="text-cockpit-400">Confidence</span>
                             <span className="text-cockpit-200">
                               {selectedCall.callerMatch.confidence}
                             </span>
                           </div>
                           {selectedCall.callerMatch.customerName && (
                             <div className="flex justify-between">
-                              <span className="text-cockpit-500">Customer</span>
+                              <span className="text-cockpit-400">Customer</span>
                               <span className="text-cockpit-200">
                                 {selectedCall.callerMatch.customerName}
                               </span>
@@ -928,7 +928,7 @@ function CallConsoleContent({
                           )}
                           {selectedCall.callerMatch.matchedTicketIds.length > 0 && (
                             <div className="flex justify-between">
-                              <span className="text-cockpit-500">Recent tickets</span>
+                              <span className="text-cockpit-400">Recent tickets</span>
                               <span className="text-cockpit-200">
                                 {selectedCall.callerMatch.matchedTicketIds.join(', ')}
                               </span>
@@ -983,13 +983,13 @@ function CallConsoleContent({
                       ))}
 
                       {allowedActions(selectedCall.status).length === 0 && (
-                        <div className="text-xs text-cockpit-500">
+                        <div className="text-xs text-cockpit-400">
                           Call is {selectedCall.status}. No further mock actions available.
                         </div>
                       )}
                     </div>
 
-                    <div className="text-[10px] text-cockpit-500">
+                    <div className="text-[10px] text-cockpit-400">
                       Allowed transitions: ringing → answered/missed • answered → on_hold/ended •
                       on_hold → answered/ended
                     </div>
@@ -1009,7 +1009,7 @@ function CallConsoleContent({
                 >
                   <div className="space-y-2">
                     {!linkedSession ? (
-                      <div className="text-xs text-cockpit-500">
+                      <div className="text-xs text-cockpit-400">
                         No support session is linked to this call. Use the Call Simulator in the
                         Support Cockpit to auto-create or link a session.
                       </div>
@@ -1023,11 +1023,11 @@ function CallConsoleContent({
                         </div>
                         <div className="space-y-1 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-cockpit-500">Title</span>
+                            <span className="text-cockpit-400">Title</span>
                             <span className="text-cockpit-200">{linkedSession.title}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-cockpit-500">Status</span>
+                            <span className="text-cockpit-400">Status</span>
                             <Badge
                               variant={linkedSession.status === 'open' ? 'success' : 'default'}
                               className="text-[10px]"
@@ -1036,11 +1036,11 @@ function CallConsoleContent({
                             </Badge>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-cockpit-500">Priority</span>
+                            <span className="text-cockpit-400">Priority</span>
                             <span className="text-cockpit-200">{linkedSession.priority}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-cockpit-500">Tickets</span>
+                            <span className="text-cockpit-400">Tickets</span>
                             <span className="text-cockpit-200">
                               {linkedSession.linkedTicketIds.length}
                             </span>
@@ -1075,7 +1075,7 @@ function CallConsoleContent({
                     </div>
 
                     {!linkedSession ? (
-                      <div className="text-xs text-cockpit-500">
+                      <div className="text-xs text-cockpit-400">
                         Link a support session to generate a greeting suggestion.
                       </div>
                     ) : (
@@ -1192,7 +1192,7 @@ function CallConsoleContent({
                     </div>
 
                     {!linkedSession ? (
-                      <div className="text-xs text-cockpit-500">
+                      <div className="text-xs text-cockpit-400">
                         Link a support session to capture mock screen observations.
                       </div>
                     ) : (
@@ -1216,7 +1216,7 @@ function CallConsoleContent({
                               </>
                             ) : (
                               <>
-                                <Shield size={14} className="text-cockpit-500" />
+                                <Shield size={14} className="text-cockpit-400" />
                                 <span className="text-xs font-medium text-cockpit-400">
                                   Sharing: inactive
                                 </span>
@@ -1615,14 +1615,14 @@ function CallConsoleContent({
                         </div>
 
                         {observationsLoading && observations.length === 0 && (
-                          <div className="flex items-center gap-2 text-xs text-cockpit-500">
+                          <div className="flex items-center gap-2 text-xs text-cockpit-400">
                             <Loader2 size={12} className="animate-spin" />
                             Loading observations...
                           </div>
                         )}
 
                         {observations.length === 0 && !observationsLoading && (
-                          <div className="text-xs text-cockpit-500">
+                          <div className="text-xs text-cockpit-400">
                             No mock screen observations. Capture one above to add deterministic mock
                             metadata.
                           </div>
@@ -1669,7 +1669,7 @@ function CallConsoleContent({
                                     </Badge>
                                   )}
                                 </div>
-                                <span className="text-[10px] text-cockpit-500">
+                                <span className="text-[10px] text-cockpit-400">
                                   {new Date(obs.createdAt).toLocaleTimeString()}
                                 </span>
                               </div>
@@ -1759,7 +1759,7 @@ function CallConsoleContent({
                                 </div>
                               )}
 
-                              <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-cockpit-500">
+                              <div className="mt-1 flex flex-wrap gap-1 text-[10px] text-cockpit-400">
                                 <span>Mock/dev-only</span>
                                 <span>•</span>
                                 <span>No real screen capture</span>
@@ -1813,14 +1813,14 @@ function CallConsoleContent({
                     </div>
 
                     {recordingsLoading && recordings.length === 0 && (
-                      <div className="flex items-center gap-2 text-xs text-cockpit-500">
+                      <div className="flex items-center gap-2 text-xs text-cockpit-400">
                         <Loader2 size={12} className="animate-spin" />
                         Loading recordings...
                       </div>
                     )}
 
                     {recordings.length === 0 && !recordingsLoading && (
-                      <div className="text-xs text-cockpit-500">
+                      <div className="text-xs text-cockpit-400">
                         No mock recordings attached. Click "Attach mock recording" to add
                         deterministic mock metadata.
                       </div>
@@ -1845,7 +1845,7 @@ function CallConsoleContent({
                                 {rec.status}
                               </Badge>
                             </div>
-                            <span className="text-[10px] text-cockpit-500">
+                            <span className="text-[10px] text-cockpit-400">
                               {rec.durationSeconds ?? 0}s
                             </span>
                           </div>
@@ -1886,7 +1886,7 @@ function CallConsoleContent({
                             </div>
                           )}
 
-                          <div className="mt-1 text-[10px] text-cockpit-500">
+                          <div className="mt-1 text-[10px] text-cockpit-400">
                             {rec.complianceDisclaimer}
                           </div>
                         </div>
@@ -1903,7 +1903,7 @@ function CallConsoleContent({
                 >
                   <div className="space-y-2">
                     {timeline.length === 0 ? (
-                      <div className="text-xs text-cockpit-500">
+                      <div className="text-xs text-cockpit-400">
                         No timeline events yet. Simulate a call and perform actions to build the
                         timeline.
                       </div>
@@ -1923,7 +1923,7 @@ function CallConsoleContent({
                                     <User size={12} className="text-emerald-400" />
                                   )}
                                   {item.type === 'caller_no_match' && (
-                                    <User size={12} className="text-cockpit-500" />
+                                    <User size={12} className="text-cockpit-400" />
                                   )}
                                   {item.type === 'session_linked' && (
                                     <Link2 size={12} className="text-emerald-400" />
@@ -1956,13 +1956,13 @@ function CallConsoleContent({
                                     <Ticket size={12} className="text-cockpit-400" />
                                   )}
                                   {item.type === 'audit_event' && (
-                                    <Clock size={12} className="text-cockpit-500" />
+                                    <Clock size={12} className="text-cockpit-400" />
                                   )}
                                   <span className="text-xs font-medium text-cockpit-200">
                                     {item.title}
                                   </span>
                                 </div>
-                                <span className="text-[10px] text-cockpit-500">
+                                <span className="text-[10px] text-cockpit-400">
                                   {new Date(item.timestamp).toLocaleTimeString()}
                                 </span>
                               </div>

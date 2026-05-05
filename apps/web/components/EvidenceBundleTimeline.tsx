@@ -33,7 +33,7 @@ function provenanceLabel(eventType: string): string {
 export function EvidenceBundleTimeline({ bundle }: EvidenceBundleTimelineProps) {
   if (!bundle || bundle.auditTimeline.length === 0) {
     return (
-      <div className="py-6 text-center text-sm text-cockpit-500">
+      <div className="py-6 text-center text-sm text-cockpit-400">
         No audit timeline events available.
       </div>
     );
@@ -65,7 +65,7 @@ export function EvidenceBundleTimeline({ bundle }: EvidenceBundleTimelineProps) 
                 <span className="rounded bg-cockpit-800 px-1.5 py-0.5 text-[10px] text-cockpit-400">
                   {provenanceLabel(event.eventType)}
                 </span>
-                <span className="text-[10px] text-cockpit-500">
+                <span className="text-[10px] text-cockpit-400">
                   {new Date(event.createdAt).toLocaleString()}
                 </span>
               </div>
@@ -80,7 +80,7 @@ export function EvidenceBundleTimeline({ bundle }: EvidenceBundleTimelineProps) 
                 </span>
               </div>
               {Object.keys(event.metadataSummary).length > 0 && (
-                <div className="mt-1 rounded bg-cockpit-950 px-2 py-1 text-[10px] text-cockpit-500">
+                <div className="mt-1 rounded bg-cockpit-950 px-2 py-1 text-[10px] text-cockpit-400">
                   {JSON.stringify(event.metadataSummary)}
                 </div>
               )}

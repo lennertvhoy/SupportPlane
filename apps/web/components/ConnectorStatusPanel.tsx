@@ -108,7 +108,7 @@ export function ConnectorStatusPanel() {
             instance. Fixture = deterministic demo data. Unconfigured = scaffolding only.
           </div>
         </InfoTooltip>
-        <span className="text-xs text-cockpit-500 ml-auto">Tenant-scoped</span>
+        <span className="text-xs text-cockpit-400 ml-auto">Tenant-scoped</span>
       </div>
 
       {error && (
@@ -132,7 +132,7 @@ export function ConnectorStatusPanel() {
                   <span className="text-xs px-2 py-0.5 rounded-full bg-cockpit-900/60 border border-current opacity-80">
                     {cfg.label}
                   </span>
-                  <span className="text-xs opacity-70">{transportLabel(conn.transport)}</span>
+                  <span className="text-xs text-cockpit-400">{transportLabel(conn.transport)}</span>
                   <InfoTooltip size={11}>{cfg.help}</InfoTooltip>
                 </div>
               </div>
@@ -175,7 +175,7 @@ export function ConnectorStatusPanel() {
         })}
       </div>
 
-      <div className="mt-3 text-xs text-cockpit-500 border-t border-cockpit-700/50 pt-2">
+      <div className="mt-3 text-xs text-cockpit-400 border-t border-cockpit-700/50 pt-2">
         All connector credentials are tenant-scoped. External writeback requires explicit policy
         approval.
       </div>

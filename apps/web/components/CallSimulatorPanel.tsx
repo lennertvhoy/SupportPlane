@@ -127,7 +127,7 @@ export function CallSimulatorPanel({
             className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100 focus:border-accent focus:outline-none"
             placeholder="e.g. +32 3 555 0101"
           />
-          <div className="text-[10px] text-cockpit-500">
+          <div className="text-[10px] text-cockpit-400">
             Try: +32 3 555 0101, 03 555 01 01, or 0032 3 555 0101
           </div>
         </div>
@@ -222,12 +222,12 @@ export function CallSimulatorPanel({
 
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
-                <span className="text-cockpit-500">Raw number</span>
+                <span className="text-cockpit-400">Raw number</span>
                 <span className="text-cockpit-200">{callResponse.callEvent.caller.rawNumber}</span>
               </div>
               {callResponse.callEvent.caller.normalizedNumber && (
                 <div className="flex justify-between">
-                  <span className="text-cockpit-500">Normalized</span>
+                  <span className="text-cockpit-400">Normalized</span>
                   <span className="font-medium text-cockpit-200">
                     {callResponse.callEvent.caller.normalizedNumber}
                   </span>
@@ -236,20 +236,20 @@ export function CallSimulatorPanel({
               {callResponse.callEvent.callerMatch && (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-cockpit-500">Match status</span>
+                    <span className="text-cockpit-400">Match status</span>
                     <span className="text-cockpit-200">
                       {callResponse.callEvent.callerMatch.status}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-cockpit-500">Confidence</span>
+                    <span className="text-cockpit-400">Confidence</span>
                     <span className="text-cockpit-200">
                       {callResponse.callEvent.callerMatch.confidence}
                     </span>
                   </div>
                   {callResponse.callEvent.callerMatch.customerName && (
                     <div className="flex justify-between">
-                      <span className="text-cockpit-500">Customer</span>
+                      <span className="text-cockpit-400">Customer</span>
                       <span className="text-cockpit-200">
                         {callResponse.callEvent.callerMatch.customerName}
                       </span>
@@ -258,7 +258,7 @@ export function CallSimulatorPanel({
                   {callResponse.callEvent.callerMatch.matchedTicketIds &&
                     callResponse.callEvent.callerMatch.matchedTicketIds.length > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-cockpit-500">Recent tickets</span>
+                        <span className="text-cockpit-400">Recent tickets</span>
                         <span className="text-cockpit-200">
                           {callResponse.callEvent.callerMatch.matchedTicketIds.join(', ')}
                         </span>
@@ -311,7 +311,7 @@ export function CallSimulatorPanel({
               </div>
             ) : (
               !callResponse.createdSession && (
-                <div className="text-[10px] text-cockpit-500">
+                <div className="text-[10px] text-cockpit-400">
                   Select or create a session to link this call.
                 </div>
               )
@@ -329,15 +329,15 @@ export function CallSimulatorPanel({
               >
                 <div className="flex items-center justify-between">
                   <span className="text-cockpit-300">{e.eventType}</span>
-                  <span className="text-cockpit-500">
+                  <span className="text-cockpit-400">
                     {new Date(e.createdAt).toLocaleTimeString()}
                   </span>
                 </div>
                 {typeof e.metadata.normalizedNumber === 'string' && (
-                  <div className="text-cockpit-500">{e.metadata.normalizedNumber}</div>
+                  <div className="text-cockpit-400">{e.metadata.normalizedNumber}</div>
                 )}
                 {typeof e.metadata.matchStatus === 'string' && (
-                  <div className="text-cockpit-500">match: {e.metadata.matchStatus}</div>
+                  <div className="text-cockpit-400">match: {e.metadata.matchStatus}</div>
                 )}
               </div>
             ))}

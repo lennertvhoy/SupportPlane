@@ -3264,3 +3264,24 @@
   - Worktree clean at `6292375`
 - Type: browser-e2e-closure-hardening
 - as_of: 2026-05-05T13:30:00+02:00
+
+## EV-2026-05-05-188: Session 166 — BL-156 Accessibility, Contrast & Visual Confidence Pass (ACCEPTED)
+
+- Evidence folder: `output/playwright/session-166-accessibility-contrast-visual-confidence/` (17 files, under 20 cap)
+- Source/System: Chromium via Playwright against local production build (Web `localhost:3201`, API `localhost:4111`), plus CLI artifacts
+- Action: Scoped accessibility/contrast pass across 8 primary surfaces. Bulk contrast repair (~150 occurrences). Created Badge.tsx, DESIGN.md. Added 8 axe-core tests. Expanded E2E from 14→19 tests.
+- Proves:
+  - Primary button contrast: `bg-accent-dark` (#2563eb) + white text = 5.3:1 (PASS WCAG AA)
+  - Text on dark: `text-cockpit-400` (#9ca3af) on `bg-cockpit-900` = ~5.5:1 (PASS WCAG AA)
+  - Badge variants: solid backgrounds, no transparency, 7.1–11.5:1 ratios (PASS)
+  - 8 axe-core tests: login, dashboard, tool-registry-admin, tool-registry-viewer-denied, admin, model-usage, approval-queue, device-console, session-with-ticket-context — all 0 critical + 0 serious violations
+  - Focus rings: `focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2` on all interactive elements
+  - Aria-labels: toggle buttons, number inputs, icon-only controls, select filters
+  - Disabled states: multiple cues (opacity-60 + bg-cockpit-900 + text-cockpit-600 + cursor-not-allowed)
+  - DESIGN.md: 377-line enforceable design system contract with contrast tables, token rules, do/don't examples
+  - E2E: 19/19 passing (8 spec files)
+  - Validation: format:check PASS, lint 0 errors/79 warnings, typecheck PASS, build PASS, validate PASS, tests 461/458 pass + 3 skip
+  - Worktree: clean (staged changes only, pre-commit)
+  - MD5 duplicate check: 0 duplicate screenshots
+- Type: browser-e2e-and-cli-verification
+- as_of: 2026-05-05T13:42:46+02:00

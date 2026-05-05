@@ -35,7 +35,7 @@ export function DemoGuidePanel() {
         </div>
         <button
           onClick={() => setDismissed(true)}
-          className="text-cockpit-500 hover:text-cockpit-300"
+          className="text-cockpit-400 hover:text-cockpit-300"
           title="Dismiss guide"
         >
           <X size={14} />
@@ -101,7 +101,7 @@ export function DemoGuidePanel() {
             Explore <strong>Admin</strong> → governance, policies, audit trail
           </li>
         </ol>
-        <p className="mt-1 text-cockpit-500">
+        <p className="mt-1 text-cockpit-400">
           For the full 20-30 minute guided test, see{' '}
           <code className="bg-cockpit-900 px-1 rounded">docs/user-testing/TEST_SCRIPT.md</code>.
         </p>
@@ -120,7 +120,7 @@ function InfoTooltip({ text }: { text: string }) {
         onMouseLeave={() => setOpen(false)}
         onFocus={() => setOpen(true)}
         onBlur={() => setOpen(false)}
-        className="inline-flex items-center text-cockpit-500 hover:text-blue-400 focus:outline-none"
+        className="inline-flex items-center text-cockpit-400 hover:text-blue-400 focus:outline-none"
         aria-label="More information"
       >
         <HelpCircle size={10} />

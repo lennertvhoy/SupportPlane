@@ -58,15 +58,15 @@ function UsersPageContent({
       subtitle="Tenant user directory."
     >
       <div className="mx-auto max-w-4xl space-y-4">
-        {loading && <p className="text-xs text-cockpit-500">Loading...</p>}
+        {loading && <p className="text-xs text-cockpit-400">Loading...</p>}
         {error && <p className="text-xs text-red-400">{error}</p>}
 
         <div className="rounded border border-cockpit-700 bg-cockpit-900/50 p-3">
           <div className="mb-2 text-xs font-medium text-cockpit-300">
-            Users <span className="text-cockpit-500">({users.length})</span>
+            Users <span className="text-cockpit-400">({users.length})</span>
           </div>
           {users.length === 0 ? (
-            <div className="text-xs text-cockpit-500">No users found.</div>
+            <div className="text-xs text-cockpit-400">No users found.</div>
           ) : (
             <div className="space-y-2">
               {users.map((u) => (
@@ -76,7 +76,7 @@ function UsersPageContent({
                 >
                   <div>
                     <div className="text-xs font-medium text-cockpit-100">{u.name}</div>
-                    <div className="text-[10px] text-cockpit-500">
+                    <div className="text-[10px] text-cockpit-400">
                       {u.email} · {u.id.slice(0, 8)}
                     </div>
                   </div>

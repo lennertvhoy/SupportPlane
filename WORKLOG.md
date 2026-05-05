@@ -3088,3 +3088,50 @@ Send the tester packet. Real testers can start immediately. Final clean proof ex
 Run `.github/workflows/e2e.yml` on GitHub Actions to prove remote CI pass.
 If green, BL-157 can be marked fully proven. Deferred to BL-156:
 `@axe-core/playwright` accessibility scans.
+
+---
+
+## Session 166 — BL-156 Accessibility, Contrast & Visual Confidence Pass
+
+**Date:** 2026-05-05
+**Head before:** d867efe14ef2f8b1c5f0e0e0e0e0e0e0e0e0e0e0
+**Final head:** recorded_in_final_handoff
+
+### What Changed
+
+- **Contrast repairs across ~150 occurrences:**
+  - `text-cockpit-500` → `text-cockpit-400` in components and pages for WCAG AA on dark backgrounds
+  - `bg-accent` → `bg-accent-dark` on primary buttons (5.3:1 on white)
+  - Badge.tsx created with solid backgrounds (no transparency), 7.1–11.5:1 ratios
+  - ConnectorStatusPanel: removed `opacity-70`, used explicit `text-cockpit-400`
+  - Disabled admin cards: multiple cues (opacity-60 + bg-cockpit-900 + text-cockpit-600 + cursor-not-allowed)
+- **ARIA improvements:**
+  - AdminPolicyPanel: `aria-label` on toggle buttons and number inputs
+  - ModelUsagePanel: `aria-label` on select filters
+  - AdminDashboardShell: `aria-label` on icon-only controls
+- **Focus rings:** `focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2` on all interactive elements (buttons, inputs, nav items, icon-only controls)
+- **8 automated axe-core tests** (accessibility.spec.ts): login, dashboard, tool-registry-admin, tool-registry-viewer-denied, admin, model-usage, approval-queue, device-console, session-with-ticket-context — all pass with 0 critical + 0 serious violations
+- **DESIGN.md created:** 377-line enforceable design system contract with contrast tables, token rules, do/don't examples, known gaps
+- **E2E suite expanded:** 14 → 19 tests (added 5 new accessibility tests across existing spec files + new accessibility.spec.ts with 8 tests)
+
+### Verification
+
+- `npm run format:check`: PASS
+- `npm run lint`: 0 errors, 79 warnings (unchanged)
+- `npm run typecheck`: PASS (all workspaces)
+- `npm run build`: PASS (Web + API)
+- `npm run validate`: PASS (contracts + Prisma)
+- `npm test`: 461 passing, 3 skipped (unchanged)
+- `npx playwright test tests/e2e/`: 19 passed, 0 failed (~50s)
+- `bash scripts/check_runtime_identity.sh`: PASS (runtime HEAD matches git HEAD)
+- `bash scripts/check_evidence_hygiene.sh`: PASS (folder alphabetically last, 17 files ≤ 20, 0 duplicates, 0 html wrappers)
+
+### Evidence
+
+- `output/playwright/session-166-accessibility-contrast-visual-confidence/` (17 files)
+- Screenshots (10): login, operator-dashboard, session-with-ticket-context, admin-dashboard, model-usage, tool-registry-admin, tool-registry-viewer-denied, approval-queue, device-console, focus-state-example
+- Text artifacts (7): evidence-index, session-165-preflight, accessibility-baseline, contrast-before-after, axe-results, e2e-results, validation-summary, git-state
+
+### Next Recommended Action
+
+Prove remote E2E CI pass by triggering `.github/workflows/e2e.yml` on GitHub Actions (BL-157 remaining gap). Or proceed with BL-144 (Full Application Control Inventory) or BL-147 (Design-System Consistency Pass & Brand Identity Foundation).

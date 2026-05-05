@@ -52,7 +52,7 @@ function AdminPageContent({
                 key={card.href}
                 onClick={() => router.push(card.href)}
                 disabled={disabled}
-                className={`flex flex-col items-center gap-2 rounded-lg border bg-cockpit-900/60 p-4 text-center transition-colors hover:bg-cockpit-800 ${card.color} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`flex flex-col items-center gap-2 rounded-lg border bg-cockpit-900/60 p-4 text-center transition-colors hover:bg-cockpit-800 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none ${card.color} ${disabled ? 'bg-cockpit-900 text-cockpit-600 cursor-not-allowed opacity-60' : ''}`}
               >
                 <Icon size={20} className="text-cockpit-300" />
                 <span className="text-xs font-medium text-cockpit-200">{card.label}</span>

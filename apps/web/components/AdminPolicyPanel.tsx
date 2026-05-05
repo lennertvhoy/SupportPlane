@@ -174,7 +174,7 @@ export function AdminPolicyPanel({ identity }: { identity: AuthIdentity }) {
       headerRight={<Shield size={14} className="text-cockpit-400" />}
     >
       <div className="space-y-3">
-        {loading && <p className="text-xs text-cockpit-500">Loading policies...</p>}
+        {loading && <p className="text-xs text-cockpit-400">Loading policies...</p>}
         {error && <p className="text-xs text-red-400">{error}</p>}
 
         {/* Summary badges */}
@@ -272,7 +272,7 @@ export function AdminPolicyPanel({ identity }: { identity: AuthIdentity }) {
         {activeTab === 'connector' && connectorPolicy && (
           <div className="space-y-2 rounded border border-cockpit-700 bg-cockpit-800/40 p-3">
             <div className="text-xs font-semibold text-cockpit-100">{connectorPolicy.name}</div>
-            <div className="text-[10px] text-cockpit-500">
+            <div className="text-[10px] text-cockpit-400">
               Installation: {connectorInstallationId.slice(0, 8)}...
             </div>
             <ToggleRow
@@ -453,10 +453,10 @@ export function AdminPolicyPanel({ identity }: { identity: AuthIdentity }) {
         )}
 
         {saveError && <p className="text-xs text-red-400">{saveError}</p>}
-        {saving && <p className="text-xs text-cockpit-500">Saving...</p>}
+        {saving && <p className="text-xs text-cockpit-400">Saving...</p>}
 
         {!canWrite && (
-          <p className="text-[10px] text-cockpit-500">
+          <p className="text-[10px] text-cockpit-400">
             <Eye size={10} className="inline mr-1" />
             View-only. Admin role required to modify policy.
           </p>
@@ -485,14 +485,14 @@ export function AdminPolicyPanel({ identity }: { identity: AuthIdentity }) {
                   className="flex items-center justify-between"
                 >
                   <span className="text-cockpit-300">{p.policyName}</span>
-                  <span className="text-cockpit-500">
+                  <span className="text-cockpit-400">
                     v{p.version} • {p.enabled ? 'Enabled' : 'Disabled'}
                   </span>
                 </div>
               ))}
             </div>
             {auditPreview.disclaimers.map((d, i) => (
-              <div key={i} className="text-cockpit-500">
+              <div key={i} className="text-cockpit-400">
                 {d}
               </div>
             ))}
@@ -525,6 +525,9 @@ function ToggleRow({
         className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
           value ? 'bg-emerald-600' : 'bg-cockpit-600'
         } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+        aria-label={label}
+        role="switch"
+        aria-checked={value}
       >
         <span
           className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${value ? 'translate-x-5' : 'translate-x-1'}`}
@@ -575,6 +578,7 @@ function SelectRow({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 disabled:opacity-50"
+        aria-label={label}
       >
         {options.map((o) => (
           <option key={o} value={o}>
@@ -615,6 +619,7 @@ function NumberRow({
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-20 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-[10px] text-cockpit-100 text-center disabled:opacity-50"
+        aria-label={label}
       />
     </div>
   );

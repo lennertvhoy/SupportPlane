@@ -28,7 +28,7 @@ function GdprPageContent({
           </button>
           <div>
             <h1 className="text-lg font-semibold">GDPR Requests</h1>
-            <p className="text-xs text-cockpit-500">Data subject export and delete dry-run.</p>
+            <p className="text-xs text-cockpit-400">Data subject export and delete dry-run.</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

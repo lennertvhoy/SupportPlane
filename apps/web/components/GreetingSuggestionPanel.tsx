@@ -42,7 +42,7 @@ export function GreetingSuggestionPanel({
   return (
     <Panel title="Greeting Suggestion" headerRight={<Badge variant="warning">Mock AI</Badge>}>
       {!session ? (
-        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-500">
+        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-400">
           Select a session to generate a greeting suggestion.
         </div>
       ) : (
@@ -115,7 +115,7 @@ export function GreetingSuggestionPanel({
                 <div className="rounded border border-cockpit-600 bg-cockpit-950 p-3 text-sm text-cockpit-100">
                   {suggestion.suggestion.greetingText}
                 </div>
-                <div className="mt-2 flex items-center gap-1 text-[10px] text-cockpit-500">
+                <div className="mt-2 flex items-center gap-1 text-[10px] text-cockpit-400">
                   <AlertTriangle size={10} />
                   Not spoken or sent automatically
                 </div>

@@ -14,7 +14,7 @@ export default function AuditExplorerPage() {
           </div>
           <div>
             <h1 className="text-sm font-bold text-cockpit-100">Audit Explorer</h1>
-            <p className="text-[10px] text-cockpit-500">Filtered audit event search</p>
+            <p className="text-[10px] text-cockpit-400">Filtered audit event search</p>
           </div>
         </div>
         <button

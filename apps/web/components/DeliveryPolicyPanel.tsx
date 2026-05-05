@@ -153,11 +153,11 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
   return (
     <Panel title="Delivery Policy" headerRight={<Shield size={14} className="text-cockpit-400" />}>
       <div className="space-y-3">
-        {loading && <p className="text-xs text-cockpit-500">Loading policies...</p>}
+        {loading && <p className="text-xs text-cockpit-400">Loading policies...</p>}
         {error && <p className="text-xs text-red-400">{error}</p>}
 
         {policies.length === 0 && !loading && (
-          <p className="text-xs text-cockpit-500">No delivery policies configured.</p>
+          <p className="text-xs text-cockpit-400">No delivery policies configured.</p>
         )}
 
         {policies.length > 0 && (
@@ -196,7 +196,7 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
                     ) : (
                       <Badge variant="warning">Disabled</Badge>
                     )}
-                    <span className="text-[10px] text-cockpit-500">
+                    <span className="text-[10px] text-cockpit-400">
                       v{selectedPolicy.policyVersion}
                     </span>
                   </div>
@@ -312,10 +312,10 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
                 </div>
 
                 {saveError && <p className="text-xs text-red-400">{saveError}</p>}
-                {saving && <p className="text-xs text-cockpit-500">Saving...</p>}
+                {saving && <p className="text-xs text-cockpit-400">Saving...</p>}
 
                 {!canWrite && (
-                  <p className="text-[10px] text-cockpit-500">
+                  <p className="text-[10px] text-cockpit-400">
                     <Eye size={10} className="inline mr-1" />
                     View-only. Admin role required to modify policy.
                   </p>
@@ -357,7 +357,7 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
                       {validation.decision.decision}
                     </div>
                     <div className="mt-1 text-cockpit-400">{validation.decision.reason}</div>
-                    <div className="mt-1 text-cockpit-500">
+                    <div className="mt-1 text-cockpit-400">
                       Mode: {validation.decision.mode} • Version:{' '}
                       {validation.decision.policyVersion}
                     </div>
@@ -395,7 +395,7 @@ export function DeliveryPolicyPanel({ identity }: { identity: AuthIdentity }) {
                           ? 'Action type not supported by this connector. Sandbox writeback disabled for this action.'
                           : 'Sandbox writeback disabled; production writeback blocked.'}
                     </div>
-                    <div className="text-cockpit-500">Policy: {readiness.policyDecision}</div>
+                    <div className="text-cockpit-400">Policy: {readiness.policyDecision}</div>
                   </div>
                 )}
               </div>

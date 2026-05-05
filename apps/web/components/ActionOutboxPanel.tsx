@@ -128,7 +128,7 @@ export function ActionOutboxPanel({
         </div>
 
         {!session && (
-          <div className="text-xs text-cockpit-500">
+          <div className="text-xs text-cockpit-400">
             Select a session to prepare a support action.
           </div>
         )}

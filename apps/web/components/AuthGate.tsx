@@ -92,7 +92,7 @@ export function AuthGate({
             <ShieldCheck className="h-5 w-5 text-accent" />
             <div>
               <h1 className="text-sm font-semibold text-cockpit-100">SupportPlane</h1>
-              <p className="text-xs text-cockpit-500">
+              <p className="text-xs text-cockpit-400">
                 Governed AI support cockpit — local sandbox demo
               </p>
             </div>
@@ -117,7 +117,7 @@ export function AuthGate({
               <div className="w-full border-t border-cockpit-700" />
             </div>
             <div className="relative flex justify-center text-[10px] uppercase">
-              <span className="bg-cockpit-900 px-2 text-cockpit-500">or local auth</span>
+              <span className="bg-cockpit-900 px-2 text-cockpit-400">or local auth</span>
             </div>
           </div>
 
@@ -125,7 +125,7 @@ export function AuthGate({
             <label className="mb-3 block text-xs text-cockpit-300">
               Tenant
               <input
-                className="mt-1 w-full rounded border border-cockpit-700 bg-white px-3 py-2 text-black"
+                className="mt-1 w-full rounded border border-cockpit-700 bg-white px-3 py-2 text-black focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
                 value={tenantSlug}
                 onChange={(e) => setTenantSlug(e.target.value)}
               />
@@ -133,7 +133,7 @@ export function AuthGate({
             <label className="mb-3 block text-xs text-cockpit-300">
               Email
               <input
-                className="mt-1 w-full rounded border border-cockpit-700 bg-white px-3 py-2 text-black"
+                className="mt-1 w-full rounded border border-cockpit-700 bg-white px-3 py-2 text-black focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -142,7 +142,7 @@ export function AuthGate({
               Password
               <input
                 type="password"
-                className="mt-1 w-full rounded border border-cockpit-700 bg-white px-3 py-2 text-black"
+                className="mt-1 w-full rounded border border-cockpit-700 bg-white px-3 py-2 text-black focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -154,17 +154,17 @@ export function AuthGate({
             )}
             <button
               type="submit"
-              className="w-full rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent/90"
+              className="w-full rounded bg-accent-dark px-3 py-2 text-sm font-medium text-white hover:bg-accent-dark/90 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
             >
               Log in
             </button>
           </form>
 
-          <p className="mt-3 text-[11px] text-cockpit-500">
+          <p className="mt-3 text-[11px] text-cockpit-400">
             Seeded local password: supportplane-demo
           </p>
           {oidcEnabled && (
-            <p className="mt-1 text-[11px] text-cockpit-500">
+            <p className="mt-1 text-[11px] text-cockpit-400">
               Keycloak local sandbox · OIDC login enabled · Not production SSO
             </p>
           )}

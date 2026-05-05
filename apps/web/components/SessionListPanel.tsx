@@ -52,7 +52,7 @@ export function SessionListPanel({
           onClick={() => setShowForm((s) => !s)}
           disabled={!canCreate}
           title={canCreate ? 'Create session' : 'Viewer role cannot create sessions'}
-          className="inline-flex items-center gap-1 rounded bg-accent px-2 py-1 text-xs font-medium text-white hover:bg-accent-dark disabled:cursor-not-allowed disabled:bg-cockpit-700 disabled:text-cockpit-400"
+          className="inline-flex items-center gap-1 rounded bg-accent-dark px-2 py-1 text-xs font-medium text-white hover:bg-accent-dark/90 disabled:cursor-not-allowed disabled:bg-cockpit-900 disabled:text-cockpit-600 disabled:opacity-60 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
         >
           <Plus size={14} />
           New
@@ -66,13 +66,13 @@ export function SessionListPanel({
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             placeholder="Session title"
-            className="w-full rounded border border-cockpit-600 bg-cockpit-800 px-2 py-1 text-sm text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+            className="w-full rounded border border-cockpit-600 bg-cockpit-800 px-2 py-1 text-sm text-cockpit-100 placeholder:text-cockpit-400 focus:border-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950"
           />
           <input
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
             placeholder="Description (optional)"
-            className="mt-2 w-full rounded border border-cockpit-600 bg-cockpit-800 px-2 py-1 text-sm text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+            className="mt-2 w-full rounded border border-cockpit-600 bg-cockpit-800 px-2 py-1 text-sm text-cockpit-100 placeholder:text-cockpit-400 focus:border-accent focus:outline-none"
           />
           <div className="mt-2 flex items-center gap-2">
             <button
@@ -83,7 +83,7 @@ export function SessionListPanel({
                 setNewDesc('');
                 setShowForm(false);
               }}
-              className="rounded bg-accent px-3 py-1 text-xs font-medium text-white hover:bg-accent-dark"
+              className="rounded bg-accent-dark px-3 py-1 text-xs font-medium text-white hover:bg-accent-dark/90 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
             >
               Create
             </button>
@@ -107,7 +107,7 @@ export function SessionListPanel({
       {sessions.length > 0 && (
         <div className="mb-3 space-y-2">
           <div className="flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1">
-            <Search size={12} className="text-cockpit-500 shrink-0" />
+            <Search size={12} className="text-cockpit-400 shrink-0" />
             <input
               type="text"
               value={searchText}
@@ -118,7 +118,7 @@ export function SessionListPanel({
             {searchText && (
               <button
                 onClick={() => setSearchText('')}
-                className="text-cockpit-500 hover:text-cockpit-300"
+                className="text-cockpit-400 hover:text-cockpit-300"
               >
                 <X size={12} />
               </button>
@@ -131,8 +131,8 @@ export function SessionListPanel({
                 onClick={() => setActiveFilter(activeFilter === f ? null : f)}
                 className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
                   activeFilter === f
-                    ? 'bg-accent text-white'
-                    : 'bg-cockpit-800 text-cockpit-400 hover:bg-cockpit-700 hover:text-cockpit-200'
+                    ? 'bg-accent-dark text-white'
+                    : 'bg-cockpit-800 text-cockpit-400 hover:bg-cockpit-700 hover:text-cockpit-200 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none'
                 }`}
               >
                 <Filter size={8} />
@@ -156,15 +156,15 @@ export function SessionListPanel({
           Loading sessions...
         </div>
       ) : sessions.length === 0 ? (
-        <div className="py-6 text-center text-sm text-cockpit-500">
-          <MessageSquare size={24} className="mx-auto mb-2 opacity-50" />
+        <div className="py-6 text-center text-sm text-cockpit-400">
+          <MessageSquare size={24} className="mx-auto mb-2 text-cockpit-400" />
           No sessions yet.
           <br />
           Create one to get started.
         </div>
       ) : filteredSessions.length === 0 ? (
-        <div className="py-6 text-center text-sm text-cockpit-500">
-          <Search size={24} className="mx-auto mb-2 opacity-50" />
+        <div className="py-6 text-center text-sm text-cockpit-400">
+          <Search size={24} className="mx-auto mb-2 text-cockpit-400" />
           No sessions match your search or filter.
           <br />
           <button
@@ -193,7 +193,7 @@ export function SessionListPanel({
                   <span className="truncate font-medium">{s.title}</span>
                   <Badge variant={statusVariant(s.status)}>{s.status}</Badge>
                 </div>
-                <div className="mt-1 flex items-center gap-2 text-xs text-cockpit-500">
+                <div className="mt-1 flex items-center gap-2 text-xs text-cockpit-400">
                   <span>{s.id.slice(0, 8)}</span>
                   <span>•</span>
                   <span>{s.priority}</span>

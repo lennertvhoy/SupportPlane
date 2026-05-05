@@ -47,7 +47,7 @@ export function CaseTimelinePanel({ session }: { session?: SupportSession }) {
   return (
     <Panel title="Case Timeline">
       {!session && (
-        <div className="text-xs text-cockpit-500">Select a session to view the case timeline.</div>
+        <div className="text-xs text-cockpit-400">Select a session to view the case timeline.</div>
       )}
       {session && loading && (
         <div className="flex items-center gap-2 text-xs text-cockpit-400">
@@ -63,7 +63,7 @@ export function CaseTimelinePanel({ session }: { session?: SupportSession }) {
             {item.description && (
               <div className="text-[11px] text-cockpit-400">{item.description}</div>
             )}
-            <div className="text-[10px] text-cockpit-500">
+            <div className="text-[10px] text-cockpit-400">
               {new Date(item.timestamp).toLocaleString()}
             </div>
             {item.type.startsWith('audit:') && (

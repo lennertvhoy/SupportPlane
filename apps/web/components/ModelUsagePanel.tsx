@@ -93,6 +93,7 @@ export function ModelUsagePanel({
             value={filterFeature}
             onChange={(e) => setFilterFeature(e.target.value)}
             className="rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100"
+            aria-label="Filter by feature"
           >
             <option value="">All features</option>
             <option value="draft">draft</option>
@@ -106,6 +107,7 @@ export function ModelUsagePanel({
             value={filterProvider}
             onChange={(e) => setFilterProvider(e.target.value)}
             className="rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100"
+            aria-label="Filter by provider"
           >
             <option value="">All providers</option>
             <option value="mock">mock</option>
@@ -119,6 +121,7 @@ export function ModelUsagePanel({
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="rounded border border-cockpit-600 bg-cockpit-900 px-2 py-1 text-xs text-cockpit-100"
+            aria-label="Filter by status"
           >
             <option value="">All statuses</option>
             <option value="succeeded">succeeded</option>
@@ -128,7 +131,7 @@ export function ModelUsagePanel({
           </select>
           <button
             onClick={fetchData}
-            className="rounded bg-accent px-2 py-1 text-xs font-medium text-white"
+            className="rounded bg-accent-dark px-2 py-1 text-xs font-medium text-white hover:bg-accent-dark/90 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
           >
             Refresh
           </button>
@@ -177,7 +180,7 @@ export function ModelUsagePanel({
         )}
 
         {!loading && logs.length === 0 && !error && (
-          <div className="py-6 text-center text-sm text-cockpit-500">No model usage logs yet.</div>
+          <div className="py-6 text-center text-sm text-cockpit-400">No model usage logs yet.</div>
         )}
 
         {!loading && logs.length > 0 && (
@@ -219,7 +222,7 @@ export function ModelUsagePanel({
                       </Badge>
                     </td>
                     <td className="px-2 py-1.5">{log.latencyMs}ms</td>
-                    <td className="px-2 py-1.5 text-cockpit-500">
+                    <td className="px-2 py-1.5 text-cockpit-400">
                       {new Date(log.createdAt).toLocaleTimeString()}
                     </td>
                   </tr>

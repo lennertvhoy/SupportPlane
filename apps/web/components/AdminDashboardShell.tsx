@@ -53,7 +53,7 @@ export function AdminDashboardShell({
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500"
+            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
             title="Back to cockpit"
             aria-label="Back to cockpit"
           >
@@ -61,7 +61,7 @@ export function AdminDashboardShell({
           </button>
           <div>
             <h1 className="text-lg font-semibold">{title}</h1>
-            {subtitle && <p className="text-xs text-cockpit-500">{subtitle}</p>}
+            {subtitle && <p className="text-xs text-cockpit-400">{subtitle}</p>}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export function AdminDashboardShell({
           <button
             type="button"
             onClick={() => void logout()}
-            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500"
+            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
             title="Logout"
             aria-label="Logout"
           >
@@ -89,17 +89,17 @@ export function AdminDashboardShell({
                 <button
                   key={item.href}
                   onClick={() => router.push(item.href)}
-                  className={`flex w-full items-center gap-2 rounded px-3 py-2 text-xs font-medium transition-colors ${
+                  className={`flex w-full items-center gap-2 rounded px-3 py-2 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none ${
                     active
                       ? 'bg-cockpit-700 text-white'
                       : 'text-cockpit-300 hover:bg-cockpit-800 hover:text-cockpit-100'
-                  } ${item.label !== 'Policies' && !isAdmin ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  } ${item.label !== 'Policies' && !isAdmin ? 'bg-cockpit-900 text-cockpit-600 cursor-not-allowed opacity-60' : ''}`}
                   disabled={item.label !== 'Policies' && !isAdmin}
                 >
                   <Icon size={14} />
                   {item.label}
                   {!isAdmin && item.label !== 'Policies' && (
-                    <span className="ml-auto text-[9px] text-cockpit-500">Admin</span>
+                    <span className="ml-auto text-[9px] text-cockpit-400">Admin</span>
                   )}
                 </button>
               );

@@ -52,13 +52,13 @@ export function TicketContextPanel({
             onChange={(e) => setTicketId(e.target.value)}
             placeholder="External ticket ID"
             disabled={loading || !session}
-            className="flex-1 rounded border border-cockpit-600 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none disabled:opacity-50"
+            className="flex-1 rounded border border-cockpit-600 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-100 placeholder:text-cockpit-400 focus:border-accent focus:outline-none disabled:opacity-50"
           />
           <button
             data-testid="load-ticket-context"
             onClick={() => onLoad(ticketId.trim())}
             disabled={loading || !session || !ticketId.trim()}
-            className="inline-flex items-center gap-1 rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-dark disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded bg-accent-dark px-3 py-2 text-sm font-medium text-white hover:bg-accent-dark/90 disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
           >
             {loading && <Loader2 size={14} className="animate-spin" />}
             Load
@@ -66,7 +66,7 @@ export function TicketContextPanel({
         </div>
 
         {!session && (
-          <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-500">
+          <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-400">
             Select a session to load ticket context.
           </div>
         )}
@@ -133,7 +133,7 @@ export function TicketContextPanel({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded bg-cockpit-800/60 px-2 py-1.5 text-xs text-cockpit-500">
+              <div className="flex items-center justify-between rounded bg-cockpit-800/60 px-2 py-1.5 text-xs text-cockpit-400">
                 <span>Adapter: {ticket.adapterId}</span>
                 {(connectorMode === 'zammad' || connectorMode === 'glpi') && (
                   <span className="inline-flex items-center gap-1 text-amber-400">
@@ -171,13 +171,13 @@ export function TicketContextPanel({
                     Connector Runtime Provenance
                   </div>
                   <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px]">
-                    <div className="text-cockpit-500">Installation:</div>
+                    <div className="text-cockpit-400">Installation:</div>
                     <div className="text-cockpit-200">
                       {connectorInstallation.displayName || connectorInstallation.name}
                     </div>
-                    <div className="text-cockpit-500">Type:</div>
+                    <div className="text-cockpit-400">Type:</div>
                     <div className="text-cockpit-200">{connectorInstallation.adapterType}</div>
-                    <div className="text-cockpit-500">Mode:</div>
+                    <div className="text-cockpit-400">Mode:</div>
                     <div className="inline-flex items-center gap-1">
                       {connectorInstallation.mockMode ? (
                         <>
@@ -191,7 +191,7 @@ export function TicketContextPanel({
                         </>
                       )}
                     </div>
-                    <div className="text-cockpit-500">Network:</div>
+                    <div className="text-cockpit-400">Network:</div>
                     <div className="inline-flex items-center gap-1">
                       {connectorInstallation.mockMode ? (
                         <>
@@ -205,11 +205,11 @@ export function TicketContextPanel({
                         </>
                       )}
                     </div>
-                    <div className="text-cockpit-500">Credentials:</div>
+                    <div className="text-cockpit-400">Credentials:</div>
                     <div className="text-cockpit-200">
                       {connectorInstallation.secretReferenceIds.length} linked · server-side only
                     </div>
-                    <div className="text-cockpit-500">Capabilities:</div>
+                    <div className="text-cockpit-400">Capabilities:</div>
                     <div className="text-cockpit-200">
                       {connectorInstallation.capabilities.join(', ')}
                     </div>

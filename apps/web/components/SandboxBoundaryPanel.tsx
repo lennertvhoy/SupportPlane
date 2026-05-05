@@ -9,7 +9,7 @@ export function SandboxBoundaryPanel() {
     <Panel
       title="Demo Boundaries & Safety"
       headerRight={
-        <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-500">
+        <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-400">
           <HelpCircle size={10} />
           What is real?
         </span>
@@ -28,7 +28,7 @@ export function SandboxBoundaryPanel() {
         </div>
 
         <div className="space-y-1.5">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-cockpit-500">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-cockpit-400">
             Connector states
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -39,7 +39,7 @@ export function SandboxBoundaryPanel() {
         </div>
 
         <div className="space-y-1.5">
-          <div className="text-[10px] font-semibold uppercase tracking-wide text-cockpit-500">
+          <div className="text-[10px] font-semibold uppercase tracking-wide text-cockpit-400">
             Governance states
           </div>
           <div className="flex flex-wrap gap-1.5">

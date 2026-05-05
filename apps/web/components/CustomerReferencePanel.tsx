@@ -51,7 +51,7 @@ export function CustomerReferencePanel() {
         )}
 
         {customers.length === 0 && !loading && !error && (
-          <div className="text-xs text-cockpit-500">
+          <div className="text-xs text-cockpit-400">
             No customer references found for this tenant.
           </div>
         )}
@@ -95,7 +95,7 @@ export function CustomerReferencePanel() {
                 )}
               </div>
 
-              <div className="mt-1.5 flex items-center justify-between text-[10px] text-cockpit-500">
+              <div className="mt-1.5 flex items-center justify-between text-[10px] text-cockpit-400">
                 <span>Adapter: {customer.adapterId}</span>
                 <span className="inline-flex items-center gap-1">
                   <ExternalLink size={8} />

@@ -10,3 +10,12 @@
     @apply antialiased;
   }
 }
+
+@layer components {
+  .sp-focus-ring {
+    @apply focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none;
+  }
+  .sp-focus-ring-cockpit {
+    @apply focus-visible:ring-2 focus-visible:ring-cockpit-300 focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none;
+  }
+}

@@ -82,7 +82,7 @@ export function TicketSummaryPanel({
         )}
 
         {tickets.length === 0 && !loading && !error && (
-          <div className="rounded border border-cockpit-700 bg-cockpit-900/50 px-3 py-3 text-center text-xs text-cockpit-500">
+          <div className="rounded border border-cockpit-700 bg-cockpit-900/50 px-3 py-3 text-center text-xs text-cockpit-400">
             <p className="mb-1">No aggregated ticket list loaded in this sandbox view.</p>
             <p>
               Use the Zammad or GLPI demo flows in <strong>Ticket Context</strong> to load ticket
@@ -117,7 +117,7 @@ export function TicketSummaryPanel({
                 </Badge>
               </div>
               <div className="mt-0.5 text-cockpit-400">{ticket.subject}</div>
-              <div className="mt-1 flex items-center gap-2 text-[10px] text-cockpit-500">
+              <div className="mt-1 flex items-center gap-2 text-[10px] text-cockpit-400">
                 <span>{ticket.priority}</span>
                 {ticket.customerName && <span>• {ticket.customerName}</span>}
                 {ticket.customerEmail && <span>• {ticket.customerEmail}</span>}

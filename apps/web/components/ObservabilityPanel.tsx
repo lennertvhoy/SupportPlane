@@ -70,7 +70,7 @@ function toneFor(value: unknown): StatusTone {
 function MiniMetric({ label, value, tone }: { label: string; value: string; tone?: StatusTone }) {
   return (
     <div className="min-w-0 rounded border border-cockpit-700 bg-cockpit-900/40 px-2 py-1.5">
-      <div className="truncate text-[10px] uppercase text-cockpit-500">{label}</div>
+      <div className="truncate text-[10px] uppercase text-cockpit-400">{label}</div>
       <div className="mt-1 flex items-center gap-2">
         {tone && (
           <span

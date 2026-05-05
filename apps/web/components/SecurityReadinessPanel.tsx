@@ -32,7 +32,7 @@ function ItemRow({
     <div className="grid grid-cols-[minmax(10rem,1fr)_minmax(5rem,0.5fr)] gap-2 rounded border border-cockpit-700 px-2 py-1.5 text-[11px]">
       <div className="flex flex-col">
         <span className="font-medium text-cockpit-200">{label}</span>
-        {note && <span className="text-cockpit-500">{note}</span>}
+        {note && <span className="text-cockpit-400">{note}</span>}
       </div>
       <div className="flex items-center justify-end gap-1.5">
         {tone === 'success' && <CheckCircle size={12} className="text-emerald-400" />}

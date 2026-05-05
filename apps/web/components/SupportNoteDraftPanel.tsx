@@ -78,7 +78,7 @@ export function SupportNoteDraftPanel({
             <div className="rounded border border-cockpit-700 bg-cockpit-900/60 p-2">
               <pre className="whitespace-pre-wrap text-[11px] text-cockpit-200">{draft}</pre>
             </div>
-            <div className="text-[10px] text-cockpit-500">
+            <div className="text-[10px] text-cockpit-400">
               This draft is deterministic mock output. Do not treat it as a real AI-generated note.
             </div>
           </div>

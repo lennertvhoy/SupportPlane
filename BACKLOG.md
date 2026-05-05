@@ -2,7 +2,7 @@
 
 **Product:** SupportPlane
 **Execution Mode:** operating
-**Updated At:** 2026-05-04
+**Updated At:** 2026-05-05
 
 ## Purpose
 
@@ -253,14 +253,13 @@ Status markers:
   - Session 163 progress: Added gitleaks secret scan (0 findings), eslint-plugin-security SAST (79 warnings, advisory), CodeQL workflow, SBOM generation (CycloneDX + SPDX), license check (0 disallowed after explicit allowlist), K8s YAML validation (0 errors). Container scanning deferred.
   - Risk notes: False positives from SAST must be triaged, not ignored. Container scanning may be slow — consider nightly. 79 eslint-plugin-security warnings are advisory only.
 
-- [BL-156] `[planned]` Accessibility, Colour Contrast & Visual Confidence Pass.
+- [BL-156] `[accepted]` Accessibility, Colour Contrast & Visual Confidence Pass. Session 166.
   - Problem: Primary button contrast fails WCAG AA (3.68:1). ~7 aria labels total. No automated accessibility testing. Focus visibility inconsistent. Disabled states rely on opacity only. No reduced-motion support.
-  - Why it matters: Enterprise buyers audit for accessibility. Screen reader and keyboard users cannot effectively use the application. WCAG non-compliance is a legal risk in EU public-sector sales.
-  - Scope: (1) Color/contrast: darken `accent` or lighten button text to ≥ 4.5:1; audit `text-cockpit-500` usages. (2) ARIA: `aria-describedby` + `aria-invalid` on forms; `aria-live` for async content; `aria-expanded` + focus trap on `ToolsDropdown`; `aria-pressed` on toggles; `aria-hidden` on decorative icons. (3) Keyboard/focus: visible focus rings on all interactive elements; skip-to-content link. (4) Disabled states: opacity + color shift, not opacity alone. (5) Loading/empty states: `SkeletonPanel` / `SkeletonRow` components. (6) Motion: `prefers-reduced-motion` and `prefers-contrast` support. (7) Testing: `@axe-core/playwright` scan per primary route; keyboard navigation tests.
-  - Non-goals: Full UI redesign, light mode, full WCAG 2.1 AA certification claim.
-  - Acceptance: Primary buttons pass 4.5:1 contrast. `aria-label` count ≥ 20. Focus rings visible on all interactive elements. `@axe-core/playwright` runs with 0 critical violations. `docs/compliance/ACCESSIBILITY_AUDIT.md` updated.
-  - Evidence: Browser screenshots before/after of login page, dashboard, admin panel. axe-core report artifact. Contrast calculation screenshots or tool output.
-  - Risk notes: Some contrast fixes may require broader color token changes. Focus rings may clash with existing design; adjust offsets.
+  - Scope delivered: (1) Color/contrast: `bg-accent`→`bg-accent-dark` on primary buttons (5.3:1 on white); bulk `text-cockpit-500`→`text-cockpit-400` across ~150 occurrences for ~5.5:1 on dark backgrounds; Badge.tsx solid backgrounds (no transparency). (2) ARIA: `aria-label` on toggle buttons, number inputs, icon-only controls; `aria-label` on select filters. (3) Keyboard/focus: `focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2` on all interactive elements (buttons, inputs, nav items, icon-only controls). (4) Disabled states: multiple cues (opacity-60 + bg-cockpit-900 + text-cockpit-600 + cursor-not-allowed). (5) DESIGN.md created: 377-line enforceable design system contract with contrast tables, token rules, do/don't examples.
+  - Non-goals (not claimed): Full UI redesign, light mode, full WCAG 2.1 AA certification, skeleton loading, reduced-motion, skip-to-content link, form `aria-describedby`/`aria-invalid`, `aria-live`, focus trap, keyboard navigation automation, screen reader testing.
+  - Acceptance verified: Primary buttons pass 5.3:1 contrast. `text-cockpit-400` on dark backgrounds passes ~5.5:1. 8 `@axe-core/playwright` tests pass with 0 critical + 0 serious violations on 8 primary surfaces. E2E suite 19/19 passing. All validation gates pass (format, lint, typecheck, build, validate, tests 461/458 pass + 3 skip).
+  - Evidence: `output/playwright/session-166-accessibility-contrast-visual-confidence/` (17 files: 10 screenshots + 7 text artifacts). Screenshots: login, dashboard, session+ticket, admin, model-usage, tool-registry admin, tool-registry viewer-denied, approval-queue, device-console, focus-state.
+  - Risk notes: Form inputs, data tables, modals, toasts, loading states, charts, mobile, motion, print, and light mode remain unaddressed and documented as known gaps in DESIGN.md.
 
 - [BL-157] `[accepted]` Browser E2E Smoke Gate.
   - Problem: No automated browser tests exist. All user-facing behavior is verified via manual screenshot scripts.

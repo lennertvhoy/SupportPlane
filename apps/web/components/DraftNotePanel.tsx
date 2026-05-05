@@ -55,7 +55,7 @@ export function DraftNotePanel({
   return (
     <Panel title="Draft Note" headerRight={<Badge variant="warning">Review required</Badge>}>
       {!session ? (
-        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-500">
+        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-400">
           Select a session to draft a note.
         </div>
       ) : (
@@ -84,7 +84,7 @@ export function DraftNotePanel({
             }}
             placeholder="Write a draft support note..."
             rows={6}
-            className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+            className="w-full rounded border border-cockpit-600 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-100 placeholder:text-cockpit-400 focus:border-accent focus:outline-none"
           />
 
           <div className="rounded border border-cockpit-700 bg-cockpit-900/50 p-3">
@@ -97,7 +97,7 @@ export function DraftNotePanel({
               onChange={(e) => setOperatorInstructions(e.target.value)}
               placeholder="Add guidance for the mock draft..."
               rows={2}
-              className="w-full rounded border border-cockpit-600 bg-white px-3 py-2 text-xs text-black placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+              className="w-full rounded border border-cockpit-600 bg-white px-3 py-2 text-xs text-black placeholder:text-cockpit-400 focus:border-accent focus:outline-none"
             />
             <div className="mt-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-1.5 text-xs text-amber-300">
@@ -189,10 +189,10 @@ export function DraftNotePanel({
               value={externalTicketId}
               onChange={(e) => setExternalTicketId(e.target.value)}
               placeholder="2"
-              className="w-full rounded border border-cockpit-600 bg-white px-3 py-2 text-xs text-black placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+              className="w-full rounded border border-cockpit-600 bg-white px-3 py-2 text-xs text-black placeholder:text-cockpit-400 focus:border-accent focus:outline-none"
             />
             <div className="mt-2 flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs text-cockpit-500">
+              <div className="flex items-center gap-1.5 text-xs text-cockpit-400">
                 <AlertCircle size={12} />
                 {draft.length} chars
               </div>
@@ -247,7 +247,7 @@ export function DraftNotePanel({
                 </div>
               )}
               {!writebackResult.success && !writebackResult.error && (
-                <div className="mt-1 text-cockpit-500">
+                <div className="mt-1 text-cockpit-400">
                   Mock writeback simulated. No real ticket was updated.
                 </div>
               )}

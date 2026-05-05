@@ -1,8 +1,8 @@
 # SupportPlane Status
 
-**Updated At:** 2026-05-05 09:45 CEST
+**Updated At:** 2026-05-05 13:42 CEST
 **Execution Mode:** operating
-**Project State:** session_161_bl153_ci_quality_gate_foundation_accepted
+**Project State:** session_166_bl156_accessibility_contrast_visual_confidence_accepted
 **Public URL:** not configured
 
 ## Snapshot
@@ -13,7 +13,7 @@
 - **First-Open UX Control Audit & Enterprise Readiness Pass [accepted]:** BL-143. Session 095: InfoTooltip/BoundaryLabel components, DemoGuidePanel with persistent Show/Hide, SandboxBoundaryPanel, main page reorganized with primary/secondary split, header Tools dropdown, ConnectorStatusPanel info tooltips, AuthGate sandbox warning. Ticket ID defaults fixed (TICKET-101→2). 17 evidence files. Web image rebuilt/deployed. TypeScript/lint/tests pass (0 errors). Deferred to BL-144/145/146/147: full control inventory, IA simplification, language audit, design-system consistency.
 - **Runtime/security assurance [accepted]:** BL-148/149/150/151/152. Session 158: BL-148 rebuilt API/Web/Worker images, loaded to Kind cluster, restarted deployments, verified `/health` HEAD matches git HEAD; BL-149 fixed ModelUsageService crash; BL-150 added Tool Registry RBAC; BL-151 added web error boundary & aria-labels; BL-152 created 8 compliance precheck docs.
 - **Blocked/planned items:** BL-127 [blocked] (osTicket), BL-071 [partial/planned-real-sandbox] (MeshCentral), BL-144/145/146/147 [planned] (full control inventory, IA simplification, language audit, design-system consistency).
-- **Automation/design/assurance track [partial]:** BL-153 `[accepted]` CI quality gate implemented with `ci.yml` (quality + security-baseline + docs-governance jobs), PostgreSQL service container, local validation passes, **2 high npm audit findings resolved in Session 162, security baseline now blocking-green**. BL-154 `[partial]` 13 new tests added (6 audit + 7 worker). BL-155 `[partial/advanced]` secret scan (gitleaks), SAST (eslint-plugin-security + CodeQL workflow), SBOM (CycloneDX + SPDX), license check (with policy), K8s YAML validation added in Session 163. BL-156 `[planned]` accessibility/contrast pass. BL-157 `[accepted]` browser E2E smoke gate — **14 Playwright tests green (7 spec files), Session 165 fixed session-ticket 500 by seeding `zammad-mock-adapter-001`, fixed strict mode violations, added axe-core accessibility scans**. Local E2E infra proven. CI workflow created (remote CI unproven). BL-158 `[partial]` runtime identity + evidence hygiene scripts created. BL-159 `[partial]` SBOM generation and license checker implemented in Session 163; Dependabot enablement remains.
+- **Automation/design/assurance track:** BL-153 `[accepted]` CI quality gate. BL-154 `[partial]` 13 tests added. BL-155 `[partial/advanced]` secret scan, SAST, SBOM, license check, K8s validation. **BL-156 `[accepted]` accessibility/contrast pass — 8 axe-core tests pass with 0 critical+serious violations, primary button 5.3:1, focus rings on all interactive elements, DESIGN.md created, 19/19 E2E passing**. BL-157 `[accepted]` browser E2E smoke gate — 19 Playwright tests green (8 spec files), axe-core scans integrated. Local E2E infra proven. Remote CI unproven. BL-158 `[partial]` runtime identity + evidence hygiene scripts. BL-159 `[partial]` SBOM + license checker.
 
 ## Active Blockers
 

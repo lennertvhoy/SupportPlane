@@ -132,7 +132,7 @@ export function EvidenceBundlePanel({
               className={`rounded px-2 py-1 text-[10px] font-medium ${
                 activeTab === 'summary'
                   ? 'bg-cockpit-700 text-cockpit-100'
-                  : 'text-cockpit-500 hover:text-cockpit-300'
+                  : 'text-cockpit-400 hover:text-cockpit-300'
               }`}
             >
               Summary
@@ -142,7 +142,7 @@ export function EvidenceBundlePanel({
               className={`rounded px-2 py-1 text-[10px] font-medium ${
                 activeTab === 'json'
                   ? 'bg-cockpit-700 text-cockpit-100'
-                  : 'text-cockpit-500 hover:text-cockpit-300'
+                  : 'text-cockpit-400 hover:text-cockpit-300'
               }`}
             >
               JSON
@@ -152,7 +152,7 @@ export function EvidenceBundlePanel({
               className={`rounded px-2 py-1 text-[10px] font-medium ${
                 activeTab === 'markdown'
                   ? 'bg-cockpit-700 text-cockpit-100'
-                  : 'text-cockpit-500 hover:text-cockpit-300'
+                  : 'text-cockpit-400 hover:text-cockpit-300'
               }`}
             >
               Markdown
@@ -162,7 +162,7 @@ export function EvidenceBundlePanel({
               className={`rounded px-2 py-1 text-[10px] font-medium ${
                 activeTab === 'timeline'
                   ? 'bg-cockpit-700 text-cockpit-100'
-                  : 'text-cockpit-500 hover:text-cockpit-300'
+                  : 'text-cockpit-400 hover:text-cockpit-300'
               }`}
             >
               <ScrollText size={10} className="mr-1 inline" />
@@ -173,64 +173,64 @@ export function EvidenceBundlePanel({
           {activeTab === 'summary' && (
             <div className="space-y-2">
               <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                <div className="text-[10px] text-cockpit-500">Bundle ID</div>
+                <div className="text-[10px] text-cockpit-400">Bundle ID</div>
                 <div className="text-xs text-cockpit-200">{bundle.bundle.bundleId}</div>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">Tickets</div>
+                  <div className="text-[10px] text-cockpit-400">Tickets</div>
                   <div className="text-xs text-cockpit-200">
                     {bundle.bundle.linkedTickets.length}
                   </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">Packets</div>
+                  <div className="text-[10px] text-cockpit-400">Packets</div>
                   <div className="text-xs text-cockpit-200">
                     {bundle.bundle.contextPackets.length}
                   </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">Audit Events</div>
+                  <div className="text-[10px] text-cockpit-400">Audit Events</div>
                   <div className="text-xs text-cockpit-200">
                     {bundle.bundle.auditTimeline.length}
                   </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">AI Usage</div>
+                  <div className="text-[10px] text-cockpit-400">AI Usage</div>
                   <div className="text-xs text-cockpit-200">{bundle.bundle.aiUsage.length}</div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">Call Events</div>
+                  <div className="text-[10px] text-cockpit-400">Call Events</div>
                   <div className="text-xs text-cockpit-200">
                     {bundle.bundle.callEvents?.length ?? 0}
                   </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">Telephony Bridge</div>
+                  <div className="text-[10px] text-cockpit-400">Telephony Bridge</div>
                   <div className="text-xs text-cockpit-200">
                     {bundle.bundle.telephonyBridgeEvents?.length ?? 0}
                   </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">Customers</div>
+                  <div className="text-[10px] text-cockpit-400">Customers</div>
                   <div className="text-xs text-cockpit-200">
                     {bundle.bundle.customerReferences?.length ?? 0}
                   </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">Connectors</div>
+                  <div className="text-[10px] text-cockpit-400">Connectors</div>
                   <div className="text-xs text-cockpit-200">
                     {bundle.bundle.connectorInstallations?.length ?? 0}
                   </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">Store</div>
+                  <div className="text-[10px] text-cockpit-400">Store</div>
                   <div className="text-xs text-cockpit-200">
                     {bundle.bundle.sourceProvenance.storeType}
                   </div>
                 </div>
                 <div className="rounded border border-cockpit-700 bg-cockpit-900/40 p-2">
-                  <div className="text-[10px] text-cockpit-500">Action Outbox</div>
+                  <div className="text-[10px] text-cockpit-400">Action Outbox</div>
                   <div className="text-xs text-cockpit-200">
                     {bundle.bundle.actionOutbox?.length ?? 0}
                   </div>

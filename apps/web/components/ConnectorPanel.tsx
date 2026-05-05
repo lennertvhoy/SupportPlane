@@ -395,11 +395,11 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                   </Badge>
                 </div>
                 {testResult.latencyMs !== undefined && (
-                  <div className="mt-1 text-cockpit-500">Latency: {testResult.latencyMs}ms</div>
+                  <div className="mt-1 text-cockpit-400">Latency: {testResult.latencyMs}ms</div>
                 )}
                 {testResult.error && <div className="mt-1 text-danger">{testResult.error}</div>}
                 {typeof testResult.metadata?.note === 'string' && (
-                  <div className="mt-1 text-cockpit-500">{testResult.metadata.note}</div>
+                  <div className="mt-1 text-cockpit-400">{testResult.metadata.note}</div>
                 )}
               </div>
             )}
@@ -414,7 +414,7 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
           </div>
 
           {installations.length === 0 && !loading && (
-            <div className="text-[10px] text-cockpit-500">
+            <div className="text-[10px] text-cockpit-400">
               No connector installations configured.
             </div>
           )}
@@ -462,7 +462,7 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                   <div className="mt-1 text-[10px] text-cockpit-400">
                     Type: <span className="text-cockpit-200">{inst.adapterType}</span>
                     {inst.capabilities.length > 0 && (
-                      <span className="ml-2 text-cockpit-500">
+                      <span className="ml-2 text-cockpit-400">
                         ({inst.capabilities.join(', ')})
                       </span>
                     )}
@@ -473,10 +473,10 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                     )}
                   </div>
                   {inst.description && (
-                    <div className="mt-0.5 text-[10px] text-cockpit-500">{inst.description}</div>
+                    <div className="mt-0.5 text-[10px] text-cockpit-400">{inst.description}</div>
                   )}
                   {Object.keys(inst.safetyFlags).length > 0 && (
-                    <div className="mt-1 flex items-center gap-1 text-[10px] text-cockpit-500">
+                    <div className="mt-1 flex items-center gap-1 text-[10px] text-cockpit-400">
                       <Shield size={10} className="text-accent" />
                       Safety:{' '}
                       {Object.entries(inst.safetyFlags)
@@ -628,7 +628,7 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                               const warnings = readiness?.warnings;
                               if (!Array.isArray(warnings)) return null;
                               return (
-                                <div className="text-cockpit-500">
+                                <div className="text-cockpit-400">
                                   {warnings.map((w: string, i: number) => (
                                     <div key={i}>• {w}</div>
                                   ))}
@@ -829,14 +829,14 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                           <span className="text-[10px] text-cockpit-400">
                             Credential References
                           </span>
-                          <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-500">
+                          <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-400">
                             <Lock size={10} />
                             Secret values hidden
                           </span>
                         </div>
 
                         {inst.secretReferenceIds.length === 0 ? (
-                          <div className="text-[10px] text-cockpit-500 italic">
+                          <div className="text-[10px] text-cockpit-400 italic">
                             No credential references linked.
                           </div>
                         ) : (
@@ -941,7 +941,7 @@ export function ConnectorPanel({ identity }: { identity?: AuthIdentity }) {
                           </button>
                         </div>
                       ) : (
-                        <p className="text-[10px] text-cockpit-500">
+                        <p className="text-[10px] text-cockpit-400">
                           <Eye size={10} className="inline mr-1" />
                           View-only. Admin role required to modify installation settings.
                         </p>

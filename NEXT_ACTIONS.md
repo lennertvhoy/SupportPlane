@@ -1,6 +1,6 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-05 09:45 CEST
+**Updated At:** 2026-05-05 13:42 CEST
 
 ## Active Work
 
@@ -45,12 +45,13 @@
   - Owner: security engineer
   - Status: partial/advanced. Secret scan (gitleaks), SAST (eslint-plugin-security + CodeQL workflow), SBOM (CycloneDX + SPDX), license check (license-checker with policy), K8s YAML validation added. Remaining: container scanning (Trivy/Grype), promote SAST warnings to errors after triage, kube-linter/checkov optional enhancements.
 
-- [BL-156] **Accessibility, Colour Contrast & Visual Confidence Pass**
+- [BL-156] `[accepted]` **Accessibility, Colour Contrast & Visual Confidence Pass** (Session 166)
   - Owner: accessibility / frontend engineer
-  - Status: planned. Fix primary button contrast, expand ARIA coverage, add focus rings, standardize disabled states, add skeleton loading, support reduced-motion, add `@axe-core/playwright` tests.
+  - Status: accepted. 8 axe-core tests pass with 0 critical+serious violations. Primary button contrast 5.3:1. Focus rings on all interactive elements. DESIGN.md created. Evidence: `output/playwright/session-166-accessibility-contrast-visual-confidence/`.
 
 ## Recently Completed
 
+- [BL-156] `[accepted]` Accessibility, Contrast & Visual Confidence Pass (Session 166). 8 axe-core tests, 19/19 E2E passing, DESIGN.md, contrast fixes across ~150 occurrences, focus rings, aria-labels, disabled-state multi-cue.
 - [BL-157] `[accepted]` Browser E2E Smoke Gate (Sessions 164–165). 14 Playwright tests green (7 spec files). Local E2E infra proven. CI workflow created. Session-ticket mock adapter 500 fixed by seeding `zammad-mock-adapter-001`. Strict mode violations fixed. Accessibility axe-core scans added. Remote CI unproven.
 
 - [BL-148] `[accepted]` Runtime Identity Truth Repair & Cluster Redeploy (Session 158).

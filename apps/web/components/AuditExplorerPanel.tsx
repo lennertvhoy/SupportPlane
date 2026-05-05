@@ -150,7 +150,7 @@ export function AuditExplorerPanel() {
       {/* Filters */}
       <div className="mb-3 grid grid-cols-2 gap-2 lg:grid-cols-3">
         <div>
-          <label className="mb-0.5 block text-[10px] text-cockpit-500">Event Type</label>
+          <label className="mb-0.5 block text-[10px] text-cockpit-400">Event Type</label>
           <select
             value={filters.eventType}
             onChange={(e) => {
@@ -167,7 +167,7 @@ export function AuditExplorerPanel() {
           </select>
         </div>
         <div>
-          <label className="mb-0.5 block text-[10px] text-cockpit-500">Actor Type</label>
+          <label className="mb-0.5 block text-[10px] text-cockpit-400">Actor Type</label>
           <select
             value={filters.actorType}
             onChange={(e) => {
@@ -184,7 +184,7 @@ export function AuditExplorerPanel() {
           </select>
         </div>
         <div>
-          <label className="mb-0.5 block text-[10px] text-cockpit-500">Actor ID</label>
+          <label className="mb-0.5 block text-[10px] text-cockpit-400">Actor ID</label>
           <input
             type="text"
             value={filters.actorId}
@@ -197,7 +197,7 @@ export function AuditExplorerPanel() {
           />
         </div>
         <div>
-          <label className="mb-0.5 block text-[10px] text-cockpit-500">Resource Type</label>
+          <label className="mb-0.5 block text-[10px] text-cockpit-400">Resource Type</label>
           <input
             type="text"
             value={filters.resourceType}
@@ -210,7 +210,7 @@ export function AuditExplorerPanel() {
           />
         </div>
         <div>
-          <label className="mb-0.5 block text-[10px] text-cockpit-500">Date From</label>
+          <label className="mb-0.5 block text-[10px] text-cockpit-400">Date From</label>
           <input
             type="date"
             value={filters.dateFrom}
@@ -222,7 +222,7 @@ export function AuditExplorerPanel() {
           />
         </div>
         <div>
-          <label className="mb-0.5 block text-[10px] text-cockpit-500">Date To</label>
+          <label className="mb-0.5 block text-[10px] text-cockpit-400">Date To</label>
           <input
             type="date"
             value={filters.dateTo}
@@ -247,7 +247,7 @@ export function AuditExplorerPanel() {
           Loading audit events...
         </div>
       ) : events.length === 0 ? (
-        <div className="py-6 text-center text-sm text-cockpit-500">
+        <div className="py-6 text-center text-sm text-cockpit-400">
           <Shield size={24} className="mx-auto mb-2 opacity-50" />
           No audit events match the current filters.
         </div>
@@ -261,7 +261,7 @@ export function AuditExplorerPanel() {
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-semibold text-cockpit-200">{e.eventType}</span>
-                  <span className="shrink-0 text-[10px] text-cockpit-500">
+                  <span className="shrink-0 text-[10px] text-cockpit-400">
                     <Clock size={10} className="mr-1 inline" />
                     {new Date(e.createdAt).toLocaleString()}
                   </span>
@@ -271,7 +271,7 @@ export function AuditExplorerPanel() {
                     <User size={10} />
                     {e.actorType}:{e.actorId.slice(0, 12)}
                   </span>
-                  <span className="text-cockpit-500">→</span>
+                  <span className="text-cockpit-400">→</span>
                   <span>
                     {e.action} {e.resourceType}:{e.resourceId.slice(0, 12)}
                   </span>
@@ -280,7 +280,7 @@ export function AuditExplorerPanel() {
                   <div className="mt-0.5 text-[10px] text-cockpit-600">Session: {e.sessionId}</div>
                 )}
                 {Object.keys(e.metadata).length > 0 && (
-                  <div className="mt-1.5 rounded bg-cockpit-950 px-2 py-1 text-[10px] text-cockpit-500">
+                  <div className="mt-1.5 rounded bg-cockpit-950 px-2 py-1 text-[10px] text-cockpit-400">
                     {JSON.stringify(e.metadata)}
                   </div>
                 )}
@@ -299,7 +299,7 @@ export function AuditExplorerPanel() {
                 <ChevronLeft size={12} />
                 Prev
               </button>
-              <span className="text-xs text-cockpit-500">
+              <span className="text-xs text-cockpit-400">
                 Page {currentPage} of {totalPages}
               </span>
               <button

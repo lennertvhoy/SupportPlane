@@ -88,7 +88,9 @@ function ToolsDropdown() {
     <div className="relative">
       <button
         onClick={() => setOpen((s) => !s)}
-        className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
+        className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
+        aria-label="Open Tools menu"
+        aria-expanded={open}
       >
         <LayoutGrid size={10} />
         Tools
@@ -108,7 +110,7 @@ function ToolsDropdown() {
                 <span className="text-cockpit-400">{item.icon}</span>
                 <div>
                   <div className="font-medium">{item.label}</div>
-                  <div className="text-[10px] text-cockpit-500">{item.note}</div>
+                  <div className="text-[10px] text-cockpit-400">{item.note}</div>
                 </div>
               </a>
             ))}
@@ -484,15 +486,15 @@ function CockpitContent({
           </div>
           <div>
             <h1 className="text-sm font-bold text-cockpit-100">SupportPlane</h1>
-            <p className="text-[10px] text-cockpit-500">Governed AI support cockpit</p>
+            <p className="text-[10px] text-cockpit-400">Governed AI support cockpit</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1 rounded border border-amber-700/40 bg-amber-900/30 px-2 py-0.5 text-[10px] font-medium text-amber-300">
+          <span className="inline-flex items-center gap-1 rounded border border-amber-800 bg-amber-950 px-2 py-0.5 text-[10px] font-medium text-amber-400">
             <AlertTriangle size={10} />
             DEV / MOCK DATA
           </span>
-          <span className="inline-flex items-center gap-1 rounded border border-blue-700/40 bg-blue-900/30 px-2 py-0.5 text-[10px] font-medium text-blue-300">
+          <span className="inline-flex items-center gap-1 rounded border border-blue-800 bg-blue-950 px-2 py-0.5 text-[10px] font-medium text-blue-400">
             <Info size={10} />
             Sandbox Demo
           </span>
@@ -500,7 +502,7 @@ function CockpitContent({
             <span
               className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
                 healthInfo.authMode === 'oidc'
-                  ? 'border-accent/40 bg-accent/10 text-accent-light'
+                  ? 'border-accent-dark/40 bg-accent-dark/10 text-accent-light'
                   : 'border-cockpit-600 bg-cockpit-900 text-cockpit-400'
               }`}
             >
@@ -519,7 +521,7 @@ function CockpitContent({
               >
                 {connectorStatus.mode === 'mock' ? 'Mock' : 'Sandbox'} mode
               </span>
-              <span className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-400">
+              <span className="inline-flex items-center gap-1 rounded border border-red-800 bg-red-950 px-2 py-0.5 text-[10px] text-red-400">
                 <ShieldAlert size={10} />
                 All writeback blocked
               </span>
@@ -529,7 +531,8 @@ function CockpitContent({
           <ToolsDropdown />
           <button
             onClick={() => (window.location.href = '/admin')}
-            className="inline-flex items-center gap-1 rounded border border-accent/40 bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent-light hover:bg-accent/20"
+            className="inline-flex items-center gap-1 rounded border border-accent-dark/40 bg-accent-dark/10 px-2 py-0.5 text-[10px] font-medium text-accent-light hover:bg-accent-dark/20 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
+            aria-label="Open Admin Dashboard"
           >
             <Settings size={10} />
             Admin
@@ -565,11 +568,11 @@ function CockpitContent({
                   <div className="text-sm font-semibold text-cockpit-100">
                     {selectedSession.title}
                   </div>
-                  <div className="mt-0.5 text-xs text-cockpit-400">
+                  <div className="mt-0.5 text-xs text-cockpit-300">
                     {selectedSession.id} • {selectedSession.status} • {selectedSession.priority}
                   </div>
                 </div>
-                <div className="text-right text-xs text-cockpit-500">
+                <div className="text-right text-xs text-cockpit-400">
                   <div>Tickets: {selectedSession.linkedTicketIds.length}</div>
                   <div>Packets: {selectedSession.aiContextPacketIds.length}</div>
                 </div>

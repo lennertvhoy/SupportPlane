@@ -124,14 +124,15 @@ function DeviceConsoleContent({
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500"
+            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
             title="Back to cockpit"
+            aria-label="Back to cockpit"
           >
             <ArrowLeft size={16} />
           </button>
           <div>
             <h1 className="text-lg font-semibold">Device Console</h1>
-            <p className="text-xs text-cockpit-500">
+            <p className="text-xs text-cockpit-400">
               Read-only diagnostics and approval-gated low-risk remediation.
             </p>
           </div>
@@ -189,7 +190,7 @@ function DeviceConsoleContent({
                           {device.status}
                         </Badge>
                       </div>
-                      <div className="mt-1 flex items-center gap-1 truncate text-xs text-cockpit-500">
+                      <div className="mt-1 flex items-center gap-1 truncate text-xs text-cockpit-400">
                         <Badge variant="info">
                           {platformDisplayLabel(
                             device.platform as 'linux' | 'win32' | 'darwin' | 'unknown',
@@ -197,7 +198,7 @@ function DeviceConsoleContent({
                         </Badge>
                         <span>{device.platform}</span>
                       </div>
-                      <div className="mt-2 text-[11px] text-cockpit-500">
+                      <div className="mt-2 text-[11px] text-cockpit-400">
                         Last seen{' '}
                         {device.lastSeenAt ? new Date(device.lastSeenAt).toLocaleString() : 'never'}
                       </div>
@@ -224,30 +225,30 @@ function DeviceConsoleContent({
               >
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <span className="text-cockpit-500">Hostname</span>
+                    <span className="text-cockpit-400">Hostname</span>
                     <div>{selectedDevice.hostname}</div>
                   </div>
                   <div>
-                    <span className="text-cockpit-500">Platform</span>
+                    <span className="text-cockpit-400">Platform</span>
                     <div>
                       <Badge variant="info">
                         {platformDisplayLabel(
                           selectedDevice.platform as 'linux' | 'win32' | 'darwin' | 'unknown',
                         )}
                       </Badge>{' '}
-                      <span className="text-xs text-cockpit-500">{selectedDevice.platform}</span>
+                      <span className="text-xs text-cockpit-400">{selectedDevice.platform}</span>
                     </div>
                   </div>
                   <div>
-                    <span className="text-cockpit-500">Agent</span>
+                    <span className="text-cockpit-400">Agent</span>
                     <div>{selectedDevice.agentVersion}</div>
                   </div>
                   <div>
-                    <span className="text-cockpit-500">Fingerprint</span>
+                    <span className="text-cockpit-400">Fingerprint</span>
                     <div className="break-all text-xs">{selectedDevice.fingerprint}</div>
                   </div>
                   <div>
-                    <span className="text-cockpit-500">Enrollment</span>
+                    <span className="text-cockpit-400">Enrollment</span>
                     <div>{new Date(selectedDevice.enrolledAt).toLocaleString()}</div>
                   </div>
                 </div>
@@ -294,14 +295,14 @@ function DeviceConsoleContent({
                           </span>
                         )}
                         {!tool.enabled && (
-                          <span className="ml-1 text-[10px] text-cockpit-500">(disabled)</span>
+                          <span className="ml-1 text-[10px] text-cockpit-400">(disabled)</span>
                         )}
                       </button>
                     );
                   })}
                 </div>
                 {!canRequest && (
-                  <div className="mt-3 text-xs text-cockpit-500">
+                  <div className="mt-3 text-xs text-cockpit-400">
                     Policy denied: your role can inspect devices but cannot invoke tools.
                   </div>
                 )}
@@ -311,12 +312,12 @@ function DeviceConsoleContent({
                   {detail?.snapshots[0] ? (
                     <JsonBlock value={detail.snapshots[0]} />
                   ) : (
-                    <div className="text-sm text-cockpit-500">No diagnostic snapshots yet.</div>
+                    <div className="text-sm text-cockpit-400">No diagnostic snapshots yet.</div>
                   )}
                 </Panel>
                 <Panel
                   title="Invocation History"
-                  headerRight={<TerminalSquare size={15} className="text-cockpit-500" />}
+                  headerRight={<TerminalSquare size={15} className="text-cockpit-400" />}
                 >
                   {deviceInvocations.length ? (
                     <ul className="space-y-2">
@@ -343,12 +344,12 @@ function DeviceConsoleContent({
                               {inv.status}
                             </Badge>
                           </div>
-                          <div className="mt-1 text-cockpit-500">
+                          <div className="mt-1 text-cockpit-400">
                             Actor {inv.requestedByUserId} ·{' '}
                             {new Date(inv.createdAt).toLocaleString()}
                           </div>
                           {inv.policyDecision && (
-                            <div className="mt-1 text-[10px] text-cockpit-500">
+                            <div className="mt-1 text-[10px] text-cockpit-400">
                               Policy:{' '}
                               {(inv.policyDecision as Record<string, unknown>).decision as string}
                             </div>
@@ -384,7 +385,7 @@ function DeviceConsoleContent({
                       ))}
                     </ul>
                   ) : (
-                    <div className="text-sm text-cockpit-500">No tool invocations yet.</div>
+                    <div className="text-sm text-cockpit-400">No tool invocations yet.</div>
                   )}
                 </Panel>
               </div>

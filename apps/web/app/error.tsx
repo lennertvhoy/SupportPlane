@@ -23,7 +23,7 @@ export default function RootErrorBoundary({
           production data is at risk.
         </p>
         {error.digest && (
-          <p className="mb-4 font-mono text-xs text-cockpit-500">Error ID: {error.digest}</p>
+          <p className="mb-4 font-mono text-xs text-cockpit-400">Error ID: {error.digest}</p>
         )}
         <button
           onClick={reset}

@@ -48,7 +48,7 @@ export function AiContextPanel({
       }
     >
       {!session ? (
-        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-500">
+        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-400">
           Select a session to view AI context.
         </div>
       ) : (
@@ -76,14 +76,14 @@ export function AiContextPanel({
                 value={manualLabel}
                 onChange={(e) => setManualLabel(e.target.value)}
                 placeholder="Label (e.g. escalation_reason)"
-                className="w-full rounded border border-cockpit-600 bg-cockpit-800 px-2 py-1 text-sm text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+                className="w-full rounded border border-cockpit-600 bg-cockpit-800 px-2 py-1 text-sm text-cockpit-100 placeholder:text-cockpit-400 focus:border-accent focus:outline-none"
               />
               <textarea
                 value={manualValue}
                 onChange={(e) => setManualValue(e.target.value)}
                 placeholder="Value"
                 rows={2}
-                className="mt-2 w-full rounded border border-cockpit-600 bg-cockpit-800 px-2 py-1 text-sm text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+                className="mt-2 w-full rounded border border-cockpit-600 bg-cockpit-800 px-2 py-1 text-sm text-cockpit-100 placeholder:text-cockpit-400 focus:border-accent focus:outline-none"
               />
               <div className="mt-2 flex items-center gap-2">
                 <button
@@ -117,7 +117,7 @@ export function AiContextPanel({
               Loading packets...
             </div>
           ) : packets.length === 0 ? (
-            <div className="py-4 text-center text-sm text-cockpit-500">
+            <div className="py-4 text-center text-sm text-cockpit-400">
               <Brain size={24} className="mx-auto mb-2 opacity-50" />
               No AI context packets yet.
             </div>
@@ -140,7 +140,7 @@ function PacketGroup({ title, packets }: { title: string; packets: AIContextPack
   if (packets.length === 0) return null;
   return (
     <div>
-      <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-cockpit-500">
+      <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-cockpit-400">
         {title}
       </div>
       <div className="space-y-1.5">
@@ -154,7 +154,7 @@ function PacketGroup({ title, packets }: { title: string; packets: AIContextPack
                 <Brain size={12} className="text-accent" />
                 <span className="font-medium">{p.provenance}</span>
                 {p.sourceAdapterId && (
-                  <span className="text-cockpit-500">• {p.sourceAdapterId}</span>
+                  <span className="text-cockpit-400">• {p.sourceAdapterId}</span>
                 )}
               </div>
               <PacketState packet={p} />
@@ -194,12 +194,12 @@ function PacketGroup({ title, packets }: { title: string; packets: AIContextPack
                     'safetyFlags',
                   ].includes(k),
               ).length > 3 && (
-                <div className="text-cockpit-500">
+                <div className="text-cockpit-400">
                   +{Object.keys(p.payload).length - 3} more fields
                 </div>
               )}
             </div>
-            <div className="mt-1 flex items-center gap-2 text-[10px] text-cockpit-500">
+            <div className="mt-1 flex items-center gap-2 text-[10px] text-cockpit-400">
               <span>{p.id.slice(0, 8)}</span>
               <span>•</span>
               <span>{new Date(p.createdAt).toLocaleTimeString()}</span>
@@ -246,11 +246,11 @@ function ScreenObservationPacketDetails({ packet }: { packet: AIContextPacket })
       </div>
       {safetyFlags && (
         <div className="flex flex-wrap gap-1 text-[10px]">
-          {safetyFlags.noRawPixels && <span className="text-cockpit-500">no raw pixels</span>}
-          {safetyFlags.noClipboardAccess && <span className="text-cockpit-500">no clipboard</span>}
-          {safetyFlags.noOcr && <span className="text-cockpit-500">no OCR</span>}
+          {safetyFlags.noRawPixels && <span className="text-cockpit-400">no raw pixels</span>}
+          {safetyFlags.noClipboardAccess && <span className="text-cockpit-400">no clipboard</span>}
+          {safetyFlags.noOcr && <span className="text-cockpit-400">no OCR</span>}
           {safetyFlags.rawImageStored === false && (
-            <span className="text-cockpit-500">raw image not stored</span>
+            <span className="text-cockpit-400">raw image not stored</span>
           )}
         </div>
       )}
@@ -282,7 +282,7 @@ function PacketState({ packet }: { packet: AIContextPacket }) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-500">
+    <span className="inline-flex items-center gap-1 text-[10px] text-cockpit-400">
       <CheckCircle2 size={10} />
       Loaded
     </span>

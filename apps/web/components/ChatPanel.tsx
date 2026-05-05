@@ -90,7 +90,7 @@ export function ChatPanel({
       }
     >
       {!session ? (
-        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-500">
+        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-400">
           Select a session to start AI chat.
         </div>
       ) : !canChat ? (
@@ -99,7 +99,7 @@ export function ChatPanel({
         </div>
       ) : !chatSession ? (
         <div className="space-y-3">
-          <div className="text-xs text-cockpit-500">
+          <div className="text-xs text-cockpit-400">
             Start a new AI chat session for{' '}
             <span className="text-cockpit-200">{session.title}</span>.
           </div>
@@ -121,7 +121,7 @@ export function ChatPanel({
         <div className="flex h-80 flex-col gap-2">
           <div className="flex-1 overflow-y-auto rounded border border-cockpit-700 bg-cockpit-900/30 p-2">
             {messages.length === 0 && (
-              <div className="py-4 text-center text-xs text-cockpit-500">
+              <div className="py-4 text-center text-xs text-cockpit-400">
                 No messages yet. Send a message to start the conversation.
               </div>
             )}
@@ -177,7 +177,7 @@ export function ChatPanel({
               }}
               placeholder="Type a message..."
               disabled={loading}
-              className="flex-1 rounded border border-cockpit-600 bg-cockpit-900 px-3 py-2 text-xs text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none"
+              className="flex-1 rounded border border-cockpit-600 bg-cockpit-900 px-3 py-2 text-xs text-cockpit-100 placeholder:text-cockpit-400 focus:border-accent focus:outline-none"
             />
             <button
               onClick={handleSend}

@@ -60,14 +60,15 @@ function ToolRegistryContent({
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500"
+            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
             title="Back to cockpit"
+            aria-label="Back to cockpit"
           >
             <ArrowLeft size={16} />
           </button>
           <div>
             <h1 className="text-lg font-semibold">Tool Registry</h1>
-            <p className="text-xs text-cockpit-500">
+            <p className="text-xs text-cockpit-400">
               Signed/local-verified fixed implementation tools only.
             </p>
           </div>
@@ -100,7 +101,7 @@ function ToolRegistryContent({
               Manifests declare fixed implementation IDs only. They do not contain executable
               scripts.
             </div>
-            <div className="mt-1 text-xs text-cockpit-500">
+            <div className="mt-1 text-xs text-cockpit-400">
               No arbitrary shell · No argv injection · No user-provided command body · Fixed
               implementations verified by integrity hash
             </div>
@@ -115,7 +116,7 @@ function ToolRegistryContent({
           <div className="rounded border border-cockpit-700 bg-cockpit-900/50 p-4">
             <div className="mb-3 text-sm font-medium text-cockpit-100">Tools ({tools.length})</div>
             {tools.length === 0 ? (
-              <div className="text-sm text-cockpit-500">
+              <div className="text-sm text-cockpit-400">
                 No tools loaded. The local manifest may still be loading.
               </div>
             ) : (
@@ -131,7 +132,7 @@ function ToolRegistryContent({
                         <span className="text-sm font-medium text-cockpit-100">
                           {tool.displayName}
                         </span>
-                        <span className="text-xs text-cockpit-500">{tool.toolKey}</span>
+                        <span className="text-xs text-cockpit-400">{tool.toolKey}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {riskBadge(tool.riskLevel)}
@@ -146,7 +147,7 @@ function ToolRegistryContent({
                       </div>
                     </div>
                     <div className="mt-1 text-xs text-cockpit-400">{tool.description}</div>
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-cockpit-500">
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-cockpit-400">
                       <span>Category: {tool.category}</span>
                       <span>
                         Implementation:{' '}

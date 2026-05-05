@@ -11,10 +11,10 @@ export function Badge({
 }) {
   const variants = {
     default: 'bg-cockpit-700 text-cockpit-200',
-    success: 'bg-green-900/40 text-green-300 border border-green-700/40',
-    warning: 'bg-amber-900/40 text-amber-300 border border-amber-700/40',
-    danger: 'bg-red-900/40 text-red-300 border border-red-700/40',
-    info: 'bg-blue-900/40 text-blue-300 border border-blue-700/40',
+    success: 'bg-green-950 text-green-400 border border-green-800',
+    warning: 'bg-amber-950 text-amber-400 border border-amber-800',
+    danger: 'bg-red-950 text-red-400 border border-red-800',
+    info: 'bg-blue-950 text-blue-400 border border-blue-800',
     muted: 'bg-cockpit-800 text-cockpit-400 border border-cockpit-700',
   };
 

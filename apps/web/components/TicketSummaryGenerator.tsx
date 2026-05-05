@@ -61,7 +61,7 @@ export function TicketSummaryGenerator({
       }
     >
       {!session ? (
-        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-500">
+        <div className="rounded border border-cockpit-600 bg-cockpit-900/50 px-3 py-4 text-center text-sm text-cockpit-400">
           Select a session to generate a ticket summary.
         </div>
       ) : !canGenerate ? (
@@ -72,7 +72,7 @@ export function TicketSummaryGenerator({
         <div className="space-y-3">
           {!summary && (
             <div className="space-y-2">
-              <div className="text-xs text-cockpit-500">
+              <div className="text-xs text-cockpit-400">
                 Generate an AI summary for <span className="text-cockpit-200">{session.title}</span>
                 .
               </div>

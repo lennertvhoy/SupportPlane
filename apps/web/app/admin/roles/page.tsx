@@ -71,15 +71,15 @@ function RolesPageContent({
       subtitle="Tenant role definitions and permissions."
     >
       <div className="mx-auto max-w-4xl space-y-4">
-        {loading && <p className="text-xs text-cockpit-500">Loading...</p>}
+        {loading && <p className="text-xs text-cockpit-400">Loading...</p>}
         {error && <p className="text-xs text-red-400">{error}</p>}
 
         <div className="rounded border border-cockpit-700 bg-cockpit-900/50 p-3">
           <div className="mb-2 text-xs font-medium text-cockpit-300">
-            Roles <span className="text-cockpit-500">({roles.length})</span>
+            Roles <span className="text-cockpit-400">({roles.length})</span>
           </div>
           {roles.length === 0 ? (
-            <div className="text-xs text-cockpit-500">No roles found.</div>
+            <div className="text-xs text-cockpit-400">No roles found.</div>
           ) : (
             <div className="space-y-3">
               {roles.map((r) => (
@@ -105,7 +105,7 @@ function RolesPageContent({
                       </span>
                     ))}
                     {r.permissions.length > 8 && (
-                      <span className="text-[9px] text-cockpit-500">
+                      <span className="text-[9px] text-cockpit-400">
                         +{r.permissions.length - 8} more
                       </span>
                     )}

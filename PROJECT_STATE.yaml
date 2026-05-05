@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-05T09:20:00+02:00
+  updated_at: 2026-05-05T13:42:46+02:00
   updated_by: agent
   version: 'statedd-template-v3'
   note: >
@@ -344,6 +344,45 @@ current_state:
       ui: GdprRequestPanel
       status: runtime_proven
       compliance_claimed: false
+    accessibility:
+      current: bl_156_scoped_contrast_and_accessibility_pass_accepted
+      scope: 8_primary_surfaces_only_not_full_wcag
+      contrast_policy: wcag2aa_normal_text_minimum_4.5_to_1
+      primary_button_contrast: 5.3_to_1_bg_accent_dark_on_white
+      text_on_dark_contrast: text_cockpit_400_on_cockpit_900_5.5_to_1
+      automated_testing: 8_axe_core_playwright_tests_critical_and_serious_zero
+      surfaces_tested:
+        [
+          login_page,
+          operator_dashboard,
+          admin_dashboard,
+          model_usage,
+          approval_queue,
+          device_console,
+          tool_registry_admin,
+          tool_registry_viewer_denied,
+          session_with_ticket_context,
+        ]
+      design_system_contract: DESIGN.md_enforceable_token_rules_do_dont_examples
+      focus_rings: focus_visible_ring_2_accent_light_offset_on_all_interactive
+      aria_labels: toggle_buttons_number_inputs_icon_only_controls
+      disabled_states: multiple_cues_opacity_color_shift_cursor
+      known_gaps:
+        [
+          form_input_contrast_not_fully_audited,
+          data_table_contrast_not_fully_audited,
+          modal_dialog_focus_trap_not_tested,
+          toast_notification_aria_live_not_tested,
+          loading_skeleton_not_implemented,
+          chart_accessibility_not_audited,
+          mobile_viewport_not_tested,
+          keyboard_navigation_flow_not_automated,
+          screen_reader_testing_not_automated,
+          light_mode_not_supported,
+          reduced_motion_not_implemented,
+          print_stylesheet_not_implemented,
+        ]
+      evidence_folder: output/playwright/session-166-accessibility-contrast-visual-confidence/
     evidence:
       current: local sandbox JSON and Markdown bundle persisted to MinIO with direct read/checksum proof
       object_storage_artifact_persistence: true (MinIO local sandbox, direct object read/checksum proven)
@@ -774,7 +813,7 @@ current_state:
   backlog:
     source: BACKLOG.md
     highest_id: BL-159
-    accepted_current_slice: BL-153_session_161_ci_quality_gate_foundation_accepted
+    accepted_current_slice: BL-156_accessibility_contrast_visual_confidence_pass_accepted
     partial_current_slice: none
     planned_real_e2e_items:
       - BL-119
@@ -795,8 +834,6 @@ current_state:
         BL-152,
         BL-154,
         BL-155,
-        BL-156,
-        BL-157,
         BL-158,
         BL-159,
       ]
