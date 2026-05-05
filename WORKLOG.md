@@ -3135,3 +3135,46 @@ If green, BL-157 can be marked fully proven. Deferred to BL-156:
 ### Next Recommended Action
 
 Prove remote E2E CI pass by triggering `.github/workflows/e2e.yml` on GitHub Actions (BL-157 remaining gap). Or proceed with BL-144 (Full Application Control Inventory) or BL-147 (Design-System Consistency Pass & Brand Identity Foundation).
+
+
+## Session 167 — BL-144/BL-147 Header Compaction, IdentityPill Simplification, E2E Repair
+
+**Date:** 2026-05-05
+**Commit:** `cc0ee14`
+**Scope:** BL-144 (partial — header control inventory), BL-147 (partial — design-system consistency), BL-157 (E2E test repair after UI changes)
+
+### What Changed
+
+- `apps/web/components/AuthGate.tsx`: Simplified `IdentityPill` to display-only badge (removed embedded logout button). Added `UserMenu` component with initials avatar and dropdown logout.
+- `apps/web/app/page.tsx`: Replaced inline environment badge row with compact `EnvironmentStatus` dropdown. Replaced `IdentityPill` with `UserMenu`. Standardized typography to `text-xs`.
+- `apps/web/app/admin/page.tsx`, `approval-queue/page.tsx`, `call-console/page.tsx`, `device-console/page.tsx`, `gdpr/page.tsx`, `tool-registry/page.tsx`: Removed `logout` prop from `IdentityPill` usage (or removed `IdentityPill` entirely where not needed).
+- `apps/web/components/AdminDashboardShell.tsx`: Updated to use new `IdentityPill` signature.
+- `tests/e2e/helpers.ts`: Fixed `login()` helper — replaced `text=Sandbox Demo` (false-positive matched login subtitle) with `getByRole('button', { name: /New/i })`. Added 500ms cookie delay.
+- `tests/e2e/auth.spec.ts`: Removed obsolete `Demo Operator`/`Demo Admin`/`Sandbox Demo` assertions.
+- `tests/e2e/accessibility.spec.ts`: Removed `Sandbox Demo` assertion; reverted viewer tool-registry test to expect denial.
+- `tests/e2e/tool-registry-rbac.spec.ts`: Reverted viewer test to expect denied access (correct — viewer lacks `tool:read`).
+- `scripts/session-167-screenshots.js`: Reproducible screenshot script committed.
+
+### Verification
+
+- `npx playwright test tests/e2e`: 19 passed, 0 failed (24.9s)
+- `npm run typecheck`: PASS
+- `npm run lint`: 0 errors, 79 warnings
+- `npm run build`: PASS
+- `npm test`: all workspace tests pass
+- `git status --short --branch`: clean, on main, ahead 54 from origin/main
+
+### Evidence
+
+- `output/playwright/session-167-bl144-bl147-e2e-fixes-control-inventory-visual-ci/` (10 files)
+- Screenshots (10): login-page, operator-dashboard, admin-dashboard, tool-registry-admin, approval-queue, device-console, model-usage, call-console, gdpr-page, viewer-tool-registry-denied
+
+### Risks and Limitations
+
+- Remote CI (BL-157) still unproven — GitHub Actions workflow exists locally but not triggered remotely.
+- BL-144 remaining: full inventory of Call Simulator, Connector, Delivery Policy secondary panels.
+- BL-147 remaining: `packages/ui` migration, typography system, favicon set, empty-state illustrations.
+
+### Next Recommended Action
+
+Prove remote E2E CI pass by pushing to GitHub and triggering `.github/workflows/e2e.yml` (BL-157 remaining gap). Or proceed with BL-144 (remaining secondary panel inventory) or BL-147 (remaining design-system work).

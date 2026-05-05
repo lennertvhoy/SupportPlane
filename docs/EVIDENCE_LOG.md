@@ -3285,3 +3285,29 @@
   - MD5 duplicate check: 0 duplicate screenshots
 - Type: browser-e2e-and-cli-verification
 - as_of: 2026-05-05T13:42:46+02:00
+
+
+## EV-2026-05-05-188: Session 167 — BL-144/BL-147 Header Compaction, IdentityPill Simplification, E2E Repair
+
+- Evidence folder: `output/playwright/session-167-bl144-bl147-e2e-fixes-control-inventory-visual-ci/` (10 files)
+- Source/System: Local dev runtime API localhost:4110 (postgres), Web localhost:3200; E2E runtime API localhost:4111, Web localhost:3201
+- Action:
+  - Simplified `IdentityPill` component: removed embedded logout button, now display-only badge with identity info
+  - Replaced `IdentityPill` usage in all page headers with `UserMenu` (initials + dropdown with logout)
+  - Compact header environment badges into `EnvironmentStatus` dropdown (`Mock · local · postgres` button)
+  - Standardized header typography: `text-[10px]`/`text-[11px]` → `text-xs` per DESIGN.md
+  - Fixed E2E login helper root cause: `text=Sandbox Demo` matched login page subtitle "local sandbox demo" (case-insensitive substring), causing premature return before cookie stored. Changed to `getByRole('button', { name: /New/i })` which is dashboard-unique.
+  - Added 500ms cookie-processing delay in `login()` helper to prevent race condition on cross-page navigation
+  - Removed obsolete `Demo Operator`/`Demo Admin` assertions from `auth.spec.ts` (IdentityPill text no longer visible)
+  - Reverted incorrect viewer tool-registry test: viewer correctly lacks `tool:read` per `rbac.ts`
+  - All 19 E2E tests now pass (8 spec files, 24.9s total)
+- Proves:
+  - `npx playwright test tests/e2e`: 19 passed, 0 failed
+  - `npm run typecheck`: PASS
+  - `npm run lint`: 0 errors, 79 warnings
+  - `npm run build`: PASS
+  - `npm test`: all workspace tests pass
+  - Worktree: clean, commit `cc0ee14`
+  - MD5 duplicate check: 0 duplicate screenshots
+- Type: browser-e2e-and-cli-verification
+- as_of: 2026-05-05T15:01:00+02:00

@@ -6,7 +6,7 @@
 
 - [BL-144] **Full Application Control Inventory & Interaction Regression Harness**
   - Owner: future UX quality slice
-  - Status: planned. Full inventory of all controls on secondary panels (Call Simulator, Connector, Delivery Policy, etc.), verify each is functional/disabled/explanatory/removed.
+  - Status: partial (Session 167). IdentityPill simplified, header compacted, E2E harness fixed (19/19 pass). Remaining: inventory Call Simulator, Connector, Delivery Policy controls.
 
 - [BL-145] **Enterprise Demo IA / Navigation Simplification**
   - Owner: future IA slice
@@ -18,7 +18,7 @@
 
 - [BL-147] **Design-System Consistency Pass & Brand Identity Foundation**
   - Owner: future design slice
-  - Status: planned. Unify spacing, typography, badge styles, card layouts, loading/error states. Add logo, wordmark, favicon set, shared UI primitives in `packages/ui`, typography system, empty-state illustrations.
+  - Status: partial (Session 167). Header typography standardized (`text-xs`), IdentityPill simplified, EnvironmentStatus dropdown added. Remaining: `packages/ui` migration, typography system, favicon set, empty-state illustrations.
 
 - [BL-071/BL-072] **Connector real-instance enablement**
   - Owner: future connector slice
@@ -52,7 +52,9 @@
 ## Recently Completed
 
 - [BL-156] `[accepted]` Accessibility, Contrast & Visual Confidence Pass (Session 166). 8 axe-core tests, 19/19 E2E passing, DESIGN.md, contrast fixes across ~150 occurrences, focus rings, aria-labels, disabled-state multi-cue.
-- [BL-157] `[accepted]` Browser E2E Smoke Gate (Sessions 164–165). 14 Playwright tests green (7 spec files). Local E2E infra proven. CI workflow created. Session-ticket mock adapter 500 fixed by seeding `zammad-mock-adapter-001`. Strict mode violations fixed. Accessibility axe-core scans added. Remote CI unproven.
+- [BL-157] `[accepted]` Browser E2E Smoke Gate (Sessions 164–165, repaired Session 167). 19/19 Playwright tests green (8 spec files). Local E2E infra proven. CI workflow created. Remote CI unproven.
+- [BL-144] `[partial]` Header control inventory & IdentityPill simplification (Session 167).
+- [BL-147] `[partial]` Header typography consistency & badge compaction (Session 167).
 
 - [BL-148] `[accepted]` Runtime Identity Truth Repair & Cluster Redeploy (Session 158).
 - [BL-149] `[accepted]` Model-Usage Crash Fix & Admin Dashboard Repair (Session 158).

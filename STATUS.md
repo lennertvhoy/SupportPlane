@@ -2,7 +2,7 @@
 
 **Updated At:** 2026-05-05 13:42 CEST
 **Execution Mode:** operating
-**Project State:** session_166_bl156_accessibility_contrast_visual_confidence_accepted
+**Project State:** session_167_bl144_bl147_e2e_fixes_control_inventory_visual_ci
 **Public URL:** not configured
 
 ## Snapshot
@@ -12,8 +12,8 @@
 - **Tester readiness [accepted]:** BL-141/142. Session 156: runtime identity exact match, Zammad ticket #2 + GLPI ticket #1 both loaded with real sandbox reads and browser proof, 6 distinct browser screenshots, preflight 15 PASS GO. Ready for first real tester.
 - **First-Open UX Control Audit & Enterprise Readiness Pass [accepted]:** BL-143. Session 095: InfoTooltip/BoundaryLabel components, DemoGuidePanel with persistent Show/Hide, SandboxBoundaryPanel, main page reorganized with primary/secondary split, header Tools dropdown, ConnectorStatusPanel info tooltips, AuthGate sandbox warning. Ticket ID defaults fixed (TICKET-101→2). 17 evidence files. Web image rebuilt/deployed. TypeScript/lint/tests pass (0 errors). Deferred to BL-144/145/146/147: full control inventory, IA simplification, language audit, design-system consistency.
 - **Runtime/security assurance [accepted]:** BL-148/149/150/151/152. Session 158: BL-148 rebuilt API/Web/Worker images, loaded to Kind cluster, restarted deployments, verified `/health` HEAD matches git HEAD; BL-149 fixed ModelUsageService crash; BL-150 added Tool Registry RBAC; BL-151 added web error boundary & aria-labels; BL-152 created 8 compliance precheck docs.
-- **Blocked/planned items:** BL-127 [blocked] (osTicket), BL-071 [partial/planned-real-sandbox] (MeshCentral), BL-144/145/146/147 [planned] (full control inventory, IA simplification, language audit, design-system consistency).
-- **Automation/design/assurance track:** BL-153 `[accepted]` CI quality gate. BL-154 `[partial]` 13 tests added. BL-155 `[partial/advanced]` secret scan, SAST, SBOM, license check, K8s validation. **BL-156 `[accepted]` accessibility/contrast pass — 8 axe-core tests pass with 0 critical+serious violations, primary button 5.3:1, focus rings on all interactive elements, DESIGN.md created, 19/19 E2E passing**. BL-157 `[accepted]` browser E2E smoke gate — 19 Playwright tests green (8 spec files), axe-core scans integrated. Local E2E infra proven. Remote CI unproven. BL-158 `[partial]` runtime identity + evidence hygiene scripts. BL-159 `[partial]` SBOM + license checker.
+- **Blocked/planned items:** BL-127 [blocked] (osTicket), BL-071 [partial/planned-real-sandbox] (MeshCentral), BL-145/146 [planned] (IA simplification, language audit). BL-144/147 [partial] (header control inventory and design-system consistency started in Session 167).
+- **Automation/design/assurance track:** BL-153 `[accepted]` CI quality gate. BL-154 `[partial]` 13 tests added. BL-155 `[partial/advanced]` secret scan, SAST, SBOM, license check, K8s validation. **BL-156 `[accepted]` accessibility/contrast pass — 8 axe-core tests pass with 0 critical+serious violations, primary button 5.3:1, focus rings on all interactive elements, DESIGN.md created**. **BL-157 `[accepted]` browser E2E smoke gate — 19/19 Playwright tests green (8 spec files), axe-core scans integrated. Local E2E infra proven. Remote CI unproven**. BL-158 `[partial]` runtime identity + evidence hygiene scripts. BL-159 `[partial]` SBOM + license checker.
 
 ## Active Blockers
 
