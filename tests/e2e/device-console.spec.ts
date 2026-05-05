@@ -20,7 +20,9 @@ test.describe('Device Console', () => {
     await expect(page.locator('text=win32').or(page.locator('text=Windows')).first()).toBeVisible();
 
     // Device list should have at least 2 rows/devices
-    const deviceRows = page.locator('text=Linux Workstation').or(page.locator('text=Windows Endpoint'));
+    const deviceRows = page
+      .locator('text=Linux Workstation')
+      .or(page.locator('text=Windows Endpoint'));
     await expect(deviceRows.first()).toBeVisible();
 
     await consoleMonitor.verify();

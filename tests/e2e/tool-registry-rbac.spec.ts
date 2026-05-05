@@ -18,7 +18,9 @@ test.describe('Tool Registry RBAC', () => {
     ).toBeVisible({ timeout: 10000 });
 
     // Admin should see command templates / execution details
-    await expect(page.locator('text=collect_inventory').or(page.locator('text=flush_dns_cache')).first()).toBeVisible();
+    await expect(
+      page.locator('text=collect_inventory').or(page.locator('text=flush_dns_cache')).first(),
+    ).toBeVisible();
 
     await consoleMonitor.verify();
   });

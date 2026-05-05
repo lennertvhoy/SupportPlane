@@ -4,7 +4,9 @@ import { login, assertNoConsoleErrors } from './helpers';
 test.describe('Support Session + Ticket Context', () => {
   const sessionTitle = 'E2E Smoke Session';
 
-  test('create session, select it, and load deterministic mock ticket context', async ({ page }) => {
+  test('create session, select it, and load deterministic mock ticket context', async ({
+    page,
+  }) => {
     const consoleMonitor = await assertNoConsoleErrors(page);
     await login(page, 'operator@supportplane.local', 'supportplane-demo');
 

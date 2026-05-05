@@ -19,7 +19,11 @@ test.describe('Admin Dashboard', () => {
 
     // Model Usage should show controls (filter/summary cards or data table)
     await expect(
-      page.locator('text=Provider').or(page.locator('text=Model')).or(page.locator('text=Summary')).first(),
+      page
+        .locator('text=Provider')
+        .or(page.locator('text=Model'))
+        .or(page.locator('text=Summary'))
+        .first(),
     ).toBeVisible();
 
     await consoleMonitor.verify();
@@ -37,7 +41,9 @@ test.describe('Admin Dashboard', () => {
 
     // Each governance card should be clickable and navigate
     await page.getByRole('main').getByText('Policies').first().click();
-    await expect(page.locator('text=Policy Editor').or(page.locator('text=Policies')).first()).toBeVisible();
+    await expect(
+      page.locator('text=Policy Editor').or(page.locator('text=Policies')).first(),
+    ).toBeVisible();
 
     await consoleMonitor.verify();
   });
