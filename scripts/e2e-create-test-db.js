@@ -15,16 +15,20 @@ async function main() {
 
   const pool = new Pool({ connectionString: baseUrl });
   try {
+    // Terminate existing connections to allow drop/create
+    await pool.query(
+      `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = $1 AND pid <> pg_backend_pid();`,
+      [dbName],
+    );
+    await pool.query(`DROP DATABASE IF EXISTS "${dbName}";`);
     await pool.query(`CREATE DATABASE "${dbName}";`);
-    console.log(`[e2e-db] Created database ${dbName}`);
+    console.log(`[e2e-db] Recreated database ${dbName}`);
   } catch (e) {
-    if (e.message && e.message.includes('already exists')) {
-      console.log(`[e2e-db] Database ${dbName} already exists`);
-    } else {
-      throw e;
-    }
+    console.error('[e2e-db] Failed to recreate test database:', e.message);
+    throw e;
+  } finally {
+    await pool.end();
   }
-  await pool.end();
 }
 
 main().catch((e) => {

@@ -12,6 +12,8 @@ export NEXT_PUBLIC_API_BASE_URL="http://localhost:${API_PORT}"
 export NODE_ENV="test"
 export SUPPORTPLANE_AUTH_MODE="local"
 export SUPPORTPLANE_STORE="postgres"
+export ZAMMAD_CONNECTOR_MODE="mock"
+export OPENBAO_RESOLVER_ENABLED="false"
 export E2E_WEB_PORT="${WEB_PORT}"
 export E2E_API_PORT="${API_PORT}"
 

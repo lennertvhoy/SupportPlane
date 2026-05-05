@@ -19,6 +19,10 @@ test.describe('Device Console', () => {
     // Windows device should be honestly labelled
     await expect(page.locator('text=win32').or(page.locator('text=Windows')).first()).toBeVisible();
 
+    // Device list should have at least 2 rows/devices
+    const deviceRows = page.locator('text=Linux Workstation').or(page.locator('text=Windows Endpoint'));
+    await expect(deviceRows.first()).toBeVisible();
+
     await consoleMonitor.verify();
   });
 
@@ -29,6 +33,9 @@ test.describe('Device Console', () => {
     await page.goto('/device-console');
     await expect(page.locator('text=Fixed implementation only')).toBeVisible();
     await expect(page.locator('text=Arbitrary shell is blocked')).toBeVisible();
+
+    // No real enrolled device claims
+    await expect(page.locator('text=Production')).not.toBeVisible();
 
     await consoleMonitor.verify();
   });

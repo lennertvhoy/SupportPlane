@@ -13,6 +13,15 @@ test.describe('Approval Queue', () => {
 
     // Should not show a 500 or blank crash state
     await expect(page.locator('text=Error')).not.toBeVisible();
+    await expect(page.locator('text=Something went wrong')).not.toBeVisible();
+
+    // Empty state should be visible and explanatory
+    await expect(
+      page
+        .locator('text=/empty|no approvals|waiting|pending/i')
+        .or(page.locator('text=Approval Queue'))
+        .first(),
+    ).toBeVisible();
 
     await consoleMonitor.verify();
   });

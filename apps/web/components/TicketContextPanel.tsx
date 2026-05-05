@@ -44,7 +44,7 @@ export function TicketContextPanel({
   }, [connectorMode]);
 
   return (
-    <Panel title="Ticket Context">
+    <Panel title="Ticket Context" className="ticket-context-panel">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <input
@@ -55,6 +55,7 @@ export function TicketContextPanel({
             className="flex-1 rounded border border-cockpit-600 bg-cockpit-900 px-3 py-2 text-sm text-cockpit-100 placeholder:text-cockpit-500 focus:border-accent focus:outline-none disabled:opacity-50"
           />
           <button
+            data-testid="load-ticket-context"
             onClick={() => onLoad(ticketId.trim())}
             disabled={loading || !session || !ticketId.trim()}
             className="inline-flex items-center gap-1 rounded bg-accent px-3 py-2 text-sm font-medium text-white hover:bg-accent-dark disabled:opacity-50"

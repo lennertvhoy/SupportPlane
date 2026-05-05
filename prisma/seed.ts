@@ -184,6 +184,20 @@ async function main() {
   });
 
   await prisma.ticketingAdapter.upsert({
+    where: { id: 'zammad-mock-adapter-001' },
+    create: {
+      id: 'zammad-mock-adapter-001',
+      tenantId: 'dev-tenant',
+      name: 'Mock Zammad Adapter',
+      adapterType: 'zammad',
+      capabilities: ['read_tickets', 'read_customers', 'write_notes'],
+      status: 'active',
+      config: { mock: true },
+    },
+    update: {},
+  });
+
+  await prisma.ticketingAdapter.upsert({
     where: { id: 'glpi-adapter-001' },
     create: {
       id: 'glpi-adapter-001',

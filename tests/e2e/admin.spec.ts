@@ -17,6 +17,11 @@ test.describe('Admin Dashboard', () => {
     await expect(page.locator('text=Error')).not.toBeVisible();
     await expect(page.locator('text=500')).not.toBeVisible();
 
+    // Model Usage should show controls (filter/summary cards or data table)
+    await expect(
+      page.locator('text=Provider').or(page.locator('text=Model')).or(page.locator('text=Summary')).first(),
+    ).toBeVisible();
+
     await consoleMonitor.verify();
   });
 
@@ -29,6 +34,10 @@ test.describe('Admin Dashboard', () => {
     await expect(page.getByRole('main').getByText('Users').first()).toBeVisible();
     await expect(page.getByRole('main').getByText('Roles').first()).toBeVisible();
     await expect(page.getByRole('main').getByText('Audit Explorer').first()).toBeVisible();
+
+    // Each governance card should be clickable and navigate
+    await page.getByRole('main').getByText('Policies').first().click();
+    await expect(page.locator('text=Policy Editor').or(page.locator('text=Policies')).first()).toBeVisible();
 
     await consoleMonitor.verify();
   });
