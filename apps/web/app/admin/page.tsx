@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { Shield, Users, UserCog, BarChart3, FileSearch, Database, Plug } from 'lucide-react';
+import { Shield, Users, UserCog, BarChart3, FileSearch, Database, Plug, Lock } from 'lucide-react';
 import { AuthGate } from '@/components/AuthGate';
 import { AdminDashboardShell } from '@/components/AdminDashboardShell';
 import { AdminPolicyPanel } from '@/components/AdminPolicyPanel';
@@ -52,12 +52,17 @@ function AdminPageContent({
                 key={card.href}
                 onClick={() => router.push(card.href)}
                 disabled={disabled}
-                className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none ${card.color} ${disabled ? 'bg-cockpit-900 text-cockpit-600 cursor-not-allowed opacity-50' : 'bg-cockpit-900/60 text-cockpit-200 hover:bg-cockpit-800'}`}
+                className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none ${card.color} ${disabled ? 'bg-cockpit-950 border-cockpit-800 text-cockpit-500 cursor-not-allowed opacity-70' : 'bg-cockpit-900/60 text-cockpit-200 hover:bg-cockpit-800'}`}
                 aria-disabled={disabled}
                 title={disabled ? 'Admin role required' : card.label}
               >
-                <Icon size={20} className={disabled ? 'text-cockpit-600' : 'text-cockpit-300'} />
+                {disabled ? (
+                  <Lock size={18} className="text-cockpit-500" />
+                ) : (
+                  <Icon size={20} className="text-cockpit-300" />
+                )}
                 <span className="text-xs font-medium">{card.label}</span>
+                {disabled && <span className="text-xs text-cockpit-500">Admin required</span>}
               </button>
             );
           })}

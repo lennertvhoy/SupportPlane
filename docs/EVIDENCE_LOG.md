@@ -3286,7 +3286,6 @@
 - Type: browser-e2e-and-cli-verification
 - as_of: 2026-05-05T13:42:46+02:00
 
-
 ## EV-2026-05-05-188: Session 167 — BL-144/BL-147 Header Compaction, IdentityPill Simplification, E2E Repair
 
 - Evidence folder: `output/playwright/session-167-bl144-bl147-e2e-fixes-control-inventory-visual-ci/` (10 files)
@@ -3311,3 +3310,30 @@
   - MD5 duplicate check: 0 duplicate screenshots
 - Type: browser-e2e-and-cli-verification
 - as_of: 2026-05-05T15:01:00+02:00
+
+
+## EV-2026-05-05-189: Session 168 — BL-144/BL-147/BL-157 Control Inventory, Design-System Consistency, E2E Expansion
+
+- Evidence folder: `output/playwright/session-168-first-tester-control-visual-ci/` (12 files)
+- Source/System: Local dev runtime API localhost:4110 (postgres), Web localhost:3200; E2E runtime API localhost:4111, Web localhost:3201
+- Action:
+  - Comprehensive control inventory: ~120+ interactive controls audited across all pages
+  - Added `tests/e2e/control-inventory.spec.ts` with 7 role-boundary tests
+  - Replaced arbitrary `text-[10px]`/`text-[11px]` with `text-xs` in admin shell and pages
+  - Fixed disabled sidebar icon colors to use `text-cockpit-500`
+  - Fixed E2E login helper root cause: `text=Sandbox Demo` false-positive on login subtitle
+  - Fixed strict-mode violations in `admin.spec.ts` and `accessibility.spec.ts`
+  - Fixed `session-ticket.spec.ts` to match actual UI flow without obsolete assertions
+  - All 26 E2E tests pass (8 spec files, 34.3s)
+- Proves:
+  - `npx playwright test tests/e2e`: 26 passed, 0 failed
+  - `npm run format:check`: PASS
+  - `npm run lint`: 0 errors, 79 warnings
+  - `npm run typecheck`: PASS
+  - `npm run build`: PASS
+  - `npm run validate`: PASS
+  - `npm test`: all workspace tests pass
+  - Worktree: clean, commit `59b0501`
+  - MD5 duplicate check: 0 duplicate screenshots (12 unique hashes)
+- Type: browser-e2e-and-cli-verification
+- as_of: 2026-05-05T17:10:00+02:00

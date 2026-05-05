@@ -76,7 +76,7 @@ function UsersPageContent({
                 >
                   <div>
                     <div className="text-xs font-medium text-cockpit-100">{u.name}</div>
-                    <div className="text-[10px] text-cockpit-400">
+                    <div className="text-xs text-cockpit-400">
                       {u.email} · {u.id.slice(0, 8)}
                     </div>
                   </div>
@@ -96,7 +96,7 @@ function UsersPageContent({
           )}
         </div>
 
-        <div className="rounded border border-amber-700/30 bg-amber-950/20 px-3 py-2 text-[10px] text-amber-300">
+        <div className="rounded border border-amber-700/30 bg-amber-950/20 px-3 py-2 text-xs text-amber-300">
           Note: Full user management API is not yet wired. This page displays the authenticated
           identity only.
         </div>

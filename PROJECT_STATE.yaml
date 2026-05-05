@@ -250,6 +250,18 @@ current_state:
       with dashboard-unique '+ New' button. Added 500ms cookie delay. All 19
       E2E tests pass (8 spec files, 24.9s). Evidence: output/playwright/
       session-167-bl144-bl147-e2e-fixes-control-inventory-visual-ci/.
+    head_before_session_168: 59b0501f7b283c536727cc5b0a9c00f5ea59b86d
+    final_head_after_session_168: 8df491c3cec1c15f56292b798679d02e294342c6
+    note_session_168: >
+      Session 168: BL-144 accepted (control inventory closure), BL-147 accepted
+      (design-system consistency closure), BL-157 expanded (E2E suite growth).
+      Comprehensive audit of ~120+ interactive controls across all pages.
+      Added tests/e2e/control-inventory.spec.ts with 7 role-boundary tests.
+      Replaced arbitrary text-[10px]/text-[11px] with text-xs in admin shell
+      and pages. Fixed disabled sidebar icon colors to text-cockpit-500.
+      Fixed E2E login helper false-positive and strict-mode violations.
+      All 26 E2E tests pass (8 spec files, 34.3s). Evidence: output/playwright/
+      session-168-first-tester-control-visual-ci/ (12 files, 12 unique MD5 hashes).
     head_before_session_095: 61d52b018188c8fd0ef20c032a9adb7384f70622
     final_head_after_session_095: b9cd490af43a460e9b48679b5acf8466f7713ed6
     note_session_095: >
@@ -846,10 +858,8 @@ current_state:
     active_queue_source: NEXT_ACTIONS.md
     active_queue_items:
       [
-        BL-144,
         BL-145,
         BL-146,
-        BL-147,
         BL-071,
         BL-072,
         BL-127,
@@ -859,6 +869,7 @@ current_state:
         BL-152,
         BL-154,
         BL-155,
+        BL-157,
         BL-158,
         BL-159,
       ]

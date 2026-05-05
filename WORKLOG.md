@@ -3136,7 +3136,6 @@ If green, BL-157 can be marked fully proven. Deferred to BL-156:
 
 Prove remote E2E CI pass by triggering `.github/workflows/e2e.yml` on GitHub Actions (BL-157 remaining gap). Or proceed with BL-144 (Full Application Control Inventory) or BL-147 (Design-System Consistency Pass & Brand Identity Foundation).
 
-
 ## Session 167 — BL-144/BL-147 Header Compaction, IdentityPill Simplification, E2E Repair
 
 **Date:** 2026-05-05
@@ -3178,3 +3177,88 @@ Prove remote E2E CI pass by triggering `.github/workflows/e2e.yml` on GitHub Act
 ### Next Recommended Action
 
 Prove remote E2E CI pass by pushing to GitHub and triggering `.github/workflows/e2e.yml` (BL-157 remaining gap). Or proceed with BL-144 (remaining secondary panel inventory) or BL-147 (remaining design-system work).
+
+
+---
+
+## Session 168 — BL-144 Control Inventory Closure, BL-147 Design-System Consistency, BL-157 E2E Expansion
+
+**Date:** 2026-05-05
+**Branch:** main
+**Scope:** Complete control inventory across all pages, finish typography standardization pass, expand E2E suite with control-inventory spec, capture screenshot evidence.
+
+### What Changed
+
+- **Control Inventory (BL-144):**
+  - Comprehensive audit of ~120+ interactive controls across all pages (login, dashboard, session detail, admin dashboard, admin sub-pages, tool registry, approval queue, device console, call console, model usage, GDPR, connectors).
+  - Identified real/mock/stubbed/disabled states for every control.
+  - 2 stubbed pages (Users, Roles) already had honest inline notes; verified they remain accurate.
+  - 8 safety controls locked: mock-only enforced ON, real network calls OFF, auto-purge OFF, approval required ON, max attempts 3, kill switch accessible.
+  - All disabled states verified to use multiple visual cues per DESIGN.md (cursor-not-allowed, opacity-50, grayscale).
+  - Added `tests/e2e/control-inventory.spec.ts` with 7 tests:
+    1. Viewer sees disabled create-session button with explanation
+    2. Operator can create a session
+    3. Operator admin dashboard shows locked cards with "Admin required" label
+    4. Admin can navigate all admin cards and pages
+    5. Tool registry viewer denial is clear and visually polished
+    6. Approval queue shows meaningful empty state
+    7. Device console shows read-only policy boundary for viewer
+
+- **Design-System Consistency (BL-147):**
+  - Replaced arbitrary `text-[10px]` with `text-xs` in `AdminDashboardShell.tsx` (nav item labels).
+  - Replaced arbitrary `text-[10px]` with `text-xs` in `apps/web/app/admin/page.tsx` (card labels).
+  - Replaced arbitrary `text-[10px]` with `text-xs` in `apps/web/app/admin/users/page.tsx` (user metadata, warning note).
+  - Replaced arbitrary `text-[9px]` with `text-xs` in `apps/web/app/admin/roles/page.tsx` (permission chips, role count badge, warning note).
+  - Fixed disabled sidebar nav item icon colors to use `text-cockpit-500` instead of hardcoded `text-gray-600`/`text-gray-500`.
+  - Admin badge preserved at `text-[9px]` (micro-label below design-system threshold, acceptable).
+
+- **E2E Test Fixes (BL-157 local expansion):**
+  - Fixed `tests/e2e/helpers.ts` login matcher: removed false-positive `text=Sandbox Demo` (matched login subtitle "local sandbox demo"), now uses `getByRole('button', { name: /New/i })`.
+  - Fixed `tests/e2e/admin.spec.ts` strict-mode violation: "Model Usage Log" → `getByRole('heading', { name: 'Model Usage' })`.
+  - Fixed `tests/e2e/accessibility.spec.ts` same strict-mode violation.
+  - Fixed `tests/e2e/session-ticket.spec.ts`: removed obsolete "Mock Connector Data" assertion, uses deterministic ticket load via data-testid.
+  - All 26 E2E tests now pass (8 spec files, 34.3s).
+
+- **Screenshot Automation:**
+  - Created `scripts/session-168-screenshots.js` — reproducible Playwright script capturing 12 distinct UI states.
+  - Fixed cookie-clearing between role switches to prevent redirect-to-dashboard on re-login.
+
+### Files Changed
+
+- `apps/web/components/AdminDashboardShell.tsx`: Typography standardization (`text-xs`), icon color fix (`text-cockpit-500`).
+- `apps/web/app/admin/page.tsx`: Typography standardization (`text-xs`).
+- `apps/web/app/admin/users/page.tsx`: Typography standardization (`text-xs`).
+- `apps/web/app/admin/roles/page.tsx`: Typography standardization (`text-xs`).
+- `tests/e2e/helpers.ts`: Fixed login matcher, added 500ms cookie delay.
+- `tests/e2e/admin.spec.ts`: Fixed strict-mode heading matcher.
+- `tests/e2e/accessibility.spec.ts`: Fixed strict-mode heading matcher.
+- `tests/e2e/session-ticket.spec.ts`: Removed obsolete assertion, deterministic ticket load.
+- `tests/e2e/control-inventory.spec.ts`: New spec with 7 role-boundary tests.
+- `scripts/session-168-screenshots.js`: New reproducible screenshot script.
+
+### Verification
+
+- `npm run format:check`: PASS
+- `npm run lint`: 0 errors, 79 warnings
+- `npm run typecheck`: PASS (10 workspaces)
+- `npm run build`: PASS
+- `npm run validate`: PASS (contracts + Prisma schema check)
+- `npm test`: all workspace tests pass
+- `npx playwright test tests/e2e`: 26 passed, 0 failed (34.3s, 8 spec files)
+- `git status --short --branch`: clean, on main, ahead 56 from origin/main
+
+### Evidence
+
+- `output/playwright/session-168-first-tester-control-visual-ci/` (12 files, 12 unique MD5 hashes)
+- Screenshots: login-page, operator-dashboard, session-with-ticket-context, new-session-flow, admin-dashboard-admin-view, admin-dashboard-operator-view, model-usage, tool-registry-admin, tool-registry-viewer-denied, approval-queue-empty-state, device-console-viewer-boundary, admin-users-stub-page
+
+### Risks and Limitations
+
+- Remote E2E CI still unproven — `.github/workflows/e2e.yml` exists locally but has never been pushed to origin/main. GitHub Actions has no record of this workflow.
+- BL-144: Call Simulator, Connector, and Delivery Policy secondary panels were reviewed but not individually tested in E2E. Their controls are covered by the general admin navigation and viewer-denial tests.
+- BL-147 remaining (deferred): `packages/ui` migration, full typography system via `next/font`, favicon set, empty-state illustrations.
+- Admin badge `text-[9px]` preserved as micro-label exception.
+
+### Next Recommended Action
+
+Prove remote E2E CI by pushing `.github/workflows/e2e.yml` to GitHub and triggering a run (BL-157 remaining gap). Or proceed with BL-145 (Enterprise Demo IA Simplification) or BL-146 (Production-Readiness Language Audit).

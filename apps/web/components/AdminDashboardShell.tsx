@@ -88,10 +88,17 @@ export function AdminDashboardShell({
                   aria-disabled={item.label !== 'Policies' && !isAdmin}
                   title={item.label !== 'Policies' && !isAdmin ? 'Admin role required' : item.label}
                 >
-                  <Icon size={14} className={item.label !== 'Policies' && !isAdmin ? 'text-cockpit-500' : ''} />
-                  <span className={item.label !== 'Policies' && !isAdmin ? 'text-cockpit-500' : ''}>{item.label}</span>
+                  <Icon
+                    size={14}
+                    className={item.label !== 'Policies' && !isAdmin ? 'text-cockpit-500' : ''}
+                  />
+                  <span className={item.label !== 'Policies' && !isAdmin ? 'text-cockpit-500' : ''}>
+                    {item.label}
+                  </span>
                   {!isAdmin && item.label !== 'Policies' && (
-                    <span className="ml-auto rounded bg-cockpit-800 px-1 py-0.5 text-[9px] text-cockpit-400">Admin</span>
+                    <span className="ml-auto rounded bg-cockpit-800 px-1.5 py-0.5 text-xs text-cockpit-400">
+                      Admin
+                    </span>
                   )}
                 </button>
               );

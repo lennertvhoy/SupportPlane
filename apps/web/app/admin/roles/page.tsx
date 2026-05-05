@@ -99,13 +99,13 @@ function RolesPageContent({
                     {r.permissions.slice(0, 8).map((p) => (
                       <span
                         key={p}
-                        className="rounded bg-cockpit-800 px-1.5 py-0.5 text-[9px] text-cockpit-400"
+                        className="rounded bg-cockpit-800 px-1.5 py-0.5 text-xs text-cockpit-400"
                       >
                         {p}
                       </span>
                     ))}
                     {r.permissions.length > 8 && (
-                      <span className="text-[9px] text-cockpit-400">
+                      <span className="text-xs text-cockpit-400">
                         +{r.permissions.length - 8} more
                       </span>
                     )}
@@ -116,7 +116,7 @@ function RolesPageContent({
           )}
         </div>
 
-        <div className="rounded border border-amber-700/30 bg-amber-950/20 px-3 py-2 text-[10px] text-amber-300">
+        <div className="rounded border border-amber-700/30 bg-amber-950/20 px-3 py-2 text-xs text-amber-300">
           Note: Full role management API is not yet wired. This page shows roles derived from the
           current identity.
         </div>

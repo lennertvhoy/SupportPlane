@@ -11,7 +11,7 @@ test.describe('Admin Dashboard', () => {
     await expect(page.getByRole('navigation').getByText('Model Usage')).toBeVisible();
 
     await page.getByRole('navigation').getByText('Model Usage').click();
-    await expect(page.locator('text=Model Usage Log')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('main').locator('text=MODEL USAGE')).toBeVisible({ timeout: 10000 });
 
     // Verify no 500/crash state
     await expect(page.locator('text=Error')).not.toBeVisible();

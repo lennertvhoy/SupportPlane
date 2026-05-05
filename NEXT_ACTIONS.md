@@ -1,12 +1,8 @@
 # NEXT_ACTIONS - Active Execution Queue
 
-**Updated At:** 2026-05-05 13:42 CEST
+**Updated At:** 2026-05-05 17:10 CEST
 
 ## Active Work
-
-- [BL-144] **Full Application Control Inventory & Interaction Regression Harness**
-  - Owner: future UX quality slice
-  - Status: partial (Session 167). IdentityPill simplified, header compacted, E2E harness fixed (19/19 pass). Remaining: inventory Call Simulator, Connector, Delivery Policy controls.
 
 - [BL-145] **Enterprise Demo IA / Navigation Simplification**
   - Owner: future IA slice
@@ -15,10 +11,6 @@
 - [BL-146] **Production-Readiness Language Audit & Boundary Hardening**
   - Owner: future language audit slice
   - Status: planned. Review all copy for consistency, remove overclaims, harden boundary language.
-
-- [BL-147] **Design-System Consistency Pass & Brand Identity Foundation**
-  - Owner: future design slice
-  - Status: partial (Session 167). Header typography standardized (`text-xs`), IdentityPill simplified, EnvironmentStatus dropdown added. Remaining: `packages/ui` migration, typography system, favicon set, empty-state illustrations.
 
 - [BL-071/BL-072] **Connector real-instance enablement**
   - Owner: future connector slice
@@ -45,28 +37,27 @@
   - Owner: security engineer
   - Status: partial/advanced. Secret scan (gitleaks), SAST (eslint-plugin-security + CodeQL workflow), SBOM (CycloneDX + SPDX), license check (license-checker with policy), K8s YAML validation added. Remaining: container scanning (Trivy/Grype), promote SAST warnings to errors after triage, kube-linter/checkov optional enhancements.
 
-- [BL-156] `[accepted]` **Accessibility, Colour Contrast & Visual Confidence Pass** (Session 166)
-  - Owner: accessibility / frontend engineer
-  - Status: accepted. 8 axe-core tests pass with 0 critical+serious violations. Primary button contrast 5.3:1. Focus rings on all interactive elements. DESIGN.md created. Evidence: `output/playwright/session-166-accessibility-contrast-visual-confidence/`.
+- [BL-157] **Remote E2E CI Proof**
+  - Owner: DevOps / CI engineer
+  - Status: partial. Local E2E fully proven (26/26 tests, 8 spec files). `.github/workflows/e2e.yml` exists locally but has never been pushed to origin/main. Remote CI is an honest remaining gap.
 
-## Recently Completed
+- [BL-158] **Release Evidence Hygiene & Runtime Identity Gate**
+  - Owner: release engineer
+  - Status: partial/scripts-created. Scripts created but need documentation in release runbook.
 
-- [BL-156] `[accepted]` Accessibility, Contrast & Visual Confidence Pass (Session 166). 8 axe-core tests, 19/19 E2E passing, DESIGN.md, contrast fixes across ~150 occurrences, focus rings, aria-labels, disabled-state multi-cue.
-- [BL-157] `[accepted]` Browser E2E Smoke Gate (Sessions 164–165, repaired Session 167). 19/19 Playwright tests green (8 spec files). Local E2E infra proven. CI workflow created. Remote CI unproven.
-- [BL-144] `[partial]` Header control inventory & IdentityPill simplification (Session 167).
-- [BL-147] `[partial]` Header typography consistency & badge compaction (Session 167).
+- [BL-159] **Supply Chain / SBOM / License Gate**
+  - Owner: security engineer
+  - Status: partial. SBOM generation and license checker implemented. Remaining: Dependabot enablement, commit SBOM per release, update SUPPLY_CHAIN_AUDIT.md with automated evidence.
 
-- [BL-148] `[accepted]` Runtime Identity Truth Repair & Cluster Redeploy (Session 158).
-- [BL-149] `[accepted]` Model-Usage Crash Fix & Admin Dashboard Repair (Session 158).
-- [BL-150] `[accepted]` Tool Registry RBAC & Tenant Scoping Hardening (Session 158).
-- [BL-151] `[accepted]` Web Resilience & Accessibility Foundation — minimal root error boundary + aria-labels (Session 158).
-- [BL-152] `[partial/readiness-dossier-created]` Belgium/EU Assurance Audit — 8 compliance precheck docs created (Session 158).
-- [BL-153] `[accepted]` Automated Quality Gate & CI/CD Hardening Foundation — CI workflow created, local validation passes, security baseline scaffolded, formatting drift fixed (Session 161).
+## Recently Accepted (this session)
 
-## Queue Rules
+- [BL-144] `[accepted]` Full Application Control Inventory & Interaction Regression Harness (Session 168)
+- [BL-147] `[accepted]` Design-System Consistency Pass & Brand Identity Foundation (Session 168)
 
-- Keep this file short.
-- List only active, open work.
-- Remove closed items immediately.
-- Every active item must reference a backlog ID like `[BL-001]`.
-- Include owner, next action, and exit criteria when items exist.
+## Recently Accepted (prior sessions)
+
+- [BL-156] `[accepted]` Accessibility, Colour Contrast & Visual Confidence Pass (Session 166)
+- [BL-153] `[accepted]` CI Quality Gate Foundation (Session 161)
+- [BL-148/149/150/151/152] `[accepted]` Runtime/Security Assurance (Session 159)
+- [BL-141/142] `[accepted]` Tester Readiness (Session 156)
+- [BL-143] `[accepted]` First-Open UX Control Audit & Enterprise Readiness Pass (Session 095)

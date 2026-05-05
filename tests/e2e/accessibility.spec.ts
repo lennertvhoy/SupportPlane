@@ -117,7 +117,7 @@ test.describe('Accessibility / Axe', () => {
     await expect(page.getByRole('navigation').getByText('Model Usage')).toBeVisible();
 
     await page.getByRole('navigation').getByText('Model Usage').click();
-    await expect(page.locator('text=Model Usage Log')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('main').locator('text=MODEL USAGE')).toBeVisible({ timeout: 10000 });
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
