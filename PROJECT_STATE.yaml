@@ -133,7 +133,7 @@ current_state:
       BL-152: Created 8 compliance precheck docs in docs/compliance/.
       Evidence: session-159 supersedes session-158 (18 files, canonical).
     head_before_session_159: c6cccb8320957208fd9cb42d6870c91c3975f65c
-    final_head_after_session_159: recorded_in_final_handoff
+    final_head_after_session_159: 72e8572cdb0a130e6b33c4631f0c840bd644e4ec
     note_session_159: >
       Session 159: Resumed session 158 closure. Corrected stale
       PROJECT_STATE.yaml final_head_after_session_158 placeholder hash
@@ -143,6 +143,13 @@ current_state:
       all state docs and EVIDENCE_LOG. Deleted superseded session-158
       folder. Evidence: output/playwright/session-159-bl148-149-150-151-152-
       runtime-security-assurance/ (18 files, canonical for BL-148/149/150/151/152).
+      Runtime HEAD at verification: c6cccb8320957208fd9cb42d6870c91c3975f65c.
+      Final repo HEAD after session-159 closure docs: 72e8572cdb0a130e6b33c4631f0c840bd644e4ec.
+      Diff c6cccb8..72e8572 is docs/state-only (BACKLOG.md, PROJECT_STATE.yaml,
+      STATUS.md, docs/EVIDENCE_LOG.md). No runtime code changes. Explicitly
+      dispositioned per SupportPlane closure rule: non-runtime doc corrections
+      are acceptable when documented. Exception recorded in
+      output/playwright/session-160-automation-design-assurance-backlog/00-EVIDENCE-INDEX.md.
     head_before_session_095: 61d52b018188c8fd0ef20c032a9adb7384f70622
     final_head_after_session_095: b9cd490af43a460e9b48679b5acf8466f7713ed6
     note_session_095: >
