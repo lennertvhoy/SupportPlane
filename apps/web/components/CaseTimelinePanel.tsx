@@ -55,7 +55,7 @@ export function CaseTimelinePanel({ session }: { session?: SupportSession }) {
         </div>
       )}
       {error && <div className="rounded bg-red-900/30 px-2 py-1 text-xs text-red-300">{error}</div>}
-      <div className="space-y-2 max-h-80 overflow-y-auto">
+      <div className="space-y-2 max-h-80 overflow-y-auto" tabIndex={0}>
         {timeline.map((item) => (
           <div key={item.id} className="relative pl-4 border-l border-cockpit-600">
             <div className="absolute -left-1 top-1 h-2 w-2 rounded-full bg-accent" />
