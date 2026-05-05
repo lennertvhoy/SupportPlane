@@ -2,6 +2,49 @@
 
 **Purpose:** Append-only history for completed work.
 
+## Session 163 — 2026-05-05 — DevSecOps Automated Audit Foundation
+
+**Date:** 2026-05-05 11:00 CEST
+**Git HEAD:** de34661ff9858d361eb60a21ff592870202f8bca (starting), TBD (final)
+**Branch:** main
+
+### What changed
+
+- **Session 162 integrity repair:** Evidence index stale (Case A). Actual HEAD de34661 > evidence HEAD 38dc18b. Later commits (2f5b61e docs update, de34661 style format) are docs-only. Updated evidence index and PROJECT_STATE.yaml with correct final HEAD.
+- **Secret scanning:** Added `.gitleaks.toml` with path/regex allowlists. Added `scripts/secret-scan.sh`. Local scan: 0 findings. CI: `.github/workflows/security-audit.yml` secret-scan job with `gitleaks/gitleaks-action@v2`.
+- **SAST (local):** Added `eslint-plugin-security` to `eslint.config.mjs`. Rules configured: detect-eval-with-expression/error, detect-pseudoRandomBytes/error, detect-unsafe-regex/warn, detect-object-injection/warn, etc. 79 warnings (0 errors) — advisory only.
+- **SAST (remote):** Created `.github/workflows/codeql.yml` with `security-extended,security-and-quality` queries for `javascript-typescript`.
+- **SBOM:** Added `scripts/sbom-generate.sh` using `npm sbom --sbom-format=cyclonedx` and `--sbom-format=spdx`. Generates both formats successfully.
+- **License check:** Added `scripts/license-check.sh` with `license-checker`. Policy: disallowed (GPL-2.0/3.0, AGPL-3.0, SSPL-1.0, Proprietary, Commercial), review-required (MPL, EPL, CC-BY-NC, WTFPL). Explicit allowlist for `@img/sharp-libvips-*` LGPL runtime deps. 0 disallowed after allowlist.
+- **K8s manifest validation:** Added `scripts/k8s-manifest-check.sh` with PyYAML syntax validation and optional kubectl dry-run. All 25+ YAML files valid. Optional tools (kube-linter, checkov, kube-score) documented as future enhancements.
+- **CI hardening:** Added `permissions: contents: read` to `.github/workflows/ci.yml`. Created `.github/workflows/security-audit.yml` with 5 jobs: secret-scan, sast-eslint, sbom, license-check, k8s-manifest-check.
+- **License fields:** Added `"license": "MIT"` to root `package.json` and all 10 workspace `package.json` files.
+- **State docs updated:** `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `docs/EVIDENCE_LOG.md`, `WORKLOG.md`.
+
+### Validation results
+
+| Command                         | Result                                |
+| ------------------------------- | ------------------------------------- |
+| `npm run format:check`          | PASS                                  |
+| `npm run lint`                  | PASS (0 errors, 79 security warnings) |
+| `npm run typecheck`             | PASS (10 workspaces)                  |
+| `npm run build`                 | PASS                                  |
+| `npm run validate`              | PASS                                  |
+| `npm test`                      | 461 tests, 458 pass, 0 fail, 3 skip   |
+| `npm run security:baseline`     | PASS (0 high findings)                |
+| `npm run security:secrets`      | PASS (0 secret findings)              |
+| `npm run security:sast`         | PASS (eslint-plugin-security active)  |
+| `npm run sbom`                  | PASS (CycloneDX + SPDX)               |
+| `npm run license:check`         | PASS (0 disallowed after allowlist)   |
+| `npm run k8s:check`             | PASS (YAML valid)                     |
+| `npm run check:docs-governance` | PASS                                  |
+| Workflow YAML validation        | PASS (5 files)                        |
+
+### Evidence
+
+- Folder: `output/playwright/session-163-devsecops-automation-foundation/`
+- Files: 16 (under 20 cap)
+
 ## Session 162 — 2026-05-05 — CI Security Policy Repair + Test Trustworthiness Starter
 
 **Date:** 2026-05-05 10:20 CEST

@@ -243,14 +243,15 @@ Status markers:
   - Session 162 progress: Added 6 `packages/audit` tests for `computeIntegrityHash` (determinism, key-order independence, format, empty/null handling, distinct payloads). Added 7 `apps/worker` tests for `createCorrelationId` and `getHeaders` (format, uniqueness, header presence, correlation id pass-through, tenant id handling). Extracted `apps/worker/src/helpers.ts` for testability. `packages/ui` remains empty/ghost — no tests added.
   - Risk notes: Mock-heavy approach is intentional for speed; document boundaries honestly. Worker main loop and NATS integration still need integration tests. UI tests deferred until package has real components.
 
-- [BL-155] `[partial/dependency-audit-in-ci]` DevSecOps Automated Audit Foundation.
+- [BL-155] `[partial/advanced]` DevSecOps Automated Audit Foundation.
   - Problem: No SAST, DAST, dependency scanning, secrets detection, container scanning, or SBOM generation in CI. Kubernetes manifests lack validation. Supply chain is unmonitored.
   - Why it matters: Security regressions and supply-chain attacks will not be caught until manual review. NIS2 and EU Cyber Resilience Act readiness require evidence.
-  - Scope: (1) Dependency vulnerability scanning: `npm audit` in CI; triage pre-existing vulns. (2) Secrets detection: `gitleaks` or `trufflehog` in CI, or GitHub secret scanning. (3) SAST: Semgrep or CodeQL with findings tracked. (4) Container scanning: Trivy/Grype after `podman build`. (5) SBOM: CycloneDX/SPDX via `npm sbom` or `cyclonedx-npm`; commit per release. (6) License scan: `license-checker` or FOSSA. (7) K8s manifest validation: `kube-linter`, `checkov`, or `kubectl apply --dry-run=server`.
+  - Scope: (1) Dependency vulnerability scanning: `npm audit` in CI; triage pre-existing vulns. (2) Secrets detection: `gitleaks` in CI with `.gitleaks.toml` config. (3) SAST: eslint-plugin-security (local) + CodeQL workflow (remote). (4) Container scanning: Trivy/Grype deferred — no images built in PR CI. (5) SBOM: CycloneDX + SPDX via `npm sbom`. (6) License scan: `license-checker` with disallowed/allowlist policy. (7) K8s manifest validation: YAML syntax + kubectl dry-run with optional tool scaffold.
   - Non-goals: Claim all findings fixed immediately. Production-grade DAST.
   - Acceptance: CI runs ≥3 new security checks. First scan results committed even if findings exist (honesty rule). SBOM generation script runs successfully. K8s manifest validation script reports issues.
-  - Evidence: CI workflow YAML showing security steps. Scan result artifacts (JSON/txt). SBOM file committed.
-  - Risk notes: False positives from SAST must be triaged, not ignored. Container scanning may be slow — consider nightly.
+  - Evidence: `output/playwright/session-163-devsecops-automation-foundation/` (16 files). CI workflow YAML showing security steps. Scan result artifacts. SBOM and license reports generated.
+  - Session 163 progress: Added gitleaks secret scan (0 findings), eslint-plugin-security SAST (79 warnings, advisory), CodeQL workflow, SBOM generation (CycloneDX + SPDX), license check (0 disallowed after explicit allowlist), K8s YAML validation (0 errors). Container scanning deferred.
+  - Risk notes: False positives from SAST must be triaged, not ignored. Container scanning may be slow — consider nightly. 79 eslint-plugin-security warnings are advisory only.
 
 - [BL-156] `[planned]` Accessibility, Colour Contrast & Visual Confidence Pass.
   - Problem: Primary button contrast fails WCAG AA (3.68:1). ~7 aria labels total. No automated accessibility testing. Focus visibility inconsistent. Disabled states rely on opacity only. No reduced-motion support.
@@ -279,13 +280,15 @@ Status markers:
   - Evidence: CLI output of both scripts.
   - Risk notes: Docs-only exception must be explicitly logged to avoid false negatives.
 
-- [BL-159] `[planned]` Supply Chain / SBOM / License Gate.
+- [BL-159] `[partial]` Supply Chain / SBOM / License Gate.
   - Problem: No SBOM exists. No license inventory. Dependency vulnerabilities are not continuously monitored.
   - Why it matters: NIS2 and EU Cyber Resilience Act require supply-chain transparency. Customers and auditors will ask for SBOMs and license attestations.
   - Scope: (1) Generate SBOM (`npm sbom --format=cyclonedx` or `cyclonedx-npm`). (2) Commit SBOM to `docs/compliance/sbom/` per release. (3) Run license scan (`license-checker --json` or `fossa`). (4) Identify copyleft/incompatible licenses and document exceptions. (5) Add `npm audit --audit-level=moderate` to CI. (6) Enable Dependabot for automated security update PRs.
   - Non-goals: Fix all vulnerabilities in this slice. Sign artifacts with Sigstore/cosign yet.
   - Acceptance: SBOM generation script runs successfully. License scan output committed. `npm audit` runs in CI and surfaces findings. Dependabot enabled (or documented why not). `docs/compliance/SUPPLY_CHAIN_AUDIT.md` updated with automated evidence.
   - Evidence: SBOM JSON artifact. License scan output. CI screenshot showing audit step.
+  - Session 163 progress: SBOM generation implemented (CycloneDX + SPDX). License checker implemented with disallowed/allowlist policy. `@img/sharp-libvips-*` LGPL runtime deps explicitly allowlisted with documented rationale. Workspace packages now have `license: MIT`.
+  - Remaining: Dependabot enablement, commit SBOM per release, update SUPPLY_CHAIN_AUDIT.md with automated evidence.
   - Risk notes: Some dependencies may have incompatible licenses; document rather than hide.
 
 ## WATCHLIST

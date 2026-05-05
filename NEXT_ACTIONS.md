@@ -43,7 +43,7 @@
 
 - [BL-155] **DevSecOps Automated Audit Foundation**
   - Owner: security engineer
-  - Status: partial. Dependency audit runs in CI (`security-baseline` job, `npm audit --audit-level=high` blocking + full report artifact). Remaining: SAST (Semgrep/CodeQL), secrets detection (gitleaks), container scanning (Trivy), SBOM, license scan, K8s manifest validation.
+  - Status: partial/advanced. Secret scan (gitleaks), SAST (eslint-plugin-security + CodeQL workflow), SBOM (CycloneDX + SPDX), license check (license-checker with policy), K8s YAML validation added. Remaining: container scanning (Trivy/Grype), promote SAST warnings to errors after triage, kube-linter/checkov optional enhancements.
 
 - [BL-156] **Accessibility, Colour Contrast & Visual Confidence Pass**
   - Owner: accessibility / frontend engineer

@@ -2,6 +2,37 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-05-185: Session 163 — DevSecOps Automated Audit Foundation (BL-155 partial/advanced, BL-159 partial, BL-158 partial)
+
+- Evidence folder: `output/playwright/session-163-devsecops-automation-foundation/`
+- Source/System: Local shell validation against repo HEAD `de34661`
+- Action: Session 162 integrity preflight completed — evidence index stale (Case A), repaired. Added gitleaks secret scan with `.gitleaks.toml` (0 findings). Added `eslint-plugin-security` to ESLint config (79 warnings, advisory). Created CodeQL workflow (`.github/workflows/codeql.yml`). Created SBOM generation script (`scripts/sbom-generate.sh`, CycloneDX + SPDX via `npm sbom`). Created license checker script (`scripts/license-check.sh` with disallowed/allowlist policy, 0 disallowed after explicit allowlist for sharp-libvips runtime deps). Created K8s manifest validation script (`scripts/k8s-manifest-check.sh`, YAML syntax valid, dry-run skipped without cluster). Created `.github/workflows/security-audit.yml` with secret-scan, sast-eslint, sbom, license-check, and k8s-manifest-check jobs. Added `permissions: contents: read` to `ci.yml`. Added `license: MIT` to all workspace packages and root `package.json`.
+- Proves:
+  - `npm run format:check` passes (0 errors)
+  - `npm run lint` passes (0 errors, 79 security warnings)
+  - `npm run typecheck` passes (all 10 workspaces)
+  - `npm run build` passes (all workspaces)
+  - `npm run validate` passes (contracts + Prisma schema)
+  - `npm test` passes: 461 tests, 458 pass, 0 fail, 3 skip
+  - `npm run security:baseline` passes (0 high findings)
+  - `npm run security:secrets` passes (0 secret findings)
+  - `npm run security:sast` passes (eslint-plugin-security active)
+  - `npm run sbom` passes (CycloneDX + SPDX generated)
+  - `npm run license:check` passes (0 disallowed after allowlist)
+  - `npm run k8s:check` passes (YAML valid, cluster dry-run skipped)
+  - `npm run check:docs-governance` passes
+  - All workflow YAML files syntactically valid
+- Limitations:
+  - Remote GitHub Actions execution not yet proven (no PR/push triggered)
+  - Branch protection rules not configured
+  - 5 moderate npm audit findings remain (postcss via next, @hono/node-server via prisma dev)
+  - 79 eslint-plugin-security warnings remain (advisory only)
+  - Container scanning deferred (Trivy/Grype not installed)
+  - `packages/ui` remains essentially empty (no meaningful tests possible)
+  - Browser E2E not implemented (BL-157 planned)
+- Type: devsecops-security-automation
+- as_of: 2026-05-05T11:00:00+02:00
+
 ## EV-2026-05-05-184: Session 162 — CI Security Policy Repair + Test Trustworthiness Starter (BL-153 repair, BL-159 triage, BL-154 partial)
 
 - Evidence folder: `output/playwright/session-162-ci-security-test-trust-repair/`

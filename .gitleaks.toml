@@ -1,0 +1,36 @@
+title = "SupportPlane Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''\.playwright-mcp\/''',
+  '''\.playwright-cli\/''',
+  '''output\/playwright\/''',
+  '''node_modules\/''',
+  '''\.next\/''',
+  '''\.git\/''',
+  '''\.opencode\/''',
+  '''docs\/compliance\/''',
+  '''backups\/''',
+  '''fixtures\/''',
+  '''dist\/''',
+  '''\.gitleaks''',
+  # Local-only Kubernetes secret manifests (documented sandbox-only)
+  '''app-secret\.local\.yaml''',
+  '''asterisk-secret\.yaml''',
+]
+
+regexes = [
+  # secretRefHash values are SHA-256 hashes, not secrets
+  '''"secretRefHash":\s*"[0-9a-f]{64}"''',
+  # Demo/test tokens with obvious placeholder pattern
+  '''abcdef1234567890abcdef1234567890''',
+  # Local dev token in app-secret.local.yaml (documented local-only)
+  '''SUPPORTPLANE_INTERNAL_SERVICE_TOKEN''',
+  # Test redaction token (intentionally used in redaction.test.ts)
+  '''abcdefghijklmnopqrstuvwxyz123456''',
+  # Base64 of "local-sandbox-secret" used in asterisk local manifest
+  '''bG9jYWwtc2FuZGJveC1zZWNyZXQ=''',
+]
