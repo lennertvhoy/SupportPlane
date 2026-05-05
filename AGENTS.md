@@ -58,6 +58,18 @@ These rules apply in all modes:
   combined folder as usual with the next sequential session number and all
   covered BL-IDs (e.g. `session-153-bl141-bl142-description/`). this keeps
   total evidence count manageable for review and handoff paste operations
+- **subagent evidence consolidation rule (mandatory):** if you use subagents,
+  parallel workers, or any delegated workstreams, ALL evidence produced by
+  EVERY subagent MUST be collected into the SAME single evidence folder for
+  that session. NEVER allow subagents to create their own evidence folders,
+  output directories, or scatter proof across multiple locations. The parent
+  agent is responsible for consolidating everything into one folder before
+  claiming closure. NO EXCEPTIONS.
+- **prefer screenshots over text dumps (mandatory):** CLI and non-visual work
+  must still produce visual evidence. Use terminal screenshots, browser-rendered
+  screenshots of JSON/text artifacts, or Playwright captures of command output.
+  Raw `.txt` and `.json` files are acceptable only as supporting artifacts,
+  not as primary evidence. The default evidence format is PNG screenshots.
 - **backlog currency rule:** every closure session must reconcile `BACKLOG.md`,
   `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `WORKLOG.md`,
   `docs/EVIDENCE_LOG.md`, and `docs/ACCEPTANCE_FREEZES.md` before claiming
@@ -371,6 +383,10 @@ when requested. Validation summaries are not enough; final handoffs must list
 exact commands and pass/fail results.
 
 ### Screenshot budget and quality rule (mandatory)
+
+> **VIOLATION OF THIS SECTION IS AN AUTOMATIC CLOSURE FAILURE.**
+> No amount of code quality, passing tests, or clever justification can
+> override the hard caps below. Check every item before ending a session.
 
 - **MAX 20 FILES PER EVIDENCE FOLDER — HARD CAP, NEVER EXCEED.**
   This is an absolute limit on the total file count inside any single evidence
