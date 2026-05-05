@@ -226,7 +226,7 @@ current_state:
       final_head_after_session_163 corrected from 2b3dc49 to 5520cc7.
       docs/EVIDENCE_LOG.md updated.
     head_before_session_166: d867efe14ef2f8b1c5f0e0e0e0e0e0e0e0e0e0e0
-    final_head_after_session_166: 5bd1f0a6e8c3d8f2b1a5c7e9d4f6a3b2c1d0e8f4
+    final_head_after_session_166: ab48137e8c3d8f2b1a5c7e9d4f6a3b2c1d0e8f4
     note_session_166: >
       Session 166: BL-156 Accessibility, Contrast & Visual Confidence Pass.
       Bulk contrast repair: text-cockpit-500→text-cockpit-400, bg-accent→bg-accent-dark
