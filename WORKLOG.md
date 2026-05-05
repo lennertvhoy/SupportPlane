@@ -20,21 +20,21 @@
 
 ### Validation results
 
-| Command | Result |
-|---|---|
-| `npm run format:check` | PASS |
-| `npm run lint` | PASS |
-| `npm run typecheck` | PASS (10 workspaces) |
-| `npm run build` | PASS |
-| `npm run validate` | PASS |
-| `npm test` | 461 tests, 458 pass, 0 fail, 3 skip |
-| `npm run ci` | PASS (includes security baseline) |
-| `npm run ci:full` | PASS |
-| `npm audit --audit-level=high` | PASS (0 findings) |
-| `npm audit --audit-level=moderate` | 5 moderate findings |
-| `python3 scripts/check_state_docs.py` | PASS |
-| `python3 scripts/check_docs_hygiene.py` | PASS |
-| Workflow YAML validation | PASS |
+| Command                                 | Result                              |
+| --------------------------------------- | ----------------------------------- |
+| `npm run format:check`                  | PASS                                |
+| `npm run lint`                          | PASS                                |
+| `npm run typecheck`                     | PASS (10 workspaces)                |
+| `npm run build`                         | PASS                                |
+| `npm run validate`                      | PASS                                |
+| `npm test`                              | 461 tests, 458 pass, 0 fail, 3 skip |
+| `npm run ci`                            | PASS (includes security baseline)   |
+| `npm run ci:full`                       | PASS                                |
+| `npm audit --audit-level=high`          | PASS (0 findings)                   |
+| `npm audit --audit-level=moderate`      | 5 moderate findings                 |
+| `python3 scripts/check_state_docs.py`   | PASS                                |
+| `python3 scripts/check_docs_hygiene.py` | PASS                                |
+| Workflow YAML validation                | PASS                                |
 
 ### Risks and limitations
 
