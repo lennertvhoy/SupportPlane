@@ -239,6 +239,17 @@ current_state:
       tables, token rules, do/don't examples, known gaps. E2E suite expanded to
       19/19 passing. All validation gates pass. Evidence: output/playwright/
       session-166-accessibility-contrast-visual-confidence/.
+    head_before_session_167: 65cd179b101afbb2ff890fd8d9dc8ecde677168b
+    final_head_after_session_167: 65cd179b101afbb2ff890fd8d9dc8ecde677168b
+    note_session_167: >
+      Session 167: BL-144 partial (header control inventory), BL-147 partial
+      (design-system consistency), BL-157 E2E repair. IdentityPill simplified
+      (display-only, no logout). UserMenu added to header. EnvironmentStatus
+      dropdown replaces inline badge row. Typography standardized to text-xs.
+      E2E login helper fixed: replaced false-positive 'Sandbox Demo' matcher
+      with dashboard-unique '+ New' button. Added 500ms cookie delay. All 19
+      E2E tests pass (8 spec files, 24.9s). Evidence: output/playwright/
+      session-167-bl144-bl147-e2e-fixes-control-inventory-visual-ci/.
     head_before_session_095: 61d52b018188c8fd0ef20c032a9adb7384f70622
     final_head_after_session_095: b9cd490af43a460e9b48679b5acf8466f7713ed6
     note_session_095: >
