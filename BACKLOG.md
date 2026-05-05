@@ -230,17 +230,18 @@ Status markers:
   - Scope: Created `.github/workflows/ci.yml` with three jobs: `quality` (format, lint, typecheck, build, Prisma migrate/deploy, validate, test with PostgreSQL service container), `security-baseline` (npm audit --audit-level=high blocking + full audit artifact), `docs-governance` (state docs and docs hygiene). Added `npm run ci` and `npm run ci:local` root scripts. Fixed `PROJECT_STATE.yaml` duplicate keys that broke `format:check`. Ran `npm run format` to fix repo-wide drift so `format:check` is now a real gate.
   - Non-goals: Container builds in PR CI (too slow), K8s deployment tests, branch protection configuration (documented as required).
   - Acceptance: Local validation passes for all core gates. CI workflow is syntactically valid. `npm audit` findings surfaced in artifact. CI design targets <10 min.
-  - Evidence: `output/playwright/session-161-ci-quality-gate-foundation/` with git state, CI inventory, script inventory, test baseline, local validation, security audit report, workflow validation.
-  - Risk notes: 3 skipped AI chat tests require DATABASE_URL; now runnable in CI via PostgreSQL service container. Remote GitHub Actions run not yet verified (local validation only). 10 pre-existing npm audit findings (2 high, 8 moderate) documented; remediation is BL-159.
+  - Evidence: `output/playwright/session-161-ci-quality-gate-foundation/` with git state, CI inventory, script inventory, test baseline, local validation, security audit report, workflow validation. Session 162 repair: `output/playwright/session-162-ci-security-test-trust-repair/`.
+  - Risk notes: 3 skipped AI chat tests require DATABASE_URL; now runnable in CI via PostgreSQL service container. Remote GitHub Actions run not yet verified (local validation only). **2 high-severity npm audit findings resolved in Session 162 via NestJS 10→11 upgrade.** 5 moderate findings remain (postcss via next, @hono/node-server via prisma dev).
 
-- [BL-154] `[partial/skip-reasons-documented]` Test Trustworthiness & Anti-Fake-Completeness Strategy.
+- [BL-154] `[partial/tests-added]` Test Trustworthiness & Anti-Fake-Completeness Strategy.
   - Problem: Worker, UI, and audit packages have zero tests. Browser E2E does not exist. Mock-heavy testing means real database/AI/NATS paths are unexercised. Negative tests missing for several security boundaries.
   - Why it matters: Untested worker delivery, untested UI components, and missing negative tests create silent regression risks.
   - Scope: (1) Worker tests: `processOnce`, retry logic, dead-letter handling, NATS consume/ack. (2) UI tests: ≥3 render/snapshot tests for shared primitives in `packages/ui`. (3) Audit tests: `computeIntegrityHash` behavior, redaction helpers. (4) Negative tests: AI chat invalid roles/model, evidence bundle tenant mismatch, call control invalid actions, worker retry exhaustion. (5) Mock/real boundary: Document which tests use mocks and why. Add `mockDevOnly` assertions. (6) Skipped tests: Document reason and owner.
-  - Non-goals: Replace all mocks with real integrations. Full Playwright E2E (that is BL-159).
+  - Non-goals: Replace all mocks with real integrations. Full Playwright E2E (that is BL-157).
   - Acceptance: `apps/worker` ≥5 meaningful tests. `packages/ui` ≥3 render tests. `packages/audit` ≥3 unit tests. All skipped tests have `// SKIP REASON:` comments. No new test merely blesses broken behavior.
   - Evidence: `npm test` output showing new pass counts. Test file listings per workspace.
-  - Risk notes: Mock-heavy approach is intentional for speed; document boundaries honestly.
+  - Session 162 progress: Added 6 `packages/audit` tests for `computeIntegrityHash` (determinism, key-order independence, format, empty/null handling, distinct payloads). Added 7 `apps/worker` tests for `createCorrelationId` and `getHeaders` (format, uniqueness, header presence, correlation id pass-through, tenant id handling). Extracted `apps/worker/src/helpers.ts` for testability. `packages/ui` remains empty/ghost — no tests added.
+  - Risk notes: Mock-heavy approach is intentional for speed; document boundaries honestly. Worker main loop and NATS integration still need integration tests. UI tests deferred until package has real components.
 
 - [BL-155] `[partial/dependency-audit-in-ci]` DevSecOps Automated Audit Foundation.
   - Problem: No SAST, DAST, dependency scanning, secrets detection, container scanning, or SBOM generation in CI. Kubernetes manifests lack validation. Supply chain is unmonitored.

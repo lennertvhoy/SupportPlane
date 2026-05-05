@@ -39,7 +39,7 @@
 
 - [BL-154] **Test Trustworthiness & Anti-Fake-Completeness Strategy**
   - Owner: QA / test architect
-  - Status: planned. Add worker tests, UI render tests, audit unit tests, negative tests for security boundaries, mock/real boundary documentation, skip reason comments.
+  - Status: partial. Worker helper tests (7) and audit integrity-hash tests (6) added in Session 162. Remaining: UI render tests (blocked by ghost package), worker integration tests, negative tests for security boundaries, mock/real boundary documentation.
 
 - [BL-155] **DevSecOps Automated Audit Foundation**
   - Owner: security engineer

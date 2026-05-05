@@ -2,6 +2,34 @@
 
 **Purpose:** Structured ledger of proof artifacts for user-facing claims and external planning references.
 
+## EV-2026-05-05-184: Session 162 — CI Security Policy Repair + Test Trustworthiness Starter (BL-153 repair, BL-159 triage, BL-154 partial)
+
+- Evidence folder: `output/playwright/session-162-ci-security-test-trust-repair/`
+- Source/System: Local shell validation against repo HEAD `25e2681`
+- Action: Resolved BL-153 CI policy contradiction by upgrading `@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express` from ^10.4.0 to ^11.1.19, eliminating 2 high-severity npm audit findings (multer <=2.1.0, @nestjs/platform-express). Updated `scripts/security-baseline.sh` to default to `--audit-level=high` and always capture full moderate report. Updated `package.json`: `ci` now includes `security:baseline`, added `ci:full` and `check:docs-governance`. Updated `.github/workflows/ci.yml` to use `npm run security:baseline` and `npm run check:docs-governance`. Added 6 `packages/audit` tests for `computeIntegrityHash`. Added 7 `apps/worker` tests for `createCorrelationId` and `getHeaders`. Extracted `apps/worker/src/helpers.ts` for testability.
+- Proves:
+  - `npm run format:check` passes (0 errors)
+  - `npm run lint` passes (0 errors)
+  - `npm run typecheck` passes (all 10 workspaces)
+  - `npm run build` passes (all workspaces)
+  - `npm run validate` passes (contracts + Prisma schema)
+  - `npm test` passes: 461 tests, 458 pass, 0 fail, 3 skip
+  - `npm run ci` passes (includes security baseline)
+  - `npm run ci:full` passes (quality + security + docs governance)
+  - `npm audit --audit-level=high` passes (0 high findings)
+  - `npm audit --audit-level=moderate` shows 5 moderate findings (documented, non-blocking)
+  - CI workflow YAML syntax validated
+  - `scripts/check_state_docs.py` passes
+  - `scripts/check_docs_hygiene.py` passes
+- Limitations:
+  - Remote GitHub Actions execution not yet proven (no PR/push triggered)
+  - Branch protection rules not configured
+  - 5 moderate npm audit findings remain (postcss via next, @hono/node-server via prisma dev)
+  - `packages/ui` remains essentially empty (no meaningful tests possible)
+  - Browser E2E not implemented (BL-157 planned)
+- Type: ci-security-repair-and-test-coverage
+- as_of: 2026-05-05T10:20:00+02:00
+
 ## EV-2026-05-05-183: Session 161 — BL-153 Automated Quality Gate & CI/CD Hardening Foundation (ACCEPTED)
 
 - Evidence folder: `output/playwright/session-161-ci-quality-gate-foundation/`

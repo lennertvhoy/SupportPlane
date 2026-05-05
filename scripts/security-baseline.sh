@@ -5,7 +5,7 @@
 # =============================================================================
 set -euo pipefail
 
-AUDIT_LEVEL="${AUDIT_LEVEL:-moderate}"
+AUDIT_LEVEL="${AUDIT_LEVEL:-high}"
 OUTPUT_DIR="${OUTPUT_DIR:-.}"
 
 print_usage() {
@@ -13,7 +13,7 @@ print_usage() {
 Usage: $0 [OPTIONS]
 
 Options:
-  --audit-level LEVEL   npm audit level: info, low, moderate, high, critical (default: moderate)
+  --audit-level LEVEL   npm audit level: info, low, moderate, high, critical (default: high)
   --output-dir PATH     Directory to write reports (default: .)
   -h, --help            Show this help message
 EOF
@@ -48,7 +48,7 @@ echo "Audit level: ${AUDIT_LEVEL}"
 echo "Output dir:  ${OUTPUT_DIR}"
 echo ""
 
-echo "--- Dependency Audit ---"
+echo "--- Dependency Audit (blocking level: ${AUDIT_LEVEL}) ---"
 if npm audit --audit-level="${AUDIT_LEVEL}" > "${OUTPUT_DIR}/npm-audit.txt" 2>&1; then
   echo "PASS: No vulnerabilities at '${AUDIT_LEVEL}' level or higher."
   AUDIT_EXIT=0
@@ -59,6 +59,12 @@ else
 fi
 
 echo ""
-echo "Report saved to: ${OUTPUT_DIR}/npm-audit.txt"
+echo "--- Full Dependency Audit (moderate, for artifact) ---"
+npm audit --audit-level=moderate > "${OUTPUT_DIR}/npm-audit-full.txt" 2>&1 || true
+
+echo ""
+echo "Reports saved to:"
+echo "  - ${OUTPUT_DIR}/npm-audit.txt (blocking level)"
+echo "  - ${OUTPUT_DIR}/npm-audit-full.txt (full moderate+)"
 
 exit "${AUDIT_EXIT}"

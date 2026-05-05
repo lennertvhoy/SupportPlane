@@ -2,6 +2,48 @@
 
 **Purpose:** Append-only history for completed work.
 
+## Session 162 — 2026-05-05 — CI Security Policy Repair + Test Trustworthiness Starter
+
+**Date:** 2026-05-05 10:20 CEST
+**Git HEAD:** 25e26818950ef86d532b74c18ada36d110aa6cb4 (starting), TBD (final)
+**Branch:** main
+
+### What changed
+
+- **Dependency security fix:** Upgraded `@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express` from `^10.4.0` to `^11.1.19` in `apps/api/package.json`. This eliminated 2 high-severity npm audit findings (multer <=2.1.0 and @nestjs/platform-express). Remaining: 5 moderate findings.
+- **`scripts/security-baseline.sh`:** Changed default `--audit-level` from `moderate` to `high` to match CI blocking behavior. Now always generates both `npm-audit.txt` (blocking level) and `npm-audit-full.txt` (moderate+).
+- **`package.json` scripts:** `ci` now includes `npm run security:baseline`. Added `ci:full` (quality + security + docs). Added `check:docs-governance`.
+- **`.github/workflows/ci.yml`:** `security-baseline` job now uses `npm run security:baseline`. `docs-governance` job now uses `npm run check:docs-governance`. Artifact upload captures both reports.
+- **`packages/audit` tests:** Created `packages/audit/test/integrity-hash.test.ts` with 6 tests for `computeIntegrityHash` (determinism, key-order independence, format, empty object, null/undefined, distinct payloads).
+- **`apps/worker` tests:** Created `apps/worker/src/helpers.ts` extracting `createCorrelationId` and `getHeaders`. Created `apps/worker/test/helpers.test.ts` with 7 tests (correlation id format, timestamp/random structure, uniqueness, header presence, correlation id pass-through, tenant id handling, auto-generation).
+- **State docs updated:** `BACKLOG.md`, `NEXT_ACTIONS.md`, `STATUS.md`, `PROJECT_STATE.yaml`, `docs/EVIDENCE_LOG.md`, `WORKLOG.md`.
+
+### Validation results
+
+| Command | Result |
+|---|---|
+| `npm run format:check` | PASS |
+| `npm run lint` | PASS |
+| `npm run typecheck` | PASS (10 workspaces) |
+| `npm run build` | PASS |
+| `npm run validate` | PASS |
+| `npm test` | 461 tests, 458 pass, 0 fail, 3 skip |
+| `npm run ci` | PASS (includes security baseline) |
+| `npm run ci:full` | PASS |
+| `npm audit --audit-level=high` | PASS (0 findings) |
+| `npm audit --audit-level=moderate` | 5 moderate findings |
+| `python3 scripts/check_state_docs.py` | PASS |
+| `python3 scripts/check_docs_hygiene.py` | PASS |
+| Workflow YAML validation | PASS |
+
+### Risks and limitations
+
+- Remote GitHub Actions run still not proven.
+- Branch protection not configured.
+- 5 moderate npm audit findings remain.
+- `packages/ui` is ghost/empty — no tests added.
+- Worker main loop and NATS integration not yet tested.
+
 ## Session 161 — 2026-05-05 — BL-153 Automated Quality Gate & CI/CD Hardening Foundation (ACCEPTED)
 
 **Date:** 2026-05-05 09:45 CEST

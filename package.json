@@ -18,11 +18,13 @@
     "validate": "node scripts/validate-contracts.js && npx prisma validate",
     "db:seed": "tsx prisma/seed.ts",
     "health": "node scripts/health.js",
-    "ci": "npm run build && npm run format:check && npm run lint && npm run typecheck && npm run validate && npm test",
+    "ci": "npm run build && npm run format:check && npm run lint && npm run typecheck && npm run validate && npm test && npm run security:baseline",
     "ci:local": "npm run ci",
+    "ci:full": "npm run ci && npm run check:docs-governance",
     "security:baseline": "bash scripts/security-baseline.sh",
     "check:runtime-identity": "bash scripts/check_runtime_identity.sh",
-    "check:evidence-hygiene": "bash scripts/check_evidence_hygiene.sh"
+    "check:evidence-hygiene": "bash scripts/check_evidence_hygiene.sh",
+    "check:docs-governance": "python3 scripts/check_state_docs.py && python3 scripts/check_docs_hygiene.py"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

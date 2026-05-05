@@ -110,17 +110,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Dependency audit — high severity
-        run: npm audit --audit-level=high
+      - name: Security baseline
+        run: npm run security:baseline -- --output-dir .
 
-      - name: Dependency audit — full report
-        run: npm audit --audit-level=moderate > npm-audit-report.txt || true
-
-      - name: Upload audit report
+      - name: Upload audit reports
         uses: actions/upload-artifact@v4
         with:
           name: security-audit-report-${{ github.run_id }}
-          path: npm-audit-report.txt
+          path: |
+            npm-audit.txt
+            npm-audit-full.txt
           retention-days: 30
 
   docs-governance:
@@ -137,8 +136,5 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Validate state docs
-        run: python3 scripts/check_state_docs.py
-
-      - name: Validate docs hygiene
-        run: python3 scripts/check_docs_hygiene.py
+      - name: Docs governance
+        run: npm run check:docs-governance

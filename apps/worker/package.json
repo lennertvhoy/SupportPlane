@@ -10,7 +10,7 @@
     "build": "tsc",
     "start": "node dist/src/index.js loop",
     "typecheck": "tsc --noEmit",
-    "test": "echo 'No tests yet'"
+    "test": "tsc && node --test dist/test/**/*.test.js"
   },
   "dependencies": {
     "@supportplane/audit": "*",

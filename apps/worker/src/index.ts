@@ -1,4 +1,5 @@
 import { AckPolicy, connect, StorageType, StringCodec } from 'nats';
+import { createCorrelationId, getHeaders } from './helpers.js';
 
 const API_URL = process.env['SUPPORTPLANE_API_URL'] ?? 'http://localhost:4110';
 const WORKER_ID = process.env['SUPPORTPLANE_WORKER_ID'] ?? `local-worker-${process.pid}`;
@@ -11,21 +12,6 @@ const NATS_SUBJECT = process.env['NATS_OUTBOX_SUBJECT'] ?? 'supportplane.outbox.
 const NATS_CONSUMER = process.env['NATS_OUTBOX_CONSUMER'] ?? 'SUPPORTPLANE_WORKER';
 
 type Command = 'process-once' | 'loop' | 'status';
-
-function createCorrelationId(): string {
-  return `sp-worker-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function getHeaders(tenantId?: string, correlationId?: string): Record<string, string> {
-  const headers: Record<string, string> = { 'content-type': 'application/json' };
-  headers['x-correlation-id'] = correlationId ?? createCorrelationId();
-  if (SERVICE_TOKEN && SERVICE_TOKEN.length >= 16) {
-    headers['x-supportplane-service-token'] = SERVICE_TOKEN;
-    headers['x-service-actor'] = WORKER_ID;
-    headers['x-tenant-id'] = tenantId ?? 'dev-tenant';
-  }
-  return headers;
-}
 
 async function login(): Promise<string> {
   // Prefer service token auth; fall back to local auth login only if no service token.
