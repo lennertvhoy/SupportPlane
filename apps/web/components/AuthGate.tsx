@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type React from 'react';
 import { LogOut, ShieldCheck, KeyRound } from 'lucide-react';
 import { api, ApiClientError, type AuthIdentity } from '@/lib/api';
@@ -176,13 +176,7 @@ export function AuthGate({
   return <>{children(identity, logout)}</>;
 }
 
-export function IdentityPill({
-  identity,
-  logout,
-}: {
-  identity: AuthIdentity;
-  logout: () => Promise<void>;
-}) {
+export function IdentityPill({ identity }: { identity: AuthIdentity }) {
   const authLabel =
     identity.authMode === 'oidc'
       ? 'OIDC'
@@ -196,21 +190,98 @@ export function IdentityPill({
       ? 'text-sky-300 border-sky-700/40 bg-sky-900/30'
       : 'text-emerald-300 border-emerald-700/40 bg-emerald-900/30';
   return (
-    <div className="flex items-center gap-2">
-      <span
-        className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${authColor}`}
-      >
-        <ShieldCheck size={10} />
-        {identity.userName ?? identity.userEmail} / {identity.tenantName ?? identity.tenantSlug} /{' '}
-        {identity.userRole} / {authLabel}
-      </span>
+    <span
+      className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${authColor}`}
+    >
+      <ShieldCheck size={10} />
+      {identity.userName ?? identity.userEmail} / {identity.tenantName ?? identity.tenantSlug} /{' '}
+      {identity.userRole} / {authLabel}
+    </span>
+  );
+}
+
+export function UserMenu({
+  identity,
+  logout,
+}: {
+  identity: AuthIdentity;
+  logout: () => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const initials = (identity.userName ?? identity.userEmail ?? '?')
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  const authLabel =
+    identity.authMode === 'oidc'
+      ? 'OIDC'
+      : identity.authMode === 'local'
+        ? 'Local'
+        : identity.authMode === 'service'
+          ? 'Service'
+          : 'Dev';
+
+  return (
+    <div className="relative" ref={ref}>
       <button
-        onClick={() => void logout()}
-        className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"
+        onClick={() => setOpen((s) => !s)}
+        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-cockpit-600 bg-cockpit-800 text-xs font-medium text-cockpit-200 hover:bg-cockpit-700 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
+        aria-label="Open user menu"
+        aria-expanded={open}
+        title="User menu"
       >
-        <LogOut size={10} />
-        Logout
+        {initials}
       </button>
+      {open && (
+        <div className="absolute right-0 z-50 mt-2 w-64 rounded-lg border border-cockpit-700 bg-cockpit-900 shadow-lg">
+          <div className="border-b border-cockpit-700 px-4 py-3">
+            <div className="text-sm font-medium text-cockpit-100">
+              {identity.userName ?? identity.userEmail}
+            </div>
+            <div className="text-xs text-cockpit-400">{identity.userEmail}</div>
+          </div>
+          <div className="space-y-1 px-4 py-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-cockpit-400">Tenant</span>
+              <span className="font-medium text-cockpit-200">
+                {identity.tenantName ?? identity.tenantSlug}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-cockpit-400">Role</span>
+              <span className="font-medium text-cockpit-200">{identity.userRole}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-cockpit-400">Auth</span>
+              <span className="font-medium text-cockpit-200">{authLabel}</span>
+            </div>
+          </div>
+          <div className="border-t border-cockpit-700 px-4 py-2">
+            <button
+              onClick={() => void logout()}
+              className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs text-cockpit-300 hover:bg-cockpit-800 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
+            >
+              <LogOut size={12} />
+              Log out
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

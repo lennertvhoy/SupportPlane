@@ -52,10 +52,12 @@ function AdminPageContent({
                 key={card.href}
                 onClick={() => router.push(card.href)}
                 disabled={disabled}
-                className={`flex flex-col items-center gap-2 rounded-lg border bg-cockpit-900/60 p-4 text-center transition-colors hover:bg-cockpit-800 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none ${card.color} ${disabled ? 'bg-cockpit-900 text-cockpit-600 cursor-not-allowed opacity-60' : ''}`}
+                className={`flex flex-col items-center gap-2 rounded-lg border p-4 text-center transition-colors focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none ${card.color} ${disabled ? 'bg-cockpit-900 text-cockpit-600 cursor-not-allowed opacity-50' : 'bg-cockpit-900/60 text-cockpit-200 hover:bg-cockpit-800'}`}
+                aria-disabled={disabled}
+                title={disabled ? 'Admin role required' : card.label}
               >
-                <Icon size={20} className="text-cockpit-300" />
-                <span className="text-xs font-medium text-cockpit-200">{card.label}</span>
+                <Icon size={20} className={disabled ? 'text-cockpit-600' : 'text-cockpit-300'} />
+                <span className="text-xs font-medium">{card.label}</span>
               </button>
             );
           })}

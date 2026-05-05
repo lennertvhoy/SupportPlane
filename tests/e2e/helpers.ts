@@ -20,7 +20,11 @@ export async function login(
   await passwordInput.fill(password);
 
   await page.locator('button[type="submit"]', { hasText: /Log in/i }).click();
-  await expect(page.locator('text=DEV / MOCK DATA')).toBeVisible();
+  // Wait for a dashboard-unique element to confirm login succeeded
+  await expect(page.getByRole('button', { name: /New/i })).toBeVisible();
+  // Brief pause to ensure the browser has processed the Set-Cookie header
+  // before subsequent navigations that rely on the session cookie.
+  await page.waitForTimeout(500);
 }
 
 export async function logout(page: Page) {

@@ -37,7 +37,7 @@ import { DeliveryPolicyPanel } from '@/components/DeliveryPolicyPanel';
 import { AdminPolicyPanel } from '@/components/AdminPolicyPanel';
 import { ObservabilityPanel } from '@/components/ObservabilityPanel';
 import { SecurityReadinessPanel } from '@/components/SecurityReadinessPanel';
-import { AuthGate, IdentityPill } from '@/components/AuthGate';
+import { AuthGate, UserMenu } from '@/components/AuthGate';
 import { InfoTooltip } from '@/components/InfoTooltip';
 import {
   api,
@@ -54,6 +54,76 @@ import {
   type AuthIdentity,
   ApiClientError,
 } from '@/lib/api';
+
+function EnvironmentStatus({
+  healthInfo,
+  connectorStatus,
+}: {
+  healthInfo?: { authMode?: string; storeMode?: string } | undefined;
+  connectorStatus?: ConnectorStatus | undefined;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const mode = connectorStatus?.mode === 'mock' ? 'Mock' : 'Sandbox';
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((s) => !s)}
+        className="inline-flex items-center gap-1.5 rounded border border-amber-800 bg-amber-950 px-2 py-0.5 text-[10px] font-medium text-amber-400 hover:bg-amber-900 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
+        aria-label="Environment details"
+        aria-expanded={open}
+        title="Environment details"
+      >
+        <AlertTriangle size={10} />
+        {mode} · {healthInfo?.authMode ?? 'local'} · {healthInfo?.storeMode ?? 'memory'}
+      </button>
+      {open && (
+        <div className="absolute right-0 z-50 mt-1 w-56 rounded-lg border border-cockpit-700 bg-cockpit-900 shadow-lg">
+          <div className="space-y-1 px-3 py-2 text-xs">
+            <div className="flex items-center gap-1.5 text-amber-400">
+              <AlertTriangle size={12} />
+              <span className="font-medium">DEV / MOCK DATA</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-blue-400">
+              <Info size={12} />
+              <span className="font-medium">Sandbox Demo</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-cockpit-300">
+              <Cpu size={12} />
+              <span className="font-medium">
+                {healthInfo?.authMode ?? 'local'} · {healthInfo?.storeMode ?? 'memory'}
+              </span>
+            </div>
+            {connectorStatus && (
+              <div className="flex items-center gap-1.5 text-cockpit-300">
+                <ShieldAlert size={12} />
+                <span className="font-medium">
+                  {connectorStatus.mode === 'mock' ? 'Mock' : 'Sandbox'} mode
+                </span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5 text-red-400">
+              <ShieldAlert size={12} />
+              <span className="font-medium">All writeback blocked</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ToolsDropdown() {
   const [open, setOpen] = useState(false);
@@ -490,44 +560,7 @@ function CockpitContent({
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-1 rounded border border-amber-800 bg-amber-950 px-2 py-0.5 text-[10px] font-medium text-amber-400">
-            <AlertTriangle size={10} />
-            DEV / MOCK DATA
-          </span>
-          <span className="inline-flex items-center gap-1 rounded border border-blue-800 bg-blue-950 px-2 py-0.5 text-[10px] font-medium text-blue-400">
-            <Info size={10} />
-            Sandbox Demo
-          </span>
-          {healthInfo && (
-            <span
-              className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
-                healthInfo.authMode === 'oidc'
-                  ? 'border-accent-dark/40 bg-accent-dark/10 text-accent-light'
-                  : 'border-cockpit-600 bg-cockpit-900 text-cockpit-400'
-              }`}
-            >
-              <Cpu size={10} />
-              {healthInfo.authMode} · {healthInfo.storeMode}
-            </span>
-          )}
-          {connectorStatus && (
-            <>
-              <span
-                className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[10px] font-medium ${
-                  connectorStatus.mode === 'mock'
-                    ? 'border-amber-700/40 bg-amber-900/30 text-amber-300'
-                    : 'border-emerald-700/40 bg-emerald-900/30 text-emerald-300'
-                }`}
-              >
-                {connectorStatus.mode === 'mock' ? 'Mock' : 'Sandbox'} mode
-              </span>
-              <span className="inline-flex items-center gap-1 rounded border border-red-800 bg-red-950 px-2 py-0.5 text-[10px] text-red-400">
-                <ShieldAlert size={10} />
-                All writeback blocked
-              </span>
-            </>
-          )}
-          <IdentityPill identity={identity} logout={logout} />
+          <EnvironmentStatus healthInfo={healthInfo} connectorStatus={connectorStatus} />
           <ToolsDropdown />
           <button
             onClick={() => (window.location.href = '/admin')}
@@ -537,6 +570,7 @@ function CockpitContent({
             <Settings size={10} />
             Admin
           </button>
+          <UserMenu identity={identity} logout={logout} />
         </div>
       </header>
 

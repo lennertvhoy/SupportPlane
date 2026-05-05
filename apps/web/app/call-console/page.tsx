@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 import { Panel } from '@/components/Panel';
 import { Badge } from '@/components/Badge';
-import { AuthGate, IdentityPill } from '@/components/AuthGate';
+import { AuthGate, UserMenu } from '@/components/AuthGate';
 import {
   api,
   type CallEvent,
@@ -623,7 +623,7 @@ function CallConsoleContent({
             <AlertTriangle size={10} />
             No real telephony connected
           </span>
-          <IdentityPill identity={identity} logout={logout} />
+          <UserMenu identity={identity} logout={logout} />
           <button
             onClick={() => router.push('/')}
             className="inline-flex items-center gap-1 rounded border border-cockpit-600 bg-cockpit-900 px-2 py-0.5 text-[10px] text-cockpit-300 hover:bg-cockpit-800"

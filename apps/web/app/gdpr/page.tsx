@@ -2,7 +2,7 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { AuthGate, IdentityPill } from '@/components/AuthGate';
+import { AuthGate, UserMenu } from '@/components/AuthGate';
 import { GdprRequestPanel } from '@/components/GdprRequestPanel';
 import type { AuthIdentity } from '@/lib/api';
 
@@ -32,7 +32,7 @@ function GdprPageContent({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <IdentityPill identity={identity} logout={logout} />
+          <UserMenu identity={identity} logout={logout} />
         </div>
       </header>
       <main className="min-h-0 flex-1 overflow-auto p-4">

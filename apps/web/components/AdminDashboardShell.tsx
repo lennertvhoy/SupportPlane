@@ -10,9 +10,8 @@ import {
   Database,
   Plug,
   ArrowLeft,
-  LogOut,
 } from 'lucide-react';
-import { IdentityPill } from './AuthGate';
+import { UserMenu } from './AuthGate';
 import type { AuthIdentity } from '@/lib/api';
 
 const navItems = [
@@ -65,16 +64,7 @@ export function AdminDashboardShell({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <IdentityPill identity={identity} logout={logout} />
-          <button
-            type="button"
-            onClick={() => void logout()}
-            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
-            title="Logout"
-            aria-label="Logout"
-          >
-            <LogOut size={16} />
-          </button>
+          <UserMenu identity={identity} logout={logout} />
         </div>
       </header>
 
@@ -93,13 +83,15 @@ export function AdminDashboardShell({
                     active
                       ? 'bg-cockpit-700 text-white'
                       : 'text-cockpit-300 hover:bg-cockpit-800 hover:text-cockpit-100'
-                  } ${item.label !== 'Policies' && !isAdmin ? 'bg-cockpit-900 text-cockpit-600 cursor-not-allowed opacity-60' : ''}`}
+                  } ${item.label !== 'Policies' && !isAdmin ? 'cursor-not-allowed opacity-50 grayscale' : ''}`}
                   disabled={item.label !== 'Policies' && !isAdmin}
+                  aria-disabled={item.label !== 'Policies' && !isAdmin}
+                  title={item.label !== 'Policies' && !isAdmin ? 'Admin role required' : item.label}
                 >
-                  <Icon size={14} />
-                  {item.label}
+                  <Icon size={14} className={item.label !== 'Policies' && !isAdmin ? 'text-cockpit-500' : ''} />
+                  <span className={item.label !== 'Policies' && !isAdmin ? 'text-cockpit-500' : ''}>{item.label}</span>
                   {!isAdmin && item.label !== 'Policies' && (
-                    <span className="ml-auto text-[9px] text-cockpit-400">Admin</span>
+                    <span className="ml-auto rounded bg-cockpit-800 px-1 py-0.5 text-[9px] text-cockpit-400">Admin</span>
                   )}
                 </button>
               );

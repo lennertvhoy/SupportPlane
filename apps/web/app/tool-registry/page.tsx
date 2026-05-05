@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, Loader2, RefreshCw, ShieldCheck, Wrench } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { AuthGate, IdentityPill } from '@/components/AuthGate';
+import { AuthGate, UserMenu } from '@/components/AuthGate';
 import { Badge } from '@/components/Badge';
 
 import { api, ApiClientError, type AuthIdentity, type ToolDefinition } from '@/lib/api';
@@ -74,22 +74,16 @@ function ToolRegistryContent({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <IdentityPill identity={identity} logout={logout} />
           <button
             type="button"
             onClick={() => refresh()}
-            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500"
+            className="inline-flex h-9 w-9 items-center justify-center rounded border border-cockpit-700 bg-cockpit-900 text-cockpit-300 hover:border-accent-500 focus-visible:ring-2 focus-visible:ring-accent-light focus-visible:ring-offset-2 focus-visible:ring-offset-cockpit-950 focus-visible:outline-none"
             title="Refresh"
+            aria-label="Refresh tool registry"
           >
             {loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
           </button>
-          <button
-            type="button"
-            onClick={logout}
-            className="rounded border border-cockpit-700 px-3 py-2 text-xs text-cockpit-300 hover:border-cockpit-500"
-          >
-            Logout
-          </button>
+          <UserMenu identity={identity} logout={logout} />
         </div>
       </header>
 

@@ -32,7 +32,6 @@ test.describe('Accessibility / Axe', () => {
     page,
   }) => {
     await login(page, 'operator@supportplane.local', 'supportplane-demo');
-    await expect(page.locator('text=DEV / MOCK DATA')).toBeVisible();
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])

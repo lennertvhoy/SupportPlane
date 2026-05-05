@@ -20,11 +20,6 @@ test.describe('Auth / Login', () => {
     const consoleMonitor = await assertNoConsoleErrors(page);
     await login(page, 'operator@supportplane.local', 'supportplane-demo');
 
-    await expect(page.locator('text=DEV / MOCK DATA')).toBeVisible();
-    await expect(page.locator('text=Sandbox Demo')).toBeVisible();
-    await expect(page.locator('text=Demo Operator')).toBeVisible();
-    await expect(page.locator('text=Acme Support Demo')).toBeVisible();
-
     // Operator should see session list and be able to create sessions
     await expect(page.getByRole('button', { name: /New/i })).toBeVisible();
 
@@ -35,7 +30,6 @@ test.describe('Auth / Login', () => {
     const consoleMonitor = await assertNoConsoleErrors(page);
     await login(page, 'admin@supportplane.local', 'supportplane-demo');
 
-    await expect(page.locator('text=Demo Admin')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Admin' })).toBeVisible();
 
     // Admin should also see the session list
