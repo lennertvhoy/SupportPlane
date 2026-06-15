@@ -302,3 +302,7 @@ Status markers:
 - Keep `NEXT_ACTIONS.md` active-only even though this backlog is intentionally broad.
 - Do not let CI/CD hardening (BL-153) block feature work for more than one slice; parallelize where possible.
 - Accessibility (BL-156) and design-system (BL-147) are tightly coupled; consider merging into a single UX quality slice if resources allow.
+
+## LATER
+
+- [BL-WB-001] Use Kimi WebBridge to browser-verify any user-facing change in the real browser when available.
