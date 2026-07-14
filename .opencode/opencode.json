@@ -38,7 +38,7 @@
       "temperature": 0.1
     },
     "statedd-reviewer": {
-      "description": "Reviews StateDD closure quality, repo hygiene, evidence mapping, stale claims, and acceptance docs without making edits.",
+      "description": "Reviews StateSpec closure quality, repo hygiene, evidence mapping, stale claims, and acceptance docs without making edits.",
       "mode": "subagent",
       "model": "opencode-go/glm-5.1",
       "temperature": 0.1

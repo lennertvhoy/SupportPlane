@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate StateDD workflow docs and bootstrap readiness."""
+"""Validate StateSpec workflow docs and bootstrap readiness."""
 
 from __future__ import annotations
 
@@ -125,7 +125,7 @@ def is_template_style_repo(root: Path) -> bool:
     readme_text = readme.read_text(encoding="utf-8") if readme.exists() else ""
     project_state_text = project_state.read_text(encoding="utf-8") if project_state.exists() else ""
 
-    if readme_text.startswith("# State Driven Development Template"):
+    if readme_text.startswith(("# StateSpec Template", "# State Driven Development Template")):
         return True
     if "type: documentation_and_workflow_template" in project_state_text:
         return True
@@ -221,7 +221,7 @@ def check_readme(path: Path) -> list[str]:
         "fresh coding-agent session",
         "real `BACKLOG.md`, not a placeholder",
         "backlog slice",
-        "State Driven Development Template",
+        "StateSpec Template",
         "docs/evidence/",
         "existing README preserved",
         "runtime identity",
@@ -312,7 +312,7 @@ def check_bootstrap_gate(root: Path) -> list[str]:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Validate StateDD workflow docs and bootstrap readiness")
+    parser = argparse.ArgumentParser(description="Validate StateSpec workflow docs and bootstrap readiness")
     parser.add_argument("root", nargs="?", default=str(ROOT), help="Repo root to validate")
     parser.add_argument(
         "--bootstrap-gate",

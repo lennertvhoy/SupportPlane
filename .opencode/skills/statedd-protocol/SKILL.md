@@ -1,13 +1,13 @@
 ---
 name: statedd-protocol
 description: >
-  Enforces the StateDD truth-first workflow for repo governance: read-order
+  Enforces the StateSpec truth-first workflow for repo governance: read-order
   discipline, backlog currency, evidence capture, browser verification,
   screenshots, clean worktree closure, docs sync, and honest handoffs. This
   skill is mandatory for every SupportPlane coding-agent session.
 ---
 
-# StateDD Protocol Skill
+# StateSpec Protocol Skill
 
 ## Activation
 

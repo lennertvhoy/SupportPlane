@@ -8,6 +8,11 @@ diagnostics, remote support activity, and knowledge into governed
 `SupportSession` workflows where policy, approvals, tool manifests, execution
 gateways, and audit logs decide what is allowed.
 
+SupportPlane uses State-Centric Engineering and the StateSpec portable
+specification. The repository keeps its legacy `statedd-*` workflow and helper
+identifiers for compatibility; see
+[`docs/adr/0001-stateware-public-naming.md`](docs/adr/0001-stateware-public-naming.md).
+
 ## Project Status: Real Self-Hosted Sandbox Accepted (BL-116)
 
 The current repo has an **accepted real self-hosted sandbox** running on a local

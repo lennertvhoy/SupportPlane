@@ -4,9 +4,14 @@ initialized_on: 2026-04-26
 last_updated: "2026-06-14"
 project: "SupportPlane"
 ---
-# State Driven Development Template Contract
+# StateSpec Template Contract
 
 **Purpose:** Stable operating contract for technical projects that use explicit state, evidence, and short active queues.
+
+Public terminology uses **Stateware** for the category,
+**State-Centric Engineering** for the method, and **StateSpec** for the portable
+specification. Existing `statedd-*` paths, skill/agent IDs, workflow filenames,
+and schema/version identifiers remain compatibility aliases.
 
 This repository supports two modes:
 

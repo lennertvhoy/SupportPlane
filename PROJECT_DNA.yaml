@@ -27,6 +27,13 @@ product:
     - remote_desktop_replacement_in_mvp
     - compliance_claim_without_evidence
 
+terminology:
+  category: Stateware
+  engineering_method: State-Centric Engineering
+  portable_specification: StateSpec
+  legacy_alias: StateDD
+  compatibility_policy: preserve_machine_identifiers_until_versioned_migration
+
 truth_rules:
   contract_files:
     agents: AGENTS.md

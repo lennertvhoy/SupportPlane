@@ -1,6 +1,6 @@
 # Scripts
 
-This directory holds lightweight workflow helpers for the State-Driven Development Template.
+This directory holds lightweight workflow helpers for State-Centric Engineering and StateSpec.
 
 All setup and usage instructions live in the repository root `README.md`.
 

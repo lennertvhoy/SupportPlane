@@ -1,7 +1,7 @@
 # PROJECT_STATE.yaml - Structured current truth
 
 metadata:
-  updated_at: 2026-05-05T13:42:46+02:00
+  updated_at: 2026-07-14T23:47:26+02:00
   updated_by: agent
   version: 'statedd-template-v3'
   note: >
@@ -12,6 +12,18 @@ metadata:
     Session 149: BL-139 final truth repair — corrected stale session-148 git evidence (f3a3975/ahead8) to actual final (2ddb899/ahead12).
     Session 151: BL-140 final truth repair — corrected stale session-150 git evidence (fa29dc4/dirty) to actual final (6349510/clean).
     Session 153: BL-141 closure repair + BL-142 first live tester round ops — consolidated into single folder. GLPI context fixed, Web image rebuilt/deployed, outreach docs, preflight/close scripts, feedback-to-backlog rules. Prior folders (session-152, session-154) deleted.
+
+terminology:
+  status: observed
+  public_category: Stateware
+  engineering_method: State-Centric Engineering
+  portable_specification: StateSpec
+  legacy_public_name: StateDD
+  compatibility:
+    - statedd-prefixed skills, agents, commands, scripts, workflows, and paths remain valid
+    - existing schema and version identifiers remain unchanged
+    - historical evidence and worklog entries retain their original terminology
+  decision: docs/adr/0001-stateware-public-naming.md
 
 workflow:
   repo_mode: operating

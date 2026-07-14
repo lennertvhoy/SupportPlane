@@ -1,4 +1,4 @@
-# StateDD Start Command
+# StateSpec Start Command
 
 Perform the opening inspection for every SupportPlane coding-agent session.
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Initialize or adopt the StateDD template workflow."""
+"""Initialize or adopt the StateSpec template workflow."""
 
 from __future__ import annotations
 
@@ -18,8 +18,8 @@ from pathlib import Path
 TEMPLATE_ROOT = Path(__file__).resolve().parents[1]
 IGNORED_TEMPLATE_NAMES = {".git", ".codex", ".playwright-mcp", "__pycache__", ".cache"}
 
-TEMPLATE_NAME = "State Driven Development Template"
-CONTRACT_TITLE = "State Driven Development Template Contract"
+TEMPLATE_NAME = "StateSpec Template"
+CONTRACT_TITLE = "StateSpec Template Contract"
 
 SUPPORT_ASSET_PATHS = [
     Path("scripts/init_template.py"),
@@ -728,7 +728,7 @@ Use this file for dated session notes, verification summaries, and references to
 **Worktree:** unknown
 
 ### What changed
-- Installed the StateDD workflow files without replacing the existing project README by default.
+- Installed the StateSpec workflow files without replacing the existing project README by default.
 - Captured an initial bootstrap baseline from the current repo structure and documented the active queue using backlog IDs.
 
 ### Verification
@@ -841,7 +841,7 @@ and must be protected from quiet regression.
 
 def render_readme_section() -> str:
     return f"""
-## StateDD Workflow
+## StateSpec Workflow
 
 This repo now uses the {TEMPLATE_NAME} workflow.
 The workflow contract lives in `AGENTS.md`, the current truth lives in
@@ -1159,7 +1159,7 @@ def maybe_append_readme_link(target: Path, *, dry_run: bool) -> None:
         return
     if dry_run:
         print("Planned README action:")
-        print("  - append StateDD workflow section to README.md")
+        print("  - append StateSpec workflow section to README.md")
         return
     write_file(readme, text.rstrip() + "\n\n" + section + "\n")
 
@@ -1288,7 +1288,7 @@ def build_managed_files_for_adopt(project_name: str, target: Path, today: str, s
 
 
 def build_subcommand_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Initialize or adopt the StateDD workflow")
+    parser = argparse.ArgumentParser(description="Initialize or adopt the StateSpec workflow")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     new_parser = subparsers.add_parser("new", help="Create a new repo from the template")
@@ -1335,7 +1335,7 @@ def build_subcommand_parser() -> argparse.ArgumentParser:
 
 
 def build_legacy_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Create a new repo from the StateDD workflow template")
+    parser = argparse.ArgumentParser(description="Create a new repo from the StateSpec workflow template")
     parser.add_argument("--name", required=True, help="Project name to stamp into the template")
     parser.add_argument("--target", default=".", help="Repo root to initialize")
     parser.add_argument("--minimal", action="store_true", help="Remove optional fixtures/examples")

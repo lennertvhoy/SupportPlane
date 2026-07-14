@@ -1,6 +1,6 @@
-# StateDD Close Command
+# StateSpec Close Command
 
-Perform StateDD closure for every SupportPlane coding-agent session.
+Perform StateSpec closure for every SupportPlane coding-agent session.
 
 ## Pre-Closure Checklist
 

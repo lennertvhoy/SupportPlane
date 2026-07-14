@@ -21,6 +21,7 @@ These files define current project truth, governance, and workflow state.
 | `ACCEPTANCE_FREEZES.md` | Accepted user-facing milestone ledger                                |
 | `BOOTSTRAP_QUALITY.md`  | Rubric for judging bootstrap output quality                          |
 | `REALITY_MATRIX.md`     | System-by-system real vs mock vs sandbox status inventory            |
+| `adr/0001-stateware-public-naming.md` | Stateware public terminology and legacy identifier boundary |
 
 ## Architecture Docs
 

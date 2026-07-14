@@ -2,6 +2,17 @@
 
 **Purpose:** Append-only history for completed work.
 
+## Session 169 — 2026-07-14 — Stateware public naming migration
+
+- Adopted Stateware as the public category, State-Centric Engineering as the
+  method, and StateSpec as the portable application specification.
+- Updated current agent commands, the OpenCode protocol skill/reviewer copy,
+  initializer output, fixtures, and workflow-validation copy.
+- Preserved `statedd-*` command paths, skill/agent IDs, workflow filenames,
+  script filenames, schemas, and version identifiers as compatibility aliases.
+- Added `docs/adr/0001-stateware-public-naming.md`; no runtime product behavior,
+  database schema, API, or UI was changed.
+
 ## Session 163 — 2026-05-05 — DevSecOps Automated Audit Foundation
 
 **Date:** 2026-05-05 11:00 CEST
